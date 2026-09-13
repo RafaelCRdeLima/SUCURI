@@ -85,6 +85,72 @@ function estados(d) {
   }
 }
 
+/* ---------------------------------------------------- falta uma convenção */
+
+/* Perguntar é o que este programa faz com tudo o que não sabe. Faltar a
+ * variável da derivada não é exceção: em vez de reclamar de um campo vazio que
+ * o usuário tem de ir procurar, a pergunta aparece onde o problema apareceu,
+ * com o campo junto. */
+
+function faltando(d) {
+  var bloco = $('bloco-faltando');
+  var caixa = $('faltando');
+  caixa.textContent = '';
+  bloco.hidden = !d.faltando;
+  if (!d.faltando) { return; }
+
+  var f = d.faltando;
+  var alvo = (f.qual === 'temporal') ? 'c-temporal' : 'c-independente';
+
+  var div = document.createElement('div');
+  div.className = 'falta';
+
+  var texto = document.createElement('p');
+  texto.textContent = 'Derivada em relação a qual variável? Sem isso, '
+    + '"derivada" não diz o bastante.';
+  div.appendChild(texto);
+
+  var linha = document.createElement('div');
+  linha.className = 'linha';
+  var campo = document.createElement('input');
+  campo.type = 'text';
+  campo.setAttribute('aria-label', f.campo);
+  campo.placeholder = (f.qual === 'temporal') ? 't' : 'x';
+  var usar = document.createElement('button');
+  usar.className = 'primario';
+  usar.textContent = 'Usar';
+  function adotar(nome) {
+    if (!nome) { return; }
+    $(alvo).value = nome;
+    ler();
+  }
+  usar.addEventListener('click', function () { adotar(campo.value.trim()); });
+  campo.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { adotar(campo.value.trim()); }
+  });
+  linha.appendChild(campo);
+  linha.appendChild(usar);
+  div.appendChild(linha);
+
+  var atalhos = document.createElement('div');
+  atalhos.className = 'atalhos';
+  if (f.candidatos.length) {
+    /* Atalho, não sugestão: em x' = A e^x sobra o A, que é constante. */
+    atalhos.appendChild(document.createTextNode('letras que aparecem na equação:'));
+    f.candidatos.forEach(function (c) {
+      var b = document.createElement('button');
+      b.textContent = c;
+      b.addEventListener('click', function () { adotar(c); });
+      atalhos.appendChild(b);
+    });
+  } else {
+    atalhos.textContent = 'nenhuma letra sobra na equação: a variável não está '
+      + 'escrita ali, e é por isso que ninguém pode tirá-la de lá.';
+  }
+  div.appendChild(atalhos);
+  caixa.appendChild(div);
+}
+
 /* -------------------------------------------------------------- perguntas */
 
 function sitio(a) {
@@ -435,6 +501,7 @@ function mostrar(d) {
   $('avaliar').textContent = d.diferencial ? 'Resolver' : 'Avaliar';
   $('rotulo-valor').textContent = d.diferencial ? 'Solução' : 'Valor';
   estados(d);
+  faltando(d);
   perguntas(d);
   arvore(d);
   leitura(d);

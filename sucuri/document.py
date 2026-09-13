@@ -154,6 +154,22 @@ def _canonizar(expr):
         lambda e: sp.log(e.args[0], e.args[1]))
 
 
+class FaltaVariavel(ValueError):
+    """Falta dizer em relação a que a derivada é derivada.
+
+    Exceção própria, e não ValueError solto, porque a interface precisa
+    RECONHECER este caso para perguntar em vez de só reclamar: ela sabe quais
+    letras aparecem na equação, e oferecê-las é o que o programa faz com toda
+    ambiguidade. Reclamar de campo vazio é empurrar para o usuário uma pergunta
+    que dava para fazer.
+    """
+
+    def __init__(self, mensagem, qual, campo):
+        self.qual = qual
+        self.campo = campo
+        super().__init__(mensagem)
+
+
 def _exige(variavel, sitio, qual, parametro, campo):
     """A variável tem de existir ANTES de virar derivada.
 
@@ -164,10 +180,10 @@ def _exige(variavel, sitio, qual, parametro, campo):
     escondida, e a recusa é a mesma dos dois caminhos.
     """
     if variavel is None:
-        raise ValueError(
+        raise FaltaVariavel(
             f"para ler {sitio} como derivada é preciso uma variável {qual}: "
             f"preencha '{campo}' nas convenções do documento "
-            f"(ou {parametro}= na biblioteca)")
+            f"(ou {parametro}= na biblioteca)", qual, campo)
 
 
 def _nao_derive_a_propria_variavel(base, variavel, qual, escrita="{0}'"):
@@ -246,10 +262,11 @@ class Document:
         relação a quê continua sendo uma ambiguidade, só que escondida.
         """
         if yes and wrt is None and self.independent is None:
-            raise ValueError(
+            raise FaltaVariavel(
                 "para ler a linha como derivada é preciso uma variável "
                 "independente: preencha 'Variável independente' nas convenções "
-                "do documento (ou independent_variable= na biblioteca)")
+                "do documento (ou independent_variable= na biblioteca)",
+                "independente", "Variável independente")
         if wrt is not None:
             self.independent = sp.Symbol(wrt)
         self._primes_are_derivatives = bool(yes)

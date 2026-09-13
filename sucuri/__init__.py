@@ -6,8 +6,8 @@ Ambiguidade não se adivinha: anota-se. Ver README.md.
 __version__ = "0.1.0"
 
 from .ambiguity import Ambiguity, Reading, find
-from .document import (Document, Expression, NotacaoNaoReconhecida,
-                       Resolution, Unresolved)
+from .document import (Document, Expression, FaltaVariavel,
+                       NotacaoNaoReconhecida, Resolution, Unresolved)
 from .tree import Node
 
 
@@ -38,4 +38,4 @@ def parse(latex, *, independent_variable=None, primes=None,
 
 
 __all__ = ["parse", "Document", "Expression", "Resolution", "Unresolved",
-           "NotacaoNaoReconhecida", "Ambiguity", "Reading", "Node", "find"]
+           "NotacaoNaoReconhecida", "FaltaVariavel", "Ambiguity", "Reading", "Node", "find"]

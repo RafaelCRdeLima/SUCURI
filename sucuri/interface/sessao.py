@@ -10,11 +10,13 @@ desfazer uma convenção é apagar uma linha de estado, e não desfazer um efeit
 
 from __future__ import annotations
 
+import re
 import time
 
 import sympy as sp
 
-from ..document import Document, Resolution, Unresolved
+from ..ambiguity import _COMANDOS, find
+from ..document import Document, FaltaVariavel, Resolution, Unresolved
 from ..prazo import TempoEsgotado, no_prazo
 
 
@@ -87,7 +89,7 @@ class Sessao:
         tipicamente 'linha é derivada' sem variável independente, que é o caso
         em que a convenção esconderia uma ambiguidade em vez de resolvê-la.
         """
-        avisos = []
+        avisos, falta = [], None
         doc = Document(independent_variable=self.independente,
                        time_variable=self.temporal)
         if self.funcoes:
@@ -98,17 +100,23 @@ class Sessao:
         if self.linhas is not None:
             try:
                 doc.primes_are_derivatives(self.linhas == "derivative")
+            except FaltaVariavel as e:
+                avisos.append(str(e))
+                falta = falta or _faltando(e, self.latex)
             except ValueError as e:
                 avisos.append(str(e))
         if self.pontos is not None:
             try:
                 doc.dots_are_time_derivatives(self.pontos == "derivative")
+            except FaltaVariavel as e:
+                avisos.append(str(e))
+                falta = falta or _faltando(e, self.latex)
             except ValueError as e:
                 avisos.append(str(e))
 
         for kind, base, detail, reading in self.anotacoes.values():
             doc.annotate(kind, base, reading, **detail)
-        return doc, avisos
+        return doc, avisos, falta
 
     def ler(self, latex=None):
         """A leitura completa, na forma que a interface consome."""
@@ -116,7 +124,7 @@ class Sessao:
             self.latex = latex
         inicio = time.perf_counter()
 
-        doc, avisos = self.documento()
+        doc, avisos, falta = self.documento()
         expr = doc.read(self.latex)
 
         saida = {
@@ -127,6 +135,7 @@ class Sessao:
             "pendentes": len(expr.pending),
             "inferidas": len(expr.inferred),
             "arvore": None,
+            "faltando": falta,
             "diferencial": False,
             "sympy": None,
             "codigo": None,
@@ -144,6 +153,9 @@ class Sessao:
                 saida["diferencial"] = _e_diferencial(objeto)
             except Unresolved as e:
                 saida["erro"] = str(e)
+            except FaltaVariavel as e:
+                saida["erro"] = str(e)
+                saida["faltando"] = _faltando(e, self.latex)
             except Exception as e:                      # noqa: BLE001
                 saida["erro"] = f"{type(e).__name__}: {e}"
 
@@ -178,7 +190,7 @@ class Sessao:
                  "numerico": None, "fechou": False, "indefinida": False,
                  "erro": None}
 
-        doc, _ = self.documento()
+        doc, _, _ = self.documento()
         expressao = doc.read(self.latex)
         if expressao.pending:
             saida["erro"] = "há sítios pendentes; resolva antes de avaliar"
@@ -211,7 +223,7 @@ class Sessao:
 
     def expressao(self):
         """A Expression atual, para os módulos operarem sobre ela."""
-        doc, _ = self.documento()
+        doc, _, _ = self.documento()
         return doc.read(self.latex)
 
 
@@ -221,6 +233,44 @@ PRAZO_AVALIAR = 20
 def _avaliar(objeto):
     """`doit` faz a conta; `simplify` arruma o que sobrou dela."""
     return sp.simplify(objeto.doit())
+
+
+_RE_LETRA = re.compile(r"\\[a-zA-Z]+|[a-zA-Z]")
+
+
+def _faltando(erro, latex):
+    """A pergunta que o erro devia ter sido, com os candidatos que dá para ver.
+
+    As letras que sobram fora dos sítios de derivada vão como ATALHO, não como
+    resposta: em f' = x^2 sobra o x, que é mesmo a variável, mas em x' = A e^x
+    sobra o A, que é constante — a variável ali é o t, que não está escrito.
+    Oferecer a lista como se fosse a resposta seria adivinhar de novo, só que
+    com cara de ajuda.
+
+    Quando não sobra nenhuma — y'' + y = 0 —, a lista vazia é a informação: a
+    variável REALMENTE não aparece na equação, e é por isso que ninguém pode
+    tirá-la de lá.
+    """
+    return {"qual": erro.qual, "campo": erro.campo,
+            "candidatos": _candidatas(latex)}
+
+
+def _candidatas(latex):
+    sitios = find(latex)
+    cobertos = {i for a in sitios for i in range(*a.span)}
+    # A base de uma derivada NÃO pode ser a variável: y' com y independente
+    # seria a derivada de y em relação a si mesmo, e isso o leitor recusa.
+    derivadas = {a.base for a in sitios if a.kind in ("prime", "newton")}
+    achadas = []
+    for m in _RE_LETRA.finditer(latex):
+        if m.start() in cobertos:
+            continue
+        nome = m.group(0)
+        nome = nome[1:] if nome.startswith("\\") else nome
+        if nome in _COMANDOS or nome in derivadas or nome in achadas:
+            continue
+        achadas.append(nome)
+    return achadas
 
 
 def _e_diferencial(objeto):

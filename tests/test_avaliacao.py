@@ -121,3 +121,38 @@ def test_derivada_de_expressao_conhecida_nao_e_equacao_diferencial():
     avalia, não se resolve."""
     s = Sessao().configurar({"independente": "x"})
     assert s.ler(r"\frac{d}{dx} \sin x = \cos x")["diferencial"] is False
+
+
+# --------------------------------------------- a convenção que falta vira pergunta
+
+def test_falta_de_variavel_vira_pergunta_com_o_que_se_pode_ver():
+    """Reclamar de campo vazio é empurrar para o usuário uma pergunta que dava
+    para fazer. O leitor sabe quais letras aparecem na equação; a interface
+    pergunta ali mesmo, com elas à mão."""
+    d = Sessao().configurar({"linhas": "derivative"}).ler(r"f^{\prime} = x^2")
+    f = d["faltando"]
+    assert f["qual"] == "independente"
+    assert f["campo"] == "Variável independente"
+    assert f["candidatos"] == ["x"]
+
+
+def test_a_base_da_derivada_nao_entra_como_candidata():
+    """y' com y independente seria a derivada de y em relação a si mesmo, e o
+    leitor recusa isso — oferecer y seria oferecer um beco."""
+    d = Sessao().configurar({"linhas": "derivative"}).ler("y'' + y = 0")
+    assert d["faltando"]["candidatos"] == []
+
+
+def test_lista_vazia_e_a_informacao():
+    """Em y'' + y = 0 a variável não está escrita. A lista vazia diz isso, que é
+    melhor do que uma lista errada."""
+    d = Sessao().configurar({"linhas": "derivative"}).ler("y'' + y = 0")
+    assert d["faltando"] is not None
+    assert d["faltando"]["candidatos"] == []
+
+
+def test_com_a_variavel_declarada_a_pergunta_some():
+    s = Sessao().configurar({"independente": "x", "linhas": "derivative"})
+    d = s.ler(r"f^{\prime} = x^2")
+    assert d["faltando"] is None
+    assert d["sympy"] == "Eq(Derivative(f(x), x), x**2)"
