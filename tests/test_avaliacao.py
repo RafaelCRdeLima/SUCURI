@@ -96,3 +96,28 @@ def test_a_rota_esta_na_aplicacao():
     a = Aplicacao()
     d = Aplicacao.ROTAS["/api/avaliar"](a, {"latex": r"\int_0^1 x^2", "sessao": "t"})
     assert d["exato"] == "1/3"
+
+
+# ------------------------------------------------- o verbo segue o objeto
+
+def test_equacao_diferencial_e_reconhecida_como_tal():
+    """Avaliar uma equação diferencial não faz nada: `doit` deixa a derivada de
+    uma função incógnita exatamente onde estava. A interface precisa saber
+    disso para oferecer 'Resolver' em vez de 'Avaliar' — mandar o usuário
+    descobrir sozinho que o botão certo é outro é fazê-lo adivinhar."""
+    s = Sessao().configurar({"independente": "x", "linhas": "derivative"})
+    assert s.ler(r"\frac{d^2 \phi}{dx^2} + x\phi = 0")["diferencial"] is True
+    assert s.ler("y'' + y = 0")["diferencial"] is True
+
+
+def test_o_que_nao_e_equacao_diferencial_nao_e_marcado():
+    s = Sessao().configurar({"independente": "x", "linhas": "derivative"})
+    for latex in [r"\int_0^1 x^2", "x^2 + 1 = 0", r"\int \sin x\,dx"]:
+        assert s.ler(latex)["diferencial"] is False
+
+
+def test_derivada_de_expressao_conhecida_nao_e_equacao_diferencial():
+    """d/dx(sen x) = cos x tem derivada, mas de função CONHECIDA: isso se
+    avalia, não se resolve."""
+    s = Sessao().configurar({"independente": "x"})
+    assert s.ler(r"\frac{d}{dx} \sin x = \cos x")["diferencial"] is False

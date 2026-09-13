@@ -195,6 +195,13 @@ A interface não decide nada de matemática. Entre ela e o motor passa JSON
 (`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
 decisões que ela transporta são as do usuário: convenção e anotação.
 
+## O verbo segue o objeto
+
+Equação diferencial se **resolve**; expressão se **avalia**. São contas
+diferentes, e o botão principal da página muda de nome conforme o que está
+escrito — oferecer o verbo errado faz o usuário concluir que o programa não
+sabe fazer o que ele sabe fazer.
+
 ## Ler e avaliar são atos diferentes
 
 `\int_0^1 x^2` é lido como `Integral(x**2, (x, 0, 1))` e fica assim: parada. O

@@ -226,10 +226,33 @@ function codigo(d) {
 /* Ler e avaliar são atos diferentes, e é por isso que avaliar é um botão e não
  * um efeito de digitar: a integral fica parada até alguém pedir a conta. */
 
-function avaliar() {
+/* O verbo segue o objeto: equação diferencial se resolve, expressão se avalia.
+ * São contas diferentes, e oferecer a errada faz o usuário concluir que o
+ * programa não sabe fazer o que ele sabe fazer. */
+
+function acaoPrincipal() {
+  return (ultimo && ultimo.diferencial) ? resolverEdo : avaliar;
+}
+
+function resolverEdo() {
+  var caixa = abrirValor('resolvendo…');
+  pedir('/api/operar', { latex: $('entrada').value, modulo: 'resolver',
+                         operacao: 'resolver' })
+    .then(function (r) { caixa.textContent = ''; caixa.appendChild(resultado(r)); })
+    .catch(function (e) {
+      caixa.innerHTML = '<div class="bloqueio">' + escapar(e) + '</div>';
+    });
+}
+
+function abrirValor(aviso) {
   var caixa = $('avaliacao');
   $('bloco-avaliacao').hidden = false;
-  caixa.innerHTML = '<p class="modulo-desc">calculando…</p>';
+  caixa.innerHTML = '<p class="modulo-desc">' + aviso + '</p>';
+  return caixa;
+}
+
+function avaliar() {
+  var caixa = abrirValor('calculando…');
   pedir('/api/avaliar', { latex: $('entrada').value, convencoes: convencoes() })
     .then(function (d) { caixa.textContent = ''; caixa.appendChild(valor(d)); })
     .catch(function (e) {
@@ -384,6 +407,8 @@ function resultado(r) {
 function mostrar(d) {
   ultimo = d;
   $('bloco-avaliacao').hidden = true;      // o valor era de outra equação
+  $('avaliar').textContent = d.diferencial ? 'Resolver' : 'Avaliar';
+  $('rotulo-valor').textContent = d.diferencial ? 'Solução' : 'Valor';
   estados(d);
   perguntas(d);
   arvore(d);
@@ -421,7 +446,7 @@ $('copiar').addEventListener('click', function (e) {
   });
 });
 $('abrir-modulos').addEventListener('click', modulos);
-$('avaliar').addEventListener('click', avaliar);
+$('avaliar').addEventListener('click', function () { acaoPrincipal()(); });
 
 $('entrada').focus();
 ler();

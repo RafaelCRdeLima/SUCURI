@@ -127,6 +127,7 @@ class Sessao:
             "pendentes": len(expr.pending),
             "inferidas": len(expr.inferred),
             "arvore": None,
+            "diferencial": False,
             "sympy": None,
             "codigo": None,
             "latex_semantico": None,
@@ -140,6 +141,7 @@ class Sessao:
                 saida["codigo"] = codigo_python(objeto)
                 saida["latex_semantico"] = sp.latex(objeto)
                 saida["arvore"] = expr.tree().to_dict()
+                saida["diferencial"] = _e_diferencial(objeto)
             except Unresolved as e:
                 saida["erro"] = str(e)
             except Exception as e:                      # noqa: BLE001
@@ -219,6 +221,20 @@ PRAZO_AVALIAR = 20
 def _avaliar(objeto):
     """`doit` faz a conta; `simplify` arruma o que sobrou dela."""
     return sp.simplify(objeto.doit())
+
+
+def _e_diferencial(objeto):
+    """Isto é equação diferencial?
+
+    A pergunta decide qual verbo a interface oferece. Avaliar uma equação
+    diferencial não faz nada — `doit` deixa a derivada de uma função incógnita
+    exatamente onde estava —, e mandar o usuário descobrir sozinho que o botão
+    certo é outro é fazê-lo adivinhar, que é o que este programa não faz.
+    """
+    if not isinstance(objeto, sp.Equality):
+        return False
+    return any(d.expr.atoms(sp.core.function.AppliedUndef)
+               for d in objeto.atoms(sp.Derivative))
 
 
 def _indefinida(objeto):
