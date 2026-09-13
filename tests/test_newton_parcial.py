@@ -231,3 +231,55 @@ def test_a_linha_continua_admitindo_uma_variavel_so():
     y = sp.Function("y")(sp.Symbol("x"))
     assert doc.read("y'' + y = 0").to_sympy() == sp.Eq(
         y + sp.Derivative(y, (sp.Symbol("x"), 2)), 0)
+
+
+# ------------------------------------------------- ∂ não é pergunta
+
+def test_o_partial_nao_e_sitio_ambiguo():
+    """Ninguém escreveu ∂u/∂t querendo uma fração dos símbolos ∂, u e ∂t.
+
+    Com `d` a dúvida é real — d é uma letra que as pessoas usam para distância,
+    diâmetro, o que for. Com ∂ não é: a notação tem uma leitura só. Inventar a
+    segunda é ruído, e pergunta que não é pergunta gasta a credibilidade das
+    que são.
+    """
+    from sucuri.ambiguity import find
+
+    (parcial,) = find(r"\frac{\partial u}{\partial t}")
+    assert parcial.certa is True
+    assert len(parcial.readings) == 1
+
+    (leibniz,) = find(r"\frac{du}{dt}")
+    assert leibniz.certa is False
+    assert len(leibniz.readings) == 2
+
+
+def test_o_partial_continua_sendo_reescrito():
+    """Não é pergunta, mas continua sendo LOCALIZADO: o parser do SymPy degrada
+    ∂²u/∂x² em (partial**2*u)/(partial*x**2), então alguém tem de reescrever.
+    O que muda é que ninguém precisa ser consultado."""
+    import sympy as sp
+    import sucuri
+
+    doc = sucuri.Document()
+    lido = doc.read(r"\frac{\partial^2 u}{\partial t^2} = \frac{\partial^2 u}{\partial x^2}").to_sympy()
+    t, x = sp.symbols("t x")
+    u = sp.Function("u")(t, x)
+    assert lido == sp.Eq(sp.Derivative(u, (t, 2)), sp.Derivative(u, (x, 2)))
+
+
+def test_o_partial_nao_aparece_na_interface():
+    """Uma linha dizendo "∂ é derivada parcial" só repete o que está escrito."""
+    from sucuri.interface.sessao import Sessao
+
+    d = Sessao().ler(r"\frac{\partial u}{\partial t} = \partial_x u")
+    assert d["ambiguidades"] == []
+    assert d["pendentes"] == 0 and d["inferidas"] == 0
+
+
+def test_o_d_continua_perguntando():
+    from sucuri.interface.sessao import Sessao
+
+    d = Sessao().ler(r"\frac{dy}{dx} = 1")
+    assert len(d["ambiguidades"]) == 1
+    assert d["ambiguidades"][0]["leituras"][1]["chave"] == "fraction"

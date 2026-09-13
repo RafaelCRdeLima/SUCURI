@@ -132,6 +132,20 @@ O `u` é **um só**, função das duas. Antes cada sítio promovia o símbolo à
 própria função e o mesmo `u` saía como `u(t)` de um lado e `u(x)` do outro —
 duas funções com o mesmo nome na mesma equação, em silêncio.
 
+## O que NÃO é ambiguidade
+
+`∂` está reservado à derivada parcial. Ninguém nunca escreveu
+`\frac{\partial u}{\partial t}` querendo uma fração dos símbolos ∂, u e ∂t —
+e com `d` a dúvida é real, porque `d` é uma letra que as pessoas usam para
+distância, diâmetro, o que for.
+
+O sítio continua sendo **localizado**, porque o parser do SymPy degrada
+`\frac{\partial^2 u}{\partial x^2}` em `(partial**2*u)/(partial*x**2)` e
+alguém tem de reescrever. O que muda é que ninguém precisa ser consultado.
+
+Pergunta que não é pergunta gasta a credibilidade das que são — o mesmo motivo
+pelo qual `\arctan(` não abre um sítio de justaposição.
+
 ## Ambiguidades reconhecidas
 
 | Tipo | Exemplo | Leituras |

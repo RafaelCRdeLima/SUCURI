@@ -415,6 +415,11 @@ class Document:
         Anotação feita para o sítio é EXPLICIT. Convenção de documento aplicada
         a ele é INFERRED — a interface a mostra em âmbar, pedindo conferência.
         """
+        # Sítio de leitura única não se pergunta e não se anota: ele é.
+        if amb.certa:
+            return Resolution(amb, amb.readings[0].key, Resolution.EXPLICIT,
+                              motivo="∂ é derivada parcial")
+
         if amb.key in self._annotations:
             return Resolution(amb, self._annotations[amb.key], Resolution.EXPLICIT)
 
@@ -641,7 +646,8 @@ class Expression:
                 else:
                     alvo = sp.Symbol(a.base) * sp.Symbol("d_" + a.detail["wrt"])
                 reposicoes[simbolo] = alvo
-                origens[alvo] = resolucao
+                if not a.certa:
+                    origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
             elif a.kind == "leibniz":
@@ -655,7 +661,8 @@ class Expression:
                     alvo = (sp.Symbol("d")**a.detail["order"] * sp.Symbol(a.base)
                             / sp.Symbol("d" + a.detail["wrt"])**a.detail["order"])
                 reposicoes[simbolo] = alvo
-                origens[alvo] = resolucao
+                if not a.certa:
+                    origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
             elif a.kind == "euler":

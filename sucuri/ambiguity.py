@@ -10,7 +10,7 @@ sozinho. As três que aparecem sempre em física:
   f(x+1)         f aplicada ao argumento, ou f multiplicando o parêntese?
   d^2 y / dx^2   derivada de Leibniz, ou fração de símbolos d, y, dx?
   \\dot{x}        derivada temporal de Newton, ou decoração sobre x?
-  \\partial_x f   derivada parcial, ou produto de f por um símbolo?
+  \\partial_x f   NÃO é sítio: ∂ está reservado à derivada parcial
   e^{ax}         número de Euler, ou um símbolo chamado e?
 
 O ponto de Newton é o caso mais grave medido: o SymPy lê \\dot{x} como o produto
@@ -56,7 +56,17 @@ class Ambiguity:
         Dados extras da detecção (ordem da derivada, variável, etc.).
     """
 
-    def __init__(self, kind, fragment, span, base, readings, **detail):
+    def __init__(self, kind, fragment, span, base, readings, certa=False,
+                 **detail):
+        # `certa` marca o sítio que NÃO é pergunta: a notação tem uma leitura
+        # só, e inventar a segunda seria ruído. O ∂ é o caso — ninguém escreve
+        # ∂u/∂t querendo uma fração dos símbolos ∂, u e ∂t. Com d a dúvida é
+        # real, porque d é uma letra que as pessoas usam; ∂ não é.
+        #
+        # Continua sendo localizado, e não ignorado: o parser do SymPy degrada
+        # ∂²u/∂x² em (partial**2*u)/(partial*x**2), então alguém tem de
+        # reescrever. O que muda é que ninguém precisa ser consultado.
+        self.certa = certa
         self.kind = kind
         self.fragment = fragment
         self.span = span
@@ -201,16 +211,18 @@ def find(latex):
         simbolo, ordem_num, funcao, variavel, ordem_den = m.groups()
         ordem = int(ordem_num or ordem_den or 1)
         parcial = simbolo == "\\partial"
-        letra = "∂" if parcial else "d"
-        qualidade = "parcial " if parcial else ""
+        leituras = [Reading("derivative",
+                            f"derivada {'parcial ' if parcial else ''}de ordem "
+                            f"{ordem} de {_limpo(funcao)} em relação a "
+                            f"{_limpo(variavel)}")]
+        if not parcial:
+            leituras.append(Reading(
+                "fraction",
+                f"fração literal dos símbolos d, {_limpo(funcao)} e "
+                f"d{_limpo(variavel)}"))
         achados.append(Ambiguity(
-            "leibniz", m.group(0), m.span(), _limpo(funcao),
-            [Reading("derivative",
-                     f"derivada {qualidade}de ordem {ordem} de {_limpo(funcao)} "
-                     f"em relação a {_limpo(variavel)}"),
-             Reading("fraction",
-                     f"fração literal dos símbolos {letra}, "
-                     f"{_limpo(funcao)} e {letra}{_limpo(variavel)}")],
+            "leibniz", m.group(0), m.span(), _limpo(funcao), leituras,
+            certa=parcial,
             order=ordem, wrt=_limpo(variavel), partial=parcial))
 
     for m in _RE_NEWTON.finditer(latex):
@@ -231,9 +243,8 @@ def find(latex):
         v, a = _limpo(variavel or variavel2), _limpo(alvo)
         achados.append(Ambiguity(
             "partial", m.group(0), m.span(), a,
-            [Reading("derivative", f"derivada parcial de {a} em relação a {v}"),
-             Reading("product", f"produto de {a} por um símbolo chamado d_{v}")],
-            wrt=v))
+            [Reading("derivative", f"derivada parcial de {a} em relação a {v}")],
+            certa=True, wrt=v))
 
     cobertos = {i for a in achados for i in range(*a.span)}
 

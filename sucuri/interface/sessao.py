@@ -136,8 +136,10 @@ class Sessao:
         saida = {
             "latex": self.latex,
             "avisos": avisos,
+            # Sítio de leitura única não aparece: ele não é pergunta, e uma
+            # linha dizendo "∂ é derivada parcial" só repete o que está escrito.
             "ambiguidades": [_ambiguidade(a, doc.resolution(a))
-                             for a in expr.ambiguities],
+                             for a in expr.ambiguities if not a.certa],
             "pendentes": len(expr.pending),
             "inferidas": len(expr.inferred),
             "arvore": None,
