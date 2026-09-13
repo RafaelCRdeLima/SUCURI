@@ -45,6 +45,31 @@ def test_sem_aproximacao_quando_a_conta_nao_fecha():
     assert d["numerico"] is None
 
 
+# ------------------------------------------------- a constante de integração
+
+def test_integral_indefinida_e_uma_familia():
+    """∫sen x dx não é -cos(x): é -cos(x) + C. O SymPy devolve o
+    representante e não diz que é um representante; qualquer tabela escreve a
+    constante. Omiti-la é dar por resposta um pedaço da resposta."""
+    d = Sessao().avaliar(r"\int \sin x\,dx")
+    assert d["fechou"] is True
+    assert d["indefinida"] is True
+    assert d["exato"] == "-cos(x)"
+
+
+def test_definida_nao_leva_constante():
+    d = Sessao().avaliar(r"\int_0^1 x^2")
+    assert d["indefinida"] is False
+
+
+def test_indefinida_que_nao_fecha_nao_ganha_constante():
+    """Sem primitiva não há família: pôr '+ C' numa conta por fazer seria
+    enfeitar o que não foi respondido."""
+    d = Sessao().avaliar(r"\int \frac{\sin x}{\ln x}\,dx")
+    assert d["fechou"] is False
+    assert d["indefinida"] is False
+
+
 def test_sitio_pendente_bloqueia_a_avaliacao():
     """A mesma recusa da leitura: nada se calcula sobre o que ninguém leu."""
     d = Sessao().avaliar(r"\int_0^\infty e^{-x}\,dx")

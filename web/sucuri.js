@@ -253,9 +253,21 @@ function valor(d) {
   }
 
   var m = document.createElement('div');
-  try { katex.render(d.latex_exato, m, { displayMode: true, throwOnError: false }); }
-  catch (e) { m.textContent = d.exato; }
+  /* A constante entra na conta que se mostra, não numa nota de rodapé: o
+   * resultado de uma integral indefinida É a família, e escrever só um
+   * representante dela seria dar o representante por resposta. */
+  var escrita = d.latex_exato + (d.indefinida ? ' + C' : '');
+  try { katex.render(escrita, m, { displayMode: true, throwOnError: false }); }
+  catch (e) { m.textContent = d.exato + (d.indefinida ? ' + C' : ''); }
   div.appendChild(m);
+
+  if (d.indefinida) {
+    var fam = document.createElement('p');
+    fam.className = 'modulo-desc';
+    fam.textContent = 'integral indefinida: a resposta é a família inteira, '
+      + 'e o código abaixo traz uma primitiva dela.';
+    div.appendChild(fam);
+  }
 
   if (d.numerico) {
     var n = document.createElement('p');

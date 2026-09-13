@@ -173,7 +173,8 @@ class Sessao:
             self.latex = latex
         inicio = time.perf_counter()
         saida = {"latex": self.latex, "exato": None, "latex_exato": None,
-                 "numerico": None, "fechou": False, "erro": None}
+                 "numerico": None, "fechou": False, "indefinida": False,
+                 "erro": None}
 
         doc, _ = self.documento()
         expressao = doc.read(self.latex)
@@ -194,6 +195,7 @@ class Sessao:
             saida["exato"] = sp.sstr(valor)
             saida["latex_exato"] = sp.latex(valor)
             saida["fechou"] = not _parou(valor)
+            saida["indefinida"] = saida["fechou"] and _indefinida(objeto)
             # Aproximação decimal só de conta que fechou: avaliar numericamente
             # o que ficou parado devolve ruído com cara de resposta.
             if saida["fechou"] and valor.is_number and not valor.is_Integer:
@@ -217,6 +219,19 @@ PRAZO_AVALIAR = 20
 def _avaliar(objeto):
     """`doit` faz a conta; `simplify` arruma o que sobrou dela."""
     return sp.simplify(objeto.doit())
+
+
+def _indefinida(objeto):
+    """A entrada tinha integral sem limites?
+
+    Se tinha, o que sai não é UMA função: é uma família, e todas diferem por
+    uma constante. O SymPy devolve -cos(x) para ∫sen x dx e não diz mais nada;
+    qualquer tabela escreve -cos(x) + C. Omitir a constante é dar por resposta
+    um representante da resposta.
+    """
+    return any(len(limite) == 1
+               for integral in objeto.atoms(sp.Integral)
+               for limite in integral.limits)
 
 
 def _parou(valor):

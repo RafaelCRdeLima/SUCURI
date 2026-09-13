@@ -206,6 +206,7 @@ A resposta vem com o nome do que ela é:
 | | |
 |---|---|
 | fechou | `1/3`, e a aproximação `≈ 0,333…` **ao lado**, nunca no lugar |
+| indefinida | `-\cos(x) + C` — a resposta é a família, não um representante dela |
 | não fechou | o SymPy devolveu a conta por fazer, e o rótulo diz isso |
 | não terminou | estourou o prazo |
 
