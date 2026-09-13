@@ -18,7 +18,14 @@ from __future__ import annotations
 
 import sympy as sp
 
+import korvin as _korvin          # noqa: F401  — falha cedo se não houver
+
 from . import Module, Operation, Provenance, Result, register
+
+# O import acima é o contrato: este adaptador só existe se o KORVIN existir.
+# Falhar aqui, na carga, faz o hospedeiro anunciar o módulo como indisponível
+# em vez de oferecer operações que quebram ao serem usadas — é o que acontece
+# na versão online, onde o KORVIN não vai junto.
 
 
 def _traduz_proveniencia(criterio):

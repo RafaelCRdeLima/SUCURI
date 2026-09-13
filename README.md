@@ -166,6 +166,13 @@ doc.read(...).tree()
 python -m sucuri.interface        # abre em http://127.0.0.1:8765/
 ```
 
+E **online**, sem instalar nada: `web/` é a mesma interface com o motor rodando
+dentro do navegador — Python e SymPy compilados para WebAssembly pelo Pyodide,
+o pacote `sucuri` num zip que a página desempacota. Não é uma segunda
+implementação: são os mesmos arquivos, e há teste que falha se o publicado
+divergir do repositório. Nada do que o usuário escreve sai da máquina dele,
+porque não há para onde ir. Ver `web/LEIAME.md`.
+
 Servidor local e página no navegador. A escolha é deliberada: o programa é de
 Linux hoje e fica online amanhã sem reescrita — o mesmo motor, a mesma página,
 outro endereço. Só biblioteca padrão do lado do Python; o KaTeX vem

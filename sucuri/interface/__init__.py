@@ -7,7 +7,8 @@ Entre os dois passa JSON: entrada em LaTeX de um lado, leitura anotada do
 outro — e, quando a leitura está completa, o objeto SymPy.
 """
 
+from .aplicacao import Aplicacao
 from .sessao import Sessao
 from .servidor import criar, servir
 
-__all__ = ["Sessao", "criar", "servir"]
+__all__ = ["Aplicacao", "Sessao", "criar", "servir"]

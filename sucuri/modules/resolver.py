@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import queue
+import sys
 
 import sympy as sp
 from sympy.core.function import AppliedUndef
@@ -81,6 +82,15 @@ def _correr(fila, alvo, args):
         fila.put(("erro", f"{type(e).__name__}: {e}"))
 
 
+SEM_PROCESSOS = sys.platform == "emscripten"
+"""No navegador (Pyodide) não há processos.
+
+Lá o prazo é de quem hospeda: a página roda o motor num Web Worker e mata o
+worker quando estoura. É o mesmo desenho — alguém de fora com poder de matar —,
+só que o mecanismo é outro. Aqui dentro, então, roda-se direto.
+"""
+
+
 def _no_prazo(alvo, segundos, *args):
     """Roda `alvo(*args)` em processo separado, com prazo.
 
@@ -88,6 +98,8 @@ def _no_prazo(alvo, segundos, *args):
     interrupção, e uma thread pendurada continua queimando CPU até o fim do
     programa. Processo se mata.
     """
+    if SEM_PROCESSOS:
+        return alvo(*args)
     try:
         ctx = mp.get_context("fork")
     except ValueError:                      # sistema sem fork

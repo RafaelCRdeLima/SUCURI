@@ -154,6 +154,21 @@ def _canonizar(expr):
         lambda e: sp.log(e.args[0], e.args[1]))
 
 
+def _exige(variavel, sitio, qual, parametro):
+    """A variável tem de existir ANTES de virar derivada.
+
+    A convenção do documento já cobrava isso; a anotação de um sítio, não —
+    e por ali passava um `Derivative(q(None), (None, 1))`, que estoura lá
+    adiante com uma mensagem que não diz nada a quem escreveu a equação. Ler
+    "derivada" sem dizer em relação a quê continua sendo ambiguidade, só que
+    escondida, e a recusa é a mesma dos dois caminhos.
+    """
+    if variavel is None:
+        raise ValueError(
+            f"para ler {sitio} como derivada é preciso uma variável "
+            f"{qual}: crie o documento com {parametro}=")
+
+
 class NotacaoNaoReconhecida(Exception):
     """O parser degradou uma notação em vez de recusá-la.
 
@@ -424,6 +439,8 @@ class Expression:
 
             if a.kind == "prime":
                 ordem = a.detail["order"]
+                if leitura == "derivative":
+                    _exige(x, "a linha", "independente", "independent_variable")
                 nome, simbolo = marcador()
                 alvo = self._linha(a, leitura, ordem, x, derivadas)
                 reposicoes[simbolo] = alvo
@@ -434,6 +451,7 @@ class Expression:
                 nome, simbolo = marcador()
                 ordem = a.detail["order"]
                 if leitura == "derivative":
+                    _exige(self.document.time, "o ponto", "temporal", "time_variable")
                     derivadas.add((a.base, self.document.time))
                     alvo = sp.Derivative(sp.Function(a.base)(self.document.time),
                                          (self.document.time, ordem))

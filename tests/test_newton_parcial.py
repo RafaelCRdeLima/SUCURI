@@ -114,3 +114,22 @@ def test_ponto_aparece_como_inferido_na_arvore():
     marcados = [n for n in t.walk() if n.needs_review]
     assert len(marcados) == 1
     assert "derivada de ordem 2 de q em t" == marcados[0].label
+
+
+def test_anotar_o_ponto_sem_variavel_temporal_recusa_com_recado():
+    """O caminho da convenção já cobrava a variável; o da anotação de sítio,
+    não — e por ali saía um Derivative(q(None), (None, 1)), que estoura muito
+    depois com uma mensagem que não diz nada a quem escreveu a equação. Achado
+    clicando na interface, que é onde se anota sítio."""
+    import pytest
+    import sucuri
+
+    doc = sucuri.Document()
+    doc.annotate("newton", "q", "derivative", order=1)
+    with pytest.raises(ValueError, match="variável temporal"):
+        doc.read(r"\dot{q} + q = 0").to_sympy()
+
+    doc = sucuri.Document()
+    doc.annotate("prime", "y", "derivative", order=2)
+    with pytest.raises(ValueError, match="variável independente"):
+        doc.read("y'' = 0").to_sympy()
