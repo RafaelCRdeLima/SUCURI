@@ -24,8 +24,19 @@
   </svg>
   <span class="wordmark">SUCURI</span>
   <a class="modo" href="index.html">uma equação</a>
-  <span class="arquivo" id="arquivo">caderno.tex</span>
+  <input class="arquivo" id="arquivo" value="caderno.tex" spellcheck="false"
+         aria-label="nome do arquivo">
 </header>
+
+<div class="barra">
+  <button id="b-novo">Novo</button>
+  <button id="b-abrir">Abrir</button>
+  <button id="b-salvar">Salvar</button>
+  <span class="separa"></span>
+  <button id="b-rodar" class="primario">Rodar tudo</button>
+  <button id="b-reiniciar">Reiniciar</button>
+  <input type="file" id="entrada-arquivo" accept=".tex,.txt" hidden>
+</div>
 
 <p class="folha-dica" id="dica">
   Escreva a equação e <kbd>Shift</kbd>+<kbd>Enter</kbd>. Se a notação deixar

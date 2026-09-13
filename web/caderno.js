@@ -48,6 +48,10 @@ function criarCelula(fonte, indice) {
   area.rows = 1;
   area.spellcheck = false;
   area.value = fonte || '';
+  setTimeout(function () {
+    area.style.height = 'auto';
+    area.style.height = (area.scrollHeight + 2) + 'px';
+  }, 0);
   area.addEventListener('input', function () {
     area.style.height = 'auto';
     area.style.height = (area.scrollHeight + 2) + 'px';
@@ -93,7 +97,7 @@ function executar(indice) {
 
   var ultima = indice === fontes.length - 1;
   pedir('/api/caderno/executar',
-        { fonte: fontes[indice] })
+        { fonte: fontes[indice], anotacoes: anotacoes })
     .then(function (d) {
       pintar(celula, d);
       if (ultima && fontes[indice].trim()) { acrescentar(''); }
@@ -308,4 +312,126 @@ pedir('/api/ler', { latex: 'x' }).then(function (d) {
     $('motor').textContent = 'SymPy ' + d.versoes.sympy
       + '  ·  Sucuri ' + d.versoes.sucuri;
   }
+});
+
+/* ------------------------------------------------------- o caderno inteiro
+ *
+ * Cinco ações, e cada uma mexe numa camada diferente — a distinção entre elas
+ * é a razão de existirem cinco e não duas:
+ *
+ *   Novo         apaga o escrito E o acumulado
+ *   Abrir        troca o escrito, refaz o acumulado
+ *   Salvar       leva o escrito (e as decisões) para um arquivo
+ *   Rodar tudo   refaz o acumulado a partir do escrito, na ordem
+ *   Reiniciar    joga fora só o acumulado: o que está escrito fica
+ *
+ * "Reiniciar" é o que apaga eq1, eq2 e as declarações sem tocar numa linha do
+ * que você escreveu — depois dele, `resolver(eq1)` deixa de achar eq1, que é
+ * exatamente o ponto.
+ */
+
+var MARCA = '% sucuri caderno v1';
+var SEPARADOR = '%%';
+
+function serializar() {
+  var linhas = [MARCA];
+  if (anotacoes.length) {
+    /* As decisões de sítio vão junto: são do usuário, não do motor, e sem elas
+     * o caderno reaberto voltaria a perguntar o que já foi respondido. */
+    linhas.push('% decisoes: ' + JSON.stringify(anotacoes));
+  }
+  linhas.push('');
+  return linhas.join('\n')
+    + fontes.filter(function (f) { return f.trim(); }).join('\n' + SEPARADOR + '\n')
+    + '\n';
+}
+
+function desserializar(texto) {
+  var linhas = texto.split('\n');
+  var decisoes = [];
+  while (linhas.length && linhas[0].indexOf('%') === 0) {
+    var m = linhas[0].match(/^% decisoes:\s*(.*)$/);
+    if (m) { try { decisoes = JSON.parse(m[1]); } catch (e) { decisoes = []; } }
+    linhas.shift();
+  }
+  var celulas = linhas.join('\n').split('\n' + SEPARADOR + '\n');
+  return {
+    fontes: celulas.map(function (c) { return c.trim(); })
+      .filter(function (c) { return c; }),
+    anotacoes: decisoes
+  };
+}
+
+function limpar() {
+  $('folha').textContent = '';
+  fontes = [];
+}
+
+function novo() {
+  anotacoes = [];
+  limpar();
+  acrescentar('');
+  $('arquivo').value = 'caderno.tex';
+  pedir('/api/caderno/reiniciar', {}).then(function () {
+    avisar('caderno novo');
+  });
+}
+
+function reiniciar() {
+  /* Só o acumulado. As células ficam onde estão, com o texto intacto — some o
+   * que o motor guardou por ter executado. */
+  pedir('/api/caderno/reiniciar', {}).then(function () {
+    for (var i = 0; i < fontes.length; i++) {
+      var c = celulaDe(i);
+      if (!c) { continue; }
+      c._saida.textContent = '';
+      c._nome.textContent = '';
+      c.className = 'celula';
+    }
+    avisar('motor reiniciado: eq1, eq2 e as declarações não existem mais; '
+           + 'o que está escrito continua aí');
+  });
+}
+
+function salvar() {
+  var nome = ($('arquivo').value || 'caderno.tex').trim();
+  var blob = new Blob([serializar()], { type: 'text/plain;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+function abrir(arquivo) {
+  var leitor = new FileReader();
+  leitor.onload = function () {
+    var lido = desserializar(String(leitor.result));
+    if (!lido.fontes.length) {
+      avisar('esse arquivo não tem célula nenhuma');
+      return;
+    }
+    anotacoes = lido.anotacoes;
+    $('arquivo').value = arquivo.name;
+    limpar();
+    lido.fontes.forEach(function (f) { acrescentar(f); });
+    acrescentar('');
+    pedir('/api/caderno/reiniciar', {}).then(refazer);
+  };
+  leitor.readAsText(arquivo);
+}
+
+$('b-novo').addEventListener('click', novo);
+$('b-salvar').addEventListener('click', salvar);
+$('b-rodar').addEventListener('click', refazer);
+$('b-reiniciar').addEventListener('click', reiniciar);
+$('b-abrir').addEventListener('click', function () {
+  $('entrada-arquivo').click();
+});
+$('entrada-arquivo').addEventListener('change', function (e) {
+  if (e.target.files && e.target.files[0]) { abrir(e.target.files[0]); }
+  e.target.value = '';
 });

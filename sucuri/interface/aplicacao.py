@@ -62,11 +62,27 @@ class Aplicacao:
     # ------------------------------------------------------------ caderno
 
     def executar(self, corpo):
-        """Uma célula nova, sob as convenções que já valem."""
+        """Uma célula nova, sob as convenções e decisões que já valem."""
         c = self.caderno(corpo.get("sessao"))
         if "convencoes" in corpo:
             c.configurar(corpo["convencoes"])
+        # As anotações vão em toda chamada, e não só no refazer: depois de
+        # reiniciar o motor, a próxima célula precisa das decisões de volta —
+        # decisão do usuário é fonte, não estado acumulado.
+        for a in corpo.get("anotacoes") or []:
+            c.anotar(a["kind"], a["base"], a.get("detalhe"), a["leitura"])
         return c.executar(corpo.get("fonte", "")).to_dict()
+
+    def reiniciar(self, corpo):
+        """Joga fora o que foi acumulado — nomes, declarações, contador.
+
+        O que está ESCRITO não é problema desta rota: fica no navegador, e
+        continua lá. Some o que o motor guardou por ter executado, que é o que
+        faz eq1 existir. É o "reiniciar o kernel" de sempre, e a distinção
+        entre as duas coisas é a razão de ele existir.
+        """
+        self.caderno(corpo.get("sessao"), novo=True)
+        return {"reiniciado": True}
 
     def refazer(self, corpo):
         """Tudo de novo, na ordem.
@@ -131,4 +147,5 @@ class Aplicacao:
     ROTAS = {"/api/ler": ler, "/api/anotar": anotar, "/api/avaliar": avaliar,
              "/api/modulos": modulos, "/api/operar": operar,
              "/api/caderno/executar": executar,
-             "/api/caderno/refazer": refazer}
+             "/api/caderno/refazer": refazer,
+             "/api/caderno/reiniciar": reiniciar}

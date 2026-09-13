@@ -286,6 +286,26 @@ coisa, olhar, escrever outra que usa a primeira.
         exportar(eq1)                          →  o script que roda sem o Sucuri
 ```
 
+Cinco ações, e cada uma mexe numa camada diferente do estado — a distinção
+entre elas é a razão de existirem cinco e não duas:
+
+| | |
+|---|---|
+| **Novo** | apaga o escrito **e** o acumulado |
+| **Abrir** | troca o escrito, refaz o acumulado |
+| **Salvar** | leva o escrito e as decisões para um arquivo |
+| **Rodar tudo** | refaz o acumulado a partir do escrito, na ordem |
+| **Reiniciar** | joga fora só o acumulado: o que está escrito fica |
+
+"Reiniciar" apaga `eq1`, `eq2` e as declarações sem tocar numa linha do que
+você escreveu — depois dele, `resolver(eq1)` deixa de achar `eq1`, que é
+exatamente o ponto.
+
+O arquivo salvo é texto, legível, com as células separadas por `%%` — `%` é
+comentário em LaTeX, então ele abre em qualquer editor. As decisões de sítio
+vão numa linha de comentário no alto: são do usuário, não do motor, e sem elas
+o caderno reaberto voltaria a perguntar o que já foi respondido.
+
 **O caderno não tem convenções** — tem declarações, que são células como as
 outras. Seis campos de formulário diziam o que três linhas na folha dizem
 melhor, e dizem de um jeito mais forte: a convenção *escolhe* uma leitura, a

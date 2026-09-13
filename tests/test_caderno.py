@@ -258,3 +258,49 @@ def test_o_caderno_nao_precisa_de_convencao_nenhuma():
     assert d["pendentes"] == 0 and d["inferidas"] == 0
     assert d["sympy"] == (
         "Eq(Derivative(u(x, t), (t, 2)), c**2*Derivative(u(x, t), (x, 2)))")
+
+
+# ------------------------------------------- reiniciar: só o que foi acumulado
+
+def test_reiniciar_apaga_o_acumulado_e_nao_o_escrito():
+    """"Reiniciar o kernel" é a distinção entre duas coisas que parecem uma: o
+    que você ESCREVEU e o que o motor GUARDOU por ter executado. Depois dele,
+    eq1 deixa de existir — e é exatamente esse o ponto.
+
+    O escrito não é problema desta rota: fica no navegador, e continua lá.
+    """
+    from sucuri.interface import Aplicacao
+
+    app = Aplicacao()
+    assert app.executar({"sessao": "k", "fonte": "x^2"})["nome"] == "eq1"
+    assert app.executar({"sessao": "k", "fonte": "x^3"})["nome"] == "eq2"
+
+    assert app.reiniciar({"sessao": "k"}) == {"reiniciado": True}
+    assert app.executar({"sessao": "k", "fonte": "x^4"})["nome"] == "eq1"
+
+
+def test_reiniciar_apaga_tambem_as_declaracoes():
+    from sucuri.interface import Aplicacao
+
+    app = Aplicacao()
+    app.executar({"sessao": "d", "fonte": "u = u(t,x)"})
+    assert app.executar({"sessao": "d", "fonte": "u"})["sympy"] == "u(t, x)"
+
+    app.reiniciar({"sessao": "d"})
+    assert app.executar({"sessao": "d", "fonte": "u"})["sympy"] == "u"
+
+
+def test_as_decisoes_voltam_com_a_celula_e_nao_so_no_refazer():
+    """Decisão de sítio é FONTE, não estado acumulado: depois de reiniciar, a
+    próxima célula precisa dela de volta. Por isso vai em toda chamada."""
+    from sucuri.interface import Aplicacao
+
+    app = Aplicacao()
+    decisao = [{"kind": "prime", "base": "y", "detalhe": {"order": 2},
+                "leitura": "derivative"}]
+    app.reiniciar({"sessao": "a"})
+    d = app.executar({"sessao": "a", "fonte": "y'' + y = 0",
+                      "convencoes": {"independente": "x"},
+                      "anotacoes": decisao})
+    assert d["pendentes"] == 0
+    assert d["sympy"] == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"

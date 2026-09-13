@@ -9,6 +9,19 @@
   margin:0;background:#fff}
 .caderno-convencoes .campos{grid-template-columns:repeat(3,1fr)}
 
+/* --------------------------------------------------------------- a barra */
+.barra{display:flex;align-items:center;gap:8px;padding:10px 22px;background:#fff;
+  border-bottom:1px solid var(--areia-2);flex-wrap:wrap}
+.barra button{flex:none;font-size:13px;padding:6px 13px}
+.barra .separa{flex:1}
+
+input.arquivo{margin-left:auto;background:transparent;border:1px solid transparent;
+  border-radius:6px;padding:3px 8px;width:12em;text-align:right;
+  color:var(--verde);font-family:var(--mono);font-size:13px}
+input.arquivo:hover{border-color:rgba(143,190,69,.3)}
+input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
+  background:rgba(255,255,255,.06)}
+
 .folha-dica{margin:0;padding:14px 22px;background:#fff;font-size:13px;
   color:var(--tinta-2);border-bottom:1px solid var(--areia-2);line-height:1.7}
 .folha-dica code{font-family:var(--mono);font-size:12.5px;background:var(--areia);
