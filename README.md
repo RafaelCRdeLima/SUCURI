@@ -16,8 +16,13 @@ silencioso. Medido no SymPy, com equações reais:
 | `\frac{d^2 y}{dx^2}` | `d²·y / dx²`, símbolos `d` e `dx` |
 | `E^2 - f(m^2 + \ldots)` | `f` **aplicada**, não multiplicando |
 | `y'' = r y` | `y''` como **símbolo**, não derivada |
+| `\dot{x}` | **`Symbol('dot') × x`** — o ponto virou multiplicação |
 
 Nenhum desses levanta exceção. O parser devolve expressão válida e errada.
+
+A última é a mais grave para o domínio: toda a mecânica hamiltoniana se escreve
+com pontos de Newton, e o parser os transforma em produto por um símbolo
+chamado "dot".
 
 A primeira linha é a equação de Riccati do caso 2 de Kovacic. A leitura errada
 dela já custou um teorema falso a um projeto real.
@@ -60,6 +65,26 @@ e isso é um estado próprio no motor:
 A distinção não é cosmética. Uma convenção geral — "linha é derivada" — pode
 acertar nove sítios e errar o décimo, e quem a declarou não olhou cada um. O
 âmbar diz: funciona, mas ninguém conferiu este caso.
+
+## Ambiguidades reconhecidas
+
+| Tipo | Exemplo | Leituras |
+|---|---|---|
+| linha | `y''` | derivada / símbolo |
+| Leibniz | `\frac{d^2y}{dx^2}` | derivada / fração de símbolos |
+| justaposição | `f(x+1)` | aplicação / produto |
+| **Newton** | `\ddot{q}` | derivada temporal / decoração |
+| **parcial** | `\partial_p H` | derivada parcial / produto |
+
+Tempo e variável independente são declarados **em separado**: em mecânica a
+variável da linha raramente é a do ponto, e tratá-las como uma só produziria
+equação errada em silêncio.
+
+```python
+doc = (sucuri.Document(independent_variable='x', time_variable='t')
+       .primes_are_derivatives().dots_are_time_derivatives())
+doc.read(r"\dot{q} = \partial_p H")     # d/dt de um lado, d/dp do outro
+```
 
 ## A árvore reconhecida
 

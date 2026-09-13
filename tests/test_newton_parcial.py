@@ -1,0 +1,116 @@
+"""Ponto de Newton e derivada parcial — a notação da mecânica hamiltoniana.
+
+O ponto é o caso mais grave medido no parser do SymPy: `\\dot{x}` vira o produto
+do símbolo "dot" pelo símbolo x. Como toda a mecânica hamiltoniana se escreve
+com pontos, isso inviabilizaria o domínio inteiro do programa.
+"""
+
+import sympy as sp
+import pytest
+
+import sucuri
+from sucuri import Document, Unresolved, Resolution, find
+
+
+# ------------------------------------------------------------- detecção
+
+def test_localiza_ponto_simples_e_duplo():
+    assert [(a.kind, a.base, a.detail["order"]) for a in find(r"\dot{x}")] \
+        == [("newton", "x", 1)]
+    assert [(a.kind, a.base, a.detail["order"]) for a in find(r"\ddot{q}")] \
+        == [("newton", "q", 2)]
+
+
+def test_localiza_ponto_sobre_grego_e_sem_chaves():
+    assert find(r"\dot{\varphi}")[0].base == "varphi"
+    assert find(r"\dot x")[0].base == "x"
+
+
+def test_localiza_dois_pontos_seguidos():
+    """O SymPy lê isto como dot*q*dot*p."""
+    a = find(r"\dot{q}\dot{p}")
+    assert [x.base for x in a] == ["q", "p"]
+
+
+def test_localiza_parcial_com_indice():
+    a = find(r"\partial_p H")
+    assert len(a) == 1
+    assert a[0].kind == "partial" and a[0].base == "H"
+    assert a[0].detail["wrt"] == "p"
+
+
+# ------------------------------------------------------ a falha do SymPy
+
+def test_o_sympy_transforma_o_ponto_em_produto():
+    """Registra a falha, para que ela não seja esquecida."""
+    from sympy.parsing.latex import parse_latex
+    e = parse_latex(r"\dot{x}")
+    assert sp.Symbol('dot') in e.free_symbols, "o 'dot' virou símbolo"
+    assert not e.atoms(sp.Derivative)
+
+
+# ------------------------------------------------------------- leitura
+
+def test_recusa_ponto_sem_convencao():
+    e = Document().read(r"\ddot{q} + \omega^2 q = 0")
+    assert len(e.pending) == 1
+    with pytest.raises(Unresolved):
+        e.to_sympy()
+
+
+def test_ponto_exige_variavel_temporal():
+    """Pelo mesmo motivo que a linha exige a independente."""
+    with pytest.raises(ValueError):
+        Document().dots_are_time_derivatives()
+
+
+def test_le_o_oscilador_corretamente():
+    doc = Document(time_variable='t').dots_are_time_derivatives()
+    obtido = doc.read(r"\ddot{q} + \omega^2 q = 0").to_sympy()
+
+    t = sp.Symbol('t')
+    q, w = sp.Function('q')(t), sp.Symbol('omega')
+    esperado = sp.Eq(sp.Derivative(q, (t, 2)) + w**2 * q, 0)
+    assert sp.simplify((obtido.lhs - obtido.rhs)
+                       - (esperado.lhs - esperado.rhs)) == 0
+
+
+def test_le_as_equacoes_de_hamilton():
+    """O par que define o domínio do programa."""
+    doc = Document(time_variable='t').dots_are_time_derivatives()
+    t, p, q = sp.symbols('t p q')
+
+    e1 = doc.read(r"\dot{q} = \partial_p H").to_sympy()
+    assert e1.lhs == sp.Derivative(sp.Function('q')(t), t)
+    assert e1.rhs == sp.Derivative(sp.Function('H')(p), p)
+
+    e2 = doc.read(r"\dot{p} = -\partial_q H").to_sympy()
+    assert e2.rhs == -sp.Derivative(sp.Function('H')(q), q)
+
+
+def test_ponto_como_decoracao_quando_declarado():
+    doc = Document().dots_are_time_derivatives(False)
+    e = doc.read(r"\dot{x} + 1").to_sympy()
+    assert e == sp.Symbol('x') + 1
+    assert not e.atoms(sp.Derivative)
+
+
+def test_tempo_e_independente_sao_separados():
+    """d/dt do ponto não se confunde com d/dx da linha.
+
+    Em mecânica a variável independente da linha raramente é o tempo, e tratar
+    as duas como uma só produziria equação errada em silêncio.
+    """
+    doc = (Document(independent_variable='x', time_variable='t')
+           .primes_are_derivatives().dots_are_time_derivatives())
+    e = doc.read(r"\dot{q} + y'").to_sympy()
+    variaveis = {v for d in e.atoms(sp.Derivative) for v, _ in d.variable_count}
+    assert variaveis == {sp.Symbol('t'), sp.Symbol('x')}
+
+
+def test_ponto_aparece_como_inferido_na_arvore():
+    doc = Document(time_variable='t').dots_are_time_derivatives()
+    t = doc.read(r"\ddot{q} + \omega^2 q = 0").tree()
+    marcados = [n for n in t.walk() if n.needs_review]
+    assert len(marcados) == 1
+    assert "derivada de ordem 2 de q em t" == marcados[0].label

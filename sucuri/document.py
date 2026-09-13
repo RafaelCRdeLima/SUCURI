@@ -67,12 +67,17 @@ class Unresolved(Exception):
 class Document:
     """Contexto de trabalho: convenções, símbolos e anotações."""
 
-    def __init__(self, independent_variable=None):
+    def __init__(self, independent_variable=None, time_variable=None):
         self.independent = (sp.Symbol(independent_variable)
                             if independent_variable else None)
+        # O ponto de Newton significa derivada NO TEMPO por convenção, e a
+        # linha em relação à variável independente — que em mecânica raramente
+        # é a mesma. Guardá-las separadas evita confundir d/dt com d/dx.
+        self.time = sp.Symbol(time_variable) if time_variable else None
         self._functions = set()
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
+        self._dots_are_derivatives = None
         self._annotations = {}
 
     # ------------------------------------------------------- declarações
@@ -101,6 +106,22 @@ class Document:
         if wrt is not None:
             self.independent = sp.Symbol(wrt)
         self._primes_are_derivatives = bool(yes)
+        return self
+
+    def dots_are_time_derivatives(self, yes=True, wrt=None):
+        """Convenção para o ponto de Newton.
+
+        Exige a variável temporal pelo mesmo motivo que a linha exige a
+        independente: 'derivada' sem dizer em relação a quê é ambiguidade
+        escondida.
+        """
+        if yes and wrt is None and self.time is None:
+            raise ValueError(
+                "para ler o ponto como derivada é preciso uma variável "
+                "temporal: passe wrt= ou crie o documento com time_variable=")
+        if wrt is not None:
+            self.time = sp.Symbol(wrt)
+        self._dots_are_derivatives = bool(yes)
         return self
 
     def annotate(self, kind, base, reading, **detail):
@@ -135,6 +156,10 @@ class Document:
                 inferida = "application"
             elif amb.base in self._variables:
                 inferida = "product"
+        elif amb.kind == "newton" and self._dots_are_derivatives is not None:
+            inferida = "derivative" if self._dots_are_derivatives else "decoration"
+        elif amb.kind == "partial":
+            inferida = "derivative"     # \partial_x só tem uma leitura razoável
         elif amb.kind == "leibniz" and self._primes_are_derivatives is not False:
             inferida = "derivative"
 
@@ -207,8 +232,8 @@ class Expression:
         # mesma letra viraria dois objetos distintos na mesma equação — erro
         # silencioso do tipo que este programa existe para impedir.
         if derivadas:
-            x = self.document.independent
-            promocao = {sp.Symbol(nome): sp.Function(nome)(x) for nome in derivadas}
+            promocao = {sp.Symbol(nome): sp.Function(nome)(var)
+                        for nome, var in derivadas}
             expr = expr.subs(promocao, simultaneous=True)
         return expr
 
@@ -244,7 +269,7 @@ class Expression:
                 ordem = a.detail["order"]
                 nome, simbolo = marcador()
                 if leitura == "derivative":
-                    derivadas.add(a.base)
+                    derivadas.add((a.base, x))
                     alvo = sp.Derivative(sp.Function(a.base)(x), (x, ordem))
                     reposicoes[simbolo] = alvo
                     origens[alvo] = resolucao
@@ -254,11 +279,36 @@ class Expression:
                     origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
+            elif a.kind == "newton":
+                nome, simbolo = marcador()
+                ordem = a.detail["order"]
+                if leitura == "derivative":
+                    derivadas.add((a.base, self.document.time))
+                    alvo = sp.Derivative(sp.Function(a.base)(self.document.time),
+                                         (self.document.time, ordem))
+                else:
+                    alvo = sp.Symbol(a.base)
+                reposicoes[simbolo] = alvo
+                origens[alvo] = resolucao
+                texto = texto[:ini] + nome + texto[fim:]
+
+            elif a.kind == "partial":
+                nome, simbolo = marcador()
+                v = sp.Symbol(a.detail["wrt"])
+                if leitura == "derivative":
+                    derivadas.add((a.base, v))
+                    alvo = sp.Derivative(sp.Function(a.base)(v), v)
+                else:
+                    alvo = sp.Symbol(a.base) * sp.Symbol("d_" + a.detail["wrt"])
+                reposicoes[simbolo] = alvo
+                origens[alvo] = resolucao
+                texto = texto[:ini] + nome + texto[fim:]
+
             elif a.kind == "leibniz":
                 nome, simbolo = marcador()
                 if leitura == "derivative":
-                    derivadas.add(a.base)
                     v = sp.Symbol(a.detail["wrt"])
+                    derivadas.add((a.base, v))
                     alvo = sp.Derivative(sp.Function(a.base)(v),
                                          (v, a.detail["order"]))
                 else:

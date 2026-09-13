@@ -7,6 +7,11 @@ sozinho. As três que aparecem sempre em física:
   y''            derivada segunda, ou símbolo chamado "y-duas-linhas"?
   f(x+1)         f aplicada ao argumento, ou f multiplicando o parêntese?
   d^2 y / dx^2   derivada de Leibniz, ou fração de símbolos d, y, dx?
+  \\dot{x}        derivada temporal de Newton, ou decoração sobre x?
+  \\partial_x f   derivada parcial, ou produto de f por um símbolo?
+
+O ponto de Newton é o caso mais grave medido: o SymPy lê \\dot{x} como o produto
+do símbolo "dot" pelo símbolo x. Toda a mecânica hamiltoniana se escreve assim.
 
 Um parser adivinha, e erra em silêncio. O Sucuri localiza, e recusa-se a
 prosseguir sem anotação.
@@ -75,6 +80,10 @@ _RE_LEIBNIZ = re.compile(
     r"\\frac\s*\{\s*d(?:\^\{?(\d+)\}?)?\s*(" + _SIMBOLO + r")\s*\}"
     r"\s*\{\s*d\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
 _RE_JUSTAPOSICAO = re.compile(rf"({_SIMBOLO})\s*(?:\\left)?\(")
+_RE_NEWTON = re.compile(r"\\(d+)ot\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))")
+_RE_PARCIAL = re.compile(
+    r"\\partial\s*_\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))"
+    r"\s*(" + _SIMBOLO + r")")
 
 # Nomes que nunca são símbolo do usuário: comandos de estrutura do LaTeX.
 _COMANDOS = {
@@ -104,6 +113,28 @@ def find(latex):
                      "fração literal dos símbolos d, "
                      f"{_limpo(funcao)} e d{_limpo(variavel)}")],
             order=ordem, wrt=_limpo(variavel)))
+
+    for m in _RE_NEWTON.finditer(latex):
+        ordem = len(m.group(1))
+        base = _limpo(m.group(2) or m.group(3))
+        if base in _COMANDOS:
+            continue
+        achados.append(Ambiguity(
+            "newton", m.group(0), m.span(), base,
+            [Reading("derivative",
+                     f"derivada temporal de ordem {ordem} de {base}"),
+             Reading("decoration",
+                     f"apenas um acento sobre {base}; o símbolo é {base}")],
+            order=ordem))
+
+    for m in _RE_PARCIAL.finditer(latex):
+        variavel, variavel2, alvo = m.groups()
+        v, a = _limpo(variavel or variavel2), _limpo(alvo)
+        achados.append(Ambiguity(
+            "partial", m.group(0), m.span(), a,
+            [Reading("derivative", f"derivada parcial de {a} em relação a {v}"),
+             Reading("product", f"produto de {a} por um símbolo chamado d_{v}")],
+            wrt=v))
 
     cobertos = {i for a in achados for i in range(*a.span)}
 
