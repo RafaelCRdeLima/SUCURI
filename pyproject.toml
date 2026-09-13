@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cadmus"
+version = "0.1.0"
+description = "Converting Annotated Differential Mathematics Using SymPy"
+requires-python = ">=3.10"
+dependencies = ["sympy==1.12", "antlr4-python3-runtime==4.11"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["cadmus"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
