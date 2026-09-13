@@ -1,0 +1,278 @@
+{{Short description|Rules for computing derivatives of functions}}
+{{Calculus |Differential}}
+This article is a summary of '''differentiation rules''', that is, rules for computing the [[derivative]] of a [[function (mathematics)|function]] in [[calculus]].
+
+==Elementary rules of differentiation==
+Unless otherwise stated, all functions are functions of [[real number]]s (<math display="inline">\mathbb{R}</math>) that return real values, although, more generally, the formulas below apply wherever they are [[well defined]],<ref>''Calculus (5th edition)'', F. Ayres, E. Mendelson, Schaum's Outline Series, 2009, {{ISBN|978-0-07-150861-2}}.</ref><ref>''Advanced Calculus (3rd edition)'', R. Wrede, M.R. Spiegel, Schaum's Outline Series, 2010, {{ISBN|978-0-07-162366-7}}.</ref> including the case of [[complex number]]s (<math display="inline">\mathbb{C}</math>).<ref>''Complex Variables'', M.R. Spiegel, S. Lipschutz, J.J. Schiller, D. Spellman, Schaum's Outlines Series, McGraw Hill (USA), 2009, {{ISBN|978-0-07-161569-3}}</ref>
+
+===Constant term rule===
+For any value of <math display="inline">c</math>, where <math display="inline">c \in \mathbb{R}</math>, if <math display="inline">f(x)</math> is the constant function given by <math display="inline">f(x) = c</math>, then <math display="inline">\frac{df}{dx} = 0</math>.<ref>{{cite web |title=Differentiation Rules |url=https://courseware.cemc.uwaterloo.ca/11/assignments/47/6 |website=University of Waterloo – CEMC Open Courseware |access-date=3 May 2022}}</ref>
+
+====Proof====
+Let <math display="inline">c \in \mathbb{R}</math> and <math display="inline">f(x) = c</math>. By the definition of the derivative:
+<math display="block">\begin{align}
+f'(x) &= \lim_{h \to 0}\frac{f(x + h) - f(x)}{h} \\
+&= \lim_{h \to 0} \frac{(c) - (c)}{h} \\
+&= \lim_{h \to 0} \frac{0}{h} \\
+&= \lim_{h \to 0} 0 \\
+&= 0.
+\end{align}</math>
+
+This computation shows that the derivative of any constant function is 0. 
+
+====Intuitive (geometric) explanation====
+The [[derivative]] of the function at a point is the slope of the line [[tangent]] to the curve at the point. The [[slope]] of the constant function is 0, because the [[Tangent|tangent line]] to the constant function is horizontal and its angle is 0.
+
+In other words, the value of the constant function, <math display="inline">y</math>, will not change as the value of <math display="inline">x</math> increases or decreases.
+
+[[File:Tangent function animation.gif|right|frame|At each point, the [[derivative]] is the slope of a [[Line (geometry)|line]] that is [[tangent]] to the [[curve]] at that point. Note: the derivative at point A is [[positive number|positive]] where green and dash–dot, [[negative number|negative]] where red and dashed, and [[0]] where black and solid.]]
+
+===Linearity of differentiation===
+{{Main|Linearity of differentiation}}
+For any functions <math display="inline">f</math> and <math display="inline">g</math> and any real numbers <math display="inline">a</math> and <math display="inline">b</math>, the derivative of the function <math display="inline">h(x) = af(x) + bg(x)</math> with respect to <math display="inline">x</math> is <math display="inline">h'(x) = a f'(x) + b g'(x)</math>.
+
+In [[Leibniz's notation]], this formula is written as:
+<math display="block"> \frac{d(af+bg)}{dx}  = a\frac{df}{dx} +b\frac{dg}{dx}.</math>
+
+Special cases include:
+* The constant factor rule:
+<math display="block">(af)' = af', </math>
+* The sum rule:
+<math display="block">(f + g)' = f' + g',</math>
+* The difference rule:
+<math display="block">(f - g)' = f' - g'.</math>
+
+===Product rule===
+{{Main|Product rule}}
+For the functions <math display="inline">f</math> and <math display="inline">g</math>, the derivative of the function <math display="inline">h(x) = f(x) g(x)</math> with respect to <math display="inline">x</math> is:
+<math display="block"> h'(x) = (fg)'(x) = f'(x) g(x) + f(x) g'(x).</math>
+
+In Leibniz's notation, this formula is written:
+<math display="block">\frac{d(fg)}{dx} = g \frac{df}{dx} + f \frac{dg}{dx}.</math>
+
+===Chain rule===
+{{Main|Chain rule}}
+The derivative of the function <math display="inline">h(x) = f(g(x))</math> is:
+<math display="block"> h'(x) = f'(g(x))\cdot g'(x).</math>
+
+In Leibniz's notation, this formula is written as:
+<math display="block">\frac{d}{dx}h(x) = \left.\frac{d}{dz}f(z)\right|_{z=g(x)}\cdot \frac{d}{dx}g(x),</math>
+often abridged to:
+<math display="block">\frac{dh(x)}{dx} = \frac{df(g(x))}{dg(x)} \cdot \frac{dg(x)}{dx}.</math>
+
+Focusing on the notion of maps, and the differential being a map <math display="inline">\text{D}</math>, this formula is written in a more concise way as:
+<math display="block"> [\text{D} (f\circ g)]_x = [\text{D} f]_{g(x)} \cdot [\text{D}g]_x.</math>
+
+===Inverse function rule===
+{{Main|Inverse function rule}}
+If the function <math display="inline">f</math> has an [[inverse function]] <math display="inline">g</math>, meaning that <math display="inline">g(f(x)) = x</math> and <math display="inline">f(g(y)) = y</math>, then:
+<math display="block">g' = \frac{1}{f'\circ g}.</math>
+
+In Leibniz notation, this formula is written as:
+<math display="block"> \frac{dx}{dy} = \frac{1}{\frac{dy}{dx}}.</math>
+
+==Power laws, polynomials, quotients, and reciprocals==
+===Polynomial or elementary power rule===
+{{Main|Power rule}}
+If <math display="inline">f(x) = x^r</math>, for any real number <math display="inline">r \neq 0</math>, then:
+<math display="block">f'(x) = rx^{r-1}.</math>
+
+When <math display="inline">r = 1</math>, this formula becomes the special case that, if <math display="inline">f(x) = x</math>, then <math display="inline">f'(x) = 1</math>.
+
+Combining the power rule with the sum and constant multiple rules permits the computation of the derivative of any polynomial.
+
+===Reciprocal rule===
+{{Main|Reciprocal rule}}
+The derivative of <math display="inline">h(x)=\frac{1}{f(x)}</math> for any (nonvanishing) function <math display="inline">f</math> is:
+<math display="block"> h'(x) = -\frac{f'(x)}{(f(x))^2},</math>
+wherever <math display="inline">f</math> is nonzero.
+
+In Leibniz's notation, this formula is written:
+<math display="block"> \frac{d\left(\frac{1}{f}\right)}{dx} = -\frac{1}{f^2}\frac{df}{dx}.</math>
+
+The reciprocal rule can be derived either from the quotient rule or from the combination of power rule and chain rule.
+
+===Quotient rule===
+{{Main|Quotient rule}}
+If <math display="inline">f</math> and <math display="inline">g</math> are functions, then:
+<math display="block">\left(\frac{f}{g}\right)' = \frac{f'g - g'f}{g^2},</math>
+wherever <math display="inline">g</math> is nonzero.
+
+This can be derived from the product rule and the reciprocal rule.
+
+===Generalized power rule===
+{{Main|Power rule}}
+The elementary power rule generalizes considerably. The most general power rule is the '''functional power rule''': for any functions <math display="inline">f</math> and <math display="inline">g</math>,
+<math display="block">(f^g)' = \left(e^{g\ln f}\right)' = f^g\left(f'{g \over f} + g'\ln f\right),\quad</math>
+wherever both sides are well defined.
+
+Special cases:
+* If <math display="inline">f(x)=x^a</math>, then <math display="inline">f'(x)=ax^{a-1}</math> when <math display="inline">a</math> is any nonzero real number and <math display="inline">x</math> is positive.
+* The reciprocal rule may be derived as the special case where <math display="inline">g(x)=-1\!</math>.
+
+==Derivatives of exponential and logarithmic functions==
+<math display="block"> \frac{d}{dx}\left(c^{ax}\right) = {ac^{ax} \ln c } ,\qquad c > 0.</math>
+The equation above is true for all <math>c</math>, but the derivative for <math>c<0</math> yields a complex number.
+
+<math display="block"> \frac{d}{dx}\left(e^{ax}\right) = ae^{ax}.</math>
+
+<math display="block"> \frac{d}{dx}\left( \log_c x\right) = {1 \over x \ln c} , \qquad c > 1.</math>
+The equation above is also true for all <math display="inline">c</math> but yields a complex number if <math display="inline">c<0</math>.
+
+<math display="block"> \frac{d}{dx}\left( \ln x\right)  = {1 \over x} ,\qquad x > 0.</math>
+
+<math display="block"> \frac{d}{dx}\left( \ln |x|\right) = {1 \over x} ,\qquad x \neq 0.</math>
+
+<math display="block"> \frac{d}{dx}\left( W(x)\right) = {1 \over {x+e^{W(x)}}} ,\qquad x > -{1 \over e},</math>
+where <math display="inline">W(x)</math> is the [[Lambert W function]].
+
+<math display="block"> \frac{d}{dx}\left( x^x \right) = x^x(1+\ln x).</math>
+
+<math display="block"> \frac{d}{dx}\left( f_{1}(x)^{f_{2}(x)^{\left ( ... \right )^{f_{n}(x)}}} \right ) = \left [\sum\limits_{k=1}^{n} \frac{\partial }{\partial x_{k}} \left( f_{1}(x_1)^{f_{2}(x_2)^{\left ( ... \right )^{f_{n}(x_n)}}} \right ) \right ] \biggr\vert_{x_1 = x_2 = ... =x_n = x},\qquad \text{ if } f_{i<n}(x) > 0 \text{ and }\frac{df_{i}}{dx} \text{ exists.}</math>
+
+===Logarithmic derivatives===
+The [[logarithmic derivative]] is another way of stating the rule for differentiating the [[logarithm]] of a function (using the chain rule):
+<math display="block"> (\ln f)'= \frac{f'}{f},</math>
+wherever <math display="inline">f</math> is positive.
+
+[[Logarithmic differentiation]] is a technique which uses logarithms and its differentiation rules to simplify certain expressions before actually applying the derivative.{{citation needed|date=October 2021}}
+
+Logarithms can be used to remove exponents, convert products into sums, and convert division into subtraction—each of which may lead to a simplified expression for taking derivatives.
+
+==Derivatives of trigonometric functions==
+{{Main|Differentiation of trigonometric functions}}
+{| style="width:100%; background:transparent; margin-left:2em;"
+|width=50%|<math> \frac{d}{dx} \sin x = \cos x </math>
+|width=50%|<math> \frac{d}{dx} \arcsin x = \frac{1}{\sqrt{1 - x^2}} </math>
+|-
+|<math> \frac{d}{dx} \cos x = -\sin x</math>
+|<math> \frac{d}{dx} \arccos x = -\frac{1}{\sqrt{1 - x^2}} </math>
+|-
+|<math> \frac{d}{dx} \tan x = \sec^2 x = \frac{1}{\cos^2 x} = 1 + \tan^2 x </math>
+|<math> \frac{d}{dx} \arctan x = \frac{1}{1 + x^2} </math>
+|-
+|<math> \frac{d}{dx} \csc x = -\csc{x}\cot{x} </math>
+|<math> \frac{d}{dx} \operatorname{arccsc} x = -\frac{1}{|x|\sqrt{x^2 - 1}} </math>
+|-
+|<math> \frac{d}{dx} \sec x = \sec{x}\tan{x} </math>
+|<math> \frac{d}{dx} \operatorname{arcsec} x = \frac{1}{|x|\sqrt{x^2 - 1}} </math>
+|-
+|<math> \frac{d}{dx} \cot x = -\csc^2 x = -\frac{1}{\sin^2 x} = -1 - \cot^2 x</math>
+|<math> \frac{d}{dx} \operatorname{arccot} x = -{1 \over 1 + x^2} </math>
+|}
+The derivatives in the table above are for when the range of the inverse secant is <math display="inline">[0,\pi]</math> and when the range of the inverse cosecant is <math display="inline">\left[-\frac{\pi}{2},\frac{\pi}{2}\right]</math>.
+
+It is common to additionally define an [[Atan2|inverse tangent function with two arguments]], <math display="inline">\arctan(y,x)</math>. Its value lies in the range <math display="inline">[-\pi,\pi]</math> and reflects the quadrant of the point <math display="inline">(x,y)</math>. For the first and fourth quadrant (i.e., <math>x > 0</math>), one has <math display="inline">\arctan(y, x>0) = \arctan(\frac{y}{x})</math>. Its partial derivatives are:
+<math display="block"> \frac{\partial \arctan(y,x)}{\partial y} = \frac{x}{x^2 + y^2} \qquad\text{and}\qquad \frac{\partial \arctan(y,x)}{\partial x} = \frac{-y}{x^2 + y^2}.</math>
+
+==Derivatives of hyperbolic functions==
+{{Main|Hyperbolic functions#Derivatives}}
+{| style="width:100%; background:transparent; margin-left:2em;"
+|width=50%|<math>\frac{d}{dx} \sinh x = \cosh x</math>
+| width="50%" |<math>\frac{d}{dx} \operatorname{arsinh}x = \frac{1}{\sqrt{1 + x^2}}</math>
+|-
+|<math>\frac{d}{dx} \cosh x = \sinh x</math>
+|<math>\frac{d}{dx} \operatorname{arcosh} x = {\frac {1}{\sqrt{x^2-1}}}</math>
+|-
+|<math>\frac{d}{dx} \tanh x = {\operatorname{sech}^2 x} = 1 - \tanh^2 x</math>
+|<math>\frac{d}{dx} \operatorname{artanh} x = \frac{1}{1 - x^2}</math>
+|-
+|<math>\frac{d}{dx} \operatorname{csch} x = -\operatorname{csch}{x}\coth{x}</math>
+|<math>\frac{d}{dx} \operatorname{arcsch} x = -\frac{1}{|x|\sqrt{1 + x^2}}</math>
+|-
+|<math>\frac{d}{dx} \operatorname{sech} x = -\operatorname{sech}{x}\tanh{x}</math>
+|<math>\frac{d}{dx} \operatorname{arsech} x = -\frac{1}{x\sqrt{1 - x^2}}</math>
+|-
+|<math>\frac{d}{dx} \coth x = -\operatorname{csch}^2 x = 1 - \coth^2 x</math>
+|<math>\frac{d}{dx} \operatorname{arcoth} x = \frac{1}{1-x^2}</math>
+|}
+
+==Derivatives of special functions==
+===Gamma function===
+{{Main|Gamma function}}
+<math display="block">\Gamma(x) = \int_0^\infty t^{x-1} e^{-t}\, dt</math>
+<math display="block">\begin{align}
+\Gamma'(x) & = \int_0^\infty t^{x-1} e^{-t} \ln t\,dt \\
+& = \Gamma(x) \left(\sum_{n=1}^\infty \left(\ln\left(1 + \dfrac{1}{n}\right) - \dfrac{1}{x + n}\right) - \dfrac{1}{x}\right) \\
+& = \Gamma(x) \psi(x),
+\end{align}</math>
+with <math display="inline">\psi(x)</math> being the [[digamma function]], expressed by the parenthesized expression to the right of <math display="inline">\Gamma(x)</math> in the line above.
+
+===Riemann zeta function===
+{{Main|Riemann zeta function}}
+<math display="block">\zeta(x) = \sum_{n=1}^\infty \frac{1}{n^x}</math>
+<math display="block">\begin{align}
+\zeta'(x) & = -\sum_{n=1}^\infty \frac{\ln n}{n^x}
+=-\frac{\ln 2}{2^x} - \frac{\ln 3}{3^x} - \frac{\ln 4}{4^x} - \cdots \\
+& = -\sum_{p \text{ prime}} \frac{p^{-x} \ln p}{(1-p^{-x})^2} \prod_{q \text{ prime}, q \neq p} \frac{1}{1-q^{-x}}
+\end{align}</math>
+
+==Derivatives of integrals==
+{{Main|Differentiation under the integral sign}}
+Suppose that it is required to differentiate with respect to <math display="inline">x</math> the function:
+<math display="block">F(x)=\int_{a(x)}^{b(x)}f(x,t)\,dt,</math>
+
+where the functions <math display="inline">f(x,t)</math> and <math display="inline">\frac{\partial}{\partial x}\,f(x,t)</math> are both continuous in both <math display="inline">t</math> and <math display="inline">x</math> in some region of the <math display="inline">(t,x)</math> plane, including <math display="inline">a(x)\leq t\leq b(x)</math>, where <math display="inline">x_0\leq x\leq x_1</math>, and the functions <math display="inline">a(x)</math> and <math display="inline">b(x)</math> are both continuous and both have continuous derivatives for <math display="inline">x_0\leq x\leq x_1</math>. Then, for <math display="inline">\,x_0\leq x\leq x_1</math>:
+<math display="block"> F'(x) = f(x,b(x))\,b'(x) - f(x,a(x))\,a'(x) + \int_{a(x)}^{b(x)} \frac{\partial}{\partial x}\, f(x,t)\; dt\,. </math>
+
+This formula is the general form of the [[Leibniz integral rule]] and can be derived using the [[fundamental theorem of calculus]].
+
+==Derivatives to ''n''th order==
+Some rules exist for computing the <math display="inline">n</math>th derivative of functions, where <math display="inline">n</math> is a positive integer, including:
+
+===Faà di Bruno's formula===
+{{Main|Faà di Bruno's formula}}
+If <math display="inline">f</math> and <math display="inline">g</math> are <math display="inline">n</math>-times differentiable, then:
+<math display="block">  \frac{d^n}{d x^n} [f(g(x))]= n! \sum_{\{k_m\}} f^{(r)}(g(x)) \prod_{m=1}^n \frac{1}{k_m!} \left(g^{(m)}(x) \right)^{k_m},</math>
+where <math display="inline"> r = \sum_{m=1}^{n-1} k_m</math> and the set <math display="inline"> \{k_m\}</math> consists of all non-negative integer solutions of the [[Diophantine equation]] <math display="inline"> \sum_{m=1}^{n} m k_m = n</math>.
+
+===General Leibniz rule===
+{{Main|General Leibniz rule}}
+If <math display="inline">f</math> and <math display="inline">g</math> are <math display="inline">n</math>-times differentiable, then:
+<math display="block"> \frac{d^n}{dx^n}[f(x)g(x)] = \sum_{k=0}^{n} \binom{n}{k} \frac{d^{n-k}}{d x^{n-k}} f(x) \frac{d^k}{d x^k} g(x).</math>
+
+==See also==
+* {{annotated link|Differentiable function}}
+* {{annotated link|Differential of a function}}
+* {{annotated link|Differentiation of integrals}}
+* {{annotated link|Differentiation under the integral sign}}
+* {{annotated link|Hyperbolic functions}}
+* {{annotated link|Inverse hyperbolic functions}}
+* {{annotated link|Inverse trigonometric functions}}
+* {{annotated link|Lists of integrals}}
+* {{annotated link|List of mathematical functions}}
+* {{annotated link|Matrix calculus}}
+* {{annotated link|Trigonometric functions}}
+* {{annotated link|Vector calculus identities}}
+
+==References==
+{{reflist}}
+
+==Sources and further reading==
+These rules are given in many books, both on elementary and advanced calculus, in pure and applied mathematics. Those in this article (in addition to the above references) can be found in:
+*''Mathematical Handbook of Formulas and Tables (3rd edition)'', S. Lipschutz, M.R. Spiegel, J. Liu, Schaum's Outline Series, 2009, {{ISBN|978-0-07-154855-7}}.
+*''The Cambridge Handbook of Physics Formulas'', G. Woan, Cambridge University Press, 2010, {{ISBN|978-0-521-57507-2}}.
+*''Mathematical methods for physics and engineering'', K.F. Riley, M.P. Hobson, S.J. Bence, Cambridge University Press, 2010, {{ISBN|978-0-521-86153-3}}
+*''NIST Handbook of Mathematical Functions'', F. W. J. Olver, D. W. Lozier, R. F. Boisvert, C. W. Clark, Cambridge University Press, 2010, {{ISBN|978-0-521-19225-5}}.
+
+==External links==
+{{Library resources box 
+|by=no 
+|onlinebooks=no 
+|others=no 
+|about=yes 
+|label=Differentiation rules}}
+* [http://www.planetcalc.com/675/ Derivative calculator with formula simplification]
+* [https://semanticdirectory.com.ua/math?lang=en&#TableOfDerivatives The table of derivatives with animated proves]
+
+{{Calculus topics}}
+{{Analysis-footer}}
+
+[[Category:Articles containing proofs]]
+[[Category:Differentiation rules| ]]
+[[Category:Differential calculus|*]]
+[[Category:Mathematics-related lists|Derivatives]]
+[[Category:Mathematical tables|Derivatives]]
+[[Category:Mathematical identities]]
+[[Category:Theorems in mathematical analysis]]
+[[Category:Theorems in calculus]]

@@ -1,0 +1,335 @@
+{
+  "fonte": "https://en.wikipedia.org/w/api.php?action=parse&page=Differentiation_rules&prop=wikitext&format=json",
+  "entradas": [
+    {
+      "origem": "\\frac{df}{dx} = 0",
+      "esquerda": "\\frac{df}{dx}",
+      "direita": "0"
+    },
+    {
+      "origem": "h'(x) = a f'(x) + b g'(x)",
+      "esquerda": "h'(x)",
+      "direita": "a f'(x) + b g'(x)"
+    },
+    {
+      "origem": "\\frac{d(af+bg)}{dx}  = a\\frac{df}{dx} +b\\frac{dg}{dx}.",
+      "esquerda": "\\frac{d(af+bg)}{dx}",
+      "direita": "a\\frac{df}{dx} +b\\frac{dg}{dx}"
+    },
+    {
+      "origem": "(af)' = af',",
+      "esquerda": "(af)'",
+      "direita": "af'"
+    },
+    {
+      "origem": "(f + g)' = f' + g',",
+      "esquerda": "(f + g)'",
+      "direita": "f' + g'"
+    },
+    {
+      "origem": "(f - g)' = f' - g'.",
+      "esquerda": "(f - g)'",
+      "direita": "f' - g'"
+    },
+    {
+      "origem": "h'(x) = (fg)'(x) = f'(x) g(x) + f(x) g'(x).",
+      "esquerda": "h'(x)",
+      "direita": "(fg)'(x)"
+    },
+    {
+      "origem": "h'(x) = (fg)'(x) = f'(x) g(x) + f(x) g'(x).",
+      "esquerda": "h'(x)",
+      "direita": "f'(x) g(x) + f(x) g'(x)"
+    },
+    {
+      "origem": "\\frac{d(fg)}{dx} = g \\frac{df}{dx} + f \\frac{dg}{dx}.",
+      "esquerda": "\\frac{d(fg)}{dx}",
+      "direita": "g \\frac{df}{dx} + f \\frac{dg}{dx}"
+    },
+    {
+      "origem": "h'(x) = f'(g(x))\\cdot g'(x).",
+      "esquerda": "h'(x)",
+      "direita": "f'(g(x))\\cdot g'(x)"
+    },
+    {
+      "origem": "\\frac{d}{dx}h(x) = \\left.\\frac{d}{dz}f(z)\\right|_{z=g(x)}\\cdot \\frac{d}{dx}g(x),",
+      "esquerda": "\\frac{d}{dx}h(x)",
+      "direita": "\\left.\\frac{d}{dz}f(z)\\right|_{z=g(x)}\\cdot \\frac{d}{dx}g(x)"
+    },
+    {
+      "origem": "\\frac{dh(x)}{dx} = \\frac{df(g(x))}{dg(x)} \\cdot \\frac{dg(x)}{dx}.",
+      "esquerda": "\\frac{dh(x)}{dx}",
+      "direita": "\\frac{df(g(x))}{dg(x)} \\cdot \\frac{dg(x)}{dx}"
+    },
+    {
+      "origem": "g' = \\frac{1}{f'\\circ g}.",
+      "esquerda": "g'",
+      "direita": "\\frac{1}{f'\\circ g}"
+    },
+    {
+      "origem": "\\frac{dx}{dy} = \\frac{1}{\\frac{dy}{dx}}.",
+      "esquerda": "\\frac{dx}{dy}",
+      "direita": "\\frac{1}{\\frac{dy}{dx}}"
+    },
+    {
+      "origem": "f'(x) = rx^{r-1}.",
+      "esquerda": "f'(x)",
+      "direita": "rx^{r-1}"
+    },
+    {
+      "origem": "f'(x) = 1",
+      "esquerda": "f'(x)",
+      "direita": "1"
+    },
+    {
+      "origem": "h'(x) = -\\frac{f'(x)}{(f(x))^2},",
+      "esquerda": "h'(x)",
+      "direita": "-\\frac{f'(x)}{(f(x))^2}"
+    },
+    {
+      "origem": "\\frac{d\\left(\\frac{1}{f}\\right)}{dx} = -\\frac{1}{f^2}\\frac{df}{dx}.",
+      "esquerda": "\\frac{d\\left(\\frac{1}{f}\\right)}{dx}",
+      "direita": "-\\frac{1}{f^2}\\frac{df}{dx}"
+    },
+    {
+      "origem": "\\left(\\frac{f}{g}\\right)' = \\frac{f'g - g'f}{g^2},",
+      "esquerda": "\\left(\\frac{f}{g}\\right)'",
+      "direita": "\\frac{f'g - g'f}{g^2}"
+    },
+    {
+      "origem": "(f^g)' = \\left(e^{g\\ln f}\\right)' = f^g\\left(f'{g \\over f} + g'\\ln f\\right),\\quad",
+      "esquerda": "(f^g)'",
+      "direita": "\\left(e^{g\\ln f}\\right)'"
+    },
+    {
+      "origem": "(f^g)' = \\left(e^{g\\ln f}\\right)' = f^g\\left(f'{g \\over f} + g'\\ln f\\right),\\quad",
+      "esquerda": "(f^g)'",
+      "direita": "f^g\\left(f'{g \\over f} + g'\\ln f\\right),\\quad"
+    },
+    {
+      "origem": "f'(x)=ax^{a-1}",
+      "esquerda": "f'(x)",
+      "direita": "ax^{a-1}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left(c^{ax}\\right) = {ac^{ax} \\ln c } ,\\qquad c > 0.",
+      "esquerda": "\\frac{d}{dx}\\left(c^{ax}\\right)",
+      "direita": "{ac^{ax} \\ln c }"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left(e^{ax}\\right) = ae^{ax}.",
+      "esquerda": "\\frac{d}{dx}\\left(e^{ax}\\right)",
+      "direita": "ae^{ax}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( \\log_c x\\right) = {1 \\over x \\ln c} , \\qquad c > 1.",
+      "esquerda": "\\frac{d}{dx}\\left( \\log_c x\\right)",
+      "direita": "{1 \\over x \\ln c}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( \\ln x\\right)  = {1 \\over x} ,\\qquad x > 0.",
+      "esquerda": "\\frac{d}{dx}\\left( \\ln x\\right)",
+      "direita": "{1 \\over x}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( \\ln |x|\\right) = {1 \\over x} ,\\qquad x \\neq 0.",
+      "esquerda": "\\frac{d}{dx}\\left( \\ln |x|\\right)",
+      "direita": "{1 \\over x}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( W(x)\\right) = {1 \\over {x+e^{W(x)}}} ,\\qquad x > -{1 \\over e},",
+      "esquerda": "\\frac{d}{dx}\\left( W(x)\\right)",
+      "direita": "{1 \\over {x+e^{W(x)}}}"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( x^x \\right) = x^x(1+\\ln x).",
+      "esquerda": "\\frac{d}{dx}\\left( x^x \\right)",
+      "direita": "x^x(1+\\ln x)"
+    },
+    {
+      "origem": "\\frac{d}{dx}\\left( f_{1}(x)^{f_{2}(x)^{\\left ( ... \\right )^{f_{n}(x)}}} \\right ) = \\left [\\sum\\limits_{k=1}^{n} \\frac{\\partial }{\\partial x_{k}} \\left( f_{1}(x_1)^{f_{2}(x_2)^{\\left ( ... \\right )^{f_{n}(x_n)}}} \\right ) \\right ] \\biggr\\vert_{x_1 = x_2 = ... =x_n = x},\\qquad \\text{ if } f_{i<n}(x) > 0 \\text{ and }\\frac{df_{i}}{dx} \\text{ exists.}",
+      "esquerda": "\\frac{d}{dx}\\left( f_{1}(x)^{f_{2}(x)^{\\left ( ... \\right )^{f_{n}(x)}}} \\right )",
+      "direita": "\\left [\\sum\\limits_{k=1}^{n} \\frac{\\partial }{\\partial x_{k}} \\left( f_{1}(x_1)^{f_{2}(x_2)^{\\left ( ... \\right )^{f_{n}(x_n)}}} \\right ) \\right ] \\biggr\\vert_{x_1 = x_2 = ... =x_n = x}"
+    },
+    {
+      "origem": "(\\ln f)'= \\frac{f'}{f},",
+      "esquerda": "(\\ln f)'",
+      "direita": "\\frac{f'}{f}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\sin x = \\cos x",
+      "esquerda": "\\frac{d}{dx} \\sin x",
+      "direita": "\\cos x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\arcsin x = \\frac{1}{\\sqrt{1 - x^2}}",
+      "esquerda": "\\frac{d}{dx} \\arcsin x",
+      "direita": "\\frac{1}{\\sqrt{1 - x^2}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\cos x = -\\sin x",
+      "esquerda": "\\frac{d}{dx} \\cos x",
+      "direita": "-\\sin x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\arccos x = -\\frac{1}{\\sqrt{1 - x^2}}",
+      "esquerda": "\\frac{d}{dx} \\arccos x",
+      "direita": "-\\frac{1}{\\sqrt{1 - x^2}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\tan x = \\sec^2 x = \\frac{1}{\\cos^2 x} = 1 + \\tan^2 x",
+      "esquerda": "\\frac{d}{dx} \\tan x",
+      "direita": "\\sec^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\tan x = \\sec^2 x = \\frac{1}{\\cos^2 x} = 1 + \\tan^2 x",
+      "esquerda": "\\frac{d}{dx} \\tan x",
+      "direita": "\\frac{1}{\\cos^2 x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\tan x = \\sec^2 x = \\frac{1}{\\cos^2 x} = 1 + \\tan^2 x",
+      "esquerda": "\\frac{d}{dx} \\tan x",
+      "direita": "1 + \\tan^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\arctan x = \\frac{1}{1 + x^2}",
+      "esquerda": "\\frac{d}{dx} \\arctan x",
+      "direita": "\\frac{1}{1 + x^2}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\csc x = -\\csc{x}\\cot{x}",
+      "esquerda": "\\frac{d}{dx} \\csc x",
+      "direita": "-\\csc{x}\\cot{x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arccsc} x = -\\frac{1}{|x|\\sqrt{x^2 - 1}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arccsc} x",
+      "direita": "-\\frac{1}{|x|\\sqrt{x^2 - 1}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\sec x = \\sec{x}\\tan{x}",
+      "esquerda": "\\frac{d}{dx} \\sec x",
+      "direita": "\\sec{x}\\tan{x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arcsec} x = \\frac{1}{|x|\\sqrt{x^2 - 1}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arcsec} x",
+      "direita": "\\frac{1}{|x|\\sqrt{x^2 - 1}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\cot x = -\\csc^2 x = -\\frac{1}{\\sin^2 x} = -1 - \\cot^2 x",
+      "esquerda": "\\frac{d}{dx} \\cot x",
+      "direita": "-\\csc^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\cot x = -\\csc^2 x = -\\frac{1}{\\sin^2 x} = -1 - \\cot^2 x",
+      "esquerda": "\\frac{d}{dx} \\cot x",
+      "direita": "-\\frac{1}{\\sin^2 x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\cot x = -\\csc^2 x = -\\frac{1}{\\sin^2 x} = -1 - \\cot^2 x",
+      "esquerda": "\\frac{d}{dx} \\cot x",
+      "direita": "-1 - \\cot^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arccot} x = -{1 \\over 1 + x^2}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arccot} x",
+      "direita": "-{1 \\over 1 + x^2}"
+    },
+    {
+      "origem": "\\frac{\\partial \\arctan(y,x)}{\\partial y} = \\frac{x}{x^2 + y^2} \\qquad\\text{and}\\qquad \\frac{\\partial \\arctan(y,x)}{\\partial x} = \\frac{-y}{x^2 + y^2}.",
+      "esquerda": "\\frac{\\partial \\arctan(y,x)}{\\partial y}",
+      "direita": "\\frac{x}{x^2 + y^2}"
+    },
+    {
+      "origem": "\\frac{\\partial \\arctan(y,x)}{\\partial y} = \\frac{x}{x^2 + y^2} \\qquad\\text{and}\\qquad \\frac{\\partial \\arctan(y,x)}{\\partial x} = \\frac{-y}{x^2 + y^2}.",
+      "esquerda": "\\frac{\\partial \\arctan(y,x)}{\\partial y}",
+      "direita": "\\frac{-y}{x^2 + y^2}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\sinh x = \\cosh x",
+      "esquerda": "\\frac{d}{dx} \\sinh x",
+      "direita": "\\cosh x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arsinh}x = \\frac{1}{\\sqrt{1 + x^2}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arsinh}x",
+      "direita": "\\frac{1}{\\sqrt{1 + x^2}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\cosh x = \\sinh x",
+      "esquerda": "\\frac{d}{dx} \\cosh x",
+      "direita": "\\sinh x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arcosh} x = {\\frac {1}{\\sqrt{x^2-1}}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arcosh} x",
+      "direita": "{\\frac {1}{\\sqrt{x^2-1}}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\tanh x = {\\operatorname{sech}^2 x} = 1 - \\tanh^2 x",
+      "esquerda": "\\frac{d}{dx} \\tanh x",
+      "direita": "{\\operatorname{sech}^2 x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\tanh x = {\\operatorname{sech}^2 x} = 1 - \\tanh^2 x",
+      "esquerda": "\\frac{d}{dx} \\tanh x",
+      "direita": "1 - \\tanh^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{artanh} x = \\frac{1}{1 - x^2}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{artanh} x",
+      "direita": "\\frac{1}{1 - x^2}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{csch} x = -\\operatorname{csch}{x}\\coth{x}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{csch} x",
+      "direita": "-\\operatorname{csch}{x}\\coth{x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arcsch} x = -\\frac{1}{|x|\\sqrt{1 + x^2}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arcsch} x",
+      "direita": "-\\frac{1}{|x|\\sqrt{1 + x^2}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{sech} x = -\\operatorname{sech}{x}\\tanh{x}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{sech} x",
+      "direita": "-\\operatorname{sech}{x}\\tanh{x}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arsech} x = -\\frac{1}{x\\sqrt{1 - x^2}}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arsech} x",
+      "direita": "-\\frac{1}{x\\sqrt{1 - x^2}}"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\coth x = -\\operatorname{csch}^2 x = 1 - \\coth^2 x",
+      "esquerda": "\\frac{d}{dx} \\coth x",
+      "direita": "-\\operatorname{csch}^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\coth x = -\\operatorname{csch}^2 x = 1 - \\coth^2 x",
+      "esquerda": "\\frac{d}{dx} \\coth x",
+      "direita": "1 - \\coth^2 x"
+    },
+    {
+      "origem": "\\frac{d}{dx} \\operatorname{arcoth} x = \\frac{1}{1-x^2}",
+      "esquerda": "\\frac{d}{dx} \\operatorname{arcoth} x",
+      "direita": "\\frac{1}{1-x^2}"
+    },
+    {
+      "origem": "F'(x) = f(x,b(x))\\,b'(x) - f(x,a(x))\\,a'(x) + \\int_{a(x)}^{b(x)} \\frac{\\partial}{\\partial x}\\, f(x,t)\\; dt\\,.",
+      "esquerda": "F'(x)",
+      "direita": "f(x,b(x))\\,b'(x) - f(x,a(x))\\,a'(x) + \\int_{a(x)}^{b(x)} \\frac{\\partial}{\\partial x}\\, f(x,t)\\; dt\\,"
+    },
+    {
+      "origem": "\\frac{d^n}{d x^n} [f(g(x))]= n! \\sum_{\\{k_m\\}} f^{(r)}(g(x)) \\prod_{m=1}^n \\frac{1}{k_m!} \\left(g^{(m)}(x) \\right)^{k_m},",
+      "esquerda": "\\frac{d^n}{d x^n} [f(g(x))]",
+      "direita": "n! \\sum_{\\{k_m\\}} f^{(r)}(g(x)) \\prod_{m=1}^n \\frac{1}{k_m!} \\left(g^{(m)}(x) \\right)^{k_m}"
+    },
+    {
+      "origem": "\\frac{d^n}{dx^n}[f(x)g(x)] = \\sum_{k=0}^{n} \\binom{n}{k} \\frac{d^{n-k}}{d x^{n-k}} f(x) \\frac{d^k}{d x^k} g(x).",
+      "esquerda": "\\frac{d^n}{dx^n}[f(x)g(x)]",
+      "direita": "\\sum_{k=0}^{n} \\binom{n}{k} \\frac{d^{n-k}}{d x^{n-k}} f(x) \\frac{d^k}{d x^k} g(x)"
+    }
+  ]
+}

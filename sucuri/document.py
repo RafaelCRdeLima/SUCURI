@@ -11,9 +11,11 @@ Sucuri entrega uma pergunta.
 
 from __future__ import annotations
 
+import re
+
 import sympy as sp
 
-from .ambiguity import find
+from .ambiguity import contido, find
 
 
 class Resolution:
@@ -62,6 +64,44 @@ class Unresolved(Exception):
         super().__init__(
             f"{len(self.pending)} sítio(s) ambíguo(s) sem anotação:\n{corpo}\n"
             "Anote com .annotate(...) ou declare a convenção no documento.")
+
+
+# Macros que VIRAM símbolo legitimamente: o alfabeto grego e um punhado de
+# letras especiais. Fora desta lista, macro que reaparece como símbolo do mesmo
+# nome foi degradada pelo parser — \coth virou o símbolo "coth" multiplicando x.
+_MACROS_SIMBOLO = frozenset("""
+    alpha beta gamma delta epsilon varepsilon zeta eta theta vartheta iota
+    kappa lambda mu nu xi omicron pi varpi rho varrho sigma varsigma tau
+    upsilon phi varphi chi psi omega
+    Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega
+    ell hbar imath jmath aleph
+""".split())
+
+_RE_MACRO = re.compile(r"\\([a-zA-Z]+)")
+_RE_MARCADOR = re.compile(r"^Z_\{\d+\}$")
+
+
+class NotacaoNaoReconhecida(Exception):
+    """O parser degradou uma notação em vez de recusá-la.
+
+    O parser de LaTeX do SymPy não avisa quando não entende: \\coth x vira o
+    símbolo "coth" multiplicado por x, {1 \\over x} vira 1*(over*x), e
+    \\operatorname{arccsc} x vira o produto das letras do nome. A conta segue,
+    o resultado é lixo, e nada na saída diz isso.
+
+    Esta é a recusa correspondente: o Sucuri confere se alguma macro reapareceu
+    como símbolo do mesmo nome e, se reapareceu, para.
+    """
+
+    def __init__(self, nomes, motivo=None):
+        self.nomes = list(nomes)
+        self.motivo = motivo
+        lista = ", ".join("\\" + n for n in self.nomes)
+        super().__init__(
+            motivo or
+            f"notação não reconhecida pelo parser, degradada a símbolo: {lista}. "
+            f"Reescreva em notação que o SymPy entenda, ou trate o nome como "
+            f"símbolo declarando-o.")
 
 
 class Document:
@@ -235,7 +275,33 @@ class Expression:
             promocao = {sp.Symbol(nome): sp.Function(nome)(var)
                         for nome, var in derivadas}
             expr = expr.subs(promocao, simultaneous=True)
+
+        self._conferir(texto, expr)
         return expr
+
+    def _conferir(self, texto, expr):
+        """A saída é feita só de coisas que alguém leu de propósito?
+
+        Duas perguntas. A primeira é sobre o Sucuri: sobrou marcador interno na
+        saída? Se sobrou, é defeito daqui, e defeito silencioso — foi assim que
+        f'(x) saía como Z_{0}(x). A segunda é sobre o parser: alguma macro
+        reapareceu como símbolo do mesmo nome, isto é, foi degradada?
+        """
+        nomes = {s.name for s in expr.free_symbols}
+        nomes |= {f.func.__name__
+                  for f in expr.atoms(sp.core.function.AppliedUndef)}
+
+        vazados = sorted(n for n in nomes if _RE_MARCADOR.match(n))
+        if vazados:
+            raise NotacaoNaoReconhecida(
+                vazados,
+                f"marcador interno do Sucuri vazou para a saída ({', '.join(vazados)}); "
+                f"isto é defeito do Sucuri, não da entrada")
+
+        degradadas = sorted((set(_RE_MACRO.findall(texto)) - _MACROS_SIMBOLO)
+                            & nomes)
+        if degradadas:
+            raise NotacaoNaoReconhecida(degradadas)
 
     def _normalize(self):
         """Reescreve a entrada em forma sem ambiguidade, guardando as trocas."""
@@ -261,6 +327,10 @@ class Expression:
 
         # De trás para frente: preserva os deslocamentos dos sítios anteriores.
         for a in sorted(self.ambiguities, key=lambda a: -a.span[0]):
+            # Sítio dentro de outro sítio não se substitui aqui: o texto dele já
+            # foi engolido, e quem o resolve é a leitura recursiva do fragmento.
+            if contido(a, self.ambiguities):
+                continue
             resolucao = doc.resolution(a)
             leitura = resolucao.reading
             ini, fim = a.span
@@ -268,15 +338,9 @@ class Expression:
             if a.kind == "prime":
                 ordem = a.detail["order"]
                 nome, simbolo = marcador()
-                if leitura == "derivative":
-                    derivadas.add((a.base, x))
-                    alvo = sp.Derivative(sp.Function(a.base)(x), (x, ordem))
-                    reposicoes[simbolo] = alvo
-                    origens[alvo] = resolucao
-                else:
-                    alvo = sp.Symbol(a.base + "'" * ordem)
-                    reposicoes[simbolo] = alvo
-                    origens[alvo] = resolucao
+                alvo = self._linha(a, leitura, ordem, x, derivadas)
+                reposicoes[simbolo] = alvo
+                origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
             elif a.kind == "newton":
@@ -324,6 +388,55 @@ class Expression:
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
         return texto, reposicoes, derivadas, origens
+
+    def _linha(self, a, leitura, ordem, x, derivadas):
+        """O objeto que a linha denota, nas quatro formas em que ela aparece.
+
+            f'      derivada de f
+            f'(x)   a mesma derivada, dita onde é avaliada
+            f'(u)   derivada de f avaliada em u — que NÃO é d/dx f(u)
+            (f+g)'  derivada do grupo inteiro
+
+        A terceira é a que obriga ao Subs: derivar f e depois avaliar em u não
+        é o mesmo que derivar f(u) em x, e escrever as duas como a mesma coisa
+        seria o erro silencioso de sempre.
+        """
+        arg = a.detail.get("arg")
+        grupo = a.detail.get("group")
+
+        if grupo:
+            interior = self._fragmento(a.base)
+            if leitura != "derivative":
+                return interior
+            alvo = sp.Derivative(interior, (x, ordem))
+            return sp.Subs(alvo, x, self._fragmento(arg)) if arg else alvo
+
+        if leitura != "derivative":
+            simbolo = sp.Symbol(a.base + "'" * ordem)
+            if arg is None:
+                return simbolo
+            return sp.Function(a.base + "'" * ordem)(self._fragmento(arg))
+
+        if arg is None:
+            derivadas.add((a.base, x))
+            return sp.Derivative(sp.Function(a.base)(x), (x, ordem))
+
+        onde = self._fragmento(arg)
+        if onde == x:
+            derivadas.add((a.base, x))
+            return sp.Derivative(sp.Function(a.base)(x), (x, ordem))
+        muda = sp.Dummy(a.base + "_arg")
+        return sp.Subs(sp.Derivative(sp.Function(a.base)(muda), (muda, ordem)),
+                       muda, onde)
+
+    def _fragmento(self, latex):
+        """Lê um pedaço da entrada com as mesmas convenções do documento.
+
+        Usado onde um sítio engole texto: o argumento de f'(x), o interior de
+        (f+g)'. O pedaço é estritamente menor que a entrada, logo a recursão
+        termina.
+        """
+        return Expression(latex, self.document).to_sympy()
 
     def tree(self):
         """A árvore reconhecida, com a proveniência de cada nó.

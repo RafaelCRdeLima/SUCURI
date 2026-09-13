@@ -66,6 +66,18 @@ A distinção não é cosmética. Uma convenção geral — "linha é derivada" 
 acertar nove sítios e errar o décimo, e quem a declarou não olhou cada um. O
 âmbar diz: funciona, mas ninguém conferiu este caso.
 
+## A tabela de derivadas
+
+`exemplos/tabela-de-derivadas/` põe o leitor contra uma tabela real, baixada da
+Wikipédia — notação escrita por outra gente, para outro fim. Das 66 alegações,
+o Sucuri hoje lê e verifica 23, recusa 6 com pergunta, recusa 22 por notação
+que o parser não conhece e lê errado 2.
+
+A tabela encontrou três erros silenciosos, dois deles do Sucuri: o marcador
+interno vazava em `f'(x)`, a linha sobre grupo `(f+g)'` levava metade da
+equação embora, e macro desconhecida virava símbolo do mesmo nome sem aviso.
+Ver `exemplos/tabela-de-derivadas/AUDITORIA.md`.
+
 ## Ambiguidades reconhecidas
 
 | Tipo | Exemplo | Leituras |

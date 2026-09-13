@@ -5,6 +5,8 @@ SIGNIFICA, e por isso há construções que um parser não tem como resolver
 sozinho. As três que aparecem sempre em física:
 
   y''            derivada segunda, ou símbolo chamado "y-duas-linhas"?
+  f'(x)          derivada de f, avaliada em x — a linha engole o argumento
+  (f+g)'         a linha recai sobre o grupo inteiro, não sobre a última letra
   f(x+1)         f aplicada ao argumento, ou f multiplicando o parêntese?
   d^2 y / dx^2   derivada de Leibniz, ou fração de símbolos d, y, dx?
   \\dot{x}        derivada temporal de Newton, ou decoração sobre x?
@@ -75,7 +77,10 @@ class Ambiguity:
 
 _SIMBOLO = r"(?:\\[a-zA-Z]+|[a-zA-Z])"
 
-_RE_PRIME = re.compile(rf"({_SIMBOLO})((?:'|\\prime\s*)+)")
+# A linha se escreve de quatro jeitos: f', f^\prime, f^{\prime}, f\prime.
+_LINHAS = r"(?:'|\^\s*\{?\s*\\prime\s*\}?\s*|\\prime\s*)"
+_RE_PRIME = re.compile(rf"({_SIMBOLO})((?:{_LINHAS})+)")
+_RE_LINHA_GRUPO = re.compile(rf"\)((?:{_LINHAS})+)")
 _RE_LEIBNIZ = re.compile(
     r"\\frac\s*\{\s*d(?:\^\{?(\d+)\}?)?\s*(" + _SIMBOLO + r")\s*\}"
     r"\s*\{\s*d\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
@@ -95,6 +100,59 @@ _COMANDOS = {
 
 def _limpo(simbolo):
     return simbolo[1:] if simbolo.startswith("\\") else simbolo
+
+
+def _fecha(latex, i):
+    """Índice logo após o ')' que fecha o '(' em `i`, ou None."""
+    fundo = 0
+    while i < len(latex):
+        if latex[i] == "(":
+            fundo += 1
+        elif latex[i] == ")":
+            fundo -= 1
+            if fundo == 0:
+                return i + 1
+        i += 1
+    return None
+
+
+def _abre(latex, j):
+    """Índice do '(' que casa com o ')' em `j`, ou None."""
+    fundo = 0
+    while j >= 0:
+        if latex[j] == ")":
+            fundo += 1
+        elif latex[j] == "(":
+            fundo -= 1
+            if fundo == 0:
+                return j
+        j -= 1
+    return None
+
+
+def _sem_right(texto):
+    texto = texto.strip()
+    return texto[:-6].strip() if texto.endswith("\\right") else texto
+
+
+_RE_ARG = re.compile(r"\s*(?:\\left)?\(")
+
+
+def _argumento(latex, pos):
+    """O argumento que começa em `pos`, se houver: ('x', índice_final).
+
+    É o que distingue f' de f'(x). O segundo diz em que ponto a derivada é
+    avaliada, e ignorar isso foi o defeito que a tabela de derivadas revelou:
+    o marcador interno colava no parêntese e vazava para a saída.
+    """
+    m = _RE_ARG.match(latex, pos)
+    if not m:
+        return None
+    abre = latex.index("(", m.start())
+    fim = _fecha(latex, abre)
+    if fim is None:
+        return None
+    return _sem_right(latex[abre + 1:fim - 1]), fim
 
 
 def find(latex):
@@ -138,20 +196,55 @@ def find(latex):
 
     cobertos = {i for a in achados for i in range(*a.span)}
 
+    # Linha sobre um grupo: (f+g)', \left(f/g\right)'. A linha não é da última
+    # letra — é do parêntese inteiro. Sem isto o parser do SymPy engole a linha
+    # E o resto da equação, em silêncio: parse_latex("(f+g)' = a") devolve f+g.
+    for m in _RE_LINHA_GRUPO.finditer(latex):
+        j = m.start()
+        i = _abre(latex, j)
+        if i is None:
+            continue
+        interno = _sem_right(latex[i + 1:j])
+        ini = i - 5 if latex[max(0, i - 5):i] == "\\left" else i
+        ordem = m.group(1).count("'") + m.group(1).count("\\prime")
+        fim = m.end()
+        detalhe = {"order": ordem, "group": True}
+        arg = _argumento(latex, fim)
+        if arg:
+            detalhe["arg"], fim = arg
+        onde = f" avaliada em {detalhe['arg']}" if "arg" in detalhe else ""
+        achados.append(Ambiguity(
+            "prime", latex[ini:fim], (ini, fim), interno,
+            [Reading("derivative",
+                     f"derivada de ordem {ordem} de ({interno}){onde}"),
+             Reading("symbol",
+                     f"as linhas são decoração; o grupo é ({interno})")],
+            **detalhe))
+
+    grupos = {i for a in achados if a.detail.get("group")
+              for i in range(*a.span)}
+
     for m in _RE_PRIME.finditer(latex):
-        if m.start() in cobertos:
+        if m.start() in cobertos or m.start() in grupos:
             continue
         base, linhas = m.groups()
         if _limpo(base) in _COMANDOS:
             continue
         ordem = linhas.count("'") + linhas.count("\\prime")
+        detalhe = {"order": ordem}
+        fim = m.end()
+        arg = _argumento(latex, fim)
+        if arg:
+            detalhe["arg"], fim = arg
+        onde = f", avaliada em {detalhe['arg']}" if "arg" in detalhe else ""
+        aplicada = f"({detalhe['arg']})" if "arg" in detalhe else ""
         achados.append(Ambiguity(
-            "prime", m.group(0), m.span(), _limpo(base),
+            "prime", latex[m.start():fim], (m.start(), fim), _limpo(base),
             [Reading("derivative",
-                     f"derivada de ordem {ordem} de {_limpo(base)}"),
+                     f"derivada de ordem {ordem} de {_limpo(base)}{onde}"),
              Reading("symbol",
-                     f"símbolo chamado {_limpo(base)}{chr(39) * ordem}")],
-            order=ordem))
+                     f"símbolo chamado {_limpo(base)}{chr(39) * ordem}{aplicada}")],
+            **detalhe))
 
     for m in _RE_JUSTAPOSICAO.finditer(latex):
         base = _limpo(m.group(1))
@@ -164,3 +257,19 @@ def find(latex):
 
     achados.sort(key=lambda a: a.span[0])
     return achados
+
+
+def contido(sitio, outros):
+    """O sítio está inteiramente dentro de outro?
+
+    Acontece com f'(g(x)): o 'g(' é sítio de justaposição, mas mora dentro do
+    argumento que a linha engoliu. O texto dele não se substitui aqui — quem o
+    resolve é a leitura recursiva do fragmento.
+    """
+    ini, fim = sitio.span
+    for o in outros:
+        if o is sitio:
+            continue
+        if o.span[0] <= ini and fim <= o.span[1] and o.span != sitio.span:
+            return True
+    return False
