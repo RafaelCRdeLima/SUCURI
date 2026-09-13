@@ -269,6 +269,89 @@ def classificar(expression):
                   provenance=Provenance.INAPPLICABLE)
 
 
+# ------------------------------------------------- separação de variáveis
+
+def separar(expression):
+    """Reduz uma EDP a equações ordinárias sob o ansatz u = T(t)·X(x).
+
+    É o caminho clássico para a equação da onda, e o SymPy o percorre —
+    `pde_separate_mul` faz a separação, `dsolve` resolve cada pedaço. O
+    `pdsolve`, que falha, é só um dos caminhos dele.
+
+    O que NÃO se pode dizer é que isso resolve a equação. Separar supõe que a
+    solução é um produto, e essa suposição é uma restrição: o que sai são os
+    MODOS, e a solução geral é a superposição deles — que a separação não prova
+    ser completa. Por isso o resultado vai como dado, e não como conclusão.
+    """
+    from sympy.solvers.pde import pde_separate_mul
+
+    equacao, funcao, _ = edo(expression)
+    if not parcial(funcao):
+        raise ValueError("separar é para equação a derivadas parciais; "
+                         f"{funcao} depende de uma variável só")
+
+    variaveis = list(funcao.args)
+    fatores = [sp.Function(str(v).upper())(v) for v in variaveis]
+    partes = no_prazo(pde_separate_mul, PRAZO_CONFERIR,
+                      equacao, funcao, fatores)
+    if not partes:
+        return Result("não separou", None,
+                      rows=[("equação", sp.sstr(equacao)),
+                            ("ansatz", " · ".join(sp.sstr(f) for f in fatores))],
+                      provenance=Provenance.INAPPLICABLE,
+                      blocked_by=["o produto não separa esta equação; separar "
+                                  "não é um método geral"])
+
+    k = sp.Symbol("k")
+    linhas = [("ansatz", sp.sstr(funcao) + " = "
+               + " · ".join(sp.sstr(f) for f in fatores)),
+              ("constante", "k")]
+    for fator, parte in zip(fatores, partes):
+        linhas.append((f"equação em {fator.args[0]}", sp.sstr(sp.Eq(parte, k))))
+        try:
+            ordinaria = sp.Eq(sp.together(parte * fator.func(fator.args[0])),
+                              k * fator.func(fator.args[0]))
+            linhas.append((f"solução em {fator.args[0]}",
+                           sp.sstr(no_prazo(sp.dsolve, PRAZO_CONFERIR,
+                                            ordinaria, fator))))
+        except Exception as e:                                  # noqa: BLE001
+            linhas.append((f"solução em {fator.args[0]}", f"não saiu: {e}"))
+
+    return Result("separação de variáveis", partes, rows=linhas,
+                  provenance=Provenance.INAPPLICABLE,
+                  blocked_by=["isto não resolve a equação: separar SUPÕE que a "
+                              "solução é um produto. O que sai são os modos, e "
+                              "a solução geral é a superposição deles — que a "
+                              "separação não prova ser completa"])
+
+
+def conferir(expression, candidata):
+    """A candidata satisfaz a equação? Substitui e diz.
+
+    O verbo que faltava: o SymPy não resolve a equação da onda, mas CONFERE a
+    solução de d'Alembert, e conferir é meia matemática — a que separa uma
+    resposta de um palpite.
+    """
+    equacao, funcao, _ = edo(expression)
+    solucao = candidata.to_sympy()
+    if not isinstance(solucao, sp.Equality):
+        raise ValueError("a candidata precisa ser uma igualdade, "
+                         "como u = F(x - c t) + G(x + c t)")
+
+    ok, nota = _confere(equacao, solucao, parcial(funcao))
+    linhas = [("equação", sp.sstr(equacao)),
+              ("candidata", sp.sstr(solucao)),
+              ("conferência", nota)]
+    if ok:
+        return Result("candidata verificada", solucao,
+                      latex=sp.latex(solucao), rows=linhas,
+                      provenance=Provenance.ESTABLISHED)
+    return Result("candidata NÃO verificada", solucao,
+                  latex=sp.latex(solucao), rows=linhas,
+                  provenance=Provenance.UNSOURCED,
+                  blocked_by=["a substituição não devolveu zero"])
+
+
 MODULE = register(Module(
     name="resolver",
     description="resolve a equação diferencial e diz que tipo de resposta é",
@@ -279,4 +362,10 @@ MODULE = register(Module(
         Operation("padrões",
                   "os métodos que o SymPy tentaria, antes de tentar",
                   classificar),
+        Operation("separar",
+                  "reduz uma EDP a ordinárias sob o ansatz de produto",
+                  separar),
+        Operation("conferir",
+                  "a candidata satisfaz a equação? substitui e diz",
+                  conferir, accepts="duas expressões"),
     ]))

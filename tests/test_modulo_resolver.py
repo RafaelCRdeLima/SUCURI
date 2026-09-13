@@ -165,7 +165,7 @@ def test_padroes_mostram_a_maquina_por_dentro():
 
 def test_o_modulo_carrega_pelo_nome():
     m = modules.load("resolver")
-    assert set(m.operations) == {"resolver", "padrões"}
+    assert set(m.operations) == {"resolver", "padrões", "separar", "conferir"}
     assert "resolver" in modules.CONHECIDOS
 
 
@@ -224,3 +224,58 @@ def test_o_codigo_exportado_de_uma_edp_usa_pdsolve():
     escopo = {}
     exec(codigo, escopo)                                # noqa: S102
     assert escopo["solucao"].rhs.has(sp.Function("F"))
+
+
+# ------------------------------------------------- a equação da onda
+
+def onda():
+    d = sucuri.Document()
+    d.function("u(t,x)", "F(z)", "G(z)")
+    d.variable("c")
+    return d
+
+
+def test_o_pdsolve_nao_resolve_a_onda_mas_o_sympy_separa():
+    """"O SymPy não resolve a equação da onda" é meia verdade: o pdsolve não
+    resolve, e ele é só um dos caminhos. pde_separate_mul separa, e o dsolve
+    resolve cada pedaço — é a via clássica, e ela está lá."""
+    r = R.separar(onda().read(
+        r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}"))
+    chaves = {k for k, _ in r.rows}
+    assert "equação em t" in chaves and "equação em x" in chaves
+    assert linha(r, "ansatz") == "u(t, x) = T(t) · X(x)"
+
+
+def test_separar_nao_se_apresenta_como_solucao():
+    """Separar SUPÕE que a solução é um produto, e a suposição é uma restrição:
+    o que sai são os modos, e a solução geral é a superposição deles — que a
+    separação não prova ser completa."""
+    r = R.separar(onda().read(
+        r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}"))
+    assert r.provenance == Provenance.INAPPLICABLE
+    assert any("não resolve a equação" in b for b in r.blocked_by)
+
+
+def test_separar_recusa_equacao_ordinaria():
+    with pytest.raises(ValueError, match="uma variável só"):
+        R.separar(doc().read("y'' + y = 0"))
+
+
+def test_dalembert_se_confere():
+    """O SymPy não resolve a onda, mas CONFERE a solução de d'Alembert — e
+    conferir é meia matemática: a que separa uma resposta de um palpite."""
+    d = onda()
+    eq = d.read(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+    candidata = d.read(r"u = F(x - c t) + G(x + c t)")
+    r = R.conferir(eq, candidata)
+    assert r.provenance == Provenance.ESTABLISHED
+    assert "resto 0" in linha(r, "conferência")
+
+
+def test_candidata_errada_nao_se_apresenta():
+    d = onda()
+    eq = d.read(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+    errada = d.read(r"u = F(x - c t) + x^2 t")
+    r = R.conferir(eq, errada)
+    assert r.provenance == Provenance.UNSOURCED
+    assert r.presentable is False

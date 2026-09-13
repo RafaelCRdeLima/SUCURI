@@ -304,3 +304,20 @@ def test_as_decisoes_voltam_com_a_celula_e_nao_so_no_refazer():
                       "anotacoes": decisao})
     assert d["pendentes"] == 0
     assert d["sympy"] == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
+
+
+def test_o_verbo_de_dois_argumentos():
+    """`conferir(equação, candidata)` — o primeiro verbo que compara duas
+    coisas, e por isso a gramática ganhou a vírgula."""
+    c = Caderno()
+    for f in ["u = u(t,x)", "c = símbolo", "F = F(z)", "G = G(z)"]:
+        c.executar(f)
+    c.executar(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+    c.executar(r"u = F(x - c t) + G(x + c t)")
+
+    d = c.executar("conferir(eq1, eq2)").to_dict()
+    assert d["proveniencia"] == "estabelecida"
+    assert d["rotulo"] == "candidata verificada"
+
+    faltando = c.executar("conferir(eq1)").to_dict()
+    assert "duas" in faltando["erro"]

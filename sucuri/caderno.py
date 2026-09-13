@@ -31,7 +31,9 @@ import sympy as sp
 
 from .interface.sessao import Sessao, codigo_python
 
-_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*\)\s*$")
+# Um verbo e um nome; ou um verbo e dois, para os que comparam duas coisas.
+_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*"
+                         r"(?:,\s*([A-Za-z_]\w*)\s*)?\)\s*$")
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -54,7 +56,12 @@ VERBOS = {
     "simplificar": "simplificar", "simplify": "simplificar",
     "exportar": "exportar", "export": "exportar",
     "latex": "latex",
+    "separar": "separar", "separate": "separar",
+    "conferir": "conferir", "check": "conferir", "verificar": "conferir",
 }
+
+# Os que operam sobre DUAS equações: a conta e a candidata.
+DE_DOIS = {"conferir"}
 
 
 class Celula:
@@ -120,9 +127,10 @@ class Caderno:
 
         comando = _RE_COMANDO.match(fonte or "")
         if comando and comando.group(1).lower() in VERBOS:
-            verbo, alvo = comando.group(1).lower(), comando.group(2)
+            verbo = VERBOS[comando.group(1).lower()]
+            alvo, segundo = comando.group(2), comando.group(3)
             return Celula(None, fonte, "comando",
-                          self._comando(VERBOS[verbo], alvo))
+                          self._comando(verbo, alvo, segundo))
         return self._matematica(fonte)
 
     def _especie(self, nome, especie):
@@ -190,11 +198,28 @@ class Caderno:
                 f"'{nome}' tem sítio ambíguo sem decisão; resolva antes de operar")
         return expressao
 
-    def _comando(self, verbo, alvo):
+    def _comando(self, verbo, alvo, segundo=None):
         try:
             expressao = self._objeto(alvo)
+            if verbo in DE_DOIS:
+                if segundo is None:
+                    return {"erro": f"{verbo} precisa de duas: "
+                                    f"{verbo}(equação, candidata)"}
+                candidata = self._objeto(segundo)
         except (KeyError, ValueError) as e:
             return {"erro": str(e)}
+
+        if verbo in ("separar", "conferir"):
+            from .modules import load
+            operacao = load("resolver").operations[verbo]
+            argumentos = ((expressao, candidata) if verbo in DE_DOIS
+                          else (expressao,))
+            try:
+                saida = operacao.run(*argumentos).to_dict()
+            except ValueError as e:
+                return {"erro": str(e), "alvo": alvo}
+            saida["alvo"] = alvo
+            return saida
 
         if verbo == "latex":
             return {"latex_exato": sp.latex(expressao.to_sympy()),

@@ -321,6 +321,26 @@ Só isso decide `'`, `\dot`, `∂`, Leibniz e justaposição para os nomes
 declarados. E o que a notação não diz continua sendo pergunta: `u'` com `u`
 função de duas variáveis não diz em relação a qual, e declarar não inventa.
 
+### A equação da onda, e o que "o SymPy não resolve" quer dizer
+
+```
+u = u(t,x)
+c = símbolo
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+
+resolver(eq1)      →  sem solução encontrada: o pdsolve não resolve
+separar(eq1)       →  T''/T = k  e  c²X''/X = k, com as duas resolvidas
+conferir(eq1, eq2) →  u = F(x−ct) + G(x+ct): resto 0
+```
+
+O `pdsolve` não resolve a onda — e ele é só um dos caminhos do SymPy. O
+`pde_separate_mul` separa, o `dsolve` resolve cada pedaço, e o `checkpdesol`
+confere d'Alembert.
+
+`separar` **não se apresenta como solução**: separar SUPÕE que a solução é um
+produto, e a suposição é uma restrição. O que sai são os modos; a solução geral
+é a superposição deles, e a separação não prova que ela seja completa.
+
 Os verbos são poucos e fechados **de propósito**: `resolver`/`solve`,
 `avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
 Se aqui se pudesse escrever Python, a ponte que este programa é deixaria de ser
