@@ -1,0 +1,205 @@
+"""O caderno: várias equações, nomes que duram, verbos que operam sobre elas.
+
+A página de uma equação só serve para inspecionar notação. Trabalho de verdade
+é escrever uma coisa, olhar, escrever outra que usa a primeira. É o que um
+caderno faz, e é o que falta aqui.
+
+## Por que os verbos são poucos e fechados
+
+A tentação é abrir um console de Python: aí `solve(eq)` seria `sympy.solve(eq)`
+e pronto. Mas nesse instante a ponte que este programa é deixa de ser
+obrigatória — quem escreve Python fala direto com o SymPy, sem sítios, sem
+convenção declarada, sem proveniência. Sobra um Jupyter com passos a mais.
+
+Então os comandos são um punhado, e cada um é uma operação que o motor já faz,
+com as mesmas recusas:
+
+    resolver(eq)      solve(eq)       equação diferencial ou algébrica
+    avaliar(eq)       evaluate(eq)    faz a conta parada
+    simplificar(eq)   simplify(eq)
+    exportar(eq)      export(eq)      o código SymPy que produz e resolve
+    latex(eq)                         a escrita de volta, para copiar
+
+Célula com sítio pendente não vira nada: o caderno recusa como a leitura recusa.
+"""
+
+from __future__ import annotations
+
+import re
+
+import sympy as sp
+
+from .interface.sessao import Sessao, codigo_python
+
+_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*\)\s*$")
+
+VERBOS = {
+    "resolver": "resolver", "solve": "resolver", "dsolve": "resolver",
+    "avaliar": "avaliar", "evaluate": "avaliar", "doit": "avaliar",
+    "simplificar": "simplificar", "simplify": "simplificar",
+    "exportar": "exportar", "export": "exportar",
+    "latex": "latex",
+}
+
+
+class Celula:
+    """Uma entrada do caderno e o que ela produziu."""
+
+    def __init__(self, nome, fonte, tipo, dados):
+        self.nome = nome
+        self.fonte = fonte
+        self.tipo = tipo            # 'math' ou 'comando'
+        self.dados = dados
+
+    def to_dict(self):
+        return {"nome": self.nome, "fonte": self.fonte, "tipo": self.tipo,
+                **self.dados}
+
+
+class Caderno:
+    """As convenções de um documento, e as equações que se acumulam sob elas.
+
+    As convenções são as da `Sessao` — mesmas anotações, mesmas perguntas —,
+    porque um caderno é um documento, não uma coleção de documentos avulsos.
+    """
+
+    def __init__(self):
+        self.sessao = Sessao()
+        self.nomes = {}             # nome -> latex
+        self.contador = 0
+
+    # ------------------------------------------------------------- estado
+
+    def configurar(self, convencoes):
+        self.sessao.configurar(convencoes)
+        return self
+
+    def anotar(self, kind, base, detail, reading):
+        self.sessao.anotar(kind, base, detail, reading)
+        return self
+
+    def _proximo_nome(self):
+        self.contador += 1
+        return f"eq{self.contador}"
+
+    # ------------------------------------------------------------ execução
+
+    def executar(self, fonte):
+        """Uma célula: ou é matemática, ou é um verbo sobre o que já existe."""
+        comando = _RE_COMANDO.match(fonte or "")
+        if comando and comando.group(1).lower() in VERBOS:
+            verbo, alvo = comando.group(1).lower(), comando.group(2)
+            return Celula(None, fonte, "comando",
+                          self._comando(VERBOS[verbo], alvo))
+        return self._matematica(fonte)
+
+    def _matematica(self, latex):
+        leitura = self.sessao.ler(latex)
+        nome = None
+        if leitura["sympy"] is not None:
+            nome = self._proximo_nome()
+            self.nomes[nome] = latex
+        return Celula(nome, latex, "math", leitura)
+
+    def _objeto(self, nome):
+        if nome not in self.nomes:
+            conhecidos = ", ".join(self.nomes) or "nenhum ainda"
+            raise KeyError(f"não conheço '{nome}' (tenho: {conhecidos})")
+        expressao = self.sessao.expressao_de(self.nomes[nome])
+        if expressao.pending:
+            raise ValueError(
+                f"'{nome}' tem sítio ambíguo sem decisão; resolva antes de operar")
+        return expressao
+
+    def _comando(self, verbo, alvo):
+        try:
+            expressao = self._objeto(alvo)
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e)}
+
+        if verbo == "latex":
+            return {"latex_exato": sp.latex(expressao.to_sympy()),
+                    "exato": sp.sstr(expressao.to_sympy()), "alvo": alvo}
+        if verbo == "exportar":
+            return {"codigo": self.exportar(alvo), "alvo": alvo}
+        if verbo == "avaliar":
+            d = Sessao.avaliar(self._sessao_de(alvo))
+            d["alvo"] = alvo
+            return d
+        if verbo == "simplificar":
+            objeto = sp.simplify(expressao.to_sympy())
+            return {"alvo": alvo, "exato": sp.sstr(objeto),
+                    "latex_exato": sp.latex(objeto)}
+        return self._resolver(alvo, expressao)
+
+    def _sessao_de(self, nome):
+        """Uma sessão com as convenções do caderno e o latex da célula."""
+        copia = Sessao()
+        copia.__dict__.update(self.sessao.__dict__)
+        copia.anotacoes = dict(self.sessao.anotacoes)
+        copia.latex = self.nomes[nome]
+        return copia
+
+    def _resolver(self, alvo, expressao):
+        """Resolver é um verbo só; qual conta fazer, o objeto decide.
+
+        Equação diferencial vai para o módulo `resolver`, que confere a solução
+        por substituição; equação algébrica vai para o solve do SymPy. Obrigar
+        o usuário a escolher entre solve e dsolve é pedir que ele classifique a
+        própria equação para o programa — ao contrário.
+        """
+        from .interface.sessao import _e_diferencial
+        from .modules import load
+
+        objeto = expressao.to_sympy()
+        if _e_diferencial(objeto):
+            resultado = load("resolver").operations["resolver"].run(expressao)
+            saida = resultado.to_dict()
+            saida["alvo"] = alvo
+            return saida
+
+        if not isinstance(objeto, sp.Equality):
+            return {"erro": f"'{alvo}' não é uma igualdade: não há o que resolver",
+                    "alvo": alvo}
+
+        incognitas = sorted(objeto.free_symbols, key=str)
+        if not incognitas:
+            return {"erro": f"'{alvo}' não tem incógnita", "alvo": alvo}
+        raizes = sp.solve(objeto, incognitas[0], dict=True)
+        linhas = [(str(incognitas[0]), sp.sstr(r[incognitas[0]]))
+                  for r in raizes if incognitas[0] in r]
+        return {"alvo": alvo, "rotulo": f"raízes em {incognitas[0]}",
+                "linhas": [list(l) for l in linhas],
+                "latex_exato": sp.latex([r[incognitas[0]] for r in raizes
+                                         if incognitas[0] in r]),
+                "proveniencia": "estabelecida", "apresentavel": True}
+
+    # ------------------------------------------------------------ exportar
+
+    def exportar(self, nome):
+        """O script que refaz tudo: declara, monta e resolve.
+
+        É o pedido mais honesto que um programa destes recebe — "me dá o código
+        que você usou" —, e é também a prova de que não há mágica aqui: o que
+        sai roda sozinho, sem o Sucuri.
+        """
+        expressao = self._objeto(nome)
+        objeto = expressao.to_sympy()
+        linhas = [codigo_python(objeto).replace("expr = ", f"{nome} = ", 1)]
+
+        from .interface.sessao import _e_diferencial
+        if _e_diferencial(objeto):
+            funcoes = {a.func for d in objeto.atoms(sp.Derivative)
+                       for a in d.expr.atoms(sp.core.function.AppliedUndef)}
+            f = sorted(funcoes, key=lambda c: c.__name__)[0]
+            var = sorted(objeto.free_symbols, key=str)
+            argumento = f"{f.__name__}({var[0]})" if var else f.__name__
+            linhas += ["", f"solucao = dsolve({nome}, {argumento})",
+                       f"checkodesol({nome}, solucao)   # confere por substituição"]
+        elif isinstance(objeto, sp.Equality):
+            livres = sorted(objeto.free_symbols, key=str)
+            if livres:
+                linhas += ["", f"solucao = solve({nome}, {livres[0]})"]
+        else:
+            linhas += ["", f"valor = simplify({nome}.doit())"]
+        return "\n".join(linhas)

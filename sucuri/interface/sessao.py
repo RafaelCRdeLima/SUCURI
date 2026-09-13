@@ -221,6 +221,11 @@ class Sessao:
         saida["ms"] = round((time.perf_counter() - inicio) * 1000, 1)
         return saida
 
+    def expressao_de(self, latex):
+        """A Expression de um latex qualquer, sob as convenções desta sessão."""
+        doc, _, _ = self.documento()
+        return doc.read(latex)
+
     def expressao(self):
         """A Expression atual, para os módulos operarem sobre ela."""
         doc, _, _ = self.documento()

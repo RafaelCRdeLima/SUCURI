@@ -19,11 +19,22 @@ class Aplicacao:
 
     def __init__(self):
         self.sessoes = {}
+        self.cadernos = {}
         self.trava = threading.Lock()
 
     def sessao(self, ident):
         with self.trava:
             return self.sessoes.setdefault(ident or "local", Sessao())
+
+    def caderno(self, ident, novo=False):
+        with self.trava:
+            chave = ident or "local"
+            if novo or chave not in self.cadernos:
+                # Importado aqui, e não no topo: o caderno usa a Sessao, que
+                # mora sob `interface`, e o ciclo fecharia na carga.
+                from ..caderno import Caderno
+                self.cadernos[chave] = Caderno()
+            return self.cadernos[chave]
 
     # ------------------------------------------------------------- rotas
 
@@ -47,6 +58,33 @@ class Aplicacao:
         if "convencoes" in corpo:
             s.configurar(corpo["convencoes"])
         return s.avaliar(corpo.get("latex"))
+
+    # ------------------------------------------------------------ caderno
+
+    def executar(self, corpo):
+        """Uma célula nova, sob as convenções que já valem."""
+        c = self.caderno(corpo.get("sessao"))
+        if "convencoes" in corpo:
+            c.configurar(corpo["convencoes"])
+        return c.executar(corpo.get("fonte", "")).to_dict()
+
+    def refazer(self, corpo):
+        """Tudo de novo, na ordem.
+
+        Mudar uma convenção muda o SIGNIFICADO do que já está escrito, e
+        deixar células velhas na tela com a leitura antiga seria mostrar duas
+        matemáticas diferentes ao mesmo tempo. Um caderno se refaz.
+        """
+        c = self.caderno(corpo.get("sessao"), novo=True)
+        c.configurar(corpo.get("convencoes") or {})
+        for a in corpo.get("anotacoes") or []:
+            c.anotar(a["kind"], a["base"], a.get("detalhe"), a["leitura"])
+        return {"celulas": [c.executar(f).to_dict()
+                            for f in corpo.get("fontes") or []]}
+
+    def anotar_caderno(self, corpo):
+        """Decidir um sítio vale para o caderno inteiro, e refaz tudo."""
+        return self.refazer(corpo)
 
     def modulos(self, corpo):
         from .. import modules
@@ -91,4 +129,6 @@ class Aplicacao:
         return saida
 
     ROTAS = {"/api/ler": ler, "/api/anotar": anotar, "/api/avaliar": avaliar,
-             "/api/modulos": modulos, "/api/operar": operar}
+             "/api/modulos": modulos, "/api/operar": operar,
+             "/api/caderno/executar": executar,
+             "/api/caderno/refazer": refazer}

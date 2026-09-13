@@ -11,6 +11,11 @@ O que isso quer dizer na prática:
   alguns segundos; depois fica em cache do navegador;
 - o que se publica aqui são ~750 kB: a interface, o KaTeX e o motor.
 
+São duas páginas: `index.html`, uma equação de cada vez, e `caderno.html`, o
+caderno. As duas são geradas de `sucuri/interface/estatico/` por
+`construir.py` — gerar em vez de copiar à mão é o que impede as duas versões
+de divergirem sem ninguém perceber, e há teste que refaz a geração e compara.
+
 ## Publicar no Cloudflare Pages
 
 **Direto, só o executável** — corresponde a publicar o programa, não o

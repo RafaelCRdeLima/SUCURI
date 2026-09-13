@@ -1,0 +1,51 @@
+<!-- Gerado por construir.py NÃO: escrito à mão, e injetado nas páginas.
+     É a única coisa que a versão online tem a mais: o Python leva alguns
+     segundos para chegar, e uma tela em branco durante esse tempo faz
+     qualquer um achar que quebrou. -->
+<style>
+#carregando{position:fixed;inset:0;background:var(--sucuri-mata);color:var(--sucuri-areia);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  z-index:10;font-family:var(--sucuri-fonte-ui);text-align:center;padding:24px}
+#carregando .marca{letter-spacing:.18em;font-size:18px}
+#carregando .passo{font-family:var(--sucuri-fonte-mono);font-size:13px;
+  color:var(--sucuri-verde);min-height:20px}
+#carregando .nota{font-size:13px;color:#7E9481;max-width:34em;line-height:1.7}
+#carregando .barra{width:220px;height:3px;background:#1D3A28;border-radius:2px;overflow:hidden}
+#carregando .barra i{display:block;height:100%;width:0;background:var(--sucuri-verde);
+  transition:width .3s ease}
+#carregando.pronto{display:none}
+</style>
+<div id="carregando">
+  <svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <div class="marca">SUCURI</div>
+  <div class="barra"><i id="barra"></i></div>
+  <div class="passo" id="passo">iniciando…</div>
+  <p class="nota">O motor é o Python e o SymPy de verdade, compilados para o
+    navegador. Da primeira vez leva alguns segundos para chegar; depois fica em
+    cache. Nada do que você escrever sai desta máquina.</p>
+</div>
+<script>
+/* Ganchos do carregamento, definidos antes do transporte subir. */
+function SUCURI_CARREGANDO(d) {
+  document.getElementById('passo').textContent = d.texto + '…';
+  document.getElementById('barra').style.width =
+    Math.round(100 * d.etapa / d.total) + '%';
+}
+function SUCURI_CARREGADO(versoes) {
+  document.getElementById('carregando').classList.add('pronto');
+  var v = (versoes || '').split('|');
+  if (v.length === 2) {
+    document.getElementById('motor').textContent =
+      'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] + '  ·  no navegador';
+  }
+}
+function SUCURI_FALHOU(erro) {
+  document.getElementById('passo').textContent = 'não deu: ' + erro;
+  document.getElementById('barra').style.background = '#C0442F';
+}
+</script>

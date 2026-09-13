@@ -1,0 +1,34 @@
+/* SUCURI — o caderno.
+   Empilha células; cada uma guarda o que você escreveu e o que saiu disso. */
+
+.modo{color:var(--verde);font-size:13px;text-decoration:none;
+  border:1px solid rgba(143,190,69,.35);border-radius:999px;padding:3px 10px}
+.modo:hover{background:rgba(143,190,69,.12)}
+
+.caderno-convencoes{padding:16px 22px;border-bottom:1px solid var(--areia-2);
+  margin:0;background:#fff}
+.caderno-convencoes .campos{grid-template-columns:repeat(3,1fr)}
+
+.folha{display:block;background:#fff;padding:22px;gap:0}
+.celula{border-left:3px solid var(--areia-2);padding:0 0 0 16px;margin-bottom:26px}
+.celula.comando{border-left-color:var(--folha)}
+.celula.erro{border-left-color:var(--argila)}
+.celula-cabeca{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.celula-nome{font-family:var(--mono);font-size:12.5px;color:var(--folha);
+  min-width:3.2em}
+.celula-dica{font-size:12.5px;color:var(--tinta-2);margin-left:auto}
+
+.celula textarea{min-height:0;height:auto;padding:10px 12px}
+.saida{margin-top:12px}
+.saida .livro{padding:16px;border:1px solid var(--areia-2);
+  border-radius:var(--sucuri-raio-card);background:var(--areia);overflow-x:auto}
+.saida .livro .katex{font-size:1.3em}
+.saida pre{margin-top:12px}
+.saida .rodape{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.saida .rodape button{flex:none;font-size:12.5px;padding:6px 12px}
+
+.nova{display:flex;gap:10px;margin-top:8px}
+.nova button{flex:none}
+
+kbd{font-family:var(--mono);font-size:11.5px;border:1px solid var(--areia-2);
+  border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--areia)}

@@ -195,6 +195,38 @@ A interface não decide nada de matemática. Entre ela e o motor passa JSON
 (`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
 decisões que ela transporta são as do usuário: convenção e anotação.
 
+## O caderno
+
+```bash
+python -m sucuri.interface        # e clique em "caderno" no cabeçalho
+```
+
+Uma equação por página serve para inspecionar notação; trabalho é escrever uma
+coisa, olhar, escrever outra que usa a primeira.
+
+```
+        f^{\prime} = x^2          Shift+Enter   →  eq1,  df/dx = x²
+        resolver(eq1)                          →  f(x) = C₁ + x³/3
+                                                  conferência: resto 0
+        exportar(eq1)                          →  o script que roda sem o Sucuri
+```
+
+Os verbos são poucos e fechados **de propósito**: `resolver`/`solve`,
+`avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
+Se aqui se pudesse escrever Python, a ponte que este programa é deixaria de ser
+obrigatória — quem escreve `sympy.solve(...)` fala direto com o SymPy, sem
+sítios, sem convenção declarada, sem proveniência, e sobra um Jupyter com
+passos a mais.
+
+`resolver` é um verbo só, e o objeto decide a conta: equação diferencial vai
+para o módulo que confere a solução por substituição, algébrica vai para o
+`solve`. Obrigar o usuário a escolher entre `solve` e `dsolve` é pedir que ele
+classifique a própria equação para o programa — ao contrário.
+
+As convenções valem para o caderno inteiro, e mudar uma **refaz tudo**: o que
+já estava escrito passa a significar outra coisa, e mostrar as duas leituras ao
+mesmo tempo seria mostrar duas matemáticas.
+
 ## O verbo segue o objeto
 
 Equação diferencial se **resolve**; expressão se **avalia**. São contas

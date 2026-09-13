@@ -46,13 +46,29 @@ def test_a_interface_publicada_e_a_interface_local():
     assert local == publicado
 
 
-def test_a_pagina_so_pede_arquivos_que_existem():
-    html = (WEB / "index.html").read_text(encoding="utf-8")
+@pytest.mark.parametrize("pagina", ["index.html", "caderno.html"])
+def test_a_pagina_so_pede_arquivos_que_existem(pagina):
+    html = (WEB / pagina).read_text(encoding="utf-8")
     pedidos = re.findall(r'(?:src|href)="([^"]+)"', html)
     locais = [p for p in pedidos if not p.startswith(("http:", "https:", "data:"))]
     assert locais
     faltando = [p for p in locais if not (WEB / p).exists()]
-    assert not faltando, f"a página pede o que não está lá: {faltando}"
+    assert not faltando, f"{pagina} pede o que não está lá: {faltando}"
+
+
+def test_as_paginas_publicadas_sao_geradas_das_locais():
+    """Gerar em vez de copiar à mão é o que impede as duas versões de
+    divergirem sem ninguém perceber. Este teste refaz a geração e compara.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("construir", WEB / "construir.py")
+    construir = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(construir)
+
+    antes = {n: (WEB / n).read_text(encoding="utf-8") for n in construir.PAGINAS}
+    construir.paginas()
+    for nome, conteudo in antes.items():
+        assert (WEB / nome).read_text(encoding="utf-8") == conteudo, nome
 
 
 def test_o_motor_so_pede_arquivos_que_existem():

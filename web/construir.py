@@ -27,7 +27,13 @@ ANTLR_URL = ("https://files.pythonhosted.org/packages/py3/a/"
              "antlr4-python3-runtime/" + ANTLR)
 
 # O que a interface local e a online compartilham, byte a byte.
-COMPARTILHADO = ["sucuri.css", "sucuri.js", "tokens.css", "favicon.svg"]
+COMPARTILHADO = ["sucuri.css", "sucuri.js", "caderno.css", "caderno.js",
+                 "tokens.css", "favicon.svg"]
+
+# As páginas: as mesmas da interface local, com a tela de carregamento
+# injetada. Gerar em vez de copiar à mão é o que impede as duas versões de
+# divergirem sem ninguém perceber.
+PAGINAS = ["index.html", "caderno.html"]
 
 
 def motor_zip():
@@ -48,6 +54,25 @@ def motor_zip():
     return destino, arquivos
 
 
+def paginas():
+    """Cada página local vira a página online, com a tela de carregamento."""
+    partes = (AQUI / "_carregando.html").read_text(encoding="utf-8")
+    estilo = partes[partes.index("<style>"):partes.index("</style>") + 8]
+    overlay = partes[partes.index('<div id="carregando">'):
+                     partes.index("</div>", partes.index('<div id="carregando">')) + 6]
+    ganchos = partes[partes.index("<script>"):partes.index("</script>") + 9]
+
+    for nome in PAGINAS:
+        html = (ESTATICO / nome).read_text(encoding="utf-8")
+        html = html.replace("</head>", estilo + "\n</head>", 1)
+        html = html.replace("<body>", "<body>\n\n" + overlay, 1)
+        html = html.replace('<script src="vendor/katex/katex.min.js"></script>',
+                            ganchos + '\n<script src="vendor/katex/katex.min.js"></script>',
+                            1)
+        (AQUI / nome).write_text(html, encoding="utf-8")
+    print(f"páginas geradas: {', '.join(PAGINAS)}")
+
+
 def impressao(caminho):
     return hashlib.sha256(caminho.read_bytes()).hexdigest()[:16]
 
@@ -56,6 +81,8 @@ def main():
     destino, arquivos = motor_zip()
     print(f"{destino.name}: {len(arquivos)} arquivos, "
           f"{destino.stat().st_size // 1024} kB, {impressao(destino)}")
+
+    paginas()
 
     for nome in COMPARTILHADO:
         shutil.copy2(ESTATICO / nome, AQUI / nome)
