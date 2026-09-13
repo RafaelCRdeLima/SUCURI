@@ -78,8 +78,15 @@ class Ambiguity:
 
 _SIMBOLO = r"(?:\\[a-zA-Z]+|[a-zA-Z])"
 
-# A linha se escreve de quatro jeitos: f', f^\prime, f^{\prime}, f\prime.
-_LINHAS = r"(?:'|\^\s*\{?\s*\\prime\s*\}?\s*|\\prime\s*)"
+# A linha se escreve de vários jeitos, e a segunda derivada de mais ainda:
+#     y''      y'' (x)      y^{\prime\prime}      y^\prime\prime      y\prime\prime
+# O grupo em chaves precisa aceitar MAIS DE UMA linha dentro: escrito para uma
+# só, ^{\prime\prime} casava metade e deixava um "}" solto, que fazia o parser
+# do SymPy engolir o resto da equação sem dizer nada.
+_LINHAS = (r"(?:'"
+           r"|\^\s*\{\s*(?:\\prime\s*)+\}\s*"
+           r"|\^\s*\\prime\s*"
+           r"|\\prime\s*)")
 _RE_PRIME = re.compile(rf"({_SIMBOLO})((?:{_LINHAS})+)")
 _RE_LINHA_GRUPO = re.compile(rf"\)((?:{_LINHAS})+)")
 _RE_LEIBNIZ = re.compile(

@@ -87,6 +87,19 @@ def test_regra_do_quociente_com_left_right():
     assert sp.simplify(lido.lhs.doit() - lido.rhs) == 0
 
 
+@pytest.mark.parametrize("forma", [
+    "y''", r"y^{\prime\prime}", r"y^\prime\prime", r"y\prime\prime",
+])
+def test_as_formas_da_segunda_derivada_sao_a_mesma_coisa(forma):
+    """O grupo em chaves precisa aceitar mais de uma linha dentro. Escrito para
+    uma só, y^{\prime\prime} casava metade e deixava um "}" solto — e o parser
+    do SymPy, diante dele, engolia o "+ y = 0" e devolvia só a derivada. A
+    equação perdia metade, calada."""
+    lido = doc().read(forma + " + y = 0").to_sympy()
+    assert lido == sp.Eq(sp.Function("y")(x)
+                         + sp.Derivative(sp.Function("y")(x), (x, 2)), 0)
+
+
 def test_linha_escrita_como_expoente():
     assert (doc().read(r"h^{\prime}(x)").to_sympy()
             == doc().read("h'(x)").to_sympy())
