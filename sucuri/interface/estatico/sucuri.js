@@ -80,6 +80,11 @@ function estados(d) {
   (d.avisos || []).forEach(function (a) {
     caixa.appendChild(pastilha('erro', ICONE_ERRO, a));
   });
+  /* Nota não é erro: a leitura saiu certa, e o que está em desacordo são duas
+   * coisas que o usuário afirmou. Âmbar, e não vermelho. */
+  (d.notas || []).forEach(function (n) {
+    caixa.appendChild(pastilha('aviso', ICONE_AVISO, n));
+  });
   if (d.erro && !d.pendentes) {
     caixa.appendChild(pastilha('neutro', '', d.erro));
   }

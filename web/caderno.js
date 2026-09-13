@@ -171,6 +171,14 @@ function pintar(celula, d) {
     p.textContent = a;
     saida.appendChild(p);
   });
+  /* Nota não é erro: a leitura saiu certa, o que está em desacordo são duas
+   * coisas que o usuário afirmou. Âmbar, e não vermelho. */
+  (d.notas || []).forEach(function (n) {
+    var p = document.createElement('div');
+    p.className = 'nao-apresentavel';
+    p.textContent = n;
+    saida.appendChild(p);
+  });
 
   if (d.tipo === 'declaracao') { pintarDeclaracao(saida, d); }
   else if (d.tipo === 'math') { pintarMath(saida, d); }

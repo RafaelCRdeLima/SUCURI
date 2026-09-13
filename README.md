@@ -136,6 +136,24 @@ O `u` é **um só**, função das duas. Antes cada sítio promovia o símbolo à
 própria função e o mesmo `u` saía como `u(t)` de um lado e `u(x)` do outro —
 duas funções com o mesmo nome na mesma equação, em silêncio.
 
+## Quando a notação e a declaração se contradizem
+
+Escrever `∂` **declara que existem outras variáveis** — é isso que distingue ∂
+de d. Se a função foi declarada de uma variável só, as duas afirmações estão em
+desacordo, e nenhuma está errada sozinha: ou a declaração está incompleta, ou o
+∂ era d.
+
+```
+u = u(x)
+\frac{\partial u}{\partial x} = A u
+   →  d/dx u(x) = A(t) u(x)      a leitura está certa
+   →  nota: u foi declarada função de x só, e para função de uma variável
+      ∂u/∂x é du/dx — o mesmo objeto.
+```
+
+Não bloqueia, porque não é erro. Mas ficar calado faz quem escreveu `∂/∂x` ver
+`d/dx` e concluir que o programa errou.
+
 ## O que NÃO é ambiguidade
 
 `∂` está reservado à derivada parcial. Ninguém nunca escreveu

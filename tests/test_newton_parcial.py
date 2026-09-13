@@ -283,3 +283,31 @@ def test_o_d_continua_perguntando():
     d = Sessao().ler(r"\frac{dy}{dx} = 1")
     assert len(d["ambiguidades"]) == 1
     assert d["ambiguidades"][0]["leituras"][1]["chave"] == "fraction"
+
+
+def test_o_partial_em_funcao_de_uma_variavel_vira_nota():
+    """Escrever ∂ declara que existem OUTRAS variáveis — é isso que distingue ∂
+    de d. Se a função foi declarada de uma variável só, as duas afirmações do
+    usuário estão em desacordo, e nenhuma das duas está errada sozinha.
+
+    Não bloqueia: ∂u/∂x de uma função de x É du/dx, e a leitura sai certa. Mas
+    ficar calado faz o usuário ver "d/dx" onde escreveu "∂/∂x" e concluir que o
+    programa errou — que foi o que aconteceu.
+    """
+    from sucuri.interface.sessao import Sessao
+
+    s = Sessao().configurar({"funcoes": "u(x), A(t)"})
+    d = s.ler(r"\frac{\partial u}{\partial x} = A u")
+    assert len(d["notas"]) == 1
+    assert "declarada função de x só" in d["notas"][0]
+    assert d["sympy"] == "Eq(Derivative(u(x), x), A(t)*u(x))"   # leitura certa
+
+    s = Sessao().configurar({"funcoes": "u(t,x), A(t)"})
+    assert s.ler(r"\frac{\partial u}{\partial t} = A u")["notas"] == []
+
+
+def test_sem_declaracao_nao_ha_desacordo():
+    """Quem não declarou nada não afirmou nada: não há o que confrontar."""
+    from sucuri.interface.sessao import Sessao
+
+    assert Sessao().ler(r"\frac{\partial u}{\partial x} = 0")["notas"] == []

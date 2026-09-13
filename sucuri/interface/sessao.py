@@ -143,6 +143,7 @@ class Sessao:
             "pendentes": len(expr.pending),
             "inferidas": len(expr.inferred),
             "arvore": None,
+            "notas": _desacordos(expr, doc),
             "faltando": falta,
             "diferencial": False,
             "sympy": None,
@@ -284,6 +285,31 @@ def _candidatas(latex):
             continue
         achadas.append(nome)
     return achadas
+
+
+def _desacordos(expressao, doc):
+    """Onde a notação escrita e a declaração feita dizem coisas diferentes.
+
+    Escrever ∂ declara que existem OUTRAS variáveis — é isso que distingue ∂ de
+    d. Se a função foi declarada de uma variável só, as duas afirmações do
+    usuário estão em desacordo, e nenhuma das duas está errada sozinha: ou a
+    declaração está incompleta, ou o ∂ era d.
+
+    Não é erro, e por isso não bloqueia: ∂u/∂x de uma função de x É du/dx, e a
+    leitura sai certa. Mas ficar calado faz o usuário ver "d/dx" onde escreveu
+    "∂/∂x" e concluir que o programa errou — que foi o que aconteceu.
+    """
+    notas = []
+    for a in expressao.ambiguities:
+        parcial = a.kind == "partial" or a.detail.get("partial")
+        args = doc._function_args.get(a.base)
+        if parcial and args and len(args) == 1:
+            notas.append(
+                f"{a.base} foi declarada função de {args[0]} só, e para função "
+                f"de uma variável ∂{a.base}/∂{args[0]} é d{a.base}/d{args[0]} — "
+                f"o mesmo objeto. Se {a.base} depende de mais variáveis, "
+                f"declare {a.base} = {a.base}(…) com todas.")
+    return notas
 
 
 def _e_diferencial(objeto):
