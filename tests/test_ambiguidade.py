@@ -25,7 +25,10 @@ def test_localiza_todas_as_linhas_da_riccati():
 def test_localiza_derivada_de_leibniz():
     a = find(r"\frac{d^2 y}{dx^2}")
     assert len(a) == 1 and a[0].kind == "leibniz"
-    assert a[0].base == "y" and a[0].detail == {"order": 2, "wrt": "x"}
+    assert a[0].base == "y"
+    # `partial` distingue d de ∂: a forma é a mesma, e o que o símbolo declara
+    # é que há outras variáveis além daquela.
+    assert a[0].detail == {"order": 2, "wrt": "x", "partial": False}
 
 
 def test_localiza_justaposicao():

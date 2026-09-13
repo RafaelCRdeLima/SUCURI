@@ -93,6 +93,25 @@ LaTeX do SymPy, que não recusa o que não entende — ele degrada:
 
 Ver `exemplos/tabelas/AUDITORIA-DERIVADAS.md` e `AUDITORIA-INTEGRAIS.md`.
 
+## Mais de uma variável independente
+
+Para a **linha** não: `f'` com duas variáveis não diria em relação a qual, e é
+justamente essa ambiguidade que o programa recusa. Uma variável independente
+por documento não é limitação — é o que a notação da linha comporta.
+
+Para a **derivada parcial**, sim, e sem declarar nada: cada sítio traz a sua
+variável escrita.
+
+```python
+doc.read(r"\partial_t u = k \partial_x u")
+doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}")
+# Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), (x, 2)))
+```
+
+O `u` é **um só**, função das duas. Antes cada sítio promovia o símbolo à sua
+própria função e o mesmo `u` saía como `u(t)` de um lado e `u(x)` do outro —
+duas funções com o mesmo nome na mesma equação, em silêncio.
+
 ## Ambiguidades reconhecidas
 
 | Tipo | Exemplo | Leituras |

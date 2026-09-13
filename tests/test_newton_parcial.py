@@ -168,3 +168,66 @@ def test_derivar_a_propria_variavel_temporal_recusa():
     doc = sucuri.Document(time_variable="t").dots_are_time_derivatives(True)
     with pytest.raises(ValueError, match="variável temporal do documento"):
         doc.read(r"\dot{t} = 1").to_sympy()
+
+
+# ------------------------------------------- mais de uma variável independente
+
+def test_a_mesma_funcao_nao_vira_duas_funcoes_diferentes():
+    """∂u/∂t = k ∂u/∂x tem UM u, função de duas variáveis.
+
+    Antes cada sítio promovia o símbolo à sua própria função, e o mesmo u saía
+    como u(t) de um lado e u(x) do outro — duas funções com o mesmo nome na
+    mesma equação, em silêncio. É a mesma falha que a linha teve um dia, agora
+    com várias variáveis.
+    """
+    import sympy as sp
+    import sucuri
+
+    doc = sucuri.Document(independent_variable="x")
+    doc.function("u")
+    lido = doc.read(r"\partial_t u = k \partial_x u").to_sympy()
+
+    u = sp.Function("u")(sp.Symbol("t"), sp.Symbol("x"))
+    assert lido == sp.Eq(sp.Derivative(u, sp.Symbol("t")),
+                         sp.Symbol("k") * sp.Derivative(u, sp.Symbol("x")))
+    assert len({f.func for f in lido.atoms(sp.core.function.AppliedUndef)}) == 1
+
+
+def test_a_notacao_de_leibniz_aceita_o_partial():
+    """∂u/∂t é como se escreve toda equação a derivadas parciais, e o parser do
+    SymPy degrada a segunda ordem dela: \\frac{\\partial^2 u}{\\partial x^2} vira
+    (partial**2*u)/(partial*x**2), com 'partial' virando símbolo."""
+    import sympy as sp
+    import sucuri
+
+    doc = sucuri.Document(independent_variable="x")
+    doc.function("u")
+    lido = doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}").to_sympy()
+
+    t, x, k = sp.symbols("t x k")
+    u = sp.Function("u")(t, x)
+    assert lido == sp.Eq(sp.Derivative(u, t), k * sp.Derivative(u, (x, 2)))
+
+
+def test_o_sitio_de_partial_diz_que_e_parcial():
+    from sucuri.ambiguity import find
+    (sitio,) = find(r"\frac{\partial u}{\partial t}")
+    assert sitio.detail["partial"] is True
+    assert "parcial" in sitio.readings[0].description
+
+    (sitio,) = find(r"\frac{dy}{dx}")
+    assert sitio.detail["partial"] is False
+    assert "parcial" not in sitio.readings[0].description
+
+
+def test_a_linha_continua_admitindo_uma_variavel_so():
+    """f' com duas variáveis não diria em relação a qual — e é justamente essa
+    ambiguidade que o programa recusa. Uma variável independente por documento
+    não é limitação: é o que a notação da linha comporta."""
+    import sympy as sp
+    import sucuri
+
+    doc = sucuri.Document(independent_variable="x").primes_are_derivatives(True)
+    y = sp.Function("y")(sp.Symbol("x"))
+    assert doc.read("y'' + y = 0").to_sympy() == sp.Eq(
+        y + sp.Derivative(y, (sp.Symbol("x"), 2)), 0)

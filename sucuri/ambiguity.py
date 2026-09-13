@@ -89,9 +89,11 @@ _LINHAS = (r"(?:'"
            r"|\\prime\s*)")
 _RE_PRIME = re.compile(rf"({_SIMBOLO})((?:{_LINHAS})+)")
 _RE_LINHA_GRUPO = re.compile(rf"\)((?:{_LINHAS})+)")
+# d e ∂ na mesma regra: a forma é a mesma, e o que muda é só o que a escolha
+# do símbolo declara — que há outras variáveis além daquela.
 _RE_LEIBNIZ = re.compile(
-    r"\\frac\s*\{\s*d(?:\^\{?(\d+)\}?)?\s*(" + _SIMBOLO + r")\s*\}"
-    r"\s*\{\s*d\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
+    r"\\frac\s*\{\s*(d|\\partial)(?:\^\{?(\d+)\}?)?\s*(" + _SIMBOLO + r")\s*\}"
+    r"\s*\{\s*(?:d|\\partial)\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
 _RE_JUSTAPOSICAO = re.compile(rf"({_SIMBOLO})\s*(?:\\left)?\(")
 _RE_NEWTON = re.compile(r"\\(d+)ot\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))")
 # Só a base de potência: é onde o 'e' quase sempre é Euler e onde ler errado
@@ -196,17 +198,20 @@ def find(latex):
     achados = []
 
     for m in _RE_LEIBNIZ.finditer(latex):
-        ordem_num, funcao, variavel, ordem_den = m.groups()
+        simbolo, ordem_num, funcao, variavel, ordem_den = m.groups()
         ordem = int(ordem_num or ordem_den or 1)
+        parcial = simbolo == "\\partial"
+        letra = "∂" if parcial else "d"
+        qualidade = "parcial " if parcial else ""
         achados.append(Ambiguity(
             "leibniz", m.group(0), m.span(), _limpo(funcao),
             [Reading("derivative",
-                     f"derivada de ordem {ordem} de {_limpo(funcao)} "
+                     f"derivada {qualidade}de ordem {ordem} de {_limpo(funcao)} "
                      f"em relação a {_limpo(variavel)}"),
              Reading("fraction",
-                     "fração literal dos símbolos d, "
-                     f"{_limpo(funcao)} e d{_limpo(variavel)}")],
-            order=ordem, wrt=_limpo(variavel)))
+                     f"fração literal dos símbolos {letra}, "
+                     f"{_limpo(funcao)} e {letra}{_limpo(variavel)}")],
+            order=ordem, wrt=_limpo(variavel), partial=parcial))
 
     for m in _RE_NEWTON.finditer(latex):
         ordem = len(m.group(1))

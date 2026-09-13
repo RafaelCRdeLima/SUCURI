@@ -408,8 +408,8 @@ class Expression:
         # mesma letra viraria dois objetos distintos na mesma equação — erro
         # silencioso do tipo que este programa existe para impedir.
         if derivadas:
-            promocao = {sp.Symbol(nome): sp.Function(nome)(var)
-                        for nome, var in derivadas}
+            promocao = {sp.Symbol(nome): sp.Function(nome)(*args)
+                        for nome, args in derivadas.items()}
             expr = expr.subs(promocao, simultaneous=True)
 
         expr = _canonizar(expr)
@@ -446,7 +446,7 @@ class Expression:
         x = doc.independent
         texto = self.source
         reposicoes = {}
-        derivadas = set()
+        derivadas = {}
         origens = {}          # subexpressão -> Resolution do sítio que a gerou
         contador = 0
 
@@ -461,6 +461,14 @@ class Expression:
             # Espaços em volta: sem eles o marcador cola no macro anterior e
             # "3\\varphi" + "Z_{1}" vira o macro inexistente "\\varphiZ".
             return f" {nome} ", sp.Symbol(nome)
+
+        # Primeiro passo: quem é função de quê, olhando a expressão INTEIRA.
+        #
+        # Sem isto, cada sítio promovia o símbolo à sua própria função e o
+        # mesmo u saía como u(t) de um lado e u(x) do outro — duas funções
+        # diferentes com o mesmo nome na mesma equação, em silêncio. É a
+        # mesma falha que a linha teve um dia, agora com várias variáveis.
+        argumentos = self._argumentos()
 
         # De trás para frente: preserva os deslocamentos dos sítios anteriores.
         for a in sorted(self.ambiguities, key=lambda a: -a.span[0]):
@@ -491,9 +499,10 @@ class Expression:
                            "time_variable", "Variável temporal")
                     _nao_derive_a_propria_variavel(a.base, self.document.time,
                                                    "temporal", r"\dot{{{0}}}")
-                    derivadas.add((a.base, self.document.time))
-                    alvo = sp.Derivative(sp.Function(a.base)(self.document.time),
-                                         (self.document.time, ordem))
+                    funcao, args = self._funcao(a.base, self.document.time,
+                                                argumentos)
+                    derivadas[a.base] = args
+                    alvo = sp.Derivative(funcao, (self.document.time, ordem))
                 else:
                     alvo = sp.Symbol(a.base)
                 reposicoes[simbolo] = alvo
@@ -504,8 +513,9 @@ class Expression:
                 nome, simbolo = marcador()
                 v = sp.Symbol(a.detail["wrt"])
                 if leitura == "derivative":
-                    derivadas.add((a.base, v))
-                    alvo = sp.Derivative(sp.Function(a.base)(v), v)
+                    funcao, args = self._funcao(a.base, v, argumentos)
+                    derivadas[a.base] = args
+                    alvo = sp.Derivative(funcao, v)
                 else:
                     alvo = sp.Symbol(a.base) * sp.Symbol("d_" + a.detail["wrt"])
                 reposicoes[simbolo] = alvo
@@ -516,9 +526,9 @@ class Expression:
                 nome, simbolo = marcador()
                 if leitura == "derivative":
                     v = sp.Symbol(a.detail["wrt"])
-                    derivadas.add((a.base, v))
-                    alvo = sp.Derivative(sp.Function(a.base)(v),
-                                         (v, a.detail["order"]))
+                    funcao, args = self._funcao(a.base, v, argumentos)
+                    derivadas[a.base] = args
+                    alvo = sp.Derivative(funcao, (v, a.detail["order"]))
                 else:
                     alvo = (sp.Symbol("d")**a.detail["order"] * sp.Symbol(a.base)
                             / sp.Symbol("d" + a.detail["wrt"])**a.detail["order"])
@@ -539,6 +549,42 @@ class Expression:
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
         return _inofensivas(texto), reposicoes, derivadas, origens
+
+    def _argumentos(self):
+        """De que variáveis cada função incógnita depende, na entrada inteira.
+
+        A ordem é a da primeira aparição no texto: u(t, x) para
+        ∂u/∂t = k ∂u/∂x. Qualquer ordem serve à matemática — Derivative(u, x) é
+        a mesma coisa —, mas uma ordem FIXA importa, senão a mesma equação lida
+        duas vezes daria objetos diferentes.
+        """
+        doc = self.document
+        args = {}
+        for a in sorted(self.ambiguities, key=lambda a: a.span[0]):
+            leitura = doc.resolve(a)
+            if leitura != "derivative" or a.detail.get("group"):
+                continue
+            if a.kind in ("prime", "leibniz") and a.kind == "prime":
+                var = doc.independent
+            elif a.kind == "leibniz":
+                var = sp.Symbol(a.detail["wrt"])
+            elif a.kind == "newton":
+                var = doc.time
+            elif a.kind == "partial":
+                var = sp.Symbol(a.detail["wrt"])
+            else:
+                continue
+            if var is None:
+                continue
+            lista = args.setdefault(a.base, [])
+            if var not in lista:
+                lista.append(var)
+        return {nome: tuple(vs) for nome, vs in args.items()}
+
+    def _funcao(self, nome, padrao, argumentos):
+        """A função incógnita `nome`, com TODOS os argumentos que ela tem."""
+        args = argumentos.get(nome) or (padrao,)
+        return sp.Function(nome)(*args), args
 
     def _linha(self, a, leitura, ordem, x, derivadas):
         """O objeto que a linha denota, nas quatro formas em que ela aparece.
@@ -571,14 +617,15 @@ class Expression:
                 return simbolo
             return sp.Function(a.base + "'" * ordem)(self._fragmento(arg))
 
+        funcao, args = self._funcao(a.base, x, self._argumentos())
         if arg is None:
-            derivadas.add((a.base, x))
-            return sp.Derivative(sp.Function(a.base)(x), (x, ordem))
+            derivadas[a.base] = args
+            return sp.Derivative(funcao, (x, ordem))
 
         onde = self._fragmento(arg)
         if onde == x:
-            derivadas.add((a.base, x))
-            return sp.Derivative(sp.Function(a.base)(x), (x, ordem))
+            derivadas[a.base] = args
+            return sp.Derivative(funcao, (x, ordem))
         muda = sp.Dummy(a.base + "_arg")
         return sp.Subs(sp.Derivative(sp.Function(a.base)(muda), (muda, ordem)),
                        muda, onde)
