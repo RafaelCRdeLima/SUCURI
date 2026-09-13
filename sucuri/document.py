@@ -154,7 +154,7 @@ def _canonizar(expr):
         lambda e: sp.log(e.args[0], e.args[1]))
 
 
-def _exige(variavel, sitio, qual, parametro):
+def _exige(variavel, sitio, qual, parametro, campo):
     """A variável tem de existir ANTES de virar derivada.
 
     A convenção do documento já cobrava isso; a anotação de um sítio, não —
@@ -165,8 +165,26 @@ def _exige(variavel, sitio, qual, parametro):
     """
     if variavel is None:
         raise ValueError(
-            f"para ler {sitio} como derivada é preciso uma variável "
-            f"{qual}: crie o documento com {parametro}=")
+            f"para ler {sitio} como derivada é preciso uma variável {qual}: "
+            f"preencha '{campo}' nas convenções do documento "
+            f"(ou {parametro}= na biblioteca)")
+
+
+def _nao_derive_a_propria_variavel(base, variavel, qual, escrita="{0}'"):
+    """x' com x sendo a própria variável independente é quase sempre engano.
+
+    Quem escreve x' = A e^x quer dizer dx/dt: o x é a função incógnita, e a
+    variável é outra. Declarando x como independente, o leitor monta
+    Subs(Derivative(x(x), x), x, x(x)) — bem formado, sem sentido, e o SymPy
+    segue em frente com ele. Vale a recusa, porque a dúvida aqui não é de
+    notação, é de qual letra é a variável.
+    """
+    if variavel is not None and base == variavel.name:
+        raise ValueError(
+            f"'{base}' é a variável {qual} do documento, e "
+            f"'{escrita.format(base)}' seria a derivada dela em relação a si "
+            f"mesma. Se {base} é a função incógnita, declare outra variável "
+            f"{qual} — t, por exemplo")
 
 
 class NotacaoNaoReconhecida(Exception):
@@ -229,9 +247,9 @@ class Document:
         """
         if yes and wrt is None and self.independent is None:
             raise ValueError(
-                "para ler linha como derivada é preciso uma variável "
-                "independente: passe wrt= ou crie o documento com "
-                "independent_variable=")
+                "para ler a linha como derivada é preciso uma variável "
+                "independente: preencha 'Variável independente' nas convenções "
+                "do documento (ou independent_variable= na biblioteca)")
         if wrt is not None:
             self.independent = sp.Symbol(wrt)
         self._primes_are_derivatives = bool(yes)
@@ -440,7 +458,8 @@ class Expression:
             if a.kind == "prime":
                 ordem = a.detail["order"]
                 if leitura == "derivative":
-                    _exige(x, "a linha", "independente", "independent_variable")
+                    _exige(x, "a linha", "independente", "independent_variable",
+                           "Variável independente")
                 nome, simbolo = marcador()
                 alvo = self._linha(a, leitura, ordem, x, derivadas)
                 reposicoes[simbolo] = alvo
@@ -451,7 +470,10 @@ class Expression:
                 nome, simbolo = marcador()
                 ordem = a.detail["order"]
                 if leitura == "derivative":
-                    _exige(self.document.time, "o ponto", "temporal", "time_variable")
+                    _exige(self.document.time, "o ponto", "temporal",
+                           "time_variable", "Variável temporal")
+                    _nao_derive_a_propria_variavel(a.base, self.document.time,
+                                                   "temporal", r"\dot{{{0}}}")
                     derivadas.add((a.base, self.document.time))
                     alvo = sp.Derivative(sp.Function(a.base)(self.document.time),
                                          (self.document.time, ordem))
@@ -515,6 +537,9 @@ class Expression:
         """
         arg = a.detail.get("arg")
         grupo = a.detail.get("group")
+
+        if not grupo:
+            _nao_derive_a_propria_variavel(a.base, x, "independente")
 
         if grupo:
             interior = self._fragmento(a.base)

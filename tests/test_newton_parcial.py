@@ -133,3 +133,38 @@ def test_anotar_o_ponto_sem_variavel_temporal_recusa_com_recado():
     doc.annotate("prime", "y", "derivative", order=2)
     with pytest.raises(ValueError, match="variável independente"):
         doc.read("y'' = 0").to_sympy()
+
+
+def test_derivar_a_propria_variavel_independente_recusa():
+    """x' = A e^x com x declarado independente é quase sempre engano de quem
+    escreve: o x ali é a função incógnita e a variável é outra, t. Sem a
+    recusa, o leitor montava Subs(Derivative(x(x), x), x, x(x)) — bem formado,
+    sem sentido — e o dsolve seguia em frente com aquilo.
+
+    Achado por alguém usando o programa, não pela suíte.
+    """
+    import pytest
+    import sucuri
+
+    doc = sucuri.Document(independent_variable="x").primes_are_derivatives(True)
+    doc.e_is_euler(True)
+    with pytest.raises(ValueError, match="variável independente do documento"):
+        doc.read(r"x^{\prime} = A e^{x}").to_sympy()
+
+    # com a variável certa, lê sem reclamar
+    import sympy as sp
+    doc = sucuri.Document(independent_variable="t").primes_are_derivatives(True)
+    doc.e_is_euler(True)
+    t, A = sp.Symbol("t"), sp.Symbol("A")
+    x = sp.Function("x")
+    assert doc.read(r"x^{\prime} = A e^{x}").to_sympy() == sp.Eq(
+        sp.Derivative(x(t), t), A * sp.exp(x(t)))
+
+
+def test_derivar_a_propria_variavel_temporal_recusa():
+    import pytest
+    import sucuri
+
+    doc = sucuri.Document(time_variable="t").dots_are_time_derivatives(True)
+    with pytest.raises(ValueError, match="variável temporal do documento"):
+        doc.read(r"\dot{t} = 1").to_sympy()
