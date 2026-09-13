@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUCURI</title>
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<link rel="stylesheet" href="sucuri.css">
+</head>
+<body>
+<div class="app">
+
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <span class="wordmark">SUCURI</span>
+  <span class="arquivo" id="arquivo">sem título.tex</span>
+</header>
+
+<main>
+  <section class="esquerda">
+    <p class="rotulo">Entrada em LaTeX</p>
+    <textarea id="entrada" spellcheck="false" aria-label="Entrada em LaTeX"
+      >\frac{d^2 \phi}{dx^2} + x\phi = 0</textarea>
+
+    <div class="estados" id="estados"></div>
+
+    <div class="bloco" id="bloco-perguntas" hidden>
+      <p class="rotulo">Sítios ambíguos</p>
+      <div id="perguntas"></div>
+    </div>
+
+    <details class="bloco convencoes" id="bloco-convencoes">
+      <summary>Convenções do documento</summary>
+      <div class="campos">
+        <label>Variável independente
+          <input id="c-independente" type="text" spellcheck="false" placeholder="x">
+        </label>
+        <label>Variável temporal
+          <input id="c-temporal" type="text" spellcheck="false" placeholder="t">
+        </label>
+        <label>Linha <span class="amostra">f'</span>
+          <select id="c-linhas">
+            <option value="">perguntar</option>
+            <option value="derivative">é derivada</option>
+            <option value="symbol">faz parte do nome</option>
+          </select>
+        </label>
+        <label>Ponto <span class="amostra">\dot q</span>
+          <select id="c-pontos">
+            <option value="">perguntar</option>
+            <option value="derivative">é derivada temporal</option>
+            <option value="decoration">é só um acento</option>
+          </select>
+        </label>
+        <label>Funções
+          <input id="c-funcoes" type="text" spellcheck="false" placeholder="f, phi">
+        </label>
+        <label>Variáveis
+          <input id="c-variaveis" type="text" spellcheck="false" placeholder="a, k">
+        </label>
+      </div>
+      <p class="nota">Convenção vale para o documento inteiro e aparece em âmbar:
+        a leitura funcionou, mas ninguém olhou aquele sítio. Decidir o sítio
+        na lista acima o torna verde.</p>
+    </details>
+
+    <div class="arvore bloco" id="bloco-arvore" hidden>
+      <p class="rotulo">Árvore reconhecida</p>
+      <div id="arvore"></div>
+    </div>
+  </section>
+
+  <section class="direita">
+    <p class="rotulo" id="rotulo-leitura">Como o Sucuri lê</p>
+    <div class="leitura" id="leitura"></div>
+
+    <p class="rotulo espaco">Saída em SymPy</p>
+    <pre id="codigo"><span class="cm"># escreva algo à esquerda</span></pre>
+
+    <div class="acoes">
+      <button id="copiar">Copiar código</button>
+      <button class="primario" id="abrir-modulos">Módulos</button>
+    </div>
+
+    <div class="bloco modulos" id="bloco-modulos" hidden>
+      <p class="rotulo">Módulos carregados</p>
+      <div id="modulos"></div>
+      <div id="resultado"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span id="motor">SymPy</span>
+  <span>LaTeX estrito</span>
+  <span class="tempo" id="tempo">—</span>
+</footer>
+
+</div>
+
+<script src="vendor/katex/katex.min.js"></script>
+<script src="sucuri.js"></script>
+</body>
+</html>

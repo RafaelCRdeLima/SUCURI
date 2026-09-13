@@ -133,6 +133,34 @@ doc.annotate("prime", "r", "derivative", order=1)
 doc.read(...).tree()
 ```
 
+## A interface
+
+```bash
+python -m sucuri.interface        # abre em http://127.0.0.1:8765/
+```
+
+Servidor local e página no navegador. A escolha é deliberada: o programa é de
+Linux hoje e fica online amanhã sem reescrita — o mesmo motor, a mesma página,
+outro endereço. Só biblioteca padrão do lado do Python; o KaTeX vem
+empacotado, e a interface funciona sem rede.
+
+O que a página mostra, da esquerda para a direita:
+
+- **a entrada em LaTeX**, relida a cada tecla (janela de 220 ms);
+- **os sítios ambíguos**, um a um, com as leituras possíveis em botões — clicar
+  é anotar, e a anotação vence a convenção;
+- **as convenções do documento**, que valem para tudo e aparecem em âmbar;
+- **a árvore reconhecida**, com a proveniência de cada nó;
+- **a leitura**, tipografada — o que o programa entendeu, em matemática de
+  livro, e não o que você escreveu;
+- **a saída em SymPy**, colável num script;
+- **os módulos**, com a barreira de proveniência intacta: conclusão sem fonte
+  chega à página marcada como não apresentável.
+
+A interface não decide nada de matemática. Entre ela e o motor passa JSON
+(`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
+decisões que ela transporta são as do usuário: convenção e anotação.
+
 ## Módulos de domínio
 
 O Sucuri lê e desambigua; ele não sabe teoria de Galois nem geometria
@@ -175,4 +203,5 @@ código pelo bloco da cauda.
 
 ## Estado
 
-Motor em construção. Ver `sucuri/` e a suíte em `tests/`.
+Motor e interface em construção. Ver `sucuri/`, `sucuri/interface/` e a suíte
+em `tests/`.

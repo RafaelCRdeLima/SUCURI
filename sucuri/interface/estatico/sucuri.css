@@ -1,0 +1,143 @@
+/* SUCURI — folha da interface.
+   Deriva do mockup da identidade; os valores vêm de tokens.css. */
+
+:root{
+  --mata:var(--sucuri-mata); --verde:var(--sucuri-verde); --folha:var(--sucuri-folha);
+  --ambar:var(--sucuri-ambar); --areia:var(--sucuri-areia); --areia-2:var(--sucuri-areia-2);
+  --argila:var(--sucuri-argila); --tinta:var(--sucuri-tinta); --tinta-2:var(--sucuri-tinta-2);
+  --ui:var(--sucuri-fonte-ui); --mono:var(--sucuri-fonte-mono);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--areia);color:var(--tinta);font-family:var(--ui);
+     font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.app{max-width:1180px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+     background:#fff;border-left:1px solid var(--areia-2);border-right:1px solid var(--areia-2)}
+
+header{display:flex;align-items:center;gap:14px;padding:14px 22px;background:var(--mata)}
+header svg{flex:none}
+.wordmark{color:var(--areia);font-size:16px;font-weight:500;
+          letter-spacing:var(--sucuri-tracking-wordmark)}
+.arquivo{margin-left:auto;color:var(--verde);font-family:var(--mono);font-size:13px}
+
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--areia-2)}
+section{background:#fff;padding:22px;min-width:0}
+.rotulo{font-size:13px;color:var(--tinta-2);margin:0 0 10px}
+.rotulo.espaco{margin-top:26px}
+
+textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--areia-2);
+  border-radius:var(--sucuri-raio);background:var(--areia);padding:14px;font-family:var(--mono);
+  font-size:14px;line-height:1.7;color:var(--tinta)}
+textarea:focus{outline:none;border-color:var(--folha);box-shadow:0 0 0 3px rgba(111,156,51,.18)}
+
+/* ------------------------------------------------------------- pastilhas */
+.estados{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;min-height:28px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;
+      padding:5px 11px;border-radius:999px}
+.ok{background:var(--sucuri-sucesso-bg);color:var(--sucuri-sucesso-fg)}
+.aviso{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg)}
+.erro{background:var(--sucuri-erro-bg);color:var(--sucuri-erro-fg)}
+.neutro{background:var(--areia);color:var(--tinta-2)}
+.pill svg{flex:none}
+
+/* --------------------------------------------------------------- blocos */
+.bloco{margin-top:26px;padding-top:18px;border-top:1px solid var(--areia-2)}
+
+/* ------------------------------------------------------------ perguntas */
+.sitio{border:1px solid var(--areia-2);border-radius:var(--sucuri-raio);
+       padding:12px 14px;margin-bottom:10px}
+.sitio.pendente{border-color:#E3C9A0;background:#FDF8EF}
+.sitio.inferida{border-left:3px solid var(--ambar)}
+.sitio.explicita{border-left:3px solid var(--folha)}
+.sitio-cabeca{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.fragmento{font-family:var(--mono);font-size:13.5px;color:var(--tinta);
+  background:var(--areia);padding:2px 7px;border-radius:5px}
+.sitio-nota{font-size:12.5px;color:var(--tinta-2);margin-left:auto}
+.opcoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.opcao{font-family:var(--ui);font-size:13px;padding:7px 12px;border-radius:999px;
+  border:1px solid var(--areia-2);background:#fff;color:var(--tinta);cursor:pointer;
+  text-align:left}
+.opcao:hover{background:var(--areia)}
+.opcao.escolhida{background:var(--folha);border-color:var(--folha);color:#fff}
+.opcao.herdada{background:var(--sucuri-aviso-bg);border-color:#E8D4AC;
+  color:var(--sucuri-aviso-fg)}
+
+/* ----------------------------------------------------------- convenções */
+.convencoes summary{font-size:13px;color:var(--tinta-2);cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:6px}
+.convencoes summary::before{content:"▸";color:var(--folha)}
+.convencoes[open] summary::before{content:"▾"}
+.convencoes summary::-webkit-details-marker{display:none}
+.campos{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:14px}
+.campos label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;
+  color:var(--tinta-2)}
+.campos .amostra{font-family:var(--mono);color:var(--tinta)}
+.campos input,.campos select{font-family:var(--mono);font-size:13px;padding:7px 9px;
+  border:1px solid var(--areia-2);border-radius:6px;background:var(--areia);color:var(--tinta)}
+.campos select{font-family:var(--ui)}
+.campos input:focus,.campos select:focus{outline:none;border-color:var(--folha)}
+.nota{font-size:12.5px;color:var(--tinta-2);margin:12px 0 0}
+
+/* --------------------------------------------------------------- árvore */
+.arvore ul{list-style:none;margin:6px 0 0;padding-left:16px;
+  border-left:1px solid var(--areia-2);font-family:var(--mono);font-size:13px;
+  color:var(--tinta-2)}
+.arvore>div>ul{padding-left:0;border-left:none}
+.arvore li{padding:2px 0}
+.arvore .no{color:var(--tinta)}
+.arvore .inferida{color:var(--sucuri-aviso-fg)}
+.arvore .inferida::after{content:" ◆";color:var(--ambar)}
+.arvore .explicita::after{content:" ◆";color:var(--folha)}
+
+/* -------------------------------------------------------------- leitura */
+.leitura{min-height:86px;display:flex;align-items:center;justify-content:center;
+  padding:18px 16px;border:1px solid var(--areia-2);border-radius:var(--sucuri-raio-card);
+  background:var(--areia);overflow-x:auto}
+.leitura.cru{color:var(--tinta-2)}
+.leitura .katex{font-size:1.35em}
+.leitura .vazio{font-size:13px;color:var(--tinta-2)}
+
+/* --------------------------------------------------------------- código */
+pre{margin:0;background:var(--mata);border-radius:var(--sucuri-raio);padding:16px;
+    overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.8;
+    color:var(--areia);white-space:pre}
+.kw{color:var(--verde)} .str{color:var(--ambar)} .cm{color:#7E9481}
+
+.acoes{display:flex;gap:10px;margin-top:16px}
+button{flex:1;font-family:var(--ui);font-size:14px;padding:10px 14px;
+  border-radius:var(--sucuri-raio);border:1px solid var(--areia-2);background:#fff;
+  color:var(--tinta);cursor:pointer}
+button:hover{background:var(--areia)}
+button.primario{background:var(--folha);border-color:var(--folha);color:#fff}
+button.primario:hover{background:#5F871E}
+button:focus-visible{outline:2px solid var(--folha);outline-offset:2px}
+
+/* -------------------------------------------------------------- módulos */
+.modulo-cabeca{font-size:13.5px;margin-bottom:4px}
+.modulo-cabeca b{font-weight:500}
+.modulo-desc{font-size:12.5px;color:var(--tinta-2);margin:0 0 10px}
+.operacoes{display:flex;flex-wrap:wrap;gap:8px}
+.operacoes button{flex:none}
+#resultado{margin-top:16px}
+.resultado{border:1px solid var(--areia-2);border-radius:var(--sucuri-raio);padding:14px}
+.resultado h3{margin:0 0 8px;font-size:14px;font-weight:500}
+.resultado table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12.5px}
+.resultado td{border-bottom:1px solid var(--areia-2);padding:5px 8px;vertical-align:top}
+.resultado tr:last-child td{border-bottom:none}
+.bloqueio{font-size:12.5px;color:var(--sucuri-erro-fg);background:var(--sucuri-erro-bg);
+  border-radius:6px;padding:8px 10px;margin-top:10px}
+.proveniencia{font-size:12.5px;margin-top:10px;color:var(--tinta-2)}
+.nao-apresentavel{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg);
+  border-radius:6px;padding:8px 10px}
+
+footer{padding:12px 22px;border-top:1px solid var(--areia-2);
+  font-size:13px;color:var(--tinta-2);display:flex;gap:16px}
+footer .tempo{margin-left:auto;font-family:var(--mono)}
+
+@media (max-width:860px){
+  main{grid-template-columns:1fr}
+  section{padding:18px}
+  .campos{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  button,.opcao{transition:background .15s ease}
+}

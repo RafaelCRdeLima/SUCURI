@@ -12,8 +12,15 @@ dependencies = ["sympy==1.12", "antlr4-python3-runtime==4.11"]
 [project.optional-dependencies]
 dev = ["pytest"]
 
+[project.scripts]
+sucuri = "sucuri.interface.__main__:main"
+
 [tool.setuptools]
-packages = ["sucuri"]
+packages = ["sucuri", "sucuri.modules", "sucuri.interface"]
+
+[tool.setuptools.package-data]
+"sucuri.interface" = ["estatico/*", "estatico/vendor/katex/*",
+                      "estatico/vendor/katex/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

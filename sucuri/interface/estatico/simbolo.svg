@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="SUCURI — símbolo">
+  <title>SUCURI — símbolo</title>
+  <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="68" cy="28" r="7" fill="currentColor"/>
+  <g transform="rotate(-31 34 72)"><rect x="28.5" y="66.5" width="11" height="11" rx="1.5" fill="currentColor"/></g>
+</svg>
