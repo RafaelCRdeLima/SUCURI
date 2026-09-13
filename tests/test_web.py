@@ -85,3 +85,17 @@ def test_a_roda_do_antlr_vai_junto():
     rodas = list((WEB / "vendor").glob("antlr4*.whl"))
     assert len(rodas) == 1
     assert rodas[0].stat().st_size > 100_000
+
+
+def test_o_botao_de_modulos_so_aparece_se_tiver_o_que_mostrar():
+    """Um botão que abre um painel com um módulo indisponível e uma operação
+    que já está no botão ao lado não paga o espaço que ocupa. A regra fica
+    explícita no JavaScript, e este teste guarda as duas metades dela:
+    esconder quando não sobra nada, e não anunciar o que não está instalado.
+    """
+    js = (ESTATICO / "sucuri.js").read_text(encoding="utf-8")
+    assert "JA_OFERECIDO" in js
+    assert "resolver: ['resolver', 'padrões']" in js
+    assert "$('abrir-modulos').hidden = true" in js
+    # o painel filtra por disponibilidade antes de listar
+    assert js.count("m.disponivel && sobra(m).length") == 2

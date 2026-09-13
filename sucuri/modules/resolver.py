@@ -154,12 +154,28 @@ _NAO_E_PROVA = ("não achar solução não é prova de que não existe; para ess
                 "outra pergunta, o módulo korvin")
 
 
-def _sem_solucao(linhas, motivo):
+def _sem_solucao(linhas, motivo, equacao=None, funcao=None):
     """O desfecho mais comum, e o que mais precisa de rótulo honesto.
 
     Rotular isto de "solução" seria a mentira do próprio `dsolve`: o que houve
     foi o solver não achar, e não achar não é achar que não há.
+
+    É aqui que os padrões tentados valem alguma coisa. Quando a conta fecha,
+    saber que o caminho foi '2nd_linear_airy' é curiosidade; quando não fecha,
+    é o começo do diagnóstico — lista vazia, ou só com 'power_series' e
+    'lie_group', já dizia que não ia vir forma fechada. Por isso vêm junto com
+    o fracasso, e não numa operação à parte que o usuário teria de saber pedir.
     """
+    if equacao is not None:
+        try:
+            padroes = no_prazo(sp.classify_ode, PRAZO_CONFERIR, equacao, funcao)
+        except Exception:                                       # noqa: BLE001
+            padroes = ()
+        linhas = linhas + [("padrão tentado", p) for p in padroes]
+        if not padroes:
+            linhas.append(("padrão tentado",
+                           "nenhum: o SymPy não tem por onde começar"))
+
     return Result("sem solução encontrada", None,
                   rows=linhas + [("tipo", NENHUMA), ("motivo", motivo)],
                   provenance=Provenance.INAPPLICABLE,
@@ -175,9 +191,9 @@ def resolver(expression):
     try:
         solucao = no_prazo(_dsolve, PRAZO_RESOLVER, equacao, funcao)
     except TempoEsgotado as e:
-        return _sem_solucao(linhas, str(e))
+        return _sem_solucao(linhas, str(e), equacao, funcao)
     except Exception as e:                                      # noqa: BLE001
-        return _sem_solucao(linhas, f"o solver falhou: {e}")
+        return _sem_solucao(linhas, f"o solver falhou: {e}", equacao, funcao)
 
     tipo, ordem_serie = tipo_da_resposta(solucao, funcao)
     linhas.append(("tipo", tipo if ordem_serie is None

@@ -311,6 +311,30 @@ function valor(d) {
 
 /* ---------------------------------------------------------------- módulos */
 
+/* Operações que a página já oferece por outro caminho. Repeti-las num painel
+ * faz o usuário procurar diferença onde não há, e um botão que só mostra o
+ * que já está à mão não paga o espaço que ocupa. */
+var JA_OFERECIDO = { resolver: ['resolver', 'padrões'] };
+
+function sobra(m) {
+  var cobertas = JA_OFERECIDO[m.nome] || [];
+  return (m.operacoes || []).filter(function (op) {
+    return cobertas.indexOf(op.nome) === -1;
+  });
+}
+
+/* Módulo indisponível não vai para a tela. Dizer "korvin: ModuleNotFoundError"
+ * a quem nunca ouviu falar do KORVIN não é honestidade, é ruído; a API
+ * continua reportando, com motivo, para quem for olhar. */
+function decidirModulos() {
+  pedir('/api/modulos', {}).then(function (d) {
+    var uteis = (d.modulos || []).filter(function (m) {
+      return m.disponivel && sobra(m).length;
+    });
+    if (!uteis.length) { $('abrir-modulos').hidden = true; }
+  }).catch(function () { $('abrir-modulos').hidden = true; });
+}
+
 function modulos() {
   var bloco = $('bloco-modulos');
   if (!bloco.hidden) { bloco.hidden = true; return; }
@@ -318,19 +342,20 @@ function modulos() {
   pedir('/api/modulos', {}).then(function (d) {
     var caixa = $('modulos');
     caixa.textContent = '';
-    (d.modulos || []).forEach(function (m) {
+    (d.modulos || []).filter(function (m) {
+      return m.disponivel && sobra(m).length;
+    }).forEach(function (m) {
       var cab = document.createElement('p');
       cab.className = 'modulo-cabeca';
       cab.innerHTML = '<b>' + escapar(m.nome) + '</b>';
       caixa.appendChild(cab);
       var desc = document.createElement('p');
       desc.className = 'modulo-desc';
-      desc.textContent = m.disponivel ? m.descricao : m.motivo;
+      desc.textContent = m.descricao;
       caixa.appendChild(desc);
-      if (!m.disponivel) { return; }
       var ops = document.createElement('div');
       ops.className = 'operacoes';
-      m.operacoes.forEach(function (op) {
+      sobra(m).forEach(function (op) {
         var b = document.createElement('button');
         b.textContent = op.nome;
         b.title = op.descricao;
@@ -450,3 +475,4 @@ $('avaliar').addEventListener('click', function () { acaoPrincipal()(); });
 
 $('entrada').focus();
 ler();
+decidirModulos();
