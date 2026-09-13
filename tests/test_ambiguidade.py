@@ -1,13 +1,13 @@
 """Os sítios ambíguos são localizados, não adivinhados.
 
 Cada caso aqui é uma falha silenciosa medida no parser de LaTeX do SymPy, com
-equações de trabalho real. O CADMUS não pode repetir nenhuma.
+equações de trabalho real. O Sucuri não pode repetir nenhuma.
 """
 
 import sympy as sp
 import pytest
 
-from cadmus import Document, Unresolved, find
+from sucuri import Document, Unresolved, find
 
 RICCATI = r"\varphi'' + 3\varphi\varphi' + \varphi^3 = 4r\varphi + 2r'"
 
@@ -78,7 +78,7 @@ def test_le_a_riccati_de_kovacic_corretamente():
     Esta é a equação do caso 2 de Kovacic, cuja leitura errada já custou um
     teorema falso. O SymPy devolve
         varphi^3 + (varphi + 3 varphi varphi) = 4 r varphi + 2 r'
-    apagando as três linhas. O CADMUS tem de devolver a equação certa.
+    apagando as três linhas. O Sucuri tem de devolver a equação certa.
     """
     doc = Document(independent_variable='x').primes_are_derivatives()
     obtido = doc.read(RICCATI).to_sympy()
@@ -132,3 +132,41 @@ def test_leibniz_como_derivada():
     doc = Document(independent_variable='x').primes_are_derivatives()
     expr = doc.read(r"\frac{d^2 y}{dx^2}").to_sympy()
     assert expr.atoms(sp.Derivative), "não pode virar fração de símbolos d e dx"
+
+
+# --------------------------------------------- estados de resolução
+
+def test_distingue_anotacao_explicita_de_convencao():
+    """Resolver por convenção não é o mesmo que resolver por anotação.
+
+    A distinção veio da identidade visual, que reserva o âmbar para
+    "ambiguidade resolvida por inferência". Uma convenção geral pode acertar
+    nove sítios e errar o décimo: quem declarou que linha é derivada não olhou
+    cada linha.
+    """
+    from sucuri import Resolution
+    doc = Document(independent_variable='x').primes_are_derivatives()
+    doc.annotate("prime", "r", "derivative", order=1)
+    e = doc.read(RICCATI)
+
+    como = {r.ambiguity.base + "'" * r.ambiguity.detail["order"]: r.how
+            for r in e.resolutions}
+    assert como["varphi''"] == Resolution.INFERRED
+    assert como["varphi'"] == Resolution.INFERRED
+    assert como["r'"] == Resolution.EXPLICIT
+
+    assert len(e.inferred) == 2, "dois sítios pedem conferência"
+    assert e.resolved, "mas a expressão funciona"
+
+
+def test_pendente_nao_conta_como_inferido():
+    """Sem convenção nenhuma, tudo é pendente e nada é âmbar."""
+    from sucuri import Resolution
+    e = Document().read(RICCATI)
+    assert e.inferred == []
+    assert all(r.how == Resolution.PENDING for r in e.resolutions)
+
+
+def test_sem_ambiguidade_nao_gera_estado():
+    e = Document().read(r"\frac{x^2+1}{x-1}")
+    assert e.resolutions == [] and e.inferred == [] and e.resolved

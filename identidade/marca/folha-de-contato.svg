@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="1800" height="840">
+  <rect width="900" height="420" fill="#FFFFFF"/>
+  <g transform="translate(60,50)"><rect width="160" height="160" rx="37" fill="#14291C"/>
+    <g transform="scale(1.6)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#14291C"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#14291C"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#14291C"/>
+  <circle cx="68" cy="28" r="7.0" fill="#8FBE45"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#14291C"/>
+  <g transform="rotate(-31 34 72)"><rect x="28.50" y="66.50" width="11.00" height="11.00" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g transform="translate(250,50)"><rect width="160" height="160" rx="37" fill="#F1EDDF"/>
+    <g transform="scale(1.6)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#14291C" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#F1EDDF"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#F1EDDF"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#F1EDDF"/>
+  <circle cx="68" cy="28" r="7.0" fill="#14291C"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#F1EDDF"/>
+  <g transform="rotate(-31 34 72)"><rect x="28.50" y="66.50" width="11.00" height="11.00" rx="1.5" fill="#14291C"/></g></g></g>
+  <g transform="translate(440,50)"><rect width="160" height="160" rx="37" fill="#E3B23C"/>
+    <g transform="scale(1.6)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#14291C" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#E3B23C"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#E3B23C"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#E3B23C"/>
+  <circle cx="68" cy="28" r="7.0" fill="#14291C"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#E3B23C"/>
+  <g transform="rotate(-31 34 72)"><rect x="28.50" y="66.50" width="11.00" height="11.00" rx="1.5" fill="#14291C"/></g></g></g>
+  <g transform="translate(630,50)"><rect width="160" height="160" rx="37" fill="#FFFFFF" stroke="#DDD9CC"/>
+    <g transform="scale(1.6)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#6F9C33" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#FFFFFF"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#FFFFFF"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#FFFFFF"/>
+  <circle cx="68" cy="28" r="7.0" fill="#6F9C33"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#FFFFFF"/>
+  <g transform="rotate(-31 34 72)"><rect x="28.50" y="66.50" width="11.00" height="11.00" rx="1.5" fill="#6F9C33"/></g></g></g>
+  <g font-family="Inter, Arial, sans-serif" font-size="15" fill="#6B7268">
+    <text x="60" y="238">Principal</text><text x="250" y="238">Invertida</text>
+    <text x="440" y="238">Âmbar</text><text x="630" y="238">Folha sobre branco</text>
+  </g>
+  <g transform="translate(60,280)"><rect width="96" height="96" rx="22" fill="#14291C"/>
+    <g transform="scale(0.96)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#14291C"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#14291C"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#14291C"/>
+  <circle cx="68" cy="28" r="7.7" fill="#8FBE45"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#14291C"/>
+  <g transform="rotate(-31 34 72)"><rect x="27.95" y="65.95" width="12.10" height="12.10" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g transform="translate(186,312)"><rect width="64" height="64" rx="15" fill="#14291C"/>
+    <g transform="scale(0.64)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="55.5" cy="18.3" rx="4.2" ry="3.2" fill="#14291C"/>
+  <ellipse cx="49.5" cy="46.3" rx="3.4" ry="4.2" fill="#14291C"/>
+  <ellipse cx="50.2" cy="78" rx="4.2" ry="3.2" fill="#14291C"/>
+  <circle cx="68" cy="28" r="8.4" fill="#8FBE45"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#14291C"/>
+  <g transform="rotate(-31 34 72)"><rect x="27.40" y="65.40" width="13.20" height="13.20" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g transform="translate(280,336)"><rect width="40" height="40" rx="9" fill="#14291C"/>
+    <g transform="scale(0.4)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="68" cy="28" r="9.1" fill="#8FBE45"/>
+  <circle cx="70.4" cy="25.8" r="1.9" fill="#14291C"/>
+  <g transform="rotate(-31 34 72)"><rect x="26.85" y="64.85" width="14.30" height="14.30" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g transform="translate(350,352)"><rect width="24" height="24" rx="6" fill="#14291C"/>
+    <g transform="scale(0.24)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="68" cy="28" r="10.5" fill="#8FBE45"/>
+  <g transform="rotate(-31 34 72)"><rect x="25.75" y="63.75" width="16.50" height="16.50" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g transform="translate(404,360)"><rect width="16" height="16" rx="4" fill="#14291C"/>
+    <g transform="scale(0.16)"><path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72" fill="none" stroke="#8FBE45" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="68" cy="28" r="12.6" fill="#8FBE45"/>
+  <g transform="rotate(-31 34 72)"><rect x="24.10" y="62.10" width="19.80" height="19.80" rx="1.5" fill="#8FBE45"/></g></g></g>
+  <g font-family="Inter, Arial, sans-serif" font-size="13" fill="#6B7268">
+    <text x="60" y="396">96</text><text x="186" y="396">64</text><text x="280" y="396">40</text>
+    <text x="350" y="396">24</text><text x="404" y="396">16 px</text>
+  </g>
+  <g transform="translate(500,280)" font-family="Inter, Arial, sans-serif">
+    <rect width="80" height="40" rx="6" fill="#14291C"/><rect x="88" width="80" height="40" rx="6" fill="#8FBE45"/>
+    <rect x="176" width="80" height="40" rx="6" fill="#6F9C33"/>
+    <rect y="48" width="80" height="40" rx="6" fill="#E3B23C"/>
+    <rect x="88" y="48" width="80" height="40" rx="6" fill="#F1EDDF" stroke="#DDD9CC"/>
+    <rect x="176" y="48" width="80" height="40" rx="6" fill="#C0442F"/>
+    <g font-size="12" fill="#6B7268">
+      <text x="0" y="106">#14291C</text><text x="88" y="106">#8FBE45</text><text x="176" y="106">#6F9C33</text>
+      <text x="0" y="122">#E3B23C</text><text x="88" y="122">#F1EDDF</text><text x="176" y="122">#C0442F</text>
+    </g>
+  </g>
+</svg>

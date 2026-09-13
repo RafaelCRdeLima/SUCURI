@@ -1,0 +1,48 @@
+/* SUCURI — tokens de marca
+   SymPy Unified Compiler for Unambiguous Rendered Input */
+
+:root {
+  /* Cores de marca */
+  --sucuri-mata:   #14291C; /* fundo escuro, ladrilho da marca */
+  --sucuri-verde:  #8FBE45; /* marca sobre fundo escuro */
+  --sucuri-folha:  #6F9C33; /* marca e wordmark sobre fundo claro */
+  --sucuri-ambar:  #E3B23C; /* aviso, ambiguidade resolvida por inferência */
+  --sucuri-areia:  #F1EDDF; /* superfície clara */
+  --sucuri-argila: #C0442F; /* erro de parse */
+
+  /* Derivadas de interface */
+  --sucuri-mata-2:    #1D3A28; /* elevação dentro do tema escuro */
+  --sucuri-areia-2:   #E4DFCC; /* bordas sobre areia */
+  --sucuri-tinta:     #232821; /* texto principal no tema claro */
+  --sucuri-tinta-2:   #6B7268; /* texto secundário */
+  --sucuri-sucesso-bg: #E6F0D4;
+  --sucuri-sucesso-fg: #3D5A15;
+  --sucuri-aviso-bg:   #FAEEDA;
+  --sucuri-aviso-fg:   #7A5307;
+  --sucuri-erro-bg:    #F9E3DF;
+  --sucuri-erro-fg:    #8A2D1C;
+
+  /* Tipografia */
+  --sucuri-fonte-ui:   Inter, "Helvetica Neue", Arial, sans-serif;
+  --sucuri-fonte-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --sucuri-tracking-wordmark: 0.18em;
+
+  /* Forma */
+  --sucuri-raio:      8px;
+  --sucuri-raio-card: 12px;
+  --sucuri-raio-icone: 23%; /* proporção do ladrilho da marca */
+}
+
+[data-tema="escuro"] {
+  --sucuri-superficie-0: var(--sucuri-mata);
+  --sucuri-superficie-1: var(--sucuri-mata-2);
+  --sucuri-texto:        var(--sucuri-areia);
+  --sucuri-marca:        var(--sucuri-verde);
+}
+
+[data-tema="claro"] {
+  --sucuri-superficie-0: var(--sucuri-areia);
+  --sucuri-superficie-1: #FFFFFF;
+  --sucuri-texto:        var(--sucuri-tinta);
+  --sucuri-marca:        var(--sucuri-folha);
+}

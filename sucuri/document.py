@@ -6,7 +6,7 @@ sozinho a maior parte dos sítios ambíguos. O que sobrar fica pendente, e a
 expressão RECUSA-SE a virar SymPy enquanto houver pendência.
 
 É esse o ponto do programa. Um parser entrega expressão errada em silêncio; o
-CADMUS entrega uma pergunta.
+Sucuri entrega uma pergunta.
 """
 
 from __future__ import annotations
@@ -14,6 +14,41 @@ from __future__ import annotations
 import sympy as sp
 
 from .ambiguity import find
+
+
+class Resolution:
+    """Como um sítio ambíguo foi resolvido — e não apenas se foi.
+
+    A distinção importa e veio da identidade visual, que reserva o âmbar para
+    "ambiguidade resolvida por inferência". Uma convenção de documento pode
+    acertar nove sítios e errar o décimo em silêncio: quem declarou que linha é
+    derivada não olhou cada linha. Marcar esses sítios permite à interface
+    pedir conferência sem bloquear o trabalho.
+
+    Os três estados, na ordem de confiança:
+
+      EXPLICIT  anotação feita para este sítio        (verde)
+      INFERRED  convenção do documento aplicada aqui  (âmbar)
+      PENDING   sem leitura definida                  (bloqueia)
+    """
+
+    EXPLICIT = "explícita"
+    INFERRED = "inferida"
+    PENDING = "pendente"
+
+    def __init__(self, ambiguity, reading, how):
+        self.ambiguity = ambiguity
+        self.reading = reading
+        self.how = how
+
+    @property
+    def needs_review(self):
+        """Verdadeiro para o que foi inferido: correto até prova em contrário."""
+        return self.how == Resolution.INFERRED
+
+    def __repr__(self):
+        alvo = self.reading or "—"
+        return f"<{self.ambiguity.fragment!r} -> {alvo} [{self.how}]>"
 
 
 class Unresolved(Exception):
@@ -81,18 +116,31 @@ class Document:
 
     def resolve(self, amb):
         """A leitura em vigor para este sítio, ou None se pendente."""
+        return self.resolution(amb).reading
+
+    def resolution(self, amb):
+        """A leitura E como se chegou a ela.
+
+        Anotação feita para o sítio é EXPLICIT. Convenção de documento aplicada
+        a ele é INFERRED — a interface a mostra em âmbar, pedindo conferência.
+        """
         if amb.key in self._annotations:
-            return self._annotations[amb.key]
+            return Resolution(amb, self._annotations[amb.key], Resolution.EXPLICIT)
+
+        inferida = None
         if amb.kind == "prime" and self._primes_are_derivatives is not None:
-            return "derivative" if self._primes_are_derivatives else "symbol"
-        if amb.kind == "juxtaposition":
+            inferida = "derivative" if self._primes_are_derivatives else "symbol"
+        elif amb.kind == "juxtaposition":
             if amb.base in self._functions:
-                return "application"
-            if amb.base in self._variables:
-                return "product"
-        if amb.kind == "leibniz":
-            return "derivative" if self._primes_are_derivatives is not False else None
-        return None
+                inferida = "application"
+            elif amb.base in self._variables:
+                inferida = "product"
+        elif amb.kind == "leibniz" and self._primes_are_derivatives is not False:
+            inferida = "derivative"
+
+        if inferida is None:
+            return Resolution(amb, None, Resolution.PENDING)
+        return Resolution(amb, inferida, Resolution.INFERRED)
 
 
 class Expression:
@@ -113,6 +161,20 @@ class Expression:
     @property
     def resolved(self):
         return not self.pending
+
+    @property
+    def resolutions(self):
+        """Como cada sítio foi resolvido, na ordem da entrada."""
+        return [self.document.resolution(a) for a in self.ambiguities]
+
+    @property
+    def inferred(self):
+        """Sítios resolvidos por convenção, não por anotação do sítio.
+
+        São os que a interface pinta de âmbar: a expressão funciona, mas a
+        leitura veio de uma regra geral e ninguém olhou este caso.
+        """
+        return [r for r in self.resolutions if r.needs_review]
 
     def questions(self):
         """As perguntas que o programa faria ao usuário, em vez de adivinhar."""

@@ -1,6 +1,6 @@
 """Localização e anotação dos sítios ambíguos da entrada.
 
-O coração do CADMUS. LaTeX descreve como um símbolo é DESENHADO, não o que ele
+O coração do Sucuri. LaTeX descreve como um símbolo é DESENHADO, não o que ele
 SIGNIFICA, e por isso há construções que um parser não tem como resolver
 sozinho. As três que aparecem sempre em física:
 
@@ -8,7 +8,7 @@ sozinho. As três que aparecem sempre em física:
   f(x+1)         f aplicada ao argumento, ou f multiplicando o parêntese?
   d^2 y / dx^2   derivada de Leibniz, ou fração de símbolos d, y, dx?
 
-Um parser adivinha, e erra em silêncio. O CADMUS localiza, e recusa-se a
+Um parser adivinha, e erra em silêncio. O Sucuri localiza, e recusa-se a
 prosseguir sem anotação.
 """
 

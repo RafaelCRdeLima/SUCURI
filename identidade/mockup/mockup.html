@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUCURI — mockup da interface</title>
+<link rel="icon" href="../launcher/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mata:#14291C; --mata-2:#1D3A28; --verde:#8FBE45; --folha:#6F9C33;
+  --ambar:#E3B23C; --areia:#F1EDDF; --areia-2:#E4DFCC; --argila:#C0442F;
+  --tinta:#232821; --tinta-2:#6B7268;
+  --ui:Inter,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--areia);color:var(--tinta);font-family:var(--ui);
+     font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.app{max-width:1080px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+     background:#fff;border-left:1px solid var(--areia-2);border-right:1px solid var(--areia-2)}
+
+header{display:flex;align-items:center;gap:14px;padding:14px 22px;background:var(--mata)}
+header svg{flex:none}
+.wordmark{color:var(--areia);font-size:16px;font-weight:500;letter-spacing:.18em}
+.arquivo{margin-left:auto;color:var(--verde);font-family:var(--mono);font-size:13px}
+
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--areia-2)}
+section{background:#fff;padding:22px;min-width:0}
+.rotulo{font-size:13px;color:var(--tinta-2);margin:0 0 10px}
+
+textarea{width:100%;min-height:140px;resize:vertical;border:1px solid var(--areia-2);
+  border-radius:8px;background:var(--areia);padding:14px;font-family:var(--mono);
+  font-size:14px;line-height:1.7;color:var(--tinta)}
+textarea:focus{outline:none;border-color:var(--folha);box-shadow:0 0 0 3px rgba(111,156,51,.18)}
+
+.estados{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;
+      padding:5px 11px;border-radius:999px}
+.ok{background:#E6F0D4;color:#3D5A15}
+.aviso{background:#FAEEDA;color:#7A5307}
+.pill svg{flex:none}
+
+pre{margin:0;background:var(--mata);border-radius:8px;padding:16px;overflow-x:auto;
+    font-family:var(--mono);font-size:13.5px;line-height:1.8;color:var(--areia)}
+.kw{color:var(--verde)} .str{color:var(--ambar)} .cm{color:#7E9481}
+
+.acoes{display:flex;gap:10px;margin-top:16px}
+button{flex:1;font-family:var(--ui);font-size:14px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--areia-2);background:#fff;color:var(--tinta);cursor:pointer}
+button:hover{background:var(--areia)}
+button.primario{background:var(--folha);border-color:var(--folha);color:#fff}
+button.primario:hover{background:#5F871E}
+button:focus-visible{outline:2px solid var(--folha);outline-offset:2px}
+
+.arvore{margin-top:26px;padding-top:18px;border-top:1px solid var(--areia-2)}
+.arvore ul{list-style:none;margin:6px 0 0;padding-left:16px;
+  border-left:1px solid var(--areia-2);font-family:var(--mono);font-size:13px;color:var(--tinta-2)}
+.arvore li{padding:2px 0}
+.arvore .no{color:var(--tinta)}
+
+footer{padding:12px 22px;border-top:1px solid var(--areia-2);
+  font-size:13px;color:var(--tinta-2);display:flex;gap:16px}
+footer .tempo{margin-left:auto;font-family:var(--mono)}
+
+@media (max-width:760px){
+  main{grid-template-columns:1fr}
+  section{padding:18px}
+}
+@media (prefers-reduced-motion:no-preference){
+  button{transition:background .15s ease}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <span class="wordmark">SUCURI</span>
+  <span class="arquivo">gaussiana.tex</span>
+</header>
+
+<main>
+  <section>
+    <p class="rotulo">Entrada em LaTeX</p>
+    <textarea spellcheck="false" aria-label="Entrada em LaTeX">\int_0^\infty e^{-a x^2}\,dx</textarea>
+
+    <div class="estados">
+      <span class="pill ok">
+        <svg width="13" height="13" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Árvore válida
+      </span>
+      <span class="pill aviso">
+        <svg width="13" height="13" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3l8 14H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 8v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="15" r="1" fill="currentColor"/></svg>
+        a &gt; 0 inferido da convergência
+      </span>
+    </div>
+
+    <div class="arvore">
+      <p class="rotulo">Árvore reconhecida</p>
+      <ul>
+        <li class="no">Integral</li>
+        <ul>
+          <li>limites: 0 → oo</li>
+          <li class="no">Mul</li>
+          <ul>
+            <li class="no">exp</li>
+            <ul><li>-a·x²</li></ul>
+          </ul>
+          <li>variável: x</li>
+        </ul>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <p class="rotulo">Saída em SymPy</p>
+<pre id="codigo"><span class="kw">from</span> sympy <span class="kw">import</span> *
+
+x, a = symbols(<span class="str">'x a'</span>, positive=<span class="kw">True</span>)
+expr = integrate(exp(-a*x**<span class="str">2</span>), (x, <span class="str">0</span>, oo))
+
+<span class="cm"># expr = sqrt(pi)/(2*sqrt(a))</span></pre>
+
+    <div class="acoes">
+      <button id="copiar">Copiar código</button>
+      <button class="primario">Avaliar</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>SymPy 1.13</span>
+  <span>LaTeX estrito</span>
+  <span class="tempo">41 ms</span>
+</footer>
+
+</div>
+
+<script>
+document.getElementById('copiar').addEventListener('click', function (e) {
+  var texto = document.getElementById('codigo').innerText;
+  navigator.clipboard.writeText(texto).then(function () {
+    e.target.textContent = 'Código copiado';
+    setTimeout(function () { e.target.textContent = 'Copiar código'; }, 1600);
+  });
+});
+</script>
+</body>
+</html>
