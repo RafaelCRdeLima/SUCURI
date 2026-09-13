@@ -65,6 +65,25 @@ textarea:focus{outline:none;border-color:var(--folha);box-shadow:0 0 0 3px rgba(
 /* ------------------------------------------------------------ perguntas */
 .sitio{border:1px solid var(--areia-2);border-radius:var(--sucuri-raio);
        padding:12px 14px;margin-bottom:10px}
+
+/* Sítio já resolvido não repete a pergunta: uma linha, e as opções só quando
+   alguém quiser mudar. Perguntar o que já foi respondido faz o usuário
+   desconfiar de uma decisão que ele próprio tomou. */
+.sitio.resolvido{padding:0 0 0 10px;border:none;background:none;
+  margin-bottom:6px}
+.sitio.resolvido.inferida{border-left:3px solid var(--ambar)}
+.sitio.resolvido.explicita{border-left:3px solid var(--folha)}
+.sitio-linha{display:flex;align-items:center;gap:10px;width:100%;
+  font-family:var(--ui);font-size:12.5px;text-align:left;cursor:pointer;
+  background:none;border:none;padding:4px 0;color:var(--tinta-2);flex-wrap:wrap}
+.sitio-linha:hover .sitio-leitura{color:var(--tinta)}
+.sitio-linha .fragmento{font-size:12.5px;padding:1px 6px}
+.sitio-leitura{color:var(--tinta-2)}
+.sitio-leitura::before{content:"◆  ";font-size:11px}
+.sitio.inferida .sitio-leitura::before{color:var(--ambar)}
+.sitio.explicita .sitio-leitura::before{color:var(--folha)}
+.sitio-origem{margin-left:auto;color:var(--tinta-2);opacity:.75}
+.sitio.resolvido .opcoes{margin:6px 0 10px}
 .sitio.pendente{border-color:#E3C9A0;background:#FDF8EF}
 .sitio.inferida{border-left:3px solid var(--ambar)}
 .sitio.explicita{border-left:3px solid var(--folha)}

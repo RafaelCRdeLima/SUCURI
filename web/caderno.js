@@ -180,7 +180,9 @@ function pintar(celula, d) {
 }
 
 function pintarMath(saida, d) {
-  (d.ambiguidades || []).forEach(function (a) { saida.appendChild(sitio(a)); });
+  (d.ambiguidades || []).forEach(function (a) {
+    saida.appendChild(SUCURI_SITIO(a, decidir));
+  });
   if (d.latex_semantico) {
     saida.appendChild(livro(d.latex_semantico));
     saida.appendChild(rodape([
@@ -265,44 +267,16 @@ function rodape(botoes) {
   return div;
 }
 
-/* ------------------------------------------------------ sítios ambíguos */
-
-function sitio(a) {
-  var div = document.createElement('div');
-  div.className = 'sitio ' + a.estado;
-  var cabeca = document.createElement('div');
-  cabeca.className = 'sitio-cabeca';
-  var frag = document.createElement('span');
-  frag.className = 'fragmento';
-  frag.textContent = a.fragmento;
-  cabeca.appendChild(frag);
-  var nota = document.createElement('span');
-  nota.className = 'sitio-nota';
-  nota.textContent = a.estado === 'pendente' ? 'o Sucuri não escolhe por você'
-                   : a.estado === 'inferida' ? 'veio da convenção — confira'
-                   : 'decidido aqui';
-  cabeca.appendChild(nota);
-  div.appendChild(cabeca);
-
-  var opcoes = document.createElement('div');
-  opcoes.className = 'opcoes';
-  a.leituras.forEach(function (r) {
-    var b = document.createElement('button');
-    b.className = 'opcao';
-    if (a.leitura === r.chave) {
-      b.className += a.estado === 'explicita' ? ' escolhida' : ' herdada';
-    }
-    b.textContent = r.descricao;
-    b.addEventListener('click', function () {
-      /* Decidir um sítio vale para o caderno inteiro: refaz tudo. */
-      anotacoes.push({ kind: a.kind, base: a.base, detalhe: a.detalhe,
-                       leitura: r.chave });
-      refazer();
-    });
-    opcoes.appendChild(b);
+/* Decidir um sítio vale para o caderno inteiro: refaz tudo. */
+function decidir(a, leitura) {
+  anotacoes = anotacoes.filter(function (o) {
+    return !(o.kind === a.kind && o.base === a.base);
   });
-  div.appendChild(opcoes);
-  return div;
+  if (leitura !== null) {
+    anotacoes.push({ kind: a.kind, base: a.base, detalhe: a.detalhe,
+                     leitura: leitura });
+  }
+  refazer();
 }
 
 /* Erro solto não pode terminar em silêncio. */

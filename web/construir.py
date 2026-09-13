@@ -27,8 +27,8 @@ ANTLR_URL = ("https://files.pythonhosted.org/packages/py3/a/"
              "antlr4-python3-runtime/" + ANTLR)
 
 # O que a interface local e a online compartilham, byte a byte.
-COMPARTILHADO = ["sucuri.css", "sucuri.js", "caderno.css", "caderno.js",
-                 "tokens.css", "favicon.svg"]
+COMPARTILHADO = ["sucuri.css", "sucuri.js", "sitios.js", "caderno.css",
+                 "caderno.js", "tokens.css", "favicon.svg"]
 
 # As páginas: as mesmas da interface local, com a tela de carregamento
 # injetada. Gerar em vez de copiar à mão é o que impede as duas versões de

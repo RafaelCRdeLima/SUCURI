@@ -153,48 +153,6 @@ function faltando(d) {
 
 /* -------------------------------------------------------------- perguntas */
 
-function sitio(a) {
-  var div = document.createElement('div');
-  div.className = 'sitio ' + a.estado;
-
-  var cabeca = document.createElement('div');
-  cabeca.className = 'sitio-cabeca';
-  var frag = document.createElement('span');
-  frag.className = 'fragmento';
-  frag.textContent = a.fragmento;
-  cabeca.appendChild(frag);
-
-  var nota = document.createElement('span');
-  nota.className = 'sitio-nota';
-  nota.textContent = a.estado === 'pendente' ? 'o Sucuri não escolhe por você'
-                   : a.estado === 'inferida' ? 'veio da convenção — confira'
-                   : 'decidido aqui';
-  cabeca.appendChild(nota);
-  div.appendChild(cabeca);
-
-  var opcoes = document.createElement('div');
-  opcoes.className = 'opcoes';
-  a.leituras.forEach(function (r) {
-    var b = document.createElement('button');
-    b.className = 'opcao';
-    if (a.leitura === r.chave) {
-      b.className += a.estado === 'explicita' ? ' escolhida' : ' herdada';
-    }
-    b.textContent = r.descricao;
-    b.addEventListener('click', function () { decidir(a, r.chave); });
-    opcoes.appendChild(b);
-  });
-  if (a.estado === 'explicita') {
-    var limpar = document.createElement('button');
-    limpar.className = 'opcao';
-    limpar.textContent = 'voltar à convenção';
-    limpar.addEventListener('click', function () { decidir(a, null); });
-    opcoes.appendChild(limpar);
-  }
-  div.appendChild(opcoes);
-  return div;
-}
-
 function decidir(a, leitura) {
   var meu = ++sequencia;
   pedir('/api/anotar', {
@@ -208,7 +166,9 @@ function perguntas(d) {
   caixa.textContent = '';
   var lista = d.ambiguidades || [];
   $('bloco-perguntas').hidden = lista.length === 0;
-  lista.forEach(function (a) { caixa.appendChild(sitio(a)); });
+  lista.forEach(function (a) {
+    caixa.appendChild(SUCURI_SITIO(a, decidir));
+  });
 }
 
 /* ----------------------------------------------------------------- árvore */
