@@ -32,10 +32,16 @@ import sympy as sp
 from .interface.sessao import Sessao, codigo_python
 
 _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*\)\s*$")
-# Declaração: `u[x,t]` ou `u = u[x,t]`. Colchete, e não parêntese, porque
-# u(x,t) já é matemática — aplicação de função — e declarar não é calcular.
-_RE_DECLARA = re.compile(r"^\s*[A-Za-z]\w*\s*(?:=\s*[A-Za-z]\w*\s*)?"
-                         r"\[[^\]]*\]\s*$")
+# Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
+#
+# A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
+# uma expressão legítima — aplicação, ou produto, que é justamente um sítio
+# ambíguo — e engoli-la como declaração seria decidir por quem escreveu.
+# `u = u(t,x)` é tautologia: ninguém escreve isso como equação.
+_RE_DECLARA = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*\1\s*\([^)]*\)\s*$")
+
+# A forma antiga, para dizer o que mudou em vez de falhar em LaTeX.
+_RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 
 # As outras duas coisas que um nome pode ser, além de função de alguma coisa.
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
@@ -103,6 +109,15 @@ class Caderno:
         if declarada:
             return self._declarar(fonte)
 
+        colchete = _RE_COLCHETE.match(fonte or "")
+        if colchete:
+            nome = colchete.group(1)
+            dentro = fonte[fonte.index("[") + 1:fonte.rindex("]")]
+            return Celula(None, fonte, "declaracao", {
+                "erro": f"a declaração agora se escreve com parênteses: "
+                        f"{nome} = {nome}({dentro}). O colchete ficou reservado "
+                        f"a n-tupla."})
+
         comando = _RE_COMANDO.match(fonte or "")
         if comando and comando.group(1).lower() in VERBOS:
             verbo, alvo = comando.group(1).lower(), comando.group(2)
@@ -129,7 +144,7 @@ class Caderno:
                        "texto": texto})
 
     def _declarar(self, fonte):
-        """`u = u[x,t]` — e a ambiguidade some em vez de ser escolhida.
+        """`u = u(t,x)` — e a ambiguidade some em vez de ser escolhida.
 
         Declarar que u é função de x e t não escolhe entre as leituras de
         ∂u/∂t: tira uma delas do mundo, porque não há símbolo u para
@@ -138,8 +153,7 @@ class Caderno:
         """
         from .document import declaracoes
 
-        novas = declaracoes(fonte.replace("=", ";", 1)
-                            if "=" in fonte else fonte)
+        novas = declaracoes(fonte.split("=", 1)[1])
         vistos = []
         for nome, args in novas:
             if not args:
@@ -147,7 +161,7 @@ class Caderno:
             self.sessao.funcoes_declaradas = [
                 f for f in self.sessao.funcoes_declaradas
                 if not f.startswith(nome + "[")]
-            self.sessao.funcoes_declaradas.append(f"{nome}[{','.join(args)}]")
+            self.sessao.funcoes_declaradas.append(f"{nome}({','.join(args)})")
             vistos.append((nome, args))
         if not vistos:
             return self._matematica(fonte)

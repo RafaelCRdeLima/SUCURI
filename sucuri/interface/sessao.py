@@ -370,9 +370,9 @@ def _nome(v):
 
 
 def _lista(v):
-    """Separa por vírgula, menos a vírgula DENTRO de colchete.
+    """Separa por vírgula, menos a vírgula DENTRO de parênteses.
 
-    'u[x,t], f' são duas declarações, não três: o colchete é onde a função diz
+    'u(x,t), f' são duas declarações, não três: o parêntese é onde a função diz
     de que variáveis ela é, e partir ali quebraria justamente a informação que
     a notação carrega.
     """
@@ -380,9 +380,9 @@ def _lista(v):
         return [str(x).strip() for x in (v or []) if str(x).strip()]
     itens, atual, fundo = [], [], 0
     for c in v:
-        if c == "[":
+        if c in "([":
             fundo += 1
-        elif c == "]":
+        elif c in ")]":
             fundo -= 1
         if c in ",;" and fundo == 0:
             itens.append("".join(atual))

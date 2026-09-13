@@ -156,14 +156,21 @@ def _canonizar(expr):
 
 
 _RE_DECLARACAO = re.compile(r"^\s*([A-Za-z][\w]*)\s*(?:=\s*\1\s*)?"
-                            r"\[\s*([^\]]*)\s*\]\s*$")
+                            r"\(\s*([^)]*)\s*\)\s*$")
 
 
 def _declaracao(texto):
-    """'u[x,t]' e 'u = u[x,t]' -> ('u', ('x', 't'));  'f' -> ('f', None).
+    """'u(x,t)' e 'u = u(x,t)' -> ('u', ('x', 't'));  'f' -> ('f', None).
 
-    Colchete, e não parêntese, porque u(x,t) já é matemática — aplicação de
-    função — e uma declaração não pode parecer uma conta.
+    Parêntese, como em livro: "seja u = u(t,x)" é como se declara em prosa, e
+    escrito com o mesmo nome dos dois lados é tautologia — ninguém escreve isso
+    como equação, então não há colisão com matemática.
+
+    O colchete fica livre, reservado a n-tupla.
+
+    Nota: aqui, onde se DECLARA, 'u(x,t)' sozinho já é declaração, porque o
+    campo existe para isso. Na folha do caderno não: lá u(x,t) sozinho é uma
+    expressão, e só a forma com "=" declara.
     """
     m = _RE_DECLARACAO.match(texto)
     if not m:
@@ -180,7 +187,7 @@ def declaracoes(texto):
         pedaco = pedaco.strip()
         if not pedaco:
             continue
-        if "[" in pedaco:
+        if "(" in pedaco:
             achadas.append(_declaracao(pedaco))
         else:
             achadas += [(n.strip(), None) for n in pedaco.split(",") if n.strip()]
@@ -329,7 +336,7 @@ class Document:
         """Declara funções, e opcionalmente de que variáveis elas são.
 
             doc.function("f")            # f é função
-            doc.function("u[x,t]")       # u é função de x e t
+            doc.function("u(x,t)")       # u é função de x e t
 
         A segunda forma é mais forte do que qualquer convenção, e por um
         motivo que vale dizer: declarar que u é função DISSOLVE ambiguidades em

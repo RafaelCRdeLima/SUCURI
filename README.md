@@ -96,7 +96,7 @@ Ver `exemplos/tabelas/AUDITORIA-DERIVADAS.md` e `AUDITORIA-INTEGRAIS.md`.
 ## Declarar dissolve a dúvida
 
 ```
-u = u[x,t]
+u = u(t,x)
 \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
 ```
 
@@ -109,9 +109,13 @@ multiplicar. O sítio para de ser pergunta porque parou de ter duas respostas.
 motivo é uma declaração, não uma regra aplicada sem olhar. A leitura diz de
 onde veio — *u foi declarada função de x, t*.
 
-Colchete, e não parêntese, porque `u(x,t)` já é matemática. Vale na célula
-(daqui para baixo) ou no campo **Funções** (documento inteiro), com a mesma
-notação.
+Parêntese, como em livro: *seja u = u(t,x)* é como se declara em prosa. Escrito
+com o mesmo nome dos dois lados é tautologia — ninguém escreve isso como
+equação —, e é essa repetição que distingue declaração de matemática: `u(t,x)`
+sozinho continua sendo uma expressão, e engoli-la seria decidir por quem
+escreveu. O colchete fica reservado a n-tupla.
+
+Vale na célula (daqui para baixo) ou no campo **Funções** (documento inteiro).
 
 ## Mais de uma variável independente
 
@@ -270,7 +274,7 @@ melhor, e dizem de um jeito mais forte: a convenção *escolhe* uma leitura, a
 declaração *dissolve* a dúvida.
 
 ```
-u = u[x,t]        u é função de x e t
+u = u(t,x)        u é função de t e x
 e = euler         e é o número de Euler
 c = símbolo       c é símbolo, não função: c(…) é produto
 ```

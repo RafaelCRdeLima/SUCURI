@@ -121,13 +121,13 @@ def test_latex_devolve_a_escrita_de_volta():
 # ------------------------------------------------- declarar dissolve a dúvida
 
 def test_declarar_a_funcao_e_suas_variaveis():
-    """`u = u[x,t]` não escolhe entre as leituras de ∂u/∂t: tira uma delas do
+    """`u = u(t,x)` não escolhe entre as leituras de ∂u/∂t: tira uma delas do
     mundo. Não há símbolo u para multiplicar, então "fração literal dos
     símbolos ∂, u e ∂t" deixa de ser uma leitura possível — o sítio para de ser
     pergunta porque parou de ter duas respostas.
     """
     c = Caderno().configurar({"variaveis": "c"})
-    d = c.executar("u = u[x,t]").to_dict()
+    d = c.executar("u = u(x,t)").to_dict()
     assert d["tipo"] == "declaracao"
     assert d["declarado"] == [{"nome": "u", "variaveis": ["x", "t"]}]
 
@@ -143,36 +143,48 @@ def test_declarar_a_funcao_e_suas_variaveis():
                for a in onda["ambiguidades"])
 
 
-def test_as_duas_formas_de_escrever_a_declaracao():
-    for fonte in ["u[x,t]", "u = u[x,t]"]:
-        c = Caderno()
-        assert c.executar(fonte).to_dict()["tipo"] == "declaracao"
+def test_so_a_forma_com_igual_declara():
+    """`u(t,x)` sozinho é expressão legítima — aplicação, ou produto, que é
+    justamente um sítio ambíguo. Engoli-la como declaração seria decidir por
+    quem escreveu. A repetição do nome é o que distingue: `u = u(t,x)` é
+    tautologia, e ninguém escreve isso como equação."""
+    c = Caderno()
+    assert c.executar("u = u(t,x)").to_dict()["tipo"] == "declaracao"
+    assert c.executar("u(t,x)").to_dict()["tipo"] == "math"
+    assert c.executar("u = v(t,x)").to_dict()["tipo"] == "math"
+
+
+def test_a_forma_antiga_diz_o_que_mudou():
+    """Falhar em LaTeX não ajudaria quem aprendeu a sintaxe de ontem."""
+    c = Caderno()
+    d = c.executar("u[x,t]").to_dict()
+    assert "parênteses" in d["erro"] and "u = u(x,t)" in d["erro"]
 
 
 def test_funcao_declarada_vale_tambem_onde_nao_ha_derivada():
     """Um u solto continua sendo a mesma função, e não um símbolo homônimo."""
     c = Caderno()
-    c.executar("u[x,t]")
+    c.executar("u = u(x,t)")
     assert c.executar("u + 1").to_dict()["sympy"] == "u(x, t) + 1"
 
 
 def test_o_campo_de_funcoes_aceita_a_mesma_notacao():
-    """Vírgula dentro de colchete não separa: 'u[x,t], f' são duas
+    """Vírgula dentro de colchete não separa: 'u(x,t), f' são duas
     declarações, não três."""
     from sucuri.interface.sessao import _lista
-    assert _lista("u[x,t], f") == ["u[x,t]", "f"]
+    assert _lista("u(x,t), f") == ["u(x,t)", "f"]
 
-    c = Caderno().configurar({"funcoes": "u[x,t]", "variaveis": "c"})
+    c = Caderno().configurar({"funcoes": "u(x,t)", "variaveis": "c"})
     assert c.executar(r"\partial_t u").to_dict()["sympy"] == \
         "Derivative(u(x, t), t)"
 
 
 def test_a_linha_continua_precisando_da_convencao():
-    """Declarar u[x,t] não resolve f': com duas variáveis, a linha não diz em
+    """Declarar u(x,t) não resolve f': com duas variáveis, a linha não diz em
     relação a qual. A declaração dissolve o que a notação já nomeia — ∂ e
     Leibniz —, e não o que ela deixa em aberto."""
     c = Caderno()
-    c.executar("u[x,t]")
+    c.executar("u = u(x,t)")
     assert c.executar("u' = 0").to_dict()["pendentes"] == 1
 
 
@@ -186,7 +198,7 @@ def test_o_cabecalho_vazio_nao_apaga_a_declaracao_da_celula():
 
     app = Aplicacao()
     conv = {"variaveis": "c", "funcoes": ""}        # cabeçalho vazio
-    app.executar({"sessao": "t", "fonte": "u = u[x,t]", "convencoes": conv})
+    app.executar({"sessao": "t", "fonte": "u = u(x,t)", "convencoes": conv})
     d = app.executar({"sessao": "t", "convencoes": conv,
                       "fonte": r"\partial_t u = 0"})
     assert d["pendentes"] == 0 and d["inferidas"] == 0
@@ -200,7 +212,7 @@ def test_a_declaracao_resolve_a_linha_quando_ha_uma_variavel_so():
     função de x, f' só pode ser df/dx. Não há regra a aplicar — há um fato
     declarado, e por isso o sítio fica verde e não âmbar."""
     c = Caderno()
-    c.executar("y[x]")
+    c.executar("y = y(x)")
     d = c.executar("y'' + y = 0").to_dict()
     assert d["pendentes"] == 0 and d["inferidas"] == 0
     assert d["sympy"] == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
@@ -209,7 +221,7 @@ def test_a_declaracao_resolve_a_linha_quando_ha_uma_variavel_so():
 
 def test_a_declaracao_resolve_o_ponto_tambem():
     c = Caderno()
-    c.executar("q = q[t]")
+    c.executar("q = q(t)")
     d = c.executar(r"\dot{q}^2 + q = 0").to_dict()
     assert d["pendentes"] == 0
     assert d["sympy"] == "Eq(q(t) + Derivative(q(t), t)**2, 0)"
@@ -219,7 +231,7 @@ def test_com_duas_variaveis_a_linha_continua_perguntando():
     """Declarar não inventa o que a notação não diz: u' com u função de x e t
     não diz em relação a qual."""
     c = Caderno()
-    c.executar("u[x,t]")
+    c.executar("u = u(x,t)")
     assert c.executar("u' = 0").to_dict()["pendentes"] == 1
 
 
@@ -238,7 +250,7 @@ def test_o_caderno_nao_precisa_de_convencao_nenhuma():
     """A folha inteira, sem um campo de formulário: só declarações e
     matemática."""
     c = Caderno()
-    for fonte in ["u = u[x,t]", "c = símbolo"]:
+    for fonte in ["u = u(x,t)", "c = símbolo"]:
         assert c.executar(fonte).to_dict()["tipo"] == "declaracao"
     d = c.executar(
         r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}"
