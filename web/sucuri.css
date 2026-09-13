@@ -46,7 +46,12 @@ textarea:focus{outline:none;border-color:var(--folha);box-shadow:0 0 0 3px rgba(
 /* Página que para de responder sem dizer nada é o que o usuário chama de
    instável. Qualquer coisa que dê errado longe de um painel aparece aqui. */
 .faixa{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg);
-  padding:10px 22px;font-size:13px;border-bottom:1px solid #E8D4AC}
+  padding:10px 22px;font-size:13px;border-bottom:1px solid #E8D4AC;
+  display:flex;align-items:center;gap:12px}
+.faixa .desfazer{flex:none;font-size:12.5px;padding:4px 12px;
+  border:1px solid #E8D4AC;background:#fff;color:var(--sucuri-aviso-fg);
+  border-radius:999px;cursor:pointer}
+.faixa .desfazer:hover{background:var(--areia)}
 
 /* --------------------------------------------------------- falta convenção */
 .falta{border:1px solid #E3C9A0;background:#FDF8EF;border-radius:var(--sucuri-raio);

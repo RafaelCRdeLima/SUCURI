@@ -60,6 +60,15 @@ function criarCelula(fonte) {
   dica.className = 'celula-dica';
   dica.textContent = 'Shift+Enter';
   cabeca.appendChild(dica);
+
+  var apagar = document.createElement('button');
+  apagar.type = 'button';
+  apagar.className = 'apagar';
+  apagar.setAttribute('aria-label', 'apagar esta célula');
+  apagar.title = 'apagar esta célula';
+  apagar.textContent = '×';
+  apagar.addEventListener('click', function () { apagarCelula(div); });
+  cabeca.appendChild(apagar);
   div.appendChild(cabeca);
 
   var area = document.createElement('textarea');
@@ -108,6 +117,37 @@ function criarInseridor() {
   });
   div.appendChild(b);
   return div;
+}
+
+/* Apagar é a única ação da folha que perde trabalho, e não tem diálogo de
+ * confirmação: diálogo interrompe todo mundo para proteger o engano de um. A
+ * proteção é poder desfazer — e a faixa de aviso já é o lugar onde a página
+ * diz o que fez. */
+function apagarCelula(celula) {
+  var folha = $('folha');
+  var antes = celula.previousSibling;          // o inseridor de cima
+  var depois = celula.nextSibling;             // o de baixo, que vai junto
+  var fonte = celula._area.value;
+  var tinhaNome = !!celula._nome.textContent;
+
+  folha.removeChild(celula);
+  if (depois && depois.classList && depois.classList.contains('inserir')) {
+    folha.removeChild(depois);
+  }
+  if (!celulas().length) { acrescentar(''); }
+
+  function desfazer() {
+    var volta = criarCelula(fonte);
+    folha.insertBefore(volta, antes ? antes.nextSibling : folha.firstChild);
+    folha.insertBefore(criarInseridor(), volta.nextSibling);
+    volta._area.focus();
+  }
+
+  if (!fonte.trim()) { return; }               // célula vazia não merece aviso
+  avisar(tinhaNome
+    ? 'célula apagada — o que ela já tinha definido continua no motor até '
+      + '"Rodar tudo" ou "Reiniciar"'
+    : 'célula apagada', { rotulo: 'desfazer', fn: desfazer });
 }
 
 function acrescentar(fonte) {
@@ -175,10 +215,20 @@ function refazer() {
     });
 }
 
-function avisar(texto) {
+function avisar(texto, acao) {
   var faixa = $('faixa');
   faixa.textContent = texto;
   faixa.hidden = false;
+  if (acao) {
+    var b = document.createElement('button');
+    b.className = 'desfazer';
+    b.textContent = acao.rotulo;
+    b.addEventListener('click', function () {
+      faixa.hidden = true;
+      acao.fn();
+    });
+    faixa.appendChild(b);
+  }
   clearTimeout(avisar._relogio);
   avisar._relogio = setTimeout(function () { faixa.hidden = true; }, 12000);
 }

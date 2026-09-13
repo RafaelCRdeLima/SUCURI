@@ -58,6 +58,16 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
   min-width:3.2em}
 .celula-dica{font-size:12.5px;color:var(--tinta-2);margin-left:auto}
 
+/* O × mora no cabeçalho da célula, e só aparece quando o ponteiro está nela:
+   apagar não é o que se procura numa folha, é o que se acha quando se precisa. */
+.apagar{flex:none;width:22px;height:22px;padding:0;margin-left:10px;
+  border:1px solid transparent;background:none;color:var(--tinta-2);
+  font-size:16px;line-height:1;border-radius:6px;cursor:pointer;opacity:0;
+  display:flex;align-items:center;justify-content:center}
+.celula:hover .apagar,.apagar:focus-visible{opacity:1}
+.apagar:hover{color:var(--argila);border-color:rgba(192,68,47,.35);
+  background:var(--sucuri-erro-bg)}
+
 .celula textarea{min-height:0;height:auto;padding:10px 12px}
 .saida{margin-top:12px}
 .saida .livro{padding:16px;border:1px solid var(--areia-2);
