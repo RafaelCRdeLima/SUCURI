@@ -1,0 +1,16 @@
+{
+  // Publicação na Cloudflare como Worker de ativos estáticos.
+  //
+  // Não há código de Worker: `assets.directory` sozinho faz o `wrangler deploy`
+  // subir a pasta e servi-la, e é tudo o que este programa precisa — o motor
+  // roda no navegador de quem abre a página, não no servidor.
+  //
+  // A pasta é montada por `python web/construir.py`, e há teste que falha se o
+  // que está publicado divergir do pacote.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sucuri",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./web"
+  }
+}
