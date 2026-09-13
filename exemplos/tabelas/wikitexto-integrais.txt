@@ -1,0 +1,286 @@
+{{Short description|None}}
+{{About|mostly indefinite integrals in calculus|a list of definite integrals|List of definite integrals}}
+{{more footnotes needed|date=November 2013}}
+{{Calculus |Integral}}
+{{Dynamic list}}
+
+[[Integral|Integration]] is the basic operation in [[integral calculus]].  While [[derivative|differentiation]] has straightforward [[Differentiation rules|rules]] by which the derivative of a complicated [[Function (mathematics)|function]] can be found by differentiating its simpler component functions, integration does not, so tables of known integrals are often useful. This page lists some of the most common [[antiderivative]]s.
+
+==Historical development of integrals==
+A compilation of a list of integrals (Integraltafeln) and techniques of integral calculus was published by the German mathematician {{Interlanguage link multi|Meier Hirsch|de}} (also spelled Meyer Hirsch) in 1810.<ref>{{Cite book |last=Hirsch |first=Meyer |url=https://books.google.com/books?id=8IUAAAAAMAAJ |title=Integraltafeln: oder, Sammlung von integralformeln |date=1810 |publisher=Duncker & Humblot |language=de}}</ref> These tables were republished in the United Kingdom in 1823. More extensive tables were compiled in 1858 by the Dutch mathematician [[David Bierens de Haan]] for his ''[[Tables d'intégrales définies]]'', supplemented by ''[[Supplément aux tables d'intégrales définies]]'' in ca. 1864<!-- no visible date indication by itself. Google books entry states 1864, foreword states 1861, English WP article formerly stated 1862 -->. A new edition was published in 1867 under the title ''[[Nouvelles tables d'intégrales définies]]''.
+
+These tables, which contain mainly integrals of elementary functions, remained in use until the middle of the 20th century. They were then replaced by the much more extensive tables of [[Gradshteyn and Ryzhik]]. In Gradshteyn and Ryzhik, integrals originating from the book by Bierens de Haan are denoted by BI.
+
+Not all [[closed-form expression]]s have closed-form antiderivatives; this study forms the subject of [[differential Galois theory]], which was initially developed by [[Joseph Liouville]] in the 1830s and 1840s, leading to [[Liouville's theorem (differential algebra)|Liouville's theorem]] which classifies which expressions have closed-form antiderivatives. A simple example of a function without a closed-form antiderivative is {{math|''e''<sup>−''x''<sup>2</sup></sup>}}, whose antiderivative is (up to constants) the [[error function]].
+
+Since 1968 there is the [[Risch algorithm]] for determining indefinite integrals that can be expressed in term of [[elementary function]]s, typically using a [[computer algebra system]]. Integrals that cannot be expressed using elementary functions can be manipulated symbolically using general functions such as the [[Meijer G-function]].
+
+==Lists of integrals==
+More detail may be found on the following pages for the '''lists of integrals''':
+
+* [[List of integrals of rational functions]]
+* [[List of integrals of irrational algebraic functions]]
+* [[List of integrals of trigonometric functions]]
+* [[List of integrals of inverse trigonometric functions]]
+* [[List of integrals of hyperbolic functions]]
+* [[List of integrals of inverse hyperbolic functions]]
+* [[List of integrals of exponential functions]]
+* [[List of integrals of logarithmic functions]]
+* [[List of integrals of Gaussian functions]]
+
+{{anchor|Prudnikov-Brychkov-Marichev}}[[Izrail Solomonovich Gradshteyn|Gradshteyn]], [[Iosif Moiseevich Ryzhik|Ryzhik]], [[Yuri Veniaminovich Geronimus|Geronimus]], [[Michail Yulyevich Tseytlin|Tseytlin]], Jeffrey, Zwillinger, and [[Victor Hugo Moll|Moll]]'s (GR) ''[[Table of Integrals, Series, and Products]]'' contains a large collection of results. An even larger, multivolume table is the ''Integrals and Series'' by [[Anatoli Prudnikov|Prudnikov]], [[Yuri Aleksandrovich Brychkov|Brychkov]], and [[Oleg Igorevich Marichev|Marichev]] (with volumes 1–3 listing integrals and series of [[elementary function|elementary]] and [[special functions]], volume 4–5 are tables of [[Laplace transform]]s). More compact collections can be found in e.g. Brychkov, Marichev, Prudnikov's ''Tables of Indefinite Integrals'', or as chapters in Zwillinger's ''CRC Standard Mathematical Tables and Formulae'' or [[Bronshtein and Semendyayev]]'s ''[[A Guide Book to Mathematics|Guide Book to Mathematics]]'', ''[[Handbook of Mathematics]]'' or ''[[Oxford Users' Guide to Mathematics|Users' Guide to Mathematics]]'', and other mathematical handbooks.
+
+Other useful resources include [[Abramowitz and Stegun]] and the [[Bateman Manuscript Project]]. Both works contain many identities concerning specific integrals, which are organized with the most relevant topic instead of being collected into a separate table. Two volumes of the Bateman Manuscript are specific to integral transforms.
+
+There are several web sites which have tables of integrals and integrals on demand. [[Wolfram Alpha]] can show results, and for some simpler expressions, also the intermediate steps of the integration. [[Wolfram Research]] also operates another online service, the  Mathematica Online Integrator.
+
+==Integrals of simple functions==
+''C'' is used for an [[arbitrary constant of integration]] that can only be determined if something about the value of the integral at some point is known. Thus, each function has an infinite number of [[antiderivative]]s.
+
+These formulas only state in another form the assertions in the [[table of derivatives]].
+
+===Integrals with a singularity===
+When there is a [[Singularity (mathematics)|singularity]] in the function being integrated such that the antiderivative becomes undefined at some point (the singularity), then ''C'' does not need to be the same on both sides of the singularity. The forms below normally assume the [[Cauchy principal value]] around a singularity in the value of ''C'', but this is not necessary in general. For instance, in
+<math display="block">\int {1 \over x}\,dx = \ln \left|x \right| + C</math>
+there is a singularity at 0 and the [[antiderivative]] becomes infinite there. If the integral above were to be used to compute a definite integral between −1 and 1, one would get the wrong answer 0. This however is the Cauchy principal value of the integral around the singularity. If the integration is done in the complex plane the result depends on the path around the origin, in this case the singularity contributes −''i''{{pi}} when using a path above the origin and ''i''{{pi}} for a path below the origin. A function on the real line could use a completely different value of ''C'' on either side of the origin as in:<ref>[[Serge Lang]] . ''A First Course in Calculus'', 5th edition, p. 290</ref>
+<math display="block"> \int {1 \over x}\,dx = \ln|x| + \begin{cases} A & \text{if }x>0; \\ B & \text{if }x < 0. \end{cases} </math>
+
+===Rational functions===
+{{see also|List of integrals of rational functions}}
+
+*<math>\int a\,dx = ax + C</math>
+
+The following function has a non-integrable singularity at 0 for {{math|''n'' ≤ −1}}:
+*<math>\int x^n\,dx = \frac{x^{n+1}}{n+1} + C \qquad\text{(for } n\neq -1\text{)}</math> ([[Cavalieri's quadrature formula]])
+*<math>\int (ax + b)^n \, dx= \frac{(ax + b)^{n+1}}{a(n + 1)} + C \qquad\text{(for } n\neq -1\text{)}</math>
+*<math>\int {1 \over x}\,dx = \ln \left|x \right| + C</math>
+**More generally,<ref>"[http://golem.ph.utexas.edu/category/2012/03/reader_survey_logx_c.html Reader Survey: log|''x''| + ''C'']", [[Tom Leinster]], ''The ''n''-category Café'', March 19, 2012</ref><math display="block">\int {1 \over x}\,dx = \begin{cases}
+\ln \left|x \right| + C^- & x < 0\\
+\ln \left|x \right| + C^+ & x > 0
+\end{cases}</math>
+*<math>\int\frac{c}{ax + b} \, dx= \frac{c}{a}\ln\left|ax + b\right| + C</math>
+
+===Exponential functions===
+{{see also|List of integrals of exponential functions}}
+*<math>\int e^{ax}\,dx = \frac{1}{a}e^{ax} + C</math>
+*<math>\int f'(x)e^{f(x)}\,dx = e^{f(x)} + C</math>
+*<math>\int a^x\,dx = \frac{a^x}{\ln a} + C</math>
+*<math>\int{e^{x}\left( f\left( x \right) + f'\left( x \right) \right)\,dx} = e^{x}f\left( x \right) + C</math>
+*<math>\int {e^{x}\left( f\left( x \right) - \left( - 1 \right)^{n}\frac{d^{n}f\left( x \right)}{dx^{n}} \right)\,dx} = e^{x}\sum_{k = 1}^{n}{\left( - 1 \right)^{k - 1}\frac{d^{k - 1}f\left( x \right)}{dx^{k - 1}}} + C</math>{{pb}}(if <math>n</math> is a positive integer)
+*<math>\int {e^{- x}\left( f\left( x \right) - \frac{d^{n}f\left( x \right)}{dx^{n}} \right)\, dx} = - e^{- x}\sum_{k = 1}^{n}\frac{d^{k - 1}f\left( x \right)}{dx^{k - 1}} + C</math>{{pb}}(if <math>n</math> is a positive integer)
+
+===Logarithms===
+{{see also|List of integrals of logarithmic functions}}
+*<math>\int \ln x\,dx = x \ln x - x + C = x (\ln x - 1) + C</math>
+*<math>\int \log_a x\,dx = x\log_a x - \frac{x}{\ln a} + C = \frac{x}{\ln a} (\ln x - 1) + C</math>
+
+===Trigonometric functions===
+{{see also|List of integrals of trigonometric functions}}
+
+*<math>\int \sin x \, dx = -\cos x + C</math>
+*<math>\int \cos x\, dx = \sin x + C</math>
+*<math>\int \tan x \, dx = \ln\left| \sec x \right| + C = -\ln\left| \cos x \right| + C</math>
+*<math>\int \cot x \, dx =  -\ln\left| \csc x \right| + C = \ln\left| \sin x \right| + C</math>
+*<math>\int \sec x \, dx = \ln\left| \sec x + \tan x\right| + C = \ln\left| \tan\left(\dfrac{x}{2} + \dfrac{\pi}{4}\right) \right| + C</math>
+** (See [[Integral of the secant function]]. This result was a well-known conjecture in the 17th century.)
+*<math>\int \csc x \, dx = -\ln\left| \csc x + \cot x\right| + C = \ln\left| \csc x - \cot x\right| + C = \ln\left| \tan \frac{x}{2} \right| + C </math>
+*<math>\int \sec^2 x \, dx = \tan x + C</math>
+*<math>\int \csc^2 x \, dx = -\cot x + C</math>
+*<math>\int \sec x \, \tan x \, dx = \sec x + C</math>
+*<math>\int \csc x \, \cot x \, dx = -\csc x + C</math>
+*<math>\int \sin^2 x \, dx = \frac{1}{2}\left(x - \frac{\sin 2x}{2} \right) + C = \frac{1}{2}(x - \sin x\cos x ) + C </math>
+*<math>\int \cos^2 x \, dx = \frac{1}{2}\left(x + \frac{\sin 2x}{2} \right) + C = \frac{1}{2}(x + \sin x\cos x ) + C </math>
+*<math>\int \tan^2 x \, dx = \tan x - x + C</math>
+*<math>\int \cot^2 x \, dx = -\cot x - x + C</math>
+*<math>\int \sec^3 x \, dx = \frac{1}{2}(\sec x \tan x + \ln\left|\sec x + \tan x\right|) + C</math>
+** (See [[integral of secant cubed]].)
+*<math>\int \csc^3 x \, dx = \frac{1}{2}(-\csc x \cot x + \ln\left|\csc x - \cot x\right|) + C = \frac{1}{2}\left(\ln\left|\tan\frac{x}{2}\right| - \csc x \cot x \right) + C</math>
+*<math>\int \sin^n x \, dx = - \frac{\sin^{n-1} x \cos x}{n} + \frac{n-1}{n} \int \sin^{n-2} x \, dx</math>
+*<math>\int \cos^n x \, dx = \frac{\cos^{n-1} x \sin x}{n} + \frac{n-1}{n} \int \cos^{n-2}{x} \, dx</math>
+
+===Inverse trigonometric functions===
+{{see also|List of integrals of inverse trigonometric functions}}
+
+*<math>\int \arcsin{x} \, dx = x \arcsin{x} + \sqrt{1 - x^2} + C , \text{ for } \vert x \vert \le 1 </math>
+*<math>\int \arccos{x} \, dx = x \arccos{x} - \sqrt{1 - x^2} + C , \text{ for } \vert x \vert \le 1 </math>
+*<math>\int \arctan{x} \, dx = x \arctan{x} - \frac{1}{2} \ln { \vert 1 + x^2 \vert } + C , \text{ for all real } x </math>
+*<math>\int \arccot{x} \, dx = x \arccot{x} + \frac{1}{2} \ln { \vert 1 + x^2 \vert } + C , \text{ for all real } x </math>
+*<math>\int \arcsec{x} \, dx = x \arcsec{x} - \ln \left\vert x \, \left( 1 + \sqrt{ 1 - x^{-2} } \, \right) \right\vert + C , \text{ for } \vert x \vert \ge 1 </math>
+*<math>\int \arccsc{x} \, dx = x \arccsc{x} + \ln \left\vert x \, \left( 1 + \sqrt{ 1 - x^{-2} } \, \right) \right\vert + C , \text{ for } \vert x \vert \ge 1 </math>
+
+===Hyperbolic functions===
+{{see also|List of integrals of hyperbolic functions}}
+*<math>\int \sinh x \, dx = \cosh x + C</math>
+*<math>\int \cosh x \, dx = \sinh x + C</math>
+*<math>\int \tanh x \, dx = \ln(\cosh x) + C</math>
+*<math>\int \coth x \, dx = \ln \left| \sinh x \right| + C , \text{ for } x \neq 0 </math>
+*<math>\int \operatorname{sech} x \, dx = \arctan(\sinh x) + C</math>
+*<math>\int \operatorname{csch}\,x \, dx = \ln\left|\operatorname{coth} x - \operatorname{csch} x\right| + C = \ln\left| \tanh {x \over2}\right| + C , \text{ for } x \neq 0 </math>
+*<math>\int \operatorname{sech}^2 x \, dx = \tanh x + C</math>
+*<math>\int \operatorname{csch}^2 x \, dx = -\operatorname{coth}x + C</math>
+*<math>\int \operatorname{sech}x \, \operatorname{tanh}x \, dx = -\operatorname{sech}x + C</math>
+*<math>\int \operatorname{csch}x \, \operatorname{coth}x \, dx = -\operatorname{csch}x + C</math>
+
+===Inverse hyperbolic functions===
+{{see also|List of integrals of inverse hyperbolic functions}}
+
+*<math>\int \operatorname{arcsinh} \, x \, dx = x \, \operatorname{arcsinh} \, x - \sqrt{ x^2 + 1 } + C , \text{ for all real } x </math>
+*<math>\int \operatorname{arccosh} \, x \, dx = x \, \operatorname{arccosh} \, x - \sqrt{ x^2 - 1 } + C , \text{ for } x \ge 1 </math>
+*<math>\int \operatorname{arctanh} \, x \, dx = x \, \operatorname{arctanh} \, x + \frac{\ln\left(\,1-x^2\right)}{2} + C , \text{ for } \vert x \vert < 1 </math>
+*<math>\int \operatorname{arccoth} \, x \, dx = x \, \operatorname{arccoth} \, x + \frac{\ln\left(x^2-1\right)}{2} + C , \text{ for } \vert x \vert > 1 </math>
+*<math>\int \operatorname{arcsech} \, x \, dx = x \, \operatorname{arcsech} \, x + \arcsin x + C , \text{ for } 0 < x \le 1 </math>
+*<math>\int \operatorname{arccsch} \, x \, dx = x \, \operatorname{arccsch} \, x + \left| \operatorname{arcsinh} \, x \right| + C , \text{ for } x \neq 0 </math>
+
+===Products of functions proportional to their second derivatives===
+*<math>\int \cos ax\, e^{bx}\, dx = \frac{e^{bx}}{a^2+b^2}\left( a\sin ax + b\cos ax \right) + C</math>
+*<math>\int \sin ax\, e^{bx}\, dx = \frac{e^{bx}}{a^2+b^2}\left( b\sin ax - a\cos ax \right) + C</math>
+*<math>\int \cos ax\, \cosh bx\, dx = \frac{1}{a^2+b^2}\left( a\sin ax\, \cosh bx+ b\cos ax\, \sinh bx \right) + C</math>
+*<math>\int \sin ax\, \cosh bx\, dx = \frac{1}{a^2+b^2}\left( b\sin ax\, \sinh bx- a\cos ax\, \cosh bx \right) + C</math>
+
+===Absolute-value functions===
+Let {{math|''f''}} be a [[continuous function]], that has at most one [[zero of a function|zero]]. If {{math|''f''}} has a zero, let {{math|''g''}} be the unique antiderivative of {{math|''f''}} that is zero at the root of {{math|''f''}}; otherwise, let {{math|''g''}} be any antiderivative of {{math|''f''}}. Then
+<math display="block">\int \left| f(x)\right|\,dx = \sgn(f(x))g(x)+C,</math>
+where {{math|sgn(''x'')}} is the [[sign function]], which takes the values −1, 0, 1 when {{math|''x''}} is respectively negative, zero or positive.
+
+This can be proved by computing the derivative of the right-hand side of the formula, taking into account that the condition on {{math|''g''}} is here for insuring the continuity of the integral.
+
+This gives the following formulas (where {{math|''a'' ≠ 0}}), which are valid over any interval where {{math|''f''}} is continuous (over larger intervals, the constant {{mvar|C}} must be replaced by a [[piecewise constant]] function):
+*<math>\int \left| (ax + b)^n \right|\,dx = \sgn(ax + b) {(ax + b)^{n+1} \over a(n+1)} + C</math>{{pb}}when {{math|''n''}} is odd, and <math>n \neq -1</math>.
+*<math>\int \left| \tan{ax} \right|\,dx = -\frac{1}{a}\sgn(\tan{ax}) \ln(\left|\cos{ax}\right|) + C</math>{{pb}}when <math display="inline">ax \in \left( n\pi - \frac{\pi}{2}, n\pi + \frac{\pi}{2} \right) </math> for some integer {{math|''n''}}.
+*<math>\int \left| \csc{ax} \right|\,dx = -\frac{1}{a}\sgn(\csc{ax}) \ln(\left| \csc{ax} + \cot{ax} \right|) + C </math>{{pb}}when <math>ax \in \left( n\pi, n\pi + \pi \right) </math> for some integer {{math|''n''}}.
+*<math>\int \left| \sec{ax} \right|\,dx = \frac{1}{a}\sgn(\sec{ax}) \ln(\left| \sec{ax} + \tan{ax} \right|) + C </math>{{pb}}when <math display="inline">ax \in \left( n\pi - \frac{\pi}{2}, n\pi + \frac{\pi}{2} \right) </math> for some integer {{math|''n''}}.
+*<math>\int \left| \cot{ax} \right|\,dx = \frac{1}{a}\sgn(\cot{ax}) \ln(\left|\sin{ax}\right|) + C </math>{{pb}}when <math>ax \in \left( n\pi, n\pi + \pi \right) </math> for some integer {{math|''n''}}.
+
+If the function {{math|''f''}} does not have any continuous antiderivative which takes the value zero at the zeros of {{math|''f''}} (this is the case for the sine and the cosine functions), then {{math|sgn(''f''(''x'')) ∫ ''f''(''x'') ''dx''}} is an antiderivative of {{math|''f''}} on every [[interval (mathematics)|interval]] on which {{math|''f''}} is not zero, but may be discontinuous at the points where {{math|1=''f''(''x'') = 0}}. For having a continuous antiderivative, one has thus to add a well chosen [[step function]]. If we also use the fact that the absolute values of sine and cosine are periodic with period {{pi}}, then we get:
+
+*<math>\int \left| \sin{ax} \right|\,dx = {2 \over a} \left\lfloor \frac{ax}{\pi} \right\rfloor - {1 \over a} \cos{\left( ax - \left\lfloor \frac{ax}{\pi} \right\rfloor \pi \right)} + C</math> {{citation needed|date=April 2013}}
+*<math>\int \left|\cos {ax}\right|\,dx = {2 \over a} \left\lfloor \frac{ax}{\pi} + \frac12 \right\rfloor + {1 \over a} \sin{\left( ax - \left\lfloor \frac{ax}{\pi} + \frac12 \right\rfloor \pi \right)} + C</math> {{citation needed|date=April 2013}}
+
+===Special functions===
+{{math|Ci}}, {{math|Si}}: [[Trigonometric integral]]s, {{math|Ei}}: [[Exponential integral]], {{math|li}}: [[Logarithmic integral function]], {{math|erf}}: [[Error function]]
+* <math>\int \operatorname{Ci}(x) \, dx = x \operatorname{Ci}(x) - \sin x</math>
+* <math>\int \operatorname{Si}(x) \, dx = x \operatorname{Si}(x) + \cos x</math>
+* <math>\int \operatorname{Ei}(x) \, dx = x \operatorname{Ei}(x) - e^x</math>
+* <math>\int \operatorname{li}(x) \, dx = x \operatorname{li}(x)-\operatorname{Ei}(2 \ln x) </math>
+* <math>\int \frac{\operatorname{li}(x)}{x}\,dx = \ln x\, \operatorname{li}(x) -x </math>
+* <math>\int \operatorname{erf}(x)\, dx = \frac{e^{-x^2}}{\sqrt{\pi }}+x \operatorname{erf}(x)</math>
+
+==Definite integrals lacking closed-form antiderivatives==
+{{See also|List of definite integrals}}
+There are some functions whose antiderivatives ''cannot'' be expressed in [[Closed-form expression|closed form]]. However, the values of the definite integrals of some of these functions over some common intervals can be calculated. A few useful integrals are given below.
+
+*<math>\int_0^\infty \sqrt{x}\,e^{-x}\,dx = \frac{1}{2}\sqrt \pi</math> (see also [[Gamma function]])
+*<math>\int_0^\infty e^{-a x^2}\,dx = \frac{1}{2} \sqrt \frac {\pi} {a} </math> for {{math|''a'' > 0}} (the [[Gaussian integral]])
+*<math>\int_0^\infty{x^2 e^{-a x^2}\,dx} = \frac{1}{4} \sqrt \frac {\pi} {a^3} </math> for {{math|''a'' > 0}}
+*<math>\int_0^\infty x^{2n} e^{-a x^2}\,dx
+= \frac{2n-1}{2a} \int_0^\infty x^{2(n-1)} e^{-a x^2}\,dx
+= \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+= \frac{(2n)!}{n! 2^{2n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
+</math>{{pb}}for {{math|''a'' > 0}}, {{math|''n''}} is a positive integer and {{math|!!}} is the [[double factorial]].
+*<math>\int_0^\infty{x^3 e^{-a x^2}\,dx} = \frac{1}{2 a^2} </math> when {{math|''a'' > 0}}
+*<math>\int_0^\infty x^{2n+1} e^{-a x^2}\,dx
+= \frac {n} {a} \int_0^\infty x^{2n-1} e^{-a x^2}\,dx
+= \frac{n!}{2 a^{n+1}}
+</math>{{pb}}for {{math|''a'' > 0}}, {{math|1=''n'' = 0, 1, 2, ....}}
+* <math>\int_0^\infty x^n e^{-ax^b} dx = \frac{1}{b}\ a^{-\frac{n+1}{b}}\Gamma\left(\frac{n+1}{b}\right)</math>
+*<math>\int_0^\infty \frac{x}{e^x-1}\,dx = \frac{\pi^2}{6}</math>  (see also [[Bernoulli number]])
+*<math>\int_0^\infty \frac{x^2}{e^x-1}\,dx = 2\zeta(3) \approx 2.40</math>
+*<math>\int_0^\infty \frac{x^3}{e^x-1}\,dx = \frac{\pi^4}{15}</math> (used in the derivation of [[Planck's law]] in physics)
+*<math>\int_0^\infty \frac{x^n}{e^x-1}\,dx = \Gamma(n+1) \zeta(n+1)</math> for <math> n > 0 </math> (see also [[Riemann zeta function]])
+*<math>\int_0^\infty \frac{\sin{x}}{x}\,dx = \frac{\pi}{2}</math> (see [[sinc function]] and the [[Dirichlet integral]])
+*<math>\int_0^\infty\frac{\sin^2{x}}{x^2}\,dx = \frac{\pi}{2}</math>
+*<math>\int_{0}^\frac{\pi}{2}\sin^n x\,dx=\int_{0}^\frac{\pi}{2}\cos^n x\,dx=\frac{(n-1)!!}{n!!} \times \begin{cases}
+1 & \text{if } n \text{ is odd} \\
+\frac{\pi}{2} & \text{if } n \text{ is even.}
+\end{cases}</math>{{pb}}(if {{math|''n''}} is a positive integer and !! is the [[double factorial]]).
+*<math>\int_{-\pi}^\pi \cos(\alpha x)\cos^n(\beta x) dx = \begin{cases}
+\frac{2 \pi}{2^n} \binom{n}{m} & |\alpha|= |\beta (2m-n)| \\
+0 & \text{otherwise}
+\end{cases} </math>{{pb}}(for {{math|''α'', ''β'', ''m'', ''n''}} integers with {{math|''β'' ≠ 0}} and {{math|''m'', ''n'' ≥ 0}}, see also [[Binomial coefficient]])
+*<math>\int_{-t}^t \sin^m(\alpha x) \cos^n(\beta x) dx = 0</math>{{pb}}(for {{math|''α'', ''β''}} real, {{math|''n''}} a non-negative integer, and {{mvar|m}} an odd, positive integer; since the integrand is [[Odd function|odd]])
+*<math>\int_{-\pi}^\pi \sin(\alpha x) \sin^n(\beta x) dx = \begin{cases}
+(-1)^{\left(\frac{n+1}{2}\right)} (-1)^m \frac{2 \pi}{2^n} \binom{n}{m} & n \text{ odd},\ \alpha = \beta (2m-n) \\
+0 & \text{otherwise}
+\end{cases} </math>{{pb}}(for {{math|''α'', ''β'', ''m'', ''n''}} integers with {{math|''β'' ≠ 0}} and {{math|''m'', ''n'' ≥ 0}}, see also [[Binomial coefficient]])
+*<math>\int_{-\pi}^{\pi} \cos(\alpha x) \sin^n(\beta x) dx = \begin{cases}
+(-1)^{\left(\frac{n}{2}\right)} (-1)^m \frac{2 \pi}{2^n} \binom{n}{m} & n \text{ even},\ |\alpha| = |\beta (2m-n)| \\
+0 & \text{otherwise}
+\end{cases} </math>{{pb}}(for {{math|''α'', ''β'', ''m'', ''n''}} integers with {{math|''β'' ≠ 0}} and {{math|''m'', ''n'' ≥ 0}}, see also [[Binomial coefficient]])
+*<math>\int_{-\infty}^\infty e^{-(ax^2+bx+c)}\,dx = \sqrt{\frac{\pi}{a}}\exp\left[\frac{b^2-4ac}{4a}\right]</math>{{pb}}(where {{math|exp[''u'']}} is the [[exponential function]] {{math|''e''<sup>''u''</sup>}}, and {{math|''a'' > 0}}.)
+*<math>\int_0^\infty  x^{z-1}\,e^{-x}\,dx = \Gamma(z)</math>{{pb}}(where <math>\Gamma(z)</math> is the [[Gamma function]])
+*<math>\int_0^1 \left(\ln\frac{1}{x}\right)^p\,dx = \Gamma(p+1)</math>
+*<math>\int_0^1 x^{\alpha-1}(1-x)^{\beta-1} dx = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)} </math>{{pb}}(for {{math|Re(''α'') > 0}} and {{math|Re(''β'') > 0}}, see [[Beta function]])
+*<math>\int_0^{2 \pi} e^{x \cos \theta} d \theta = 2 \pi I_{0}(x)</math>  (where {{math|''I''<sub>0</sub>(''x'')}} is the modified [[Bessel function]] of the first kind)
+*<math>\int_0^{2 \pi} e^{x \cos \theta + y \sin \theta} d \theta = 2 \pi I_{0} \left(\sqrt{x^2 + y^2}\right) </math>
+*<math>\int_{-\infty}^\infty \left(1 + \frac{x^2}{\nu}\right)^{-\frac{\nu + 1}{2}}\,dx = \frac { \sqrt{\nu \pi} \ \Gamma\left(\frac{\nu}{2}\right)} {\Gamma\left(\frac{\nu + 1}{2}\right)}</math>{{pb}}(for {{math|''ν'' > 0}} , this is related to the [[probability density function]] of [[Student's t-distribution|Student's ''t''-distribution]])
+
+If the function {{math|''f''}} has [[bounded variation]] on the interval {{closed-closed|''a'',''b''}}, then the [[method of exhaustion]] provides a formula for the integral:
+<math display="block">\int_a^b{f(x)\,dx} = (b - a) \sum\limits_{n = 1}^\infty  {\sum\limits_{m = 1}^{2^n  - 1} {\left( { - 1} \right)^{m + 1} } } 2^{ - n} f(a + m\left( {b - a} \right)2^{-n} ).</math>
+
+The "[[sophomore's dream]]":
+<math display="block">\begin{align}
+\int_0^1 x^{-x}\,dx &= \sum_{n=1}^\infty n^{-n}     &&(= 1.29128\,59970\,6266\dots)\\[6pt]
+\int_0^1 x^x   \,dx &= -\sum_{n=1}^\infty (-n)^{-n} &&(= 0.78343\,05107\,1213\dots)
+\end{align}</math>
+attributed to [[Johann Bernoulli]].
+
+==See also==
+
+* {{annotated link|Differentiation rules}}
+* {{annotated link|Incomplete gamma function}}
+* {{annotated link|Indefinite sum}}
+* {{annotated link|Integration using Euler's formula}}
+* {{annotated link|Liouville's theorem (differential algebra)}}
+* {{annotated link|List of limits}}
+* {{annotated link|List of mathematical identities}}
+* {{annotated link|List of mathematical series}}
+* {{annotated link|Nonelementary integral}}
+* {{annotated link|Symbolic integration}}
+
+== References ==
+{{Reflist}}
+
+== Further reading ==
+*{{AS ref}}
+* {{cite book |title=Taschenbuch der Mathematik |title-link=:de:Taschenbuch der Mathematik |author-first1=Ilja Nikolaevič<!-- Nikolajewitsch --> |author-last1=Bronstein<!-- 1903–1976 --> |author-first2=Konstantin Adolfovič<!-- Adolfowitsch --> |author-last2=Semendjajew<!-- 1908–1988 --> |editor-first1=Günter |editor-last1=Grosche |editor-first2=Viktor |editor-last2=Ziegler<!-- 1922–1980--> |editor-first3=Dorothea |editor-last3=Ziegler |others=Weiß, Jürgen<!-- lector --> |translator-first=Viktor |translator-last=Ziegler |volume=1 |date=1987 |edition=23 |orig-year=1945 |publisher=[[Verlag Harri Deutsch]] (and [[B. G. Teubner Verlagsgesellschaft]], Leipzig) |location=Thun and Frankfurt am Main |language=German |isbn=3-87144-492-8}}
+*{{cite book |author-first1=Izrail Solomonovich |author-last1=Gradshteyn |author-link1=Izrail Solomonovich Gradshteyn |author-first2=Iosif Moiseevich |author-last2=Ryzhik |author-link2=Iosif Moiseevich Ryzhik |author-first3=Yuri Veniaminovich |author-last3=Geronimus |author-link3=Yuri Veniaminovich Geronimus |author-first4=Michail Yulyevich |author-last4=Tseytlin |author-link4=Michail Yulyevich Tseytlin |author-first5=Alan |author-last5=Jeffrey |editor-first1=Daniel |editor-last1=Zwillinger |editor-first2=Victor Hugo |editor-last2=Moll |translator=Scripta Technica, Inc. |title=Table of Integrals, Series, and Products |publisher=[[Academic Press, Inc.]] |date=2015 |orig-year=October 2014 |edition=8 |language=English |isbn=978-0-12-384933-5 |lccn=2014010276 <!-- |url=https://books.google.com/books?id=NjnLAwAAQBAJ |access-date=2016-02-21--> |title-link=Gradshteyn and Ryzhik}} (Several previous editions as well.)
+* {{cite book |author-first1=Anatolii Platonovich (Прудников, Анатолий Платонович) |author-last1=Prudnikov |author-link1=Anatolii Platonovich Prudnikov |author-first2=Yuri A. (Брычков, Ю. А.) |author-last2=Brychkov<!--|author-link2=Yuri A. Brychkov--> |author-first3=Oleg Igorevich (Маричев, Олег Игоревич) |author-last3=Marichev |author-link3=Oleg Igorevich Marichev<!-- Oleg Igorewitsch --> |title=Integrals and Series |edition=1 |language=English |translator-first=N. M. |translator-last=Queen |volume=1–5 |publisher=([[Nauka (publisher)|Nauka]]) Gordon & Breach Science Publishers/[[CRC Press]] |orig-year=1981−1986 (Russian) |date=1988–1992 |isbn=2-88124-097-6}}. Second revised edition (Russian), volume 1–3, Fiziko-Matematicheskaya Literatura, 2003.
+* Yuri A. Brychkov (Ю. А. Брычков), ''Handbook of Special Functions: Derivatives, Integrals, Series and Other Formulas''. Russian edition, Fiziko-Matematicheskaya Literatura, 2006. English edition, Chapman & Hall/CRC Press, 2008, {{isbn|1-58488-956-X}} / 9781584889564.
+* Daniel Zwillinger. ''CRC Standard Mathematical Tables and Formulae'', 31st edition. Chapman & Hall/CRC Press, 2002. {{isbn|1-58488-291-3}}. ''(Many earlier editions as well.)''
+* {{Interlanguage link multi|Meier Hirsch|de|3=Meier Hirsch|lt=Meyer Hirsch}}, ''[https://books.google.com/books?id=Cdg2AAAAMAAJ Integraltafeln oder Sammlung von Integralformeln]'' (Duncker und Humblot, Berlin, 1810)
+* {{Interlanguage link multi|Meier Hirsch|de|3=Meier Hirsch|lt=Meyer Hirsch}}, ''[https://books.google.com/books?id=NsI2AAAAMAAJ Integral Tables Or A Collection of Integral Formulae]'' (Baynes and son, London, 1823) [English translation of ''Integraltafeln'']
+* [[David Bierens de Haan]], [https://archive.org/details/nouvetaintegral00haanrich Nouvelles Tables d'Intégrales définies] (Engels, Leiden, 1862)
+* Benjamin O. Pierce [https://books.google.com/books?id=pYMRAAAAYAAJ A short table of integrals - revised edition] (Ginn & co., Boston, 1899)
+
+== External links ==
+=== Tables of integrals ===
+* [http://tutorial.math.lamar.edu/pdf/Common_Derivatives_Integrals.pdf Paul's Online Math Notes]
+* A. Dieckmann, Table of Integrals (Elliptic Functions, Square Roots, Inverse Tangents and More Exotic Functions): [https://www-elsa.physik.uni-bonn.de/~dieckman/IntegralsIndefinite/IndefInt.html Indefinite Integrals] [https://www-elsa.physik.uni-bonn.de/~dieckman/IntegralsDefinite/DefInt.html Definite Integrals]
+* {{Deprecated archive|url=https://archive.today/20121030002907/http://mathmajor.org/calculus-and-analysis/table-of-integrals/|title=Math Major: A Table of Integrals|sec=el}}
+* {{cite web | last1=O'Brien |first1=Francis J. Jr. | url=https://www.scribd.com/document/576062422/500-Integrals-of-Elementary-and-Special-Functions | title = 500 Integrals of Elementary and Special Functions}} Derived integrals of exponential, logarithmic functions and special functions.
+* [https://rulebasedintegration.org Rule-based Integration] Precisely defined indefinite integration rules covering a wide class of integrands
+* {{cite arXiv| first1= Richard J. | last1=Mathar | title=Yet another table of integrals | eprint=1207.5845 |year=2012| class=math.CA }}
+
+=== Derivations ===
+* [http://www.math.tulane.edu/~vhm/Table.html Victor Hugo Moll, The Integrals in Gradshteyn and Ryzhik]
+
+=== Online service ===
+* [http://www.wolframalpha.com/examples/Integrals.html Integration examples for Wolfram Alpha]
+
+=== Open source programs ===
+*[https://wxmaxima.sourceforge.net/ wxmaxima gui for Symbolic and numeric resolution of many mathematical problems]
+
+=== Videos ===
+* ''[https://www.youtube.com/watch?v=xiIsPEqyTqU The Single Most Overpowered Integration Technique in Existence].'' YouTube Video by Flammable Maths on symmetries
+
+{{list of lists |mathematics}}
+
+{{Lists of integrals}}
+{{Calculus topics}}
+{{Analysis-footer}}
+{{Authority control}}
+
+{{DEFAULTSORT:Integrals}}
+[[Category:Lists of integrals| ]]
+[[Category:Lists of mathematics lists|Integrals]]
+[[Category:Mathematical identities]]

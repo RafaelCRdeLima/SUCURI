@@ -1,29 +1,34 @@
-"""Passa a tabela inteira pelo Sucuri e diz o que acontece com cada entrada.
+"""A tabela de derivadas da Wikipédia, entrada por entrada.
 
-Duas perguntas, em ordem, e a ordem importa:
+Duas perguntas, nesta ordem, e a ordem importa:
 
   1. o Sucuri LÊ a entrada?           (é o que o Sucuri promete)
   2. a entrada é VERDADEIRA?          (é o que o SymPy calcula)
 
-A segunda só faz sentido depois da primeira. E há um terceiro desfecho, o
-único inaceitável: o Sucuri lê a entrada e lê ERRADO, em silêncio. É contra
-esse desfecho que o programa existe, e é ele que esta auditoria caça.
+E um terceiro desfecho, o único inaceitável: o Sucuri lê a entrada e lê ERRADO,
+em silêncio. É contra ele que o programa existe, e é ele que esta auditoria
+caça.
 
-    python auditoria.py [--verboso]
+    python derivadas.py [--baixar] [--verboso]
+
+Ver AUDITORIA-DERIVADAS.md.
 """
 
-import json
 import pathlib
+import re
 import sys
 
 import sympy as sp
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
+import comum                                                    # noqa: E402
 import sucuri                                                   # noqa: E402
 from sucuri.document import Unresolved                          # noqa: E402
 
-AQUI = pathlib.Path(__file__).parent
+PAGINA = "Differentiation_rules"
+ARQUIVO = "derivadas"
 
 # As convenções de uma tabela de derivadas, declaradas uma vez. É exatamente o
 # que um leitor humano assume ao abrir a página — a diferença é que aqui está
@@ -37,32 +42,35 @@ def documento():
     doc.function(*FUNCOES)
     doc.variable(*VARIAVEIS)
     doc.primes_are_derivatives(True)
+    doc.e_is_euler(True)     # numa tabela, e^{ax} é Euler
     return doc
 
 
-# ------------------------------------------------------------- veredito
+def interessa(esquerda):
+    return bool(re.search(r"\\frac\s*\{\s*d|\\partial|'", esquerda))
 
-LIDA_E_PROVADA = "provada"
+
+# ------------------------------------------------------------- vereditos
+
+LIDA_E_PROVADA = comum.PROVADA
+PROVADA_QUASE = comum.PROVADA_QUASE
 LIDA_E_NAO_FECHADA = "não fechada"
 LIDA_E_REFUTADA = "refutada"
 LIDA_ERRADO = "LIDA ERRADO"
 RECUSADA = "recusada (pergunta)"
 NAO_LIDA = "não lida"
 
+ORDEM = [LIDA_E_PROVADA, PROVADA_QUASE, LIDA_ERRADO, RECUSADA, NAO_LIDA,
+         LIDA_E_NAO_FECHADA, LIDA_E_REFUTADA]
 
-def _derivadas(e):
-    return e.atoms(sp.Derivative)
 
-
-def _funcoes(e):
-    return {a.func for a in e.atoms(sp.core.function.AppliedUndef)}
+_funcoes = comum.funcoes_indefinidas
 
 
 def julgar(entrada):
     """O desfecho de uma entrada, com o motivo."""
     latex = entrada["esquerda"] + " = " + entrada["direita"]
-    doc = documento()
-    expressao = doc.read(latex)
+    expressao = documento().read(latex)
 
     if expressao.pending:
         return RECUSADA, "; ".join(expressao.questions()), None
@@ -81,18 +89,19 @@ def julgar(entrada):
 
     # O desfecho que o Sucuri existe para impedir: a entrada FALA de uma
     # derivada e o objeto lido não tem derivada nenhuma.
-    if not _derivadas(esquerda):
+    if not esquerda.atoms(sp.Derivative):
         return (LIDA_ERRADO,
                 f"a entrada é uma derivada; o objeto lido não tem derivada: "
                 f"{sp.sstr(esquerda)}", objeto)
 
     try:
-        diferenca = sp.simplify(esquerda.doit() - direita.doit())
+        diferenca = sp.simplify(comum.reais(esquerda.doit() - direita.doit()))
     except Exception as e:                                      # noqa: BLE001
         return LIDA_E_REFUTADA, f"não avaliou: {type(e).__name__}: {e}", objeto
 
-    if diferenca == 0:
-        return LIDA_E_PROVADA, sp.sstr(esquerda.doit()), objeto
+    veredito, motivo = comum.anula(diferenca)
+    if veredito:
+        return veredito, motivo, objeto
 
     # A entrada pode remeter a uma definição dada na prosa em volta ("seja
     # h = fg"). Nesse caso ela não é falsa — é incompleta fora da página.
@@ -106,34 +115,13 @@ def julgar(entrada):
 
 
 def main():
-    verboso = "--verboso" in sys.argv
-    dados = json.loads((AQUI / "tabela.json").read_text(encoding="utf-8"))
-    contagem = {}
+    if "--baixar" in sys.argv:
+        comum.recolher(PAGINA, ARQUIVO, interessa)
     linhas = []
-
-    for entrada in dados["entradas"]:
+    for entrada in comum.carregar(ARQUIVO):
         veredito, motivo, _ = julgar(entrada)
-        contagem[veredito] = contagem.get(veredito, 0) + 1
         linhas.append((veredito, entrada, motivo))
-
-    ordem = [LIDA_E_PROVADA, LIDA_ERRADO, RECUSADA, NAO_LIDA,
-             LIDA_E_NAO_FECHADA, LIDA_E_REFUTADA]
-    for veredito in ordem:
-        do_grupo = [l for l in linhas if l[0] == veredito]
-        if not do_grupo:
-            continue
-        print(f"\n### {veredito}  ({len(do_grupo)})")
-        for _, entrada, motivo in do_grupo:
-            alegacao = entrada["esquerda"] + " = " + entrada["direita"]
-            print(f"  {alegacao[:78]}")
-            if verboso or veredito in (LIDA_ERRADO, NAO_LIDA, RECUSADA):
-                print(f"      {motivo[:120]}")
-
-    total = len(linhas)
-    print(f"\n{'-' * 62}\n{total} alegações da tabela")
-    for veredito in ordem:
-        if veredito in contagem:
-            print(f"  {contagem[veredito]:3}  {veredito}")
+    comum.relatar(linhas, ORDEM, sempre_com_motivo=(LIDA_ERRADO, NAO_LIDA, RECUSADA))
 
 
 if __name__ == "__main__":

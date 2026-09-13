@@ -21,14 +21,19 @@ avisa. É contra ele que o programa existe.
 
 ## Resultado
 
-|                        | antes | depois |     |
-|------------------------|------:|-------:|-----|
-| provada                |    17 | **23** | lida e verificada |
-| **lida errado**        |    11 |  **2** | o desfecho inaceitável |
-| recusada (pergunta)    |     6 |      6 | o Sucuri perguntou em vez de adivinhar |
-| não lida               |     9 |     22 | recusa honesta: notação fora do parser |
-| não fechada            |     3 |     11 | remete a definição dada na prosa |
-| refutada               |    20 |      2 | leitura boa, igualdade não fecha |
+|                             | antes | depois |     |
+|-----------------------------|------:|-------:|-----|
+| provada                     |    17 | **27** | lida e verificada |
+| provada fora de pontos isolados | — |      1 | vale salvo onde a tabela subentende (x ≠ 0) |
+| **lida errado**             |    11 |  **2** | o desfecho inaceitável |
+| recusada (pergunta)         |     6 |      4 | o Sucuri perguntou em vez de adivinhar |
+| não lida                    |     9 |     17 | recusa honesta: notação fora do parser |
+| não fechada                 |     3 |     11 | remete a definição dada na prosa |
+| refutada                    |    20 |      4 | leitura boa, igualdade não fecha |
+
+A coluna "depois" já inclui o que a **tabela de integrais** cobrou em seguida —
+`\left|`, `{a \over b}`, o `e` de Euler e a lista de funções conhecidas. Ver
+`AUDITORIA-INTEGRAIS.md`.
 
 O crescimento de "não lida" é a melhora principal, não uma piora: entram ali as
 entradas que antes viravam lixo em silêncio e hoje param com erro. A coluna que
@@ -119,29 +124,33 @@ Pela doutrina do projeto, uma leitura que ninguém declarou não devia passar,
 mesmo estando certa. O conserto é um detector para a forma de operador, com as
 mesmas duas leituras das outras.
 
-### Notação que o parser não conhece podia ser traduzida, não só recusada
+### Funções que o parser não conhece continuam só recusadas
 
-As 22 entradas "não lidas" têm duas causas, ambas notação corrente:
+Das entradas "não lidas", a maioria é uma família só:
+`\operatorname{arsinh}`, `\coth`, `\operatorname{sech}` — funções que o SymPy
+**tem** (`asinh`, `coth`, `sech`) e que o parser de LaTeX não conhece.
 
-- `{a \over b}` — primitiva do TeX, tem exatamente um significado;
-- `\operatorname{arsinh}`, `\coth`, `\operatorname{sech}` — funções que o SymPy
-  **tem** (`asinh`, `coth`, `sech`), mas que o parser de LaTeX não conhece.
+Traduzir não seria adivinhar; `arsinh` é o seno hiperbólico inverso e ponto.
+Mas, ao contrário de `\over`, a tradução não é de LaTeX para LaTeX: exige o
+mecanismo de marcador, a captura do argumento e o cuidado com `\coth^2 x`, que
+é `(\coth x)^2`. Fica para quando houver uso.
 
-Traduzir não seria adivinhar: `\over` é fração, `arsinh` é o seno hiperbólico
-inverso. Seria conhecimento declarado, do mesmo tipo que `\varphi` → `varphi`.
-Custo: uma tabela de nomes e a captura do argumento (com o cuidado de
-`\coth^2 x`, que é `(\coth x)^2`).
-
-### `e` é lido como símbolo, não como número de Euler
+### `\arctan(y,x)` é lido como `arctan(y)`
 
 ```
-\frac{d}{dx}\left(e^{ax}\right) = ae^{ax}     → refutada
+\frac{\partial \arctan(y,x)}{\partial y} = \frac{x}{x^2 + y^2}     → refutada
 ```
 
-Refutação correta da leitura: para um símbolo `e`, a derivada é
-`a·e^{ax}·ln(e)`, que não é `a·e^{ax}`. Mas a leitura é que está errada — o
-`e` da tabela é o de Euler. É ambiguidade genuína (`e` é excentricidade, carga,
-índice) e devia ser sítio com duas leituras, como a linha e o ponto.
+A entrada está certa: é o `atan2` de dois argumentos. O parser do SymPy leu só
+o primeiro e jogou fora o segundo, sem dizer nada — mais um silêncio dele, e um
+que a barreira de macro degradada não pega, porque nenhum símbolo estranho
+aparece na saída. Seria preciso conferir a aridade contra o que foi escrito.
+
+### Duas entradas não fecham porque falta o que a página diz em volta
+
+`\frac{dx}{dy} = 1/\frac{dy}{dx}` pede o teorema da função inversa, e
+`\frac{d}{dx}W(x)` pede a relação que define a função W. Nenhuma das duas é
+legível fora da página, e nenhuma é defeito do leitor.
 
 ## As seis recusas, que estão certas
 
@@ -157,9 +166,9 @@ Nos três casos a tipografia não decide. É exatamente o caso de uso.
 ## Reproduzir
 
 ```bash
-python baixar.py       # rede; regrava tabela.json
-python auditoria.py    # offline; usa o tabela.json versionado
-python auditoria.py --verboso
+python derivadas.py --baixar     # rede; regrava derivadas.json
+python derivadas.py              # offline; usa o derivadas.json versionado
+python derivadas.py --verboso
 ```
 
 A contagem está travada em `tests/test_tabela_de_derivadas.py`: melhorar é

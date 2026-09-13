@@ -1,0 +1,595 @@
+{
+  "fonte": "https://en.wikipedia.org/w/api.php?action=parse&page=Lists_of_integrals&prop=wikitext&format=json",
+  "entradas": [
+    {
+      "origem": "\\int {1 \\over x}\\,dx = \\ln \\left|x \\right| + C",
+      "esquerda": "\\int {1 \\over x}\\,dx",
+      "direita": "\\ln \\left|x \\right| + C"
+    },
+    {
+      "origem": "\\int {1 \\over x}\\,dx = \\ln|x| + \\begin{cases} A & \\text{if }x>0; \\\\ B & \\text{if }x < 0. \\end{cases}",
+      "esquerda": "\\int {1 \\over x}\\,dx",
+      "direita": "\\ln|x| + \\begin{cases} A &"
+    },
+    {
+      "origem": "\\int a\\,dx = ax + C",
+      "esquerda": "\\int a\\,dx",
+      "direita": "ax + C"
+    },
+    {
+      "origem": "\\int x^n\\,dx = \\frac{x^{n+1}}{n+1} + C \\qquad\\text{(for } n\\neq -1\\text{)}",
+      "esquerda": "\\int x^n\\,dx",
+      "direita": "\\frac{x^{n+1}}{n+1} + C"
+    },
+    {
+      "origem": "\\int (ax + b)^n \\, dx= \\frac{(ax + b)^{n+1}}{a(n + 1)} + C \\qquad\\text{(for } n\\neq -1\\text{)}",
+      "esquerda": "\\int (ax + b)^n \\, dx",
+      "direita": "\\frac{(ax + b)^{n+1}}{a(n + 1)} + C"
+    },
+    {
+      "origem": "\\int {1 \\over x}\\,dx = \\ln \\left|x \\right| + C",
+      "esquerda": "\\int {1 \\over x}\\,dx",
+      "direita": "\\ln \\left|x \\right| + C"
+    },
+    {
+      "origem": "\\int {1 \\over x}\\,dx = \\begin{cases} \\ln \\left|x \\right| + C^- & x < 0\\\\ \\ln \\left|x \\right| + C^+ & x > 0 \\end{cases}",
+      "esquerda": "\\int {1 \\over x}\\,dx",
+      "direita": "\\begin{cases}\n\\ln \\left|x \\right| + C^- & x < 0\\\\\n\\ln \\left|x \\right| + C^+ & x > 0\n\\end{cases}"
+    },
+    {
+      "origem": "\\int\\frac{c}{ax + b} \\, dx= \\frac{c}{a}\\ln\\left|ax + b\\right| + C",
+      "esquerda": "\\int\\frac{c}{ax + b} \\, dx",
+      "direita": "\\frac{c}{a}\\ln\\left|ax + b\\right| + C"
+    },
+    {
+      "origem": "\\int e^{ax}\\,dx = \\frac{1}{a}e^{ax} + C",
+      "esquerda": "\\int e^{ax}\\,dx",
+      "direita": "\\frac{1}{a}e^{ax} + C"
+    },
+    {
+      "origem": "\\int f'(x)e^{f(x)}\\,dx = e^{f(x)} + C",
+      "esquerda": "\\int f'(x)e^{f(x)}\\,dx",
+      "direita": "e^{f(x)} + C"
+    },
+    {
+      "origem": "\\int a^x\\,dx = \\frac{a^x}{\\ln a} + C",
+      "esquerda": "\\int a^x\\,dx",
+      "direita": "\\frac{a^x}{\\ln a} + C"
+    },
+    {
+      "origem": "\\int{e^{x}\\left( f\\left( x \\right) + f'\\left( x \\right) \\right)\\,dx} = e^{x}f\\left( x \\right) + C",
+      "esquerda": "\\int{e^{x}\\left( f\\left( x \\right) + f'\\left( x \\right) \\right)\\,dx}",
+      "direita": "e^{x}f\\left( x \\right) + C"
+    },
+    {
+      "origem": "\\int {e^{x}\\left( f\\left( x \\right) - \\left( - 1 \\right)^{n}\\frac{d^{n}f\\left( x \\right)}{dx^{n}} \\right)\\,dx} = e^{x}\\sum_{k = 1}^{n}{\\left( - 1 \\right)^{k - 1}\\frac{d^{k - 1}f\\left( x \\right)}{dx^{k - 1}}} + C",
+      "esquerda": "\\int {e^{x}\\left( f\\left( x \\right) - \\left( - 1 \\right)^{n}\\frac{d^{n}f\\left( x \\right)}{dx^{n}} \\right)\\,dx}",
+      "direita": "e^{x}\\sum_{k = 1}^{n}{\\left( - 1 \\right)^{k - 1}\\frac{d^{k - 1}f\\left( x \\right)}{dx^{k - 1}}} + C"
+    },
+    {
+      "origem": "\\int {e^{- x}\\left( f\\left( x \\right) - \\frac{d^{n}f\\left( x \\right)}{dx^{n}} \\right)\\, dx} = - e^{- x}\\sum_{k = 1}^{n}\\frac{d^{k - 1}f\\left( x \\right)}{dx^{k - 1}} + C",
+      "esquerda": "\\int {e^{- x}\\left( f\\left( x \\right) - \\frac{d^{n}f\\left( x \\right)}{dx^{n}} \\right)\\, dx}",
+      "direita": "- e^{- x}\\sum_{k = 1}^{n}\\frac{d^{k - 1}f\\left( x \\right)}{dx^{k - 1}} + C"
+    },
+    {
+      "origem": "\\int \\ln x\\,dx = x \\ln x - x + C = x (\\ln x - 1) + C",
+      "esquerda": "\\int \\ln x\\,dx",
+      "direita": "x \\ln x - x + C"
+    },
+    {
+      "origem": "\\int \\ln x\\,dx = x \\ln x - x + C = x (\\ln x - 1) + C",
+      "esquerda": "\\int \\ln x\\,dx",
+      "direita": "x (\\ln x - 1) + C"
+    },
+    {
+      "origem": "\\int \\log_a x\\,dx = x\\log_a x - \\frac{x}{\\ln a} + C = \\frac{x}{\\ln a} (\\ln x - 1) + C",
+      "esquerda": "\\int \\log_a x\\,dx",
+      "direita": "x\\log_a x - \\frac{x}{\\ln a} + C"
+    },
+    {
+      "origem": "\\int \\log_a x\\,dx = x\\log_a x - \\frac{x}{\\ln a} + C = \\frac{x}{\\ln a} (\\ln x - 1) + C",
+      "esquerda": "\\int \\log_a x\\,dx",
+      "direita": "\\frac{x}{\\ln a} (\\ln x - 1) + C"
+    },
+    {
+      "origem": "\\int \\sin x \\, dx = -\\cos x + C",
+      "esquerda": "\\int \\sin x \\, dx",
+      "direita": "-\\cos x + C"
+    },
+    {
+      "origem": "\\int \\cos x\\, dx = \\sin x + C",
+      "esquerda": "\\int \\cos x\\, dx",
+      "direita": "\\sin x + C"
+    },
+    {
+      "origem": "\\int \\tan x \\, dx = \\ln\\left| \\sec x \\right| + C = -\\ln\\left| \\cos x \\right| + C",
+      "esquerda": "\\int \\tan x \\, dx",
+      "direita": "\\ln\\left| \\sec x \\right| + C"
+    },
+    {
+      "origem": "\\int \\tan x \\, dx = \\ln\\left| \\sec x \\right| + C = -\\ln\\left| \\cos x \\right| + C",
+      "esquerda": "\\int \\tan x \\, dx",
+      "direita": "-\\ln\\left| \\cos x \\right| + C"
+    },
+    {
+      "origem": "\\int \\cot x \\, dx =  -\\ln\\left| \\csc x \\right| + C = \\ln\\left| \\sin x \\right| + C",
+      "esquerda": "\\int \\cot x \\, dx",
+      "direita": "-\\ln\\left| \\csc x \\right| + C"
+    },
+    {
+      "origem": "\\int \\cot x \\, dx =  -\\ln\\left| \\csc x \\right| + C = \\ln\\left| \\sin x \\right| + C",
+      "esquerda": "\\int \\cot x \\, dx",
+      "direita": "\\ln\\left| \\sin x \\right| + C"
+    },
+    {
+      "origem": "\\int \\sec x \\, dx = \\ln\\left| \\sec x + \\tan x\\right| + C = \\ln\\left| \\tan\\left(\\dfrac{x}{2} + \\dfrac{\\pi}{4}\\right) \\right| + C",
+      "esquerda": "\\int \\sec x \\, dx",
+      "direita": "\\ln\\left| \\sec x + \\tan x\\right| + C"
+    },
+    {
+      "origem": "\\int \\sec x \\, dx = \\ln\\left| \\sec x + \\tan x\\right| + C = \\ln\\left| \\tan\\left(\\dfrac{x}{2} + \\dfrac{\\pi}{4}\\right) \\right| + C",
+      "esquerda": "\\int \\sec x \\, dx",
+      "direita": "\\ln\\left| \\tan\\left(\\dfrac{x}{2} + \\dfrac{\\pi}{4}\\right) \\right| + C"
+    },
+    {
+      "origem": "\\int \\csc x \\, dx = -\\ln\\left| \\csc x + \\cot x\\right| + C = \\ln\\left| \\csc x - \\cot x\\right| + C = \\ln\\left| \\tan \\frac{x}{2} \\right| + C",
+      "esquerda": "\\int \\csc x \\, dx",
+      "direita": "-\\ln\\left| \\csc x + \\cot x\\right| + C"
+    },
+    {
+      "origem": "\\int \\csc x \\, dx = -\\ln\\left| \\csc x + \\cot x\\right| + C = \\ln\\left| \\csc x - \\cot x\\right| + C = \\ln\\left| \\tan \\frac{x}{2} \\right| + C",
+      "esquerda": "\\int \\csc x \\, dx",
+      "direita": "\\ln\\left| \\csc x - \\cot x\\right| + C"
+    },
+    {
+      "origem": "\\int \\csc x \\, dx = -\\ln\\left| \\csc x + \\cot x\\right| + C = \\ln\\left| \\csc x - \\cot x\\right| + C = \\ln\\left| \\tan \\frac{x}{2} \\right| + C",
+      "esquerda": "\\int \\csc x \\, dx",
+      "direita": "\\ln\\left| \\tan \\frac{x}{2} \\right| + C"
+    },
+    {
+      "origem": "\\int \\sec^2 x \\, dx = \\tan x + C",
+      "esquerda": "\\int \\sec^2 x \\, dx",
+      "direita": "\\tan x + C"
+    },
+    {
+      "origem": "\\int \\csc^2 x \\, dx = -\\cot x + C",
+      "esquerda": "\\int \\csc^2 x \\, dx",
+      "direita": "-\\cot x + C"
+    },
+    {
+      "origem": "\\int \\sec x \\, \\tan x \\, dx = \\sec x + C",
+      "esquerda": "\\int \\sec x \\, \\tan x \\, dx",
+      "direita": "\\sec x + C"
+    },
+    {
+      "origem": "\\int \\csc x \\, \\cot x \\, dx = -\\csc x + C",
+      "esquerda": "\\int \\csc x \\, \\cot x \\, dx",
+      "direita": "-\\csc x + C"
+    },
+    {
+      "origem": "\\int \\sin^2 x \\, dx = \\frac{1}{2}\\left(x - \\frac{\\sin 2x}{2} \\right) + C = \\frac{1}{2}(x - \\sin x\\cos x ) + C",
+      "esquerda": "\\int \\sin^2 x \\, dx",
+      "direita": "\\frac{1}{2}\\left(x - \\frac{\\sin 2x}{2} \\right) + C"
+    },
+    {
+      "origem": "\\int \\sin^2 x \\, dx = \\frac{1}{2}\\left(x - \\frac{\\sin 2x}{2} \\right) + C = \\frac{1}{2}(x - \\sin x\\cos x ) + C",
+      "esquerda": "\\int \\sin^2 x \\, dx",
+      "direita": "\\frac{1}{2}(x - \\sin x\\cos x ) + C"
+    },
+    {
+      "origem": "\\int \\cos^2 x \\, dx = \\frac{1}{2}\\left(x + \\frac{\\sin 2x}{2} \\right) + C = \\frac{1}{2}(x + \\sin x\\cos x ) + C",
+      "esquerda": "\\int \\cos^2 x \\, dx",
+      "direita": "\\frac{1}{2}\\left(x + \\frac{\\sin 2x}{2} \\right) + C"
+    },
+    {
+      "origem": "\\int \\cos^2 x \\, dx = \\frac{1}{2}\\left(x + \\frac{\\sin 2x}{2} \\right) + C = \\frac{1}{2}(x + \\sin x\\cos x ) + C",
+      "esquerda": "\\int \\cos^2 x \\, dx",
+      "direita": "\\frac{1}{2}(x + \\sin x\\cos x ) + C"
+    },
+    {
+      "origem": "\\int \\tan^2 x \\, dx = \\tan x - x + C",
+      "esquerda": "\\int \\tan^2 x \\, dx",
+      "direita": "\\tan x - x + C"
+    },
+    {
+      "origem": "\\int \\cot^2 x \\, dx = -\\cot x - x + C",
+      "esquerda": "\\int \\cot^2 x \\, dx",
+      "direita": "-\\cot x - x + C"
+    },
+    {
+      "origem": "\\int \\sec^3 x \\, dx = \\frac{1}{2}(\\sec x \\tan x + \\ln\\left|\\sec x + \\tan x\\right|) + C",
+      "esquerda": "\\int \\sec^3 x \\, dx",
+      "direita": "\\frac{1}{2}(\\sec x \\tan x + \\ln\\left|\\sec x + \\tan x\\right|) + C"
+    },
+    {
+      "origem": "\\int \\csc^3 x \\, dx = \\frac{1}{2}(-\\csc x \\cot x + \\ln\\left|\\csc x - \\cot x\\right|) + C = \\frac{1}{2}\\left(\\ln\\left|\\tan\\frac{x}{2}\\right| - \\csc x \\cot x \\right) + C",
+      "esquerda": "\\int \\csc^3 x \\, dx",
+      "direita": "\\frac{1}{2}(-\\csc x \\cot x + \\ln\\left|\\csc x - \\cot x\\right|) + C"
+    },
+    {
+      "origem": "\\int \\csc^3 x \\, dx = \\frac{1}{2}(-\\csc x \\cot x + \\ln\\left|\\csc x - \\cot x\\right|) + C = \\frac{1}{2}\\left(\\ln\\left|\\tan\\frac{x}{2}\\right| - \\csc x \\cot x \\right) + C",
+      "esquerda": "\\int \\csc^3 x \\, dx",
+      "direita": "\\frac{1}{2}\\left(\\ln\\left|\\tan\\frac{x}{2}\\right| - \\csc x \\cot x \\right) + C"
+    },
+    {
+      "origem": "\\int \\sin^n x \\, dx = - \\frac{\\sin^{n-1} x \\cos x}{n} + \\frac{n-1}{n} \\int \\sin^{n-2} x \\, dx",
+      "esquerda": "\\int \\sin^n x \\, dx",
+      "direita": "- \\frac{\\sin^{n-1} x \\cos x}{n} + \\frac{n-1}{n} \\int \\sin^{n-2} x \\, dx"
+    },
+    {
+      "origem": "\\int \\cos^n x \\, dx = \\frac{\\cos^{n-1} x \\sin x}{n} + \\frac{n-1}{n} \\int \\cos^{n-2}{x} \\, dx",
+      "esquerda": "\\int \\cos^n x \\, dx",
+      "direita": "\\frac{\\cos^{n-1} x \\sin x}{n} + \\frac{n-1}{n} \\int \\cos^{n-2}{x} \\, dx"
+    },
+    {
+      "origem": "\\int \\arcsin{x} \\, dx = x \\arcsin{x} + \\sqrt{1 - x^2} + C , \\text{ for } \\vert x \\vert \\le 1",
+      "esquerda": "\\int \\arcsin{x} \\, dx",
+      "direita": "x \\arcsin{x} + \\sqrt{1 - x^2} + C"
+    },
+    {
+      "origem": "\\int \\arccos{x} \\, dx = x \\arccos{x} - \\sqrt{1 - x^2} + C , \\text{ for } \\vert x \\vert \\le 1",
+      "esquerda": "\\int \\arccos{x} \\, dx",
+      "direita": "x \\arccos{x} - \\sqrt{1 - x^2} + C"
+    },
+    {
+      "origem": "\\int \\arctan{x} \\, dx = x \\arctan{x} - \\frac{1}{2} \\ln { \\vert 1 + x^2 \\vert } + C , \\text{ for all real } x",
+      "esquerda": "\\int \\arctan{x} \\, dx",
+      "direita": "x \\arctan{x} - \\frac{1}{2} \\ln { \\vert 1 + x^2 \\vert } + C"
+    },
+    {
+      "origem": "\\int \\arccot{x} \\, dx = x \\arccot{x} + \\frac{1}{2} \\ln { \\vert 1 + x^2 \\vert } + C , \\text{ for all real } x",
+      "esquerda": "\\int \\arccot{x} \\, dx",
+      "direita": "x \\arccot{x} + \\frac{1}{2} \\ln { \\vert 1 + x^2 \\vert } + C"
+    },
+    {
+      "origem": "\\int \\arcsec{x} \\, dx = x \\arcsec{x} - \\ln \\left\\vert x \\, \\left( 1 + \\sqrt{ 1 - x^{-2} } \\, \\right) \\right\\vert + C , \\text{ for } \\vert x \\vert \\ge 1",
+      "esquerda": "\\int \\arcsec{x} \\, dx",
+      "direita": "x \\arcsec{x} - \\ln \\left\\vert x \\, \\left( 1 + \\sqrt{ 1 - x^{-2} } \\, \\right) \\right\\vert + C"
+    },
+    {
+      "origem": "\\int \\arccsc{x} \\, dx = x \\arccsc{x} + \\ln \\left\\vert x \\, \\left( 1 + \\sqrt{ 1 - x^{-2} } \\, \\right) \\right\\vert + C , \\text{ for } \\vert x \\vert \\ge 1",
+      "esquerda": "\\int \\arccsc{x} \\, dx",
+      "direita": "x \\arccsc{x} + \\ln \\left\\vert x \\, \\left( 1 + \\sqrt{ 1 - x^{-2} } \\, \\right) \\right\\vert + C"
+    },
+    {
+      "origem": "\\int \\sinh x \\, dx = \\cosh x + C",
+      "esquerda": "\\int \\sinh x \\, dx",
+      "direita": "\\cosh x + C"
+    },
+    {
+      "origem": "\\int \\cosh x \\, dx = \\sinh x + C",
+      "esquerda": "\\int \\cosh x \\, dx",
+      "direita": "\\sinh x + C"
+    },
+    {
+      "origem": "\\int \\tanh x \\, dx = \\ln(\\cosh x) + C",
+      "esquerda": "\\int \\tanh x \\, dx",
+      "direita": "\\ln(\\cosh x) + C"
+    },
+    {
+      "origem": "\\int \\coth x \\, dx = \\ln \\left| \\sinh x \\right| + C , \\text{ for } x \\neq 0",
+      "esquerda": "\\int \\coth x \\, dx",
+      "direita": "\\ln \\left| \\sinh x \\right| + C"
+    },
+    {
+      "origem": "\\int \\operatorname{sech} x \\, dx = \\arctan(\\sinh x) + C",
+      "esquerda": "\\int \\operatorname{sech} x \\, dx",
+      "direita": "\\arctan(\\sinh x) + C"
+    },
+    {
+      "origem": "\\int \\operatorname{csch}\\,x \\, dx = \\ln\\left|\\operatorname{coth} x - \\operatorname{csch} x\\right| + C = \\ln\\left| \\tanh {x \\over2}\\right| + C , \\text{ for } x \\neq 0",
+      "esquerda": "\\int \\operatorname{csch}\\,x \\, dx",
+      "direita": "\\ln\\left|\\operatorname{coth} x - \\operatorname{csch} x\\right| + C"
+    },
+    {
+      "origem": "\\int \\operatorname{csch}\\,x \\, dx = \\ln\\left|\\operatorname{coth} x - \\operatorname{csch} x\\right| + C = \\ln\\left| \\tanh {x \\over2}\\right| + C , \\text{ for } x \\neq 0",
+      "esquerda": "\\int \\operatorname{csch}\\,x \\, dx",
+      "direita": "\\ln\\left| \\tanh {x \\over2}\\right| + C"
+    },
+    {
+      "origem": "\\int \\operatorname{sech}^2 x \\, dx = \\tanh x + C",
+      "esquerda": "\\int \\operatorname{sech}^2 x \\, dx",
+      "direita": "\\tanh x + C"
+    },
+    {
+      "origem": "\\int \\operatorname{csch}^2 x \\, dx = -\\operatorname{coth}x + C",
+      "esquerda": "\\int \\operatorname{csch}^2 x \\, dx",
+      "direita": "-\\operatorname{coth}x + C"
+    },
+    {
+      "origem": "\\int \\operatorname{sech}x \\, \\operatorname{tanh}x \\, dx = -\\operatorname{sech}x + C",
+      "esquerda": "\\int \\operatorname{sech}x \\, \\operatorname{tanh}x \\, dx",
+      "direita": "-\\operatorname{sech}x + C"
+    },
+    {
+      "origem": "\\int \\operatorname{csch}x \\, \\operatorname{coth}x \\, dx = -\\operatorname{csch}x + C",
+      "esquerda": "\\int \\operatorname{csch}x \\, \\operatorname{coth}x \\, dx",
+      "direita": "-\\operatorname{csch}x + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arcsinh} \\, x \\, dx = x \\, \\operatorname{arcsinh} \\, x - \\sqrt{ x^2 + 1 } + C , \\text{ for all real } x",
+      "esquerda": "\\int \\operatorname{arcsinh} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arcsinh} \\, x - \\sqrt{ x^2 + 1 } + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arccosh} \\, x \\, dx = x \\, \\operatorname{arccosh} \\, x - \\sqrt{ x^2 - 1 } + C , \\text{ for } x \\ge 1",
+      "esquerda": "\\int \\operatorname{arccosh} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arccosh} \\, x - \\sqrt{ x^2 - 1 } + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arctanh} \\, x \\, dx = x \\, \\operatorname{arctanh} \\, x + \\frac{\\ln\\left(\\,1-x^2\\right)}{2} + C , \\text{ for } \\vert x \\vert < 1",
+      "esquerda": "\\int \\operatorname{arctanh} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arctanh} \\, x + \\frac{\\ln\\left(\\,1-x^2\\right)}{2} + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arccoth} \\, x \\, dx = x \\, \\operatorname{arccoth} \\, x + \\frac{\\ln\\left(x^2-1\\right)}{2} + C , \\text{ for } \\vert x \\vert > 1",
+      "esquerda": "\\int \\operatorname{arccoth} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arccoth} \\, x + \\frac{\\ln\\left(x^2-1\\right)}{2} + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arcsech} \\, x \\, dx = x \\, \\operatorname{arcsech} \\, x + \\arcsin x + C , \\text{ for } 0 < x \\le 1",
+      "esquerda": "\\int \\operatorname{arcsech} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arcsech} \\, x + \\arcsin x + C"
+    },
+    {
+      "origem": "\\int \\operatorname{arccsch} \\, x \\, dx = x \\, \\operatorname{arccsch} \\, x + \\left| \\operatorname{arcsinh} \\, x \\right| + C , \\text{ for } x \\neq 0",
+      "esquerda": "\\int \\operatorname{arccsch} \\, x \\, dx",
+      "direita": "x \\, \\operatorname{arccsch} \\, x + \\left| \\operatorname{arcsinh} \\, x \\right| + C"
+    },
+    {
+      "origem": "\\int \\cos ax\\, e^{bx}\\, dx = \\frac{e^{bx}}{a^2+b^2}\\left( a\\sin ax + b\\cos ax \\right) + C",
+      "esquerda": "\\int \\cos ax\\, e^{bx}\\, dx",
+      "direita": "\\frac{e^{bx}}{a^2+b^2}\\left( a\\sin ax + b\\cos ax \\right) + C"
+    },
+    {
+      "origem": "\\int \\sin ax\\, e^{bx}\\, dx = \\frac{e^{bx}}{a^2+b^2}\\left( b\\sin ax - a\\cos ax \\right) + C",
+      "esquerda": "\\int \\sin ax\\, e^{bx}\\, dx",
+      "direita": "\\frac{e^{bx}}{a^2+b^2}\\left( b\\sin ax - a\\cos ax \\right) + C"
+    },
+    {
+      "origem": "\\int \\cos ax\\, \\cosh bx\\, dx = \\frac{1}{a^2+b^2}\\left( a\\sin ax\\, \\cosh bx+ b\\cos ax\\, \\sinh bx \\right) + C",
+      "esquerda": "\\int \\cos ax\\, \\cosh bx\\, dx",
+      "direita": "\\frac{1}{a^2+b^2}\\left( a\\sin ax\\, \\cosh bx+ b\\cos ax\\, \\sinh bx \\right) + C"
+    },
+    {
+      "origem": "\\int \\sin ax\\, \\cosh bx\\, dx = \\frac{1}{a^2+b^2}\\left( b\\sin ax\\, \\sinh bx- a\\cos ax\\, \\cosh bx \\right) + C",
+      "esquerda": "\\int \\sin ax\\, \\cosh bx\\, dx",
+      "direita": "\\frac{1}{a^2+b^2}\\left( b\\sin ax\\, \\sinh bx- a\\cos ax\\, \\cosh bx \\right) + C"
+    },
+    {
+      "origem": "\\int \\left| f(x)\\right|\\,dx = \\sgn(f(x))g(x)+C,",
+      "esquerda": "\\int \\left| f(x)\\right|\\,dx",
+      "direita": "\\sgn(f(x))g(x)+C"
+    },
+    {
+      "origem": "\\int \\left| (ax + b)^n \\right|\\,dx = \\sgn(ax + b) {(ax + b)^{n+1} \\over a(n+1)} + C",
+      "esquerda": "\\int \\left| (ax + b)^n \\right|\\,dx",
+      "direita": "\\sgn(ax + b) {(ax + b)^{n+1} \\over a(n+1)} + C"
+    },
+    {
+      "origem": "\\int \\left| \\tan{ax} \\right|\\,dx = -\\frac{1}{a}\\sgn(\\tan{ax}) \\ln(\\left|\\cos{ax}\\right|) + C",
+      "esquerda": "\\int \\left| \\tan{ax} \\right|\\,dx",
+      "direita": "-\\frac{1}{a}\\sgn(\\tan{ax}) \\ln(\\left|\\cos{ax}\\right|) + C"
+    },
+    {
+      "origem": "\\int \\left| \\csc{ax} \\right|\\,dx = -\\frac{1}{a}\\sgn(\\csc{ax}) \\ln(\\left| \\csc{ax} + \\cot{ax} \\right|) + C",
+      "esquerda": "\\int \\left| \\csc{ax} \\right|\\,dx",
+      "direita": "-\\frac{1}{a}\\sgn(\\csc{ax}) \\ln(\\left| \\csc{ax} + \\cot{ax} \\right|) + C"
+    },
+    {
+      "origem": "\\int \\left| \\sec{ax} \\right|\\,dx = \\frac{1}{a}\\sgn(\\sec{ax}) \\ln(\\left| \\sec{ax} + \\tan{ax} \\right|) + C",
+      "esquerda": "\\int \\left| \\sec{ax} \\right|\\,dx",
+      "direita": "\\frac{1}{a}\\sgn(\\sec{ax}) \\ln(\\left| \\sec{ax} + \\tan{ax} \\right|) + C"
+    },
+    {
+      "origem": "\\int \\left| \\cot{ax} \\right|\\,dx = \\frac{1}{a}\\sgn(\\cot{ax}) \\ln(\\left|\\sin{ax}\\right|) + C",
+      "esquerda": "\\int \\left| \\cot{ax} \\right|\\,dx",
+      "direita": "\\frac{1}{a}\\sgn(\\cot{ax}) \\ln(\\left|\\sin{ax}\\right|) + C"
+    },
+    {
+      "origem": "\\int \\left| \\sin{ax} \\right|\\,dx = {2 \\over a} \\left\\lfloor \\frac{ax}{\\pi} \\right\\rfloor - {1 \\over a} \\cos{\\left( ax - \\left\\lfloor \\frac{ax}{\\pi} \\right\\rfloor \\pi \\right)} + C",
+      "esquerda": "\\int \\left| \\sin{ax} \\right|\\,dx",
+      "direita": "{2 \\over a} \\left\\lfloor \\frac{ax}{\\pi} \\right\\rfloor - {1 \\over a} \\cos{\\left( ax - \\left\\lfloor \\frac{ax}{\\pi} \\right\\rfloor \\pi \\right)} + C"
+    },
+    {
+      "origem": "\\int \\left|\\cos {ax}\\right|\\,dx = {2 \\over a} \\left\\lfloor \\frac{ax}{\\pi} + \\frac12 \\right\\rfloor + {1 \\over a} \\sin{\\left( ax - \\left\\lfloor \\frac{ax}{\\pi} + \\frac12 \\right\\rfloor \\pi \\right)} + C",
+      "esquerda": "\\int \\left|\\cos {ax}\\right|\\,dx",
+      "direita": "{2 \\over a} \\left\\lfloor \\frac{ax}{\\pi} + \\frac12 \\right\\rfloor + {1 \\over a} \\sin{\\left( ax - \\left\\lfloor \\frac{ax}{\\pi} + \\frac12 \\right\\rfloor \\pi \\right)} + C"
+    },
+    {
+      "origem": "\\int \\operatorname{Ci}(x) \\, dx = x \\operatorname{Ci}(x) - \\sin x",
+      "esquerda": "\\int \\operatorname{Ci}(x) \\, dx",
+      "direita": "x \\operatorname{Ci}(x) - \\sin x"
+    },
+    {
+      "origem": "\\int \\operatorname{Si}(x) \\, dx = x \\operatorname{Si}(x) + \\cos x",
+      "esquerda": "\\int \\operatorname{Si}(x) \\, dx",
+      "direita": "x \\operatorname{Si}(x) + \\cos x"
+    },
+    {
+      "origem": "\\int \\operatorname{Ei}(x) \\, dx = x \\operatorname{Ei}(x) - e^x",
+      "esquerda": "\\int \\operatorname{Ei}(x) \\, dx",
+      "direita": "x \\operatorname{Ei}(x) - e^x"
+    },
+    {
+      "origem": "\\int \\operatorname{li}(x) \\, dx = x \\operatorname{li}(x)-\\operatorname{Ei}(2 \\ln x)",
+      "esquerda": "\\int \\operatorname{li}(x) \\, dx",
+      "direita": "x \\operatorname{li}(x)-\\operatorname{Ei}(2 \\ln x)"
+    },
+    {
+      "origem": "\\int \\frac{\\operatorname{li}(x)}{x}\\,dx = \\ln x\\, \\operatorname{li}(x) -x",
+      "esquerda": "\\int \\frac{\\operatorname{li}(x)}{x}\\,dx",
+      "direita": "\\ln x\\, \\operatorname{li}(x) -x"
+    },
+    {
+      "origem": "\\int \\operatorname{erf}(x)\\, dx = \\frac{e^{-x^2}}{\\sqrt{\\pi }}+x \\operatorname{erf}(x)",
+      "esquerda": "\\int \\operatorname{erf}(x)\\, dx",
+      "direita": "\\frac{e^{-x^2}}{\\sqrt{\\pi }}+x \\operatorname{erf}(x)"
+    },
+    {
+      "origem": "\\int_0^\\infty \\sqrt{x}\\,e^{-x}\\,dx = \\frac{1}{2}\\sqrt \\pi",
+      "esquerda": "\\int_0^\\infty \\sqrt{x}\\,e^{-x}\\,dx",
+      "direita": "\\frac{1}{2}\\sqrt \\pi"
+    },
+    {
+      "origem": "\\int_0^\\infty e^{-a x^2}\\,dx = \\frac{1}{2} \\sqrt \\frac {\\pi} {a}",
+      "esquerda": "\\int_0^\\infty e^{-a x^2}\\,dx",
+      "direita": "\\frac{1}{2} \\sqrt \\frac {\\pi} {a}"
+    },
+    {
+      "origem": "\\int_0^\\infty{x^2 e^{-a x^2}\\,dx} = \\frac{1}{4} \\sqrt \\frac {\\pi} {a^3}",
+      "esquerda": "\\int_0^\\infty{x^2 e^{-a x^2}\\,dx}",
+      "direita": "\\frac{1}{4} \\sqrt \\frac {\\pi} {a^3}"
+    },
+    {
+      "origem": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx = \\frac{2n-1}{2a} \\int_0^\\infty x^{2(n-1)} e^{-a x^2}\\,dx = \\frac{(2n-1)!!}{2^{n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}} = \\frac{(2n)!}{n! 2^{2n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}}",
+      "esquerda": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx",
+      "direita": "\\frac{2n-1}{2a} \\int_0^\\infty x^{2(n-1)} e^{-a x^2}\\,dx"
+    },
+    {
+      "origem": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx = \\frac{2n-1}{2a} \\int_0^\\infty x^{2(n-1)} e^{-a x^2}\\,dx = \\frac{(2n-1)!!}{2^{n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}} = \\frac{(2n)!}{n! 2^{2n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}}",
+      "esquerda": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx",
+      "direita": "\\frac{(2n-1)!!}{2^{n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}}"
+    },
+    {
+      "origem": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx = \\frac{2n-1}{2a} \\int_0^\\infty x^{2(n-1)} e^{-a x^2}\\,dx = \\frac{(2n-1)!!}{2^{n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}} = \\frac{(2n)!}{n! 2^{2n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}}",
+      "esquerda": "\\int_0^\\infty x^{2n} e^{-a x^2}\\,dx",
+      "direita": "\\frac{(2n)!}{n! 2^{2n+1}} \\sqrt{\\frac{\\pi}{a^{2n+1}}}"
+    },
+    {
+      "origem": "\\int_0^\\infty{x^3 e^{-a x^2}\\,dx} = \\frac{1}{2 a^2}",
+      "esquerda": "\\int_0^\\infty{x^3 e^{-a x^2}\\,dx}",
+      "direita": "\\frac{1}{2 a^2}"
+    },
+    {
+      "origem": "\\int_0^\\infty x^{2n+1} e^{-a x^2}\\,dx = \\frac {n} {a} \\int_0^\\infty x^{2n-1} e^{-a x^2}\\,dx = \\frac{n!}{2 a^{n+1}}",
+      "esquerda": "\\int_0^\\infty x^{2n+1} e^{-a x^2}\\,dx",
+      "direita": "\\frac {n} {a} \\int_0^\\infty x^{2n-1} e^{-a x^2}\\,dx"
+    },
+    {
+      "origem": "\\int_0^\\infty x^{2n+1} e^{-a x^2}\\,dx = \\frac {n} {a} \\int_0^\\infty x^{2n-1} e^{-a x^2}\\,dx = \\frac{n!}{2 a^{n+1}}",
+      "esquerda": "\\int_0^\\infty x^{2n+1} e^{-a x^2}\\,dx",
+      "direita": "\\frac{n!}{2 a^{n+1}}"
+    },
+    {
+      "origem": "\\int_0^\\infty x^n e^{-ax^b} dx = \\frac{1}{b}\\ a^{-\\frac{n+1}{b}}\\Gamma\\left(\\frac{n+1}{b}\\right)",
+      "esquerda": "\\int_0^\\infty x^n e^{-ax^b} dx",
+      "direita": "\\frac{1}{b}\\ a^{-\\frac{n+1}{b}}\\Gamma\\left(\\frac{n+1}{b}\\right)"
+    },
+    {
+      "origem": "\\int_0^\\infty \\frac{x}{e^x-1}\\,dx = \\frac{\\pi^2}{6}",
+      "esquerda": "\\int_0^\\infty \\frac{x}{e^x-1}\\,dx",
+      "direita": "\\frac{\\pi^2}{6}"
+    },
+    {
+      "origem": "\\int_0^\\infty \\frac{x^2}{e^x-1}\\,dx = 2\\zeta(3) \\approx 2.40",
+      "esquerda": "\\int_0^\\infty \\frac{x^2}{e^x-1}\\,dx",
+      "direita": "2\\zeta(3) \\approx 2.40"
+    },
+    {
+      "origem": "\\int_0^\\infty \\frac{x^3}{e^x-1}\\,dx = \\frac{\\pi^4}{15}",
+      "esquerda": "\\int_0^\\infty \\frac{x^3}{e^x-1}\\,dx",
+      "direita": "\\frac{\\pi^4}{15}"
+    },
+    {
+      "origem": "\\int_0^\\infty \\frac{x^n}{e^x-1}\\,dx = \\Gamma(n+1) \\zeta(n+1)",
+      "esquerda": "\\int_0^\\infty \\frac{x^n}{e^x-1}\\,dx",
+      "direita": "\\Gamma(n+1) \\zeta(n+1)"
+    },
+    {
+      "origem": "\\int_0^\\infty \\frac{\\sin{x}}{x}\\,dx = \\frac{\\pi}{2}",
+      "esquerda": "\\int_0^\\infty \\frac{\\sin{x}}{x}\\,dx",
+      "direita": "\\frac{\\pi}{2}"
+    },
+    {
+      "origem": "\\int_0^\\infty\\frac{\\sin^2{x}}{x^2}\\,dx = \\frac{\\pi}{2}",
+      "esquerda": "\\int_0^\\infty\\frac{\\sin^2{x}}{x^2}\\,dx",
+      "direita": "\\frac{\\pi}{2}"
+    },
+    {
+      "origem": "\\int_{0}^\\frac{\\pi}{2}\\sin^n x\\,dx=\\int_{0}^\\frac{\\pi}{2}\\cos^n x\\,dx=\\frac{(n-1)!!}{n!!} \\times \\begin{cases} 1 & \\text{if } n \\text{ is odd} \\\\ \\frac{\\pi}{2} & \\text{if } n \\text{ is even.} \\end{cases}",
+      "esquerda": "\\int_{0}^\\frac{\\pi}{2}\\sin^n x\\,dx",
+      "direita": "\\int_{0}^\\frac{\\pi}{2}\\cos^n x\\,dx"
+    },
+    {
+      "origem": "\\int_{0}^\\frac{\\pi}{2}\\sin^n x\\,dx=\\int_{0}^\\frac{\\pi}{2}\\cos^n x\\,dx=\\frac{(n-1)!!}{n!!} \\times \\begin{cases} 1 & \\text{if } n \\text{ is odd} \\\\ \\frac{\\pi}{2} & \\text{if } n \\text{ is even.} \\end{cases}",
+      "esquerda": "\\int_{0}^\\frac{\\pi}{2}\\sin^n x\\,dx",
+      "direita": "\\frac{(n-1)!!}{n!!} \\times \\begin{cases}\n1 & \\text{if } n \\text{ is odd} \\\\\n\\frac{\\pi}{2} & \\text{if } n \\text{ is even.}\n\\end{cases}"
+    },
+    {
+      "origem": "\\int_{-\\pi}^\\pi \\cos(\\alpha x)\\cos^n(\\beta x) dx = \\begin{cases} \\frac{2 \\pi}{2^n} \\binom{n}{m} & |\\alpha|= |\\beta (2m-n)| \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^\\pi \\cos(\\alpha x)\\cos^n(\\beta x) dx",
+      "direita": "\\begin{cases}\n\\frac{2 \\pi}{2^n} \\binom{n}{m} & |\\alpha|"
+    },
+    {
+      "origem": "\\int_{-\\pi}^\\pi \\cos(\\alpha x)\\cos^n(\\beta x) dx = \\begin{cases} \\frac{2 \\pi}{2^n} \\binom{n}{m} & |\\alpha|= |\\beta (2m-n)| \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^\\pi \\cos(\\alpha x)\\cos^n(\\beta x) dx",
+      "direita": "|\\beta (2m-n)| \\\\\n0 & \\text{otherwise}\n\\end{cases}"
+    },
+    {
+      "origem": "\\int_{-t}^t \\sin^m(\\alpha x) \\cos^n(\\beta x) dx = 0",
+      "esquerda": "\\int_{-t}^t \\sin^m(\\alpha x) \\cos^n(\\beta x) dx",
+      "direita": "0"
+    },
+    {
+      "origem": "\\int_{-\\pi}^\\pi \\sin(\\alpha x) \\sin^n(\\beta x) dx = \\begin{cases} (-1)^{\\left(\\frac{n+1}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n \\text{ odd},\\ \\alpha = \\beta (2m-n) \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^\\pi \\sin(\\alpha x) \\sin^n(\\beta x) dx",
+      "direita": "\\begin{cases}\n(-1)^{\\left(\\frac{n+1}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n"
+    },
+    {
+      "origem": "\\int_{-\\pi}^\\pi \\sin(\\alpha x) \\sin^n(\\beta x) dx = \\begin{cases} (-1)^{\\left(\\frac{n+1}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n \\text{ odd},\\ \\alpha = \\beta (2m-n) \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^\\pi \\sin(\\alpha x) \\sin^n(\\beta x) dx",
+      "direita": "\\beta (2m-n) \\\\\n0 & \\text{otherwise}\n\\end{cases}"
+    },
+    {
+      "origem": "\\int_{-\\pi}^{\\pi} \\cos(\\alpha x) \\sin^n(\\beta x) dx = \\begin{cases} (-1)^{\\left(\\frac{n}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n \\text{ even},\\ |\\alpha| = |\\beta (2m-n)| \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^{\\pi} \\cos(\\alpha x) \\sin^n(\\beta x) dx",
+      "direita": "\\begin{cases}\n(-1)^{\\left(\\frac{n}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n"
+    },
+    {
+      "origem": "\\int_{-\\pi}^{\\pi} \\cos(\\alpha x) \\sin^n(\\beta x) dx = \\begin{cases} (-1)^{\\left(\\frac{n}{2}\\right)} (-1)^m \\frac{2 \\pi}{2^n} \\binom{n}{m} & n \\text{ even},\\ |\\alpha| = |\\beta (2m-n)| \\\\ 0 & \\text{otherwise} \\end{cases}",
+      "esquerda": "\\int_{-\\pi}^{\\pi} \\cos(\\alpha x) \\sin^n(\\beta x) dx",
+      "direita": "|\\beta (2m-n)| \\\\\n0 & \\text{otherwise}\n\\end{cases}"
+    },
+    {
+      "origem": "\\int_{-\\infty}^\\infty e^{-(ax^2+bx+c)}\\,dx = \\sqrt{\\frac{\\pi}{a}}\\exp\\left[\\frac{b^2-4ac}{4a}\\right]",
+      "esquerda": "\\int_{-\\infty}^\\infty e^{-(ax^2+bx+c)}\\,dx",
+      "direita": "\\sqrt{\\frac{\\pi}{a}}\\exp\\left[\\frac{b^2-4ac}{4a}\\right]"
+    },
+    {
+      "origem": "\\int_0^\\infty  x^{z-1}\\,e^{-x}\\,dx = \\Gamma(z)",
+      "esquerda": "\\int_0^\\infty  x^{z-1}\\,e^{-x}\\,dx",
+      "direita": "\\Gamma(z)"
+    },
+    {
+      "origem": "\\int_0^1 \\left(\\ln\\frac{1}{x}\\right)^p\\,dx = \\Gamma(p+1)",
+      "esquerda": "\\int_0^1 \\left(\\ln\\frac{1}{x}\\right)^p\\,dx",
+      "direita": "\\Gamma(p+1)"
+    },
+    {
+      "origem": "\\int_0^1 x^{\\alpha-1}(1-x)^{\\beta-1} dx = \\frac{\\Gamma(\\alpha)\\Gamma(\\beta)}{\\Gamma(\\alpha+\\beta)}",
+      "esquerda": "\\int_0^1 x^{\\alpha-1}(1-x)^{\\beta-1} dx",
+      "direita": "\\frac{\\Gamma(\\alpha)\\Gamma(\\beta)}{\\Gamma(\\alpha+\\beta)}"
+    },
+    {
+      "origem": "\\int_0^{2 \\pi} e^{x \\cos \\theta} d \\theta = 2 \\pi I_{0}(x)",
+      "esquerda": "\\int_0^{2 \\pi} e^{x \\cos \\theta} d \\theta",
+      "direita": "2 \\pi I_{0}(x)"
+    },
+    {
+      "origem": "\\int_0^{2 \\pi} e^{x \\cos \\theta + y \\sin \\theta} d \\theta = 2 \\pi I_{0} \\left(\\sqrt{x^2 + y^2}\\right)",
+      "esquerda": "\\int_0^{2 \\pi} e^{x \\cos \\theta + y \\sin \\theta} d \\theta",
+      "direita": "2 \\pi I_{0} \\left(\\sqrt{x^2 + y^2}\\right)"
+    },
+    {
+      "origem": "\\int_{-\\infty}^\\infty \\left(1 + \\frac{x^2}{\\nu}\\right)^{-\\frac{\\nu + 1}{2}}\\,dx = \\frac { \\sqrt{\\nu \\pi} \\ \\Gamma\\left(\\frac{\\nu}{2}\\right)} {\\Gamma\\left(\\frac{\\nu + 1}{2}\\right)}",
+      "esquerda": "\\int_{-\\infty}^\\infty \\left(1 + \\frac{x^2}{\\nu}\\right)^{-\\frac{\\nu + 1}{2}}\\,dx",
+      "direita": "\\frac { \\sqrt{\\nu \\pi} \\ \\Gamma\\left(\\frac{\\nu}{2}\\right)} {\\Gamma\\left(\\frac{\\nu + 1}{2}\\right)}"
+    },
+    {
+      "origem": "\\int_a^b{f(x)\\,dx} = (b - a) \\sum\\limits_{n = 1}^\\infty  {\\sum\\limits_{m = 1}^{2^n  - 1} {\\left( { - 1} \\right)^{m + 1} } } 2^{ - n} f(a + m\\left( {b - a} \\right)2^{-n} ).",
+      "esquerda": "\\int_a^b{f(x)\\,dx}",
+      "direita": "(b - a) \\sum\\limits_{n = 1}^\\infty  {\\sum\\limits_{m = 1}^{2^n  - 1} {\\left( { - 1} \\right)^{m + 1} } } 2^{ - n} f(a + m\\left( {b - a} \\right)2^{-n} )"
+    }
+  ]
+}

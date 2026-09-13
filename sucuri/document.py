@@ -81,6 +81,79 @@ _RE_MACRO = re.compile(r"\\([a-zA-Z]+)")
 _RE_MARCADOR = re.compile(r"^Z_\{\d+\}$")
 
 
+_RE_OVER = re.compile(r"\\over(?![a-zA-Z])")
+
+
+def _inofensivas(texto):
+    """Reescritas de LaTeX para LaTeX que não mudam significado nenhum.
+
+    Não é adivinhação, é tradução: \\left| e \\right| são a mesma barra de |, e
+    {a \\over b} é a forma primitiva do TeX para \\frac{a}{b}. O parser do SymPy
+    não conhece nenhuma das duas, e as duas aparecem em qualquer tabela.
+
+    Fica no fim do `_normalize` de propósito: os sítios ambíguos foram
+    localizados por posição no texto original, e reescrever antes deslocaria
+    todos eles.
+    """
+    # \vert, \lvert e \rvert são a mesma barra de |. \Vert e \lVert NÃO são:
+    # aquelas são norma, e quem trocar uma pela outra troca o significado.
+    for macro in ("\\lvert", "\\rvert", "\\vert"):
+        texto = texto.replace(macro, "|")
+    texto = texto.replace("\\left|", "|").replace("\\right|", "|")
+    while True:
+        m = _RE_OVER.search(texto)
+        if m is None:
+            return texto
+        i = _grupo_esquerda(texto, m.start())
+        j = _grupo_direita(texto, m.end())
+        numerador = texto[i + 1:m.start()].strip()
+        denominador = texto[m.end():j].strip()
+        texto = (texto[:i + 1] + "\\frac{" + numerador + "}{" + denominador + "}"
+                 + texto[j:])
+
+
+def _grupo_esquerda(texto, k):
+    """Índice da chave que abre o grupo onde `k` está, ou -1."""
+    fundo = 0
+    for i in range(k - 1, -1, -1):
+        if texto[i] == "}":
+            fundo += 1
+        elif texto[i] == "{":
+            if fundo == 0:
+                return i
+            fundo -= 1
+    return -1
+
+
+def _grupo_direita(texto, k):
+    """Índice da chave que fecha o grupo onde `k` está, ou len(texto)."""
+    fundo = 0
+    for j in range(k, len(texto)):
+        if texto[j] == "{":
+            fundo += 1
+        elif texto[j] == "}":
+            if fundo == 0:
+                return j
+            fundo -= 1
+    return len(texto)
+
+
+def _canonizar(expr):
+    r"""Conserta objetos que o parser monta sem avaliar.
+
+    \log_a x vira um log de DOIS argumentos que o SymPy deixa por avaliar — e
+    esse objeto deriva errado: d/dx log(x, a) devolve 1/x, sem o ln(a). O mesmo
+    log construído por sp.log(x, a) vira log(x)/log(a) e deriva certo.
+
+    Reconstruí-lo é identidade exata (log_b x = ln x / ln b), não é escolha de
+    leitura. Fica aqui porque o silêncio é do mesmo tipo dos outros: a conta
+    segue, o resultado é errado, e nada avisa.
+    """
+    return expr.replace(
+        lambda e: isinstance(e, sp.log) and len(e.args) == 2,
+        lambda e: sp.log(e.args[0], e.args[1]))
+
+
 class NotacaoNaoReconhecida(Exception):
     """O parser degradou uma notação em vez de recusá-la.
 
@@ -118,6 +191,7 @@ class Document:
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
         self._dots_are_derivatives = None
+        self._e_is_euler = None
         self._annotations = {}
 
     # ------------------------------------------------------- declarações
@@ -164,6 +238,16 @@ class Document:
         self._dots_are_derivatives = bool(yes)
         return self
 
+    def e_is_euler(self, yes=True):
+        """Convenção para o 'e' como base de potência.
+
+        Sem ela, e^{ax} fica PENDENTE. Não é preciosismo: lido como símbolo, a
+        derivada de e^{ax} é a·e^{ax}·ln(e), e a tabela inteira de exponenciais
+        passa a ser refutada — silenciosamente, porque a leitura não avisa.
+        """
+        self._e_is_euler = bool(yes)
+        return self
+
     def annotate(self, kind, base, reading, **detail):
         """Resolve um sítio específico, uma vez e para sempre."""
         self._annotations[(kind, base, tuple(sorted(detail.items())))] = reading
@@ -198,6 +282,8 @@ class Document:
                 inferida = "product"
         elif amb.kind == "newton" and self._dots_are_derivatives is not None:
             inferida = "derivative" if self._dots_are_derivatives else "decoration"
+        elif amb.kind == "euler" and self._e_is_euler is not None:
+            inferida = "euler" if self._e_is_euler else "symbol"
         elif amb.kind == "partial":
             inferida = "derivative"     # \partial_x só tem uma leitura razoável
         elif amb.kind == "leibniz" and self._primes_are_derivatives is not False:
@@ -276,6 +362,7 @@ class Expression:
                         for nome, var in derivadas}
             expr = expr.subs(promocao, simultaneous=True)
 
+        expr = _canonizar(expr)
         self._conferir(texto, expr)
         return expr
 
@@ -382,12 +469,19 @@ class Expression:
                 origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
+            elif a.kind == "euler":
+                nome, simbolo = marcador()
+                alvo = sp.E if leitura == "euler" else sp.Symbol("e")
+                reposicoes[simbolo] = alvo
+                origens[alvo] = resolucao
+                texto = texto[:ini] + nome + texto[fim:]
+
             elif a.kind == "juxtaposition" and leitura == "product":
                 # insere a multiplicação explícita antes do parêntese
                 abre = texto.find("(", ini)
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
-        return texto, reposicoes, derivadas, origens
+        return _inofensivas(texto), reposicoes, derivadas, origens
 
     def _linha(self, a, leitura, ordem, x, derivadas):
         """O objeto que a linha denota, nas quatro formas em que ela aparece.

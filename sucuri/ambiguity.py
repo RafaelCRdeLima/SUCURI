@@ -11,6 +11,7 @@ sozinho. As três que aparecem sempre em física:
   d^2 y / dx^2   derivada de Leibniz, ou fração de símbolos d, y, dx?
   \\dot{x}        derivada temporal de Newton, ou decoração sobre x?
   \\partial_x f   derivada parcial, ou produto de f por um símbolo?
+  e^{ax}         número de Euler, ou um símbolo chamado e?
 
 O ponto de Newton é o caso mais grave medido: o SymPy lê \\dot{x} como o produto
 do símbolo "dot" pelo símbolo x. Toda a mecânica hamiltoniana se escreve assim.
@@ -86,20 +87,48 @@ _RE_LEIBNIZ = re.compile(
     r"\s*\{\s*d\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
 _RE_JUSTAPOSICAO = re.compile(rf"({_SIMBOLO})\s*(?:\\left)?\(")
 _RE_NEWTON = re.compile(r"\\(d+)ot\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))")
+# Só a base de potência: é onde o 'e' quase sempre é Euler e onde ler errado
+# muda a matemática calado (d/dx e^{ax} = a·e^{ax}·ln e, se e for símbolo). Um
+# 'e' solto em outro lugar não é sítio — seria pergunta demais para achado de
+# menos, e um 'e' em subscrito quebraria a substituição.
+_RE_EULER = re.compile(r"e(?=\s*\^)")
 _RE_PARCIAL = re.compile(
     r"\\partial\s*_\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))"
     r"\s*(" + _SIMBOLO + r")")
 
-# Nomes que nunca são símbolo do usuário: comandos de estrutura do LaTeX.
+# Nomes que nunca são símbolo do usuário: comandos de estrutura do LaTeX e as
+# funções que o parser já conhece. Perguntar se \arctan( é "arctan multiplicando
+# o parêntese" não é rigor, é ruído — e pergunta que não é pergunta gasta a
+# credibilidade das que são.
 _COMANDOS = {
-    "frac", "sqrt", "left", "right", "sum", "int", "prod", "lim", "cdot",
-    "times", "partial", "mathrm", "text", "begin", "end", "quad", "qquad",
-    "sin", "cos", "tan", "exp", "log", "ln", "prime", "infty",
+    "frac", "dfrac", "tfrac", "sqrt", "left", "right", "sum", "int", "prod",
+    "lim", "cdot", "times", "partial", "mathrm", "text", "begin", "end",
+    "quad", "qquad", "prime", "infty", "over", "operatorname",
+    "sin", "cos", "tan", "sec", "csc", "cot",
+    "arcsin", "arccos", "arctan", "arcsec", "arccsc", "arccot",
+    "sinh", "cosh", "tanh", "coth", "sech", "csch",
+    "exp", "log", "ln", "lg", "min", "max", "det", "gcd", "deg",
 }
 
 
 def _limpo(simbolo):
     return simbolo[1:] if simbolo.startswith("\\") else simbolo
+
+
+def _dentro_de_nome(latex, i):
+    r"""O 'e' em `i` é letra de outro nome, e não um 'e' sozinho?
+
+    Duas formas de sê-lo: letra de uma macro (\sec) ou índice de um símbolo
+    (v_e^2). Note que em 'ae^{ax}' o 'e' NÃO está dentro de nome — justaposição
+    em LaTeX é produto, e ali há um 'a' vezes um 'e'.
+    """
+    j = i
+    while j > 0 and latex[j - 1].isalpha():
+        j -= 1
+    if j > 0 and latex[j - 1] == "\\":
+        return True
+    anterior = latex[:i].rstrip()
+    return anterior.endswith("_")
 
 
 def _fecha(latex, i):
@@ -254,6 +283,14 @@ def find(latex):
             "juxtaposition", m.group(0), m.span(), base,
             [Reading("application", f"{base} aplicada ao argumento"),
              Reading("product", f"{base} multiplicando o parêntese")]))
+
+    for m in _RE_EULER.finditer(latex):
+        if m.start() in cobertos or _dentro_de_nome(latex, m.start()):
+            continue
+        achados.append(Ambiguity(
+            "euler", m.group(0), m.span(), "e",
+            [Reading("euler", "o número de Euler, 2,71828…"),
+             Reading("symbol", "um símbolo chamado e")]))
 
     achados.sort(key=lambda a: a.span[0])
     return achados

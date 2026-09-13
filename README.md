@@ -66,17 +66,32 @@ A distinção não é cosmética. Uma convenção geral — "linha é derivada" 
 acertar nove sítios e errar o décimo, e quem a declarou não olhou cada um. O
 âmbar diz: funciona, mas ninguém conferiu este caso.
 
-## A tabela de derivadas
+## As tabelas
 
-`exemplos/tabela-de-derivadas/` põe o leitor contra uma tabela real, baixada da
-Wikipédia — notação escrita por outra gente, para outro fim. Das 66 alegações,
-o Sucuri hoje lê e verifica 23, recusa 6 com pergunta, recusa 22 por notação
-que o parser não conhece e lê errado 2.
+`exemplos/tabelas/` põe o leitor contra tabelas reais, baixadas da Wikipédia —
+notação escrita por outra gente, para outro fim, que é o único teste honesto de
+um leitor de notação.
 
-A tabela encontrou três erros silenciosos, dois deles do Sucuri: o marcador
-interno vazava em `f'(x)`, a linha sobre grupo `(f+g)'` levava metade da
-equação embora, e macro desconhecida virava símbolo do mesmo nome sem aviso.
-Ver `exemplos/tabela-de-derivadas/AUDITORIA.md`.
+```bash
+python exemplos/tabelas/derivadas.py
+python exemplos/tabelas/integrais.py
+```
+
+Uma tabela de derivadas prova-se derivando; uma de integrais prova-se **ao
+contrário**, derivando o lado direito e comparando com o integrando — a
+constante de integração morre na derivada, que é o destino dela.
+
+Entre as duas, seis erros silenciosos, dois do Sucuri e quatro do parser de
+LaTeX do SymPy, que não recusa o que não entende — ele degrada:
+
+```python
+>>> parse_latex("(f + g)' = a")          f + g          # some com a equação
+>>> parse_latex(r"\coth x")               coth*x         # o nome vira símbolo
+>>> parse_latex(r"\frac{1}{2}\sqrt\frac{\pi}{a}")   1/2   # some com o fator
+>>> sp.diff(parse_latex(r"\log_a x"), x)  1/x            # falta o ln(a)
+```
+
+Ver `exemplos/tabelas/AUDITORIA-DERIVADAS.md` e `AUDITORIA-INTEGRAIS.md`.
 
 ## Ambiguidades reconhecidas
 

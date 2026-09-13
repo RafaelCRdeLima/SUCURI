@@ -4,7 +4,7 @@ A tabela veio da Wikipédia, escrita por outra gente para outro fim — que é a
 única forma honesta de testar um leitor de notação. Ela encontrou três erros
 silenciosos em duas horas, dois deles do Sucuri. Cada um vira um teste aqui.
 
-Ver exemplos/tabela-de-derivadas/AUDITORIA.md.
+Ver exemplos/tabelas/AUDITORIA-DERIVADAS.md.
 """
 
 import json
@@ -17,7 +17,7 @@ import sympy as sp
 import sucuri
 from sucuri import NotacaoNaoReconhecida
 
-TABELA = (pathlib.Path(__file__).parents[1] / "exemplos" / "tabela-de-derivadas")
+TABELA = pathlib.Path(__file__).parents[1] / "exemplos" / "tabelas"
 
 
 def doc():
@@ -25,6 +25,7 @@ def doc():
     d.function("f", "g", "h", "W", "F", "a", "b")
     d.variable("c", "r", "n", "k", "z")
     d.primes_are_derivatives(True)
+    d.e_is_euler(True)
     return d
 
 
@@ -94,9 +95,9 @@ def test_linha_escrita_como_expoente():
 # ----------------------- defeito 3: macro degradada a símbolo, sem aviso
 
 @pytest.mark.parametrize("latex, macro", [
-    (r"{1 \over x}", "over"),
     (r"\coth x", "coth"),
     (r"\operatorname{arccsc} x", "operatorname"),
+    (r"\left\lVert x \right\rVert", "lVert"),
 ])
 def test_macro_degradada_e_recusada(latex, macro):
     """O parser do SymPy não avisa quando não entende: \\coth x vira o símbolo
@@ -118,9 +119,9 @@ def test_letra_grega_nao_e_degradacao():
 
 def _julgar():
     sys.path.insert(0, str(TABELA))
-    import auditoria
-    dados = json.loads((TABELA / "tabela.json").read_text(encoding="utf-8"))
-    return [(auditoria.julgar(e)[0], e) for e in dados["entradas"]], auditoria
+    import derivadas
+    dados = json.loads((TABELA / "derivadas.json").read_text(encoding="utf-8"))
+    return [(derivadas.julgar(e)[0], e) for e in dados["entradas"]], derivadas
 
 
 def test_a_tabela_inteira_continua_no_mesmo_lugar():
@@ -130,10 +131,10 @@ def test_a_tabela_inteira_continua_no_mesmo_lugar():
     for v, _ in vereditos:
         conta[v] = conta.get(v, 0) + 1
 
-    assert conta.get(auditoria.LIDA_E_PROVADA, 0) >= 23
-    assert conta.get(auditoria.LIDA_E_REFUTADA, 0) <= 2
+    assert conta.get(auditoria.LIDA_E_PROVADA, 0) >= 27
+    assert conta.get(auditoria.LIDA_E_REFUTADA, 0) <= 4
     # as duas únicas leituras erradas restantes são a forma de OPERADOR
-    # \frac{d^n}{dx^n}, que ainda não é sítio do Sucuri. Ver AUDITORIA.md.
+    # \frac{d^n}{dx^n}, que ainda não é sítio do Sucuri.
     assert conta.get(auditoria.LIDA_ERRADO, 0) <= 2
     for veredito, entrada in vereditos:
         if veredito == auditoria.LIDA_ERRADO:
