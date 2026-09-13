@@ -250,6 +250,21 @@ coisa, olhar, escrever outra que usa a primeira.
         exportar(eq1)                          →  o script que roda sem o Sucuri
 ```
 
+**O caderno não tem convenções** — tem declarações, que são células como as
+outras. Seis campos de formulário diziam o que três linhas na folha dizem
+melhor, e dizem de um jeito mais forte: a convenção *escolhe* uma leitura, a
+declaração *dissolve* a dúvida.
+
+```
+u = u[x,t]        u é função de x e t
+e = euler         e é o número de Euler
+c = símbolo       c é símbolo, não função: c(…) é produto
+```
+
+Só isso decide `'`, `\dot`, `∂`, Leibniz e justaposição para os nomes
+declarados. E o que a notação não diz continua sendo pergunta: `u'` com `u`
+função de duas variáveis não diz em relação a qual, e declarar não inventa.
+
 Os verbos são poucos e fechados **de propósito**: `resolver`/`solve`,
 `avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
 Se aqui se pudesse escrever Python, a ponte que este programa é deixaria de ser

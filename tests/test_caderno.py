@@ -191,3 +191,58 @@ def test_o_cabecalho_vazio_nao_apaga_a_declaracao_da_celula():
                       "fonte": r"\partial_t u = 0"})
     assert d["pendentes"] == 0 and d["inferidas"] == 0
     assert d["sympy"] == "Eq(Derivative(u(x, t), t), 0)"
+
+
+# ------------------------------- as convenções cabem todas em declarações
+
+def test_a_declaracao_resolve_a_linha_quando_ha_uma_variavel_so():
+    """f = f[x] torna a convenção "linha é derivada" desnecessária: se f é
+    função de x, f' só pode ser df/dx. Não há regra a aplicar — há um fato
+    declarado, e por isso o sítio fica verde e não âmbar."""
+    c = Caderno()
+    c.executar("y[x]")
+    d = c.executar("y'' + y = 0").to_dict()
+    assert d["pendentes"] == 0 and d["inferidas"] == 0
+    assert d["sympy"] == "Eq(y(x) + Derivative(y(x), (x, 2)), 0)"
+    assert all(a["estado"] == "explicita" for a in d["ambiguidades"])
+
+
+def test_a_declaracao_resolve_o_ponto_tambem():
+    c = Caderno()
+    c.executar("q = q[t]")
+    d = c.executar(r"\dot{q}^2 + q = 0").to_dict()
+    assert d["pendentes"] == 0
+    assert d["sympy"] == "Eq(q(t) + Derivative(q(t), t)**2, 0)"
+
+
+def test_com_duas_variaveis_a_linha_continua_perguntando():
+    """Declarar não inventa o que a notação não diz: u' com u função de x e t
+    não diz em relação a qual."""
+    c = Caderno()
+    c.executar("u[x,t]")
+    assert c.executar("u' = 0").to_dict()["pendentes"] == 1
+
+
+def test_euler_e_simbolo_sao_declaracoes_como_as_outras():
+    """A mesma pergunta — o que é este nome? — com as outras duas respostas."""
+    c = Caderno()
+    assert "Euler" in c.executar("e = euler").to_dict()["texto"]
+    assert c.executar(r"\int e^{-x}\,dx").to_dict()["sympy"] == \
+        "Integral(exp(-x), x)"
+
+    assert "produto" in c.executar("a = símbolo").to_dict()["texto"]
+    assert c.executar("a(x+1)").to_dict()["sympy"] == "a*(x + 1)"
+
+
+def test_o_caderno_nao_precisa_de_convencao_nenhuma():
+    """A folha inteira, sem um campo de formulário: só declarações e
+    matemática."""
+    c = Caderno()
+    for fonte in ["u = u[x,t]", "c = símbolo"]:
+        assert c.executar(fonte).to_dict()["tipo"] == "declaracao"
+    d = c.executar(
+        r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}"
+    ).to_dict()
+    assert d["pendentes"] == 0 and d["inferidas"] == 0
+    assert d["sympy"] == (
+        "Eq(Derivative(u(x, t), (t, 2)), c**2*Derivative(u(x, t), (x, 2)))")

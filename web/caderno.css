@@ -9,6 +9,11 @@
   margin:0;background:#fff}
 .caderno-convencoes .campos{grid-template-columns:repeat(3,1fr)}
 
+.folha-dica{margin:0;padding:14px 22px;background:#fff;font-size:13px;
+  color:var(--tinta-2);border-bottom:1px solid var(--areia-2);line-height:1.7}
+.folha-dica code{font-family:var(--mono);font-size:12.5px;background:var(--areia);
+  padding:2px 6px;border-radius:5px;color:var(--tinta)}
+
 .folha{display:block;background:#fff;padding:22px;gap:0}
 .celula{border-left:3px solid var(--areia-2);padding:0 0 0 16px;margin-bottom:26px}
 .celula.comando{border-left-color:var(--folha)}

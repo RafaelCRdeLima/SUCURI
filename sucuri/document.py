@@ -187,6 +187,10 @@ def declaracoes(texto):
     return achadas
 
 
+def _porque(nome, args):
+    return f"{nome} foi declarada função de {', '.join(str(a) for a in args)}"
+
+
 class FaltaVariavel(ValueError):
     """Falta dizer em relação a que a derivada é derivada.
 
@@ -420,11 +424,18 @@ class Document:
         # multiplicar. Vale onde a variável está ESCRITA na notação — ∂ e
         # Leibniz —; a linha continua precisando da convenção, porque f' com
         # duas variáveis não diz em relação a qual.
-        if (amb.kind in ("leibniz", "partial")
-                and amb.base in self._function_args):
-            args = ", ".join(self._function_args[amb.base])
+        declaradas = self._function_args.get(amb.base)
+        if declaradas and amb.kind in ("leibniz", "partial"):
             return Resolution(amb, "derivative", Resolution.EXPLICIT,
-                              motivo=f"{amb.base} foi declarada função de {args}")
+                              motivo=_porque(amb.base, declaradas))
+
+        # A linha e o ponto não trazem a variável escrita, então a declaração
+        # só os resolve quando não há dúvida de QUAL: uma variável só. Com duas,
+        # f' continua não dizendo em relação a qual, e o programa continua
+        # perguntando — declarar não inventa o que a notação não diz.
+        if declaradas and len(declaradas) == 1 and amb.kind in ("prime", "newton"):
+            return Resolution(amb, "derivative", Resolution.EXPLICIT,
+                              motivo=_porque(amb.base, declaradas))
 
         inferida = None
         if amb.kind == "prime" and self._primes_are_derivatives is not None:
@@ -590,6 +601,9 @@ class Expression:
 
             if a.kind == "prime":
                 ordem = a.detail["order"]
+                declarada = self._variavel_declarada(a.base)
+                if declarada is not None:
+                    x = declarada
                 if leitura == "derivative":
                     _exige(x, "a linha", "independente", "independent_variable",
                            "Variável independente")
@@ -602,15 +616,15 @@ class Expression:
             elif a.kind == "newton":
                 nome, simbolo = marcador()
                 ordem = a.detail["order"]
+                tempo = self._variavel_declarada(a.base) or self.document.time
                 if leitura == "derivative":
-                    _exige(self.document.time, "o ponto", "temporal",
+                    _exige(tempo, "o ponto", "temporal",
                            "time_variable", "Variável temporal")
-                    _nao_derive_a_propria_variavel(a.base, self.document.time,
+                    _nao_derive_a_propria_variavel(a.base, tempo,
                                                    "temporal", r"\dot{{{0}}}")
-                    funcao, args = self._funcao(a.base, self.document.time,
-                                                argumentos)
+                    funcao, args = self._funcao(a.base, tempo, argumentos)
                     derivadas[a.base] = args
-                    alvo = sp.Derivative(funcao, (self.document.time, ordem))
+                    alvo = sp.Derivative(funcao, (tempo, ordem))
                 else:
                     alvo = sp.Symbol(a.base)
                 reposicoes[simbolo] = alvo
@@ -696,6 +710,11 @@ class Expression:
         """A função incógnita `nome`, com TODOS os argumentos que ela tem."""
         args = argumentos.get(nome) or (padrao,)
         return sp.Function(nome)(*args), args
+
+    def _variavel_declarada(self, base):
+        """A variável de uma função declarada de UMA variável, se houver."""
+        args = self.document._function_args.get(base)
+        return sp.Symbol(args[0]) if args and len(args) == 1 else None
 
     def _linha(self, a, leitura, ordem, x, derivadas):
         """O objeto que a linha denota, nas quatro formas em que ela aparece.

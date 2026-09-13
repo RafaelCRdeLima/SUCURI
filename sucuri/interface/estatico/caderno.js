@@ -17,16 +17,10 @@ function pedir(rota, corpo) {
   return SUCURI_TRANSPORTE(rota, corpo);
 }
 
-function convencoes() {
-  return {
-    independente: $('c-independente').value,
-    temporal: $('c-temporal').value,
-    linhas: $('c-linhas').value,
-    pontos: $('c-pontos').value,
-    funcoes: $('c-funcoes').value,
-    variaveis: $('c-variaveis').value
-  };
-}
+/* O caderno não tem convenções: tem declarações, que são células como as
+ * outras. Seis campos de formulário diziam o que um punhado de linhas na folha
+ * diz melhor — e a declaração DISSOLVE a ambiguidade em vez de escolher uma
+ * leitura, então o que ela resolve fica verde, e não âmbar. */
 
 function escapar(t) {
   return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -99,7 +93,7 @@ function executar(indice) {
 
   var ultima = indice === fontes.length - 1;
   pedir('/api/caderno/executar',
-        { fonte: fontes[indice], convencoes: convencoes() })
+        { fonte: fontes[indice] })
     .then(function (d) {
       pintar(celula, d);
       if (ultima && fontes[indice].trim()) { acrescentar(''); }
@@ -122,7 +116,7 @@ function refazer() {
   if (!vivas.length) { return; }
 
   pedir('/api/caderno/refazer',
-        { fontes: vivas, convencoes: convencoes(), anotacoes: anotacoes })
+        { fontes: vivas, anotacoes: anotacoes })
     .then(function (d) {
       var novas = document.createDocumentFragment();
       var recomeco = [];
@@ -299,13 +293,6 @@ window.addEventListener('unhandledrejection', function (e) {
 });
 
 /* ------------------------------------------------------------------ ligar */
-
-['c-independente', 'c-temporal', 'c-funcoes', 'c-variaveis'].forEach(function (id) {
-  $(id).addEventListener('change', refazer);
-});
-['c-linhas', 'c-pontos'].forEach(function (id) {
-  $(id).addEventListener('change', refazer);
-});
 
 acrescentar('');
 pedir('/api/ler', { latex: 'x' }).then(function (d) {

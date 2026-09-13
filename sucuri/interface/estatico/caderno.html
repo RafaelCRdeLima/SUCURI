@@ -27,40 +27,12 @@
   <span class="arquivo" id="arquivo">caderno.tex</span>
 </header>
 
-<details class="convencoes caderno-convencoes" id="bloco-convencoes" open>
-  <summary>Convenções do caderno</summary>
-  <div class="campos">
-    <label>Variável independente
-      <input id="c-independente" type="text" spellcheck="false" placeholder="x">
-    </label>
-    <label>Variável temporal
-      <input id="c-temporal" type="text" spellcheck="false" placeholder="t">
-    </label>
-    <label>Linha <span class="amostra">f'</span>
-      <select id="c-linhas">
-        <option value="">perguntar</option>
-        <option value="derivative">é derivada</option>
-        <option value="symbol">faz parte do nome</option>
-      </select>
-    </label>
-    <label>Ponto <span class="amostra">\dot q</span>
-      <select id="c-pontos">
-        <option value="">perguntar</option>
-        <option value="derivative">é derivada temporal</option>
-        <option value="decoration">é só um acento</option>
-      </select>
-    </label>
-    <label>Funções
-      <input id="c-funcoes" type="text" spellcheck="false" placeholder="f, phi">
-    </label>
-    <label>Variáveis
-      <input id="c-variaveis" type="text" spellcheck="false" placeholder="a, k">
-    </label>
-  </div>
-  <p class="nota">Valem para o caderno inteiro. Mudar uma refaz tudo — o que já
-    estava escrito passa a significar outra coisa, e mostrar as duas leituras
-    ao mesmo tempo seria mostrar duas matemáticas.</p>
-</details>
+<p class="folha-dica" id="dica">
+  Escreva a equação e <kbd>Shift</kbd>+<kbd>Enter</kbd>. Se a notação deixar
+  dúvida, o Sucuri pergunta — e você pode respondê-la de uma vez declarando o
+  que cada nome é: <code>u = u[x,t]</code>, <code>e = euler</code>,
+  <code>a = símbolo</code>.
+</p>
 
 <main class="folha" id="folha"></main>
 

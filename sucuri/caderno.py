@@ -37,6 +37,11 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*\)\s*$")
 _RE_DECLARA = re.compile(r"^\s*[A-Za-z]\w*\s*(?:=\s*[A-Za-z]\w*\s*)?"
                          r"\[[^\]]*\]\s*$")
 
+# As outras duas coisas que um nome pode ser, além de função de alguma coisa.
+# Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
+_RE_ESPECIE = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*"
+                         r"(euler|s[ií]mbolo|constante)\s*$", re.I)
+
 VERBOS = {
     "resolver": "resolver", "solve": "resolver", "dsolve": "resolver",
     "avaliar": "avaliar", "evaluate": "avaliar", "doit": "avaliar",
@@ -90,6 +95,10 @@ class Caderno:
 
     def executar(self, fonte):
         """Uma célula: declaração, verbo, ou matemática."""
+        especie = _RE_ESPECIE.match(fonte or "")
+        if especie:
+            return self._especie(especie.group(1), especie.group(2).lower())
+
         declarada = _RE_DECLARA.match(fonte or "")
         if declarada:
             return self._declarar(fonte)
@@ -100,6 +109,24 @@ class Caderno:
             return Celula(None, fonte, "comando",
                           self._comando(VERBOS[verbo], alvo))
         return self._matematica(fonte)
+
+    def _especie(self, nome, especie):
+        """`e = euler`, `a = símbolo`.
+
+        A mesma pergunta das outras declarações — o que é este nome? — com as
+        outras duas respostas possíveis. Vira anotação de sítio, e não
+        convenção, porque é uma decisão sobre AQUELE nome, não uma regra
+        aplicada a tudo sem olhar.
+        """
+        if especie == "euler":
+            self.sessao.anotar("euler", nome, {}, "euler")
+            texto = f"{nome} é o número de Euler"
+        else:
+            self.sessao.anotar("juxtaposition", nome, {}, "product")
+            texto = f"{nome} é símbolo, não função: {nome}(…) é produto"
+        return Celula(None, f"{nome} = {especie}", "declaracao",
+                      {"declarado": [{"nome": nome, "especie": especie}],
+                       "texto": texto})
 
     def _declarar(self, fonte):
         """`u = u[x,t]` — e a ambiguidade some em vez de ser escolhida.

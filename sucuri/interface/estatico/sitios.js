@@ -101,7 +101,10 @@ function opcoesDoSitio(a, aoDecidir) {
     });
     opcoes.appendChild(b);
   });
-  if (a.estado === 'explicita') {
+  /* "Voltar à convenção" só faz sentido quando há uma anotação de sítio para
+   * apagar. Se a leitura veio de uma DECLARAÇÃO, o caminho de mudar de ideia é
+   * mudar a declaração — e um botão que não faz nada é pior do que nenhum. */
+  if (a.estado === 'explicita' && !a.motivo) {
     var limpar = document.createElement('button');
     limpar.className = 'opcao';
     limpar.textContent = 'voltar à convenção';
