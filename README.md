@@ -290,7 +290,21 @@ obrigatória — quem escreve `sympy.solve(...)` fala direto com o SymPy, sem
 sítios, sem convenção declarada, sem proveniência, e sobra um Jupyter com
 passos a mais.
 
-`resolver` é um verbo só, e o objeto decide a conta: equação diferencial vai
+`resolver` é um verbo só, e o objeto decide a conta — **três** contas agora:
+
+| a incógnita | o solver |
+|---|---|
+| `y(x)` | `dsolve`, conferido com `checkodesol` |
+| `u(t,x)` | `pdsolve`, conferido com `checkpdesol` |
+| sem derivada | `solve` |
+
+`∂u/∂t = A(t)u` sai como `F(x)·exp(∫A dt)`: numa EDP, a "constante" de
+integração é uma função arbitrária da outra variável. O `pdsolve` resolve bem
+menos do que o `dsolve` — a equação da onda ele não resolve —, mas resolver
+pouco não é resolver nada, e quem decide se o pouco serve é quem escreveu a
+equação.
+
+Antes: equação diferencial vai
 para o módulo que confere a solução por substituição, algébrica vai para o
 `solve`. Obrigar o usuário a escolher entre `solve` e `dsolve` é pedir que ele
 classifique a própria equação para o programa — ao contrário.

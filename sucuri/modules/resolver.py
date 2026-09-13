@@ -72,17 +72,24 @@ def edo(expression):
             f"há mais de uma função incógnita ({nomes}): isto é um sistema, e "
             f"este módulo resolve uma equação de cada vez")
 
-    variaveis = {v for d in derivadas for v in d.variables}
-    if len(variaveis) > 1:
-        nomes = ", ".join(sorted(str(v) for v in variaveis))
-        raise ValueError(
-            f"há derivadas em mais de uma variável ({nomes}): isto é uma "
-            f"equação a derivadas parciais, e o pdsolve do SymPy resolve muito "
-            f"pouco delas")
-
+    variaveis = sorted({v for d in derivadas for v in d.variables}, key=str)
     funcao = next(iter(incognitas))
-    variavel = next(iter(variaveis))
-    return equacao, funcao(variavel), variavel
+
+    # Uma variável ou várias: a diferença não é de recusa, é de SOLVER. A
+    # incógnita de várias variáveis vai para o pdsolve, que resolve bem menos
+    # do que o dsolve mas resolve — ∂u/∂t = A(t)u sai como F(x)·exp(∫A dt), com
+    # a "constante" de integração sendo uma função arbitrária de x, que é o que
+    # ela é numa EDP.
+    args = self_args(equacao, funcao)
+    return equacao, funcao(*args), variaveis[0]
+
+
+def self_args(equacao, funcao):
+    """Os argumentos com que a função incógnita aparece na equação."""
+    for a in equacao.atoms(AppliedUndef):
+        if a.func is funcao:
+            return a.args
+    return ()
 
 
 def _ordem(equacao, funcao):
@@ -120,18 +127,31 @@ def tipo_da_resposta(solucao, funcao):
 
 # --------------------------------------------------------------- operações
 
+def parcial(funcao):
+    """A incógnita tem mais de um argumento? Então é EDP, e o solver é outro."""
+    return len(funcao.args) > 1
+
+
 def _dsolve(equacao, funcao):
-    return sp.dsolve(equacao, funcao)
+    return (sp.pdsolve(equacao, funcao) if parcial(funcao)
+            else sp.dsolve(equacao, funcao))
 
 
-def _checkodesol(equacao, solucao):
-    return sp.checkodesol(equacao, solucao)
+def _checkodesol(equacao, solucao, ehparcial=False):
+    return (sp.checkpdesol(equacao, solucao) if ehparcial
+            else sp.checkodesol(equacao, solucao))
 
 
-def _confere(equacao, solucao):
+def _classificar(equacao, funcao):
+    return (sp.classify_pde(equacao, funcao) if parcial(funcao)
+            else sp.classify_ode(equacao, funcao))
+
+
+def _confere(equacao, solucao, ehparcial=False):
     """A solução volta zero quando substituída? ('sim'/'não'/'não deu tempo')"""
     try:
-        veredito = no_prazo(_checkodesol, PRAZO_CONFERIR, equacao, solucao)
+        veredito = no_prazo(_checkodesol, PRAZO_CONFERIR, equacao, solucao,
+                            ehparcial)
     except TempoEsgotado:
         return None, f"não deu tempo de conferir em {PRAZO_CONFERIR} s"
     except Exception as e:                                      # noqa: BLE001
@@ -168,7 +188,7 @@ def _sem_solucao(linhas, motivo, equacao=None, funcao=None):
     """
     if equacao is not None:
         try:
-            padroes = no_prazo(sp.classify_ode, PRAZO_CONFERIR, equacao, funcao)
+            padroes = no_prazo(_classificar, PRAZO_CONFERIR, equacao, funcao)
         except Exception:                                       # noqa: BLE001
             padroes = ()
         linhas = linhas + [("padrão tentado", p) for p in padroes]
@@ -186,7 +206,8 @@ def resolver(expression):
     """Resolve, classifica a resposta e confere por substituição."""
     equacao, funcao, _ = edo(expression)
     ordem = _ordem(equacao, funcao)
-    linhas = [("equação", sp.sstr(equacao)), ("ordem", str(ordem))]
+    linhas = [("equação", sp.sstr(equacao)), ("ordem", str(ordem)),
+              ("espécie", "parcial" if parcial(funcao) else "ordinária")]
 
     try:
         solucao = no_prazo(_dsolve, PRAZO_RESOLVER, equacao, funcao)
@@ -208,7 +229,7 @@ def resolver(expression):
                       provenance=Provenance.INAPPLICABLE)
 
     linhas.append(("solução", sp.sstr(solucao)))
-    conferida, nota = _confere(equacao, solucao)
+    conferida, nota = _confere(equacao, solucao, parcial(funcao))
     linhas.append(("conferência", nota))
 
     if conferida:
@@ -232,7 +253,7 @@ def classificar(expression):
     """
     equacao, funcao, _ = edo(expression)
     try:
-        padroes = no_prazo(sp.classify_ode, PRAZO_CONFERIR, equacao, funcao)
+        padroes = no_prazo(_classificar, PRAZO_CONFERIR, equacao, funcao)
     except TempoEsgotado as e:
         padroes = ()
         nota = str(e)

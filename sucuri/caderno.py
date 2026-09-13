@@ -268,13 +268,15 @@ class Caderno:
 
         from .interface.sessao import _e_diferencial
         if _e_diferencial(objeto):
-            funcoes = {a.func for d in objeto.atoms(sp.Derivative)
-                       for a in d.expr.atoms(sp.core.function.AppliedUndef)}
-            f = sorted(funcoes, key=lambda c: c.__name__)[0]
-            var = sorted(objeto.free_symbols, key=str)
-            argumento = f"{f.__name__}({var[0]})" if var else f.__name__
-            linhas += ["", f"solucao = dsolve({nome}, {argumento})",
-                       f"checkodesol({nome}, solucao)   # confere por substituição"]
+            aplicadas = [a for d in objeto.atoms(sp.Derivative)
+                         for a in d.expr.atoms(sp.core.function.AppliedUndef)]
+            incognita = sorted(aplicadas, key=lambda a: a.func.__name__)[0]
+            argumento = sp.sstr(incognita)
+            # Solver por espécie: a incógnita de várias variáveis é EDP.
+            verbo = "pdsolve" if len(incognita.args) > 1 else "dsolve"
+            confere = "checkpdesol" if len(incognita.args) > 1 else "checkodesol"
+            linhas += ["", f"solucao = {verbo}({nome}, {argumento})",
+                       f"{confere}({nome}, solucao)   # confere por substituição"]
         elif isinstance(objeto, sp.Equality):
             livres = sorted(objeto.free_symbols, key=str)
             if livres:

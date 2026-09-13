@@ -136,11 +136,14 @@ def test_recusa_sistema():
         R.resolver(d.read("y' + z' = 0"))
 
 
-def test_recusa_derivadas_parciais():
-    d = sucuri.Document(independent_variable="x")
-    d.function("u")
-    with pytest.raises(ValueError, match="derivadas parciais"):
-        R.resolver(d.read(r"\partial_x u + \partial_t u = 0"))
+def test_nao_recusa_mais_derivadas_parciais():
+    """Recusava com "o pdsolve do SymPy resolve muito pouco delas" — verdade
+    que não justificava a recusa: resolver pouco não é resolver nada, e quem
+    decide se o pouco serve é quem escreveu a equação."""
+    d = sucuri.Document()
+    d.function("u(t,x)")
+    r = R.resolver(d.read(r"\partial_t u = \partial_x u"))
+    assert linha(r, "espécie") == "parcial"
 
 
 # ------------------------------------------------------------- padrões
@@ -164,3 +167,60 @@ def test_o_modulo_carrega_pelo_nome():
     m = modules.load("resolver")
     assert set(m.operations) == {"resolver", "padrões"}
     assert "resolver" in modules.CONHECIDOS
+
+
+# ----------------------------------------------------- equações a derivadas parciais
+
+def docp():
+    d = sucuri.Document()
+    d.function("u(t,x)", "A(t)")
+    return d
+
+
+def test_a_incognita_de_varias_variaveis_vai_para_o_pdsolve():
+    """Uma variável ou várias não é diferença de recusa, é de SOLVER.
+
+    ∂u/∂t = A(t)u sai como F(x)·exp(∫A dt): a "constante" de integração é uma
+    função arbitrária de x, que é o que ela é numa EDP. O dsolve recusava com
+    "only work with functions of one variable" — e o módulo dava isso como
+    "sem solução encontrada", que era falso.
+    """
+    r = R.resolver(docp().read(r"\frac{\partial u}{\partial t} = A u"))
+    assert linha(r, "espécie") == "parcial"
+    assert linha(r, "tipo") == R.FECHADA
+    assert r.provenance == Provenance.ESTABLISHED
+    assert "resto 0" in linha(r, "conferência")
+    assert r.payload.rhs.has(sp.Function("F")(sp.Symbol("x")))
+
+
+def test_a_ordinaria_continua_no_dsolve():
+    r = resolver("y'' + y = 0")
+    assert linha(r, "espécie") == "ordinária"
+    assert r.provenance == Provenance.ESTABLISHED
+
+
+def test_a_edp_que_o_pdsolve_nao_resolve_falha_honestamente():
+    """O pdsolve resolve bem menos do que o dsolve. A equação da onda ele não
+    resolve — e dizer isso é a resposta, não um defeito."""
+    d = sucuri.Document()
+    d.function("u(t,x)")
+    r = R.resolver(d.read(
+        r"\frac{\partial^2 u}{\partial t^2} = \frac{\partial^2 u}{\partial x^2}"))
+    assert r.label == "sem solução encontrada"
+    assert any("korvin" in b for b in r.blocked_by)
+
+
+def test_o_codigo_exportado_de_uma_edp_usa_pdsolve():
+    from sucuri.caderno import Caderno
+
+    c = Caderno()
+    c.executar("u = u(t,x)")
+    c.executar("A = A(t)")
+    c.executar(r"\frac{\partial u}{\partial t} = A u")
+    codigo = c.executar("exportar(eq1)").to_dict()["codigo"]
+    assert "pdsolve(eq1, u(t, x))" in codigo
+    assert "checkpdesol" in codigo
+
+    escopo = {}
+    exec(codigo, escopo)                                # noqa: S102
+    assert escopo["solucao"].rhs.has(sp.Function("F"))
