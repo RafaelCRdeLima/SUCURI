@@ -133,6 +133,38 @@ doc.annotate("prime", "r", "derivative", order=1)
 doc.read(...).tree()
 ```
 
+## Módulos de domínio
+
+O Sucuri lê e desambigua; ele não sabe teoria de Galois nem geometria
+diferencial. O que dá utilidade a uma expressão vem de módulos, que oferecem
+operações e devolvem **resultados que não são expressões** — tabelas, vereditos,
+certificados. É a diferença entre hospedar calculadoras e hospedar áreas da
+matemática.
+
+```python
+e = doc.read(r"y'' = x y")            # Airy
+korvin = sucuri.modules.load("korvin")
+korvin.operations["não-integrabilidade"].run(e)
+```
+
+### A ponte de proveniência
+
+Toda conclusão de módulo carrega a origem do critério que a produziu, e o
+hospedeiro **recusa-se a apresentar como conclusão** o que vier de critério sem
+autoridade:
+
+```
+esquema de Riemann              [não aplicável]     → é dado, não afirma nada
+condições necessárias           [estabelecida]      → fonte primária (Kovacic §2)
+não-integrabilidade             [sem fonte]         → NÃO APRESENTÁVEL
+  bloqueio: o critério 'potência simétrica com solução racional' não tem
+            proveniência declarada e por isso não emite veredito
+```
+
+O Sucuri não entende uma linha de teoria de Galois. Não precisa: basta o módulo
+declarar de onde vem o que afirma. É a mesma regra que o Sucuri já aplica à
+leitura — nada se apresenta com mais confiança do que a sua origem sustenta.
+
 ## Identidade visual
 
 Em `identidade/`: marca e variantes, ícones de 48 a 1024 px, tokens em CSS e o
