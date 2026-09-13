@@ -203,6 +203,48 @@ def _nao_derive_a_propria_variavel(base, variavel, qual, escrita="{0}'"):
             f"{qual} — t, por exemplo")
 
 
+def _distancia(a, b):
+    """Quantos erros de digitação separam duas palavras.
+
+    Conta TROCA DE LETRAS VIZINHAS como um erro só, e não dois — \\alpah por
+    \\alpha é um dedo fora de ordem, não duas letras erradas. A distinção é o
+    que permite exigir distância 1 e ainda assim pegar o engano mais comum,
+    sem sugerir \\mathrm para quem escreveu \\mathbb.
+    """
+    m, n = len(a), len(b)
+    d = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        d[i][0] = i
+    for j in range(n + 1):
+        d[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            custo = a[i - 1] != b[j - 1]
+            d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1,
+                          d[i - 1][j - 1] + custo)
+            if (i > 1 and j > 1 and a[i - 1] == b[j - 2]
+                    and a[i - 2] == b[j - 1]):
+                d[i][j] = min(d[i][j], d[i - 2][j - 2] + 1)
+    return d[m][n]
+
+
+def _com_palpite(nome):
+    """O nome, e — se for quase um nome conhecido — o palpite.
+
+    \\partia por \\partial é erro de digitação, não de notação, e a diferença
+    importa: uma palavra de conserto vale mais do que a explicação certa do
+    problema errado. O leitor conhece o próprio vocabulário, então pode dizer.
+    """
+    from .ambiguity import _COMANDOS
+    vocabulario = set(_COMANDOS) | set(_MACROS_SIMBOLO)
+    if nome in vocabulario:
+        return nome
+    perto = [(d, c) for c in vocabulario if (d := _distancia(nome, c)) <= 1]
+    if not perto:
+        return nome
+    return f"{nome} (quis dizer \\{min(perto)[1]}?)"
+
+
 class NotacaoNaoReconhecida(Exception):
     """O parser degradou uma notação em vez de recusá-la.
 
@@ -218,7 +260,7 @@ class NotacaoNaoReconhecida(Exception):
     def __init__(self, nomes, motivo=None):
         self.nomes = list(nomes)
         self.motivo = motivo
-        lista = ", ".join("\\" + n for n in self.nomes)
+        lista = ", ".join("\\" + _com_palpite(n) for n in self.nomes)
         super().__init__(
             motivo or
             f"notação não reconhecida pelo parser, degradada a símbolo: {lista}. "

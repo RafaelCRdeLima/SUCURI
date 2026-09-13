@@ -162,3 +162,36 @@ def test_nenhuma_entrada_da_tabela_vaza_marcador():
         assert "Z_{" not in (motivo or "")
         if objeto is not None:
             assert "Z_{" not in sp.sstr(objeto)
+
+
+# ------------------------------------------------ erro de digitação em macro
+
+def test_macro_quase_certa_ganha_palpite():
+    """\\partia por \\partial é erro de DIGITAÇÃO, não de notação, e a diferença
+    importa: uma palavra de conserto vale mais do que a explicação certa do
+    problema errado. O leitor conhece o próprio vocabulário, então pode dizer.
+
+    Achado por alguém escrevendo a equação da onda e perdendo o 'l'.
+    """
+    with pytest.raises(NotacaoNaoReconhecida, match=r"quis dizer .partial"):
+        doc().read(r"\frac{\partial^2 u}{\partia t^2} = 0").to_sympy()
+
+
+@pytest.mark.parametrize("errado, certo", [
+    ("partia", "partial"),      # letra faltando
+    ("fracc", "frac"),          # letra sobrando
+    ("alpah", "alpha"),         # letras trocadas de lugar
+])
+def test_os_tres_enganos_de_dedo(errado, certo):
+    from sucuri.document import _com_palpite
+    assert f"quis dizer \\{certo}?" in _com_palpite(errado)
+
+
+@pytest.mark.parametrize("nome", ["coth", "operatorname", "mathbb", "zzz"])
+def test_palpite_nao_se_inventa(nome):
+    """Sugestão errada gasta a confiança na mensagem. \\coth não é engano de
+    dedo: é notação que o parser não conhece, e a recusa já diz isso. E
+    \\mathbb está a duas letras de \\mathrm, que não é o que ninguém quis.
+    """
+    from sucuri.document import _com_palpite
+    assert _com_palpite(nome) == nome
