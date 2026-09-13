@@ -124,11 +124,15 @@ def available():
     return dict(REGISTRY)
 
 
+CONHECIDOS = ("korvin", "resolver")
+"""Os que acompanham o Sucuri. Outros podem registrar-se sozinhos."""
+
+
 def load(name):
     """Carrega um módulo pelo nome, se as dependências estiverem presentes."""
     if name in REGISTRY:
         return REGISTRY[name]
-    if name == "korvin":
-        from . import korvin as _k
-        return _k.MODULE
+    if name in CONHECIDOS:
+        import importlib
+        return importlib.import_module(f".{name}", __package__).MODULE
     raise KeyError(f"módulo desconhecido: {name}")

@@ -202,6 +202,30 @@ korvin = sucuri.modules.load("korvin")
 korvin.operations["não-integrabilidade"].run(e)
 ```
 
+Dois módulos acompanham o Sucuri, e respondem a perguntas diferentes:
+
+| | pergunta |
+|---|---|
+| `resolver` | consigo achar uma solução? |
+| `korvin` | existe uma? |
+
+O `resolver` embrulha o `dsolve` para dizer o que ele não diz: **que tipo de
+resposta é**. Forma fechada conferida por substituição, série truncada (que não
+é solução, é aproximação até uma ordem), relação implícita, ou nada — e quando
+é nada, que não achar não prova que não há.
+
+```
+y'' + y = 0          solução                        [estabelecida]
+y'' = x y            solução                        [estabelecida]
+y'' + x y' + y = 0   série (não é solução fechada)   [não aplicável]
+y'' = 6 y^2          sem solução encontrada          [não aplicável]
+y' = 1/(x + y^2)     solução não confirmada          [sem fonte]
+```
+
+A terceira linha é o motivo de o módulo existir: essa equação é `(y' + xy)' = 0`
+e **tem** forma fechada, com `erfi` — o `dsolve` devolve uma série até ordem 5 e
+não avisa que mudou de tipo de resposta.
+
 ### A ponte de proveniência
 
 Toda conclusão de módulo carrega a origem do critério que a produziu, e o

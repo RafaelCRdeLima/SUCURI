@@ -58,7 +58,7 @@ class Aplicacao:
     def modulos(self, corpo):
         from .. import modules
 
-        nomes = corpo.get("nomes") or ["korvin"]
+        nomes = corpo.get("nomes") or list(modules.CONHECIDOS)
         saida = []
         for nome in nomes:
             try:
