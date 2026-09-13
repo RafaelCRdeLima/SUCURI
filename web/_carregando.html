@@ -1,7 +1,16 @@
-<!-- Gerado por construir.py NÃO: escrito à mão, e injetado nas páginas.
-     É a única coisa que a versão online tem a mais: o Python leva alguns
-     segundos para chegar, e uma tela em branco durante esse tempo faz
-     qualquer um achar que quebrou. -->
+<!-- A única coisa que a versão online tem a mais: o Python leva alguns
+     segundos para chegar, e uma tela em branco durante esse tempo faz qualquer
+     um achar que quebrou.
+
+     Os três pedaços são recortados por marcador, e não por busca de tag. A
+     primeira versão procurava o primeiro "</div>" depois da abertura — e esta
+     tela tem divs aninhadas, então o recorte cortava no meio. O que sobrava
+     era HTML desbalanceado: o navegador fechava a div sozinho, a página
+     inteira virava FILHA de #carregando, e no instante em que o motor ficava
+     pronto a regra .pronto{display:none} sumia com tudo. Era a "página em
+     branco do nada". -->
+
+<!-- SUCURI:estilo -->
 <style>
 #carregando{position:fixed;inset:0;background:var(--sucuri-mata);color:var(--sucuri-areia);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
@@ -15,6 +24,9 @@
   transition:width .3s ease}
 #carregando.pronto{display:none}
 </style>
+<!-- /SUCURI:estilo -->
+
+<!-- SUCURI:overlay -->
 <div id="carregando">
   <svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true">
     <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
@@ -29,6 +41,9 @@
     navegador. Da primeira vez leva alguns segundos para chegar; depois fica em
     cache. Nada do que você escrever sai desta máquina.</p>
 </div>
+<!-- /SUCURI:overlay -->
+
+<!-- SUCURI:ganchos -->
 <script>
 /* Ganchos do carregamento, definidos antes do transporte subir. */
 function SUCURI_CARREGANDO(d) {
@@ -44,8 +59,15 @@ function SUCURI_CARREGADO(versoes) {
       'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] + '  ·  no navegador';
   }
 }
+function SUCURI_REERGUENDO() {
+  var tela = document.getElementById('carregando');
+  tela.classList.remove('pronto');
+  document.getElementById('passo').textContent = 'recarregando o motor…';
+  document.getElementById('barra').style.width = '0%';
+}
 function SUCURI_FALHOU(erro) {
   document.getElementById('passo').textContent = 'não deu: ' + erro;
   document.getElementById('barra').style.background = '#C0442F';
 }
 </script>
+<!-- /SUCURI:ganchos -->

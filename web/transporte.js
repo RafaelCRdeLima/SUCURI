@@ -22,7 +22,15 @@ var pronto = null;
 var memConvencoes = null;   // reenviadas ao motor novo
 var memAnotacoes = [];
 
+var primeira = true;
+
 function erguer() {
+  if (!primeira && typeof SUCURI_REERGUENDO === 'function') {
+    /* Recarregar o Pyodide leva ~20 s. Sem aviso, a página parece morta — e
+     * "parece morta" é o que o usuário chama de instável. */
+    SUCURI_REERGUENDO();
+  }
+  primeira = false;
   motor = new Worker('motor.js');
   pronto = new Promise(function (resolve, reject) {
     motor.onmessage = function (e) {
@@ -71,7 +79,10 @@ function enviar(rota, corpo, prazo) {
 function SUCURI_TRANSPORTE(rota, corpo) {
   if (corpo.convencoes) { memConvencoes = corpo.convencoes; }
   if (rota === '/api/anotar' && corpo.leitura !== null) { memAnotacoes.push(corpo); }
-  var prazo = (rota === '/api/operar') ? PRAZO_MODULO : PRAZO_PADRAO;
+  /* Estas podem rodar um dsolve, que é conta aberta: prazo de módulo. */
+  var LONGAS = ['/api/operar', '/api/avaliar',
+                '/api/caderno/executar', '/api/caderno/refazer'];
+  var prazo = (LONGAS.indexOf(rota) !== -1) ? PRAZO_MODULO : PRAZO_PADRAO;
   return pronto.then(function () { return enviar(rota, corpo, prazo); });
 }
 

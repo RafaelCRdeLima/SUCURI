@@ -111,21 +111,47 @@ function executar(indice) {
 }
 
 function refazer() {
-  /* Convenção mudou: o que já está escrito passa a significar outra coisa. */
-  pedir('/api/caderno/refazer', { fontes: fontes.filter(function (f) {
-    return f.trim();
-  }), convencoes: convencoes(), anotacoes: anotacoes })
+  /* Convenção mudou: o que já está escrito passa a significar outra coisa.
+   *
+   * A folha só se apaga DEPOIS que a resposta chegou e as células novas foram
+   * montadas. A primeira versão apagava antes e reconstruía dentro do `then`:
+   * qualquer erro no meio — ou uma resposta que não veio — deixava a página em
+   * branco, sem uma palavra. Apagar o que está na tela antes de ter o que pôr
+   * no lugar é apostar que nada dá errado. */
+  var vivas = fontes.filter(function (f) { return f.trim(); });
+  if (!vivas.length) { return; }
+
+  pedir('/api/caderno/refazer',
+        { fontes: vivas, convencoes: convencoes(), anotacoes: anotacoes })
     .then(function (d) {
+      var novas = document.createDocumentFragment();
+      var recomeco = [];
+      vivas.forEach(function (f, i) {
+        var c = criarCelula(f, i);
+        recomeco.push(f);
+        novas.appendChild(c);
+        if (d.celulas && d.celulas[i]) { pintar(c, d.celulas[i]); }
+      });
       var folha = $('folha');
       folha.textContent = '';
-      var vivas = fontes.filter(function (f) { return f.trim(); });
-      fontes = [];
-      vivas.forEach(function (f, i) {
-        var c = acrescentar(f);
-        if (d.celulas[i]) { pintar(c, d.celulas[i]); }
-      });
+      fontes = recomeco;
+      folha.appendChild(novas);
       acrescentar('');
+    })
+    .catch(function (e) {
+      /* Mantém o que está na tela: leitura velha é melhor do que tela vazia,
+       * desde que o aviso diga que ela é velha. */
+      avisar('não consegui refazer o caderno (' + e + '); o que está na tela '
+             + 'ainda é a leitura anterior');
     });
+}
+
+function avisar(texto) {
+  var faixa = $('faixa');
+  faixa.textContent = texto;
+  faixa.hidden = false;
+  clearTimeout(avisar._relogio);
+  avisar._relogio = setTimeout(function () { faixa.hidden = true; }, 12000);
 }
 
 /* ----------------------------------------------------------------- pintar */
@@ -278,6 +304,14 @@ function sitio(a) {
   div.appendChild(opcoes);
   return div;
 }
+
+/* Erro solto não pode terminar em silêncio. */
+window.addEventListener('error', function (e) {
+  avisar('algo quebrou na página: ' + (e.message || e.error));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  avisar('um pedido não voltou: ' + (e.reason && e.reason.message || e.reason));
+});
 
 /* ------------------------------------------------------------------ ligar */
 

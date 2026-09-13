@@ -115,3 +115,29 @@ def test_o_botao_de_modulos_so_aparece_se_tiver_o_que_mostrar():
     assert "$('abrir-modulos').hidden = true" in js
     # o painel filtra por disponibilidade antes de listar
     assert js.count("m.disponivel && sobra(m).length") == 2
+
+
+@pytest.mark.parametrize("pagina", ["index.html", "caderno.html"])
+def test_a_tela_de_carregamento_fecha_antes_da_pagina(pagina):
+    """O defeito que virou "a página some do nada".
+
+    A tela de carregamento era recortada procurando o primeiro "</div>" — e ela
+    tem divs dentro. O recorte cortava no meio; o navegador fechava a div
+    sozinho; a página inteira virava FILHA de #carregando; e no instante em que
+    o motor ficava pronto, a regra .pronto{display:none} sumia com tudo.
+
+    O sintoma aparecia longe da causa, que é o que torna esse tipo de erro
+    caro: não havia nada de errado com a página, só com o recorte dela.
+    """
+    html = (WEB / pagina).read_text(encoding="utf-8")
+    assert 'id="passo"' in html and 'id="barra"' in html
+
+    trecho = html[html.index('<div id="carregando">'):html.index('<div class="app">')]
+    assert trecho.count("<div") == trecho.count("</div>"), (
+        f"{pagina}: a tela de carregamento não fecha antes da página")
+
+
+@pytest.mark.parametrize("pagina", ["index.html", "caderno.html"])
+def test_as_paginas_publicadas_tem_as_divs_balanceadas(pagina):
+    html = (WEB / pagina).read_text(encoding="utf-8")
+    assert html.count("<div") == html.count("</div>"), pagina

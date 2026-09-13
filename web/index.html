@@ -34,7 +34,15 @@
     <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
   </svg>
   <div class="marca">SUCURI</div>
+  <div class="barra"><i id="barra"></i></div>
+  <div class="passo" id="passo">iniciando…</div>
+  <p class="nota">O motor é o Python e o SymPy de verdade, compilados para o
+    navegador. Da primeira vez leva alguns segundos para chegar; depois fica em
+    cache. Nada do que você escrever sai desta máquina.</p>
+</div>
 <div class="app">
+
+<div class="faixa" id="faixa" role="status" hidden></div>
 
 <header>
   <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
@@ -155,6 +163,12 @@ function SUCURI_CARREGADO(versoes) {
     document.getElementById('motor').textContent =
       'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] + '  ·  no navegador';
   }
+}
+function SUCURI_REERGUENDO() {
+  var tela = document.getElementById('carregando');
+  tela.classList.remove('pronto');
+  document.getElementById('passo').textContent = 'recarregando o motor…';
+  document.getElementById('barra').style.width = '0%';
 }
 function SUCURI_FALHOU(erro) {
   document.getElementById('passo').textContent = 'não deu: ' + erro;

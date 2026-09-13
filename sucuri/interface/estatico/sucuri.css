@@ -42,6 +42,12 @@ textarea:focus{outline:none;border-color:var(--folha);box-shadow:0 0 0 3px rgba(
 /* --------------------------------------------------------------- blocos */
 .bloco{margin-top:26px;padding-top:18px;border-top:1px solid var(--areia-2)}
 
+/* ------------------------------------------------------------ faixa de aviso */
+/* Página que para de responder sem dizer nada é o que o usuário chama de
+   instável. Qualquer coisa que dê errado longe de um painel aparece aqui. */
+.faixa{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg);
+  padding:10px 22px;font-size:13px;border-bottom:1px solid #E8D4AC}
+
 /* --------------------------------------------------------- falta convenção */
 .falta{border:1px solid #E3C9A0;background:#FDF8EF;border-radius:var(--sucuri-raio);
   padding:12px 14px}

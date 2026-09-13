@@ -54,13 +54,24 @@ def motor_zip():
     return destino, arquivos
 
 
+def _pedaco(texto, nome):
+    """Recorte por marcador, nunca por busca de tag.
+
+    Procurar o primeiro "</div>" para achar o fim de um bloco funciona até o
+    bloco ter divs dentro — e aí o recorte corta no meio, o HTML sai
+    desbalanceado, e o estrago aparece longe da causa.
+    """
+    ini = texto.index(f"<!-- SUCURI:{nome} -->") + len(f"<!-- SUCURI:{nome} -->")
+    fim = texto.index(f"<!-- /SUCURI:{nome} -->")
+    return texto[ini:fim].strip()
+
+
 def paginas():
     """Cada página local vira a página online, com a tela de carregamento."""
     partes = (AQUI / "_carregando.html").read_text(encoding="utf-8")
-    estilo = partes[partes.index("<style>"):partes.index("</style>") + 8]
-    overlay = partes[partes.index('<div id="carregando">'):
-                     partes.index("</div>", partes.index('<div id="carregando">')) + 6]
-    ganchos = partes[partes.index("<script>"):partes.index("</script>") + 9]
+    estilo = _pedaco(partes, "estilo")
+    overlay = _pedaco(partes, "overlay")
+    ganchos = _pedaco(partes, "ganchos")
 
     for nome in PAGINAS:
         html = (ESTATICO / nome).read_text(encoding="utf-8")

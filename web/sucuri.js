@@ -516,6 +516,24 @@ function mostrar(d) {
   }
 }
 
+function avisar(texto) {
+  var faixa = $('faixa');
+  if (!faixa) { return; }
+  faixa.textContent = texto;
+  faixa.hidden = false;
+  clearTimeout(avisar._relogio);
+  avisar._relogio = setTimeout(function () { faixa.hidden = true; }, 12000);
+}
+
+/* Erro solto não pode terminar em silêncio: se algo quebrar fora de um painel,
+   a página tem de dizer o que houve em vez de só parar. */
+window.addEventListener('error', function (e) {
+  avisar('algo quebrou na página: ' + (e.message || e.error));
+});
+window.addEventListener('unhandledrejection', function (e) {
+  avisar('um pedido não voltou: ' + (e.reason && e.reason.message || e.reason));
+});
+
 function mostrarFalha(e) {
   $('estados').textContent = '';
   $('estados').appendChild(pastilha('erro', ICONE_ERRO, 'motor fora do ar: ' + e));
