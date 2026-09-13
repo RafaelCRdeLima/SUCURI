@@ -44,8 +44,11 @@ function SUCURI_SITIO(a, aoDecidir) {
 
   var origem = document.createElement('span');
   origem.className = 'sitio-origem';
-  origem.textContent = a.estado === 'inferida'
-    ? 'da convenção — ninguém olhou este caso'
+  /* Quando a leitura veio de uma DECLARAÇÃO, o motivo é melhor do que
+   * "decidido aqui": diz o que foi declarado, e portanto por que não há mais
+   * o que perguntar. */
+  origem.textContent = a.motivo ? a.motivo
+    : a.estado === 'inferida' ? 'da convenção — ninguém olhou este caso'
     : 'decidido aqui';
   linha.appendChild(origem);
 

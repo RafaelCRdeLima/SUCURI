@@ -116,3 +116,78 @@ def test_latex_devolve_a_escrita_de_volta():
     c = caderno()
     c.executar("x^2 + 1")
     assert c.executar("latex(eq1)").to_dict()["latex_exato"] == "x^{2} + 1"
+
+
+# ------------------------------------------------- declarar dissolve a dúvida
+
+def test_declarar_a_funcao_e_suas_variaveis():
+    """`u = u[x,t]` não escolhe entre as leituras de ∂u/∂t: tira uma delas do
+    mundo. Não há símbolo u para multiplicar, então "fração literal dos
+    símbolos ∂, u e ∂t" deixa de ser uma leitura possível — o sítio para de ser
+    pergunta porque parou de ter duas respostas.
+    """
+    c = Caderno().configurar({"variaveis": "c"})
+    d = c.executar("u = u[x,t]").to_dict()
+    assert d["tipo"] == "declaracao"
+    assert d["declarado"] == [{"nome": "u", "variaveis": ["x", "t"]}]
+
+    onda = c.executar(
+        r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}"
+    ).to_dict()
+    assert onda["pendentes"] == 0
+    assert onda["inferidas"] == 0          # nada ficou por conferir
+    assert onda["sympy"] == (
+        "Eq(Derivative(u(x, t), (t, 2)), c**2*Derivative(u(x, t), (x, 2)))")
+    assert all(a["estado"] == "explicita" for a in onda["ambiguidades"])
+    assert all("declarada função de x, t" in a["motivo"]
+               for a in onda["ambiguidades"])
+
+
+def test_as_duas_formas_de_escrever_a_declaracao():
+    for fonte in ["u[x,t]", "u = u[x,t]"]:
+        c = Caderno()
+        assert c.executar(fonte).to_dict()["tipo"] == "declaracao"
+
+
+def test_funcao_declarada_vale_tambem_onde_nao_ha_derivada():
+    """Um u solto continua sendo a mesma função, e não um símbolo homônimo."""
+    c = Caderno()
+    c.executar("u[x,t]")
+    assert c.executar("u + 1").to_dict()["sympy"] == "u(x, t) + 1"
+
+
+def test_o_campo_de_funcoes_aceita_a_mesma_notacao():
+    """Vírgula dentro de colchete não separa: 'u[x,t], f' são duas
+    declarações, não três."""
+    from sucuri.interface.sessao import _lista
+    assert _lista("u[x,t], f") == ["u[x,t]", "f"]
+
+    c = Caderno().configurar({"funcoes": "u[x,t]", "variaveis": "c"})
+    assert c.executar(r"\partial_t u").to_dict()["sympy"] == \
+        "Derivative(u(x, t), t)"
+
+
+def test_a_linha_continua_precisando_da_convencao():
+    """Declarar u[x,t] não resolve f': com duas variáveis, a linha não diz em
+    relação a qual. A declaração dissolve o que a notação já nomeia — ∂ e
+    Leibniz —, e não o que ela deixa em aberto."""
+    c = Caderno()
+    c.executar("u[x,t]")
+    assert c.executar("u' = 0").to_dict()["pendentes"] == 1
+
+
+def test_o_cabecalho_vazio_nao_apaga_a_declaracao_da_celula():
+    """A interface manda as convenções do cabeçalho a CADA execução, e o campo
+    'Funções' vazio reescrevia a lista — apagando em silêncio o que a célula
+    tinha declarado. Declaração de célula e campo de cabeçalho são duas
+    origens, e só uma delas é reescrita pelo formulário.
+    """
+    from sucuri.interface import Aplicacao
+
+    app = Aplicacao()
+    conv = {"variaveis": "c", "funcoes": ""}        # cabeçalho vazio
+    app.executar({"sessao": "t", "fonte": "u = u[x,t]", "convencoes": conv})
+    d = app.executar({"sessao": "t", "convencoes": conv,
+                      "fonte": r"\partial_t u = 0"})
+    assert d["pendentes"] == 0 and d["inferidas"] == 0
+    assert d["sympy"] == "Eq(Derivative(u(x, t), t), 0)"

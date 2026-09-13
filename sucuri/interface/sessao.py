@@ -34,6 +34,10 @@ class Sessao:
         self.linhas = None          # None | 'derivative' | 'symbol'
         self.pontos = None          # None | 'derivative' | 'decoration'
         self.funcoes = []
+        # Declaradas em célula, e não no cabeçalho. Ficam à parte porque
+        # `configurar` reescreve o que veio do cabeçalho a cada chamada — e o
+        # campo vazio apagava a declaração feita na folha, sem aviso.
+        self.funcoes_declaradas = []
         self.variaveis = []
         self.anotacoes = {}         # chave -> (kind, base, detail, reading)
 
@@ -47,6 +51,7 @@ class Sessao:
             "linhas": self.linhas,
             "pontos": self.pontos,
             "funcoes": list(self.funcoes),
+            "declaradas": list(self.funcoes_declaradas),
             "variaveis": list(self.variaveis),
             "anotacoes": [
                 {"kind": k, "base": b, "detalhe": d, "leitura": r}
@@ -92,8 +97,9 @@ class Sessao:
         avisos, falta = [], None
         doc = Document(independent_variable=self.independente,
                        time_variable=self.temporal)
-        if self.funcoes:
-            doc.function(*self.funcoes)
+        todas = self.funcoes + self.funcoes_declaradas
+        if todas:
+            doc.function(*todas)
         if self.variaveis:
             doc.variable(*self.variaveis)
 
@@ -333,6 +339,7 @@ def _ambiguidade(amb, resolucao):
                      for r in amb.readings],
         "estado": _ESTADOS[resolucao.how],
         "leitura": resolucao.reading,
+        "motivo": resolucao.motivo,
     }
 
 
@@ -361,9 +368,27 @@ def _nome(v):
 
 
 def _lista(v):
-    if isinstance(v, str):
-        v = v.replace(",", " ").split()
-    return [str(x).strip() for x in (v or []) if str(x).strip()]
+    """Separa por vírgula, menos a vírgula DENTRO de colchete.
+
+    'u[x,t], f' são duas declarações, não três: o colchete é onde a função diz
+    de que variáveis ela é, e partir ali quebraria justamente a informação que
+    a notação carrega.
+    """
+    if not isinstance(v, str):
+        return [str(x).strip() for x in (v or []) if str(x).strip()]
+    itens, atual, fundo = [], [], 0
+    for c in v:
+        if c == "[":
+            fundo += 1
+        elif c == "]":
+            fundo -= 1
+        if c in ",;" and fundo == 0:
+            itens.append("".join(atual))
+            atual = []
+        else:
+            atual.append(c)
+    itens.append("".join(atual))
+    return [i.strip() for i in itens if i.strip()]
 
 
 def _leitura(v, permitidas):

@@ -32,6 +32,10 @@ import sympy as sp
 from .interface.sessao import Sessao, codigo_python
 
 _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*\)\s*$")
+# Declaração: `u[x,t]` ou `u = u[x,t]`. Colchete, e não parêntese, porque
+# u(x,t) já é matemática — aplicação de função — e declarar não é calcular.
+_RE_DECLARA = re.compile(r"^\s*[A-Za-z]\w*\s*(?:=\s*[A-Za-z]\w*\s*)?"
+                         r"\[[^\]]*\]\s*$")
 
 VERBOS = {
     "resolver": "resolver", "solve": "resolver", "dsolve": "resolver",
@@ -85,13 +89,47 @@ class Caderno:
     # ------------------------------------------------------------ execução
 
     def executar(self, fonte):
-        """Uma célula: ou é matemática, ou é um verbo sobre o que já existe."""
+        """Uma célula: declaração, verbo, ou matemática."""
+        declarada = _RE_DECLARA.match(fonte or "")
+        if declarada:
+            return self._declarar(fonte)
+
         comando = _RE_COMANDO.match(fonte or "")
         if comando and comando.group(1).lower() in VERBOS:
             verbo, alvo = comando.group(1).lower(), comando.group(2)
             return Celula(None, fonte, "comando",
                           self._comando(VERBOS[verbo], alvo))
         return self._matematica(fonte)
+
+    def _declarar(self, fonte):
+        """`u = u[x,t]` — e a ambiguidade some em vez de ser escolhida.
+
+        Declarar que u é função de x e t não escolhe entre as leituras de
+        ∂u/∂t: tira uma delas do mundo, porque não há símbolo u para
+        multiplicar. Vale daqui para baixo, como em qualquer caderno; para o
+        documento inteiro, o campo "Funções" no cabeçalho.
+        """
+        from .document import declaracoes
+
+        novas = declaracoes(fonte.replace("=", ";", 1)
+                            if "=" in fonte else fonte)
+        vistos = []
+        for nome, args in novas:
+            if not args:
+                continue
+            self.sessao.funcoes_declaradas = [
+                f for f in self.sessao.funcoes_declaradas
+                if not f.startswith(nome + "[")]
+            self.sessao.funcoes_declaradas.append(f"{nome}[{','.join(args)}]")
+            vistos.append((nome, args))
+        if not vistos:
+            return self._matematica(fonte)
+
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": n, "variaveis": list(a)} for n, a in vistos],
+            "texto": "; ".join(
+                f"daqui para baixo, {n} é função de {', '.join(a)}"
+                for n, a in vistos)})
 
     def _matematica(self, latex):
         leitura = self.sessao.ler(latex)

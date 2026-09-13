@@ -13,6 +13,10 @@
 .celula{border-left:3px solid var(--areia-2);padding:0 0 0 16px;margin-bottom:26px}
 .celula.comando{border-left-color:var(--folha)}
 .celula.erro{border-left-color:var(--argila)}
+.celula.declaracao{border-left-color:var(--ambar)}
+.declarado{margin:0;font-size:13px;color:var(--sucuri-aviso-fg);
+  background:var(--sucuri-aviso-bg);border-radius:var(--sucuri-raio);
+  padding:8px 12px;display:inline-block}
 .celula-cabeca{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
 .celula-nome{font-family:var(--mono);font-size:12.5px;color:var(--folha);
   min-width:3.2em}

@@ -159,7 +159,9 @@ function avisar(texto) {
 function pintar(celula, d) {
   var saida = celula._saida;
   saida.textContent = '';
-  celula.className = 'celula' + (d.tipo === 'comando' ? ' comando' : '');
+  celula.className = 'celula'
+    + (d.tipo === 'comando' ? ' comando' : '')
+    + (d.tipo === 'declaracao' ? ' declaracao' : '');
   celula._nome.textContent = d.nome || '';
   if (d.ms !== undefined) { $('tempo').textContent = d.ms + ' ms'; }
 
@@ -176,7 +178,16 @@ function pintar(celula, d) {
     saida.appendChild(p);
   });
 
-  if (d.tipo === 'math') { pintarMath(saida, d); } else { pintarComando(saida, d); }
+  if (d.tipo === 'declaracao') { pintarDeclaracao(saida, d); }
+  else if (d.tipo === 'math') { pintarMath(saida, d); }
+  else { pintarComando(saida, d); }
+}
+
+function pintarDeclaracao(saida, d) {
+  var p = document.createElement('p');
+  p.className = 'declarado';
+  p.textContent = d.texto;
+  saida.appendChild(p);
 }
 
 function pintarMath(saida, d) {

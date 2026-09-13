@@ -38,10 +38,11 @@ class Resolution:
     INFERRED = "inferida"
     PENDING = "pendente"
 
-    def __init__(self, ambiguity, reading, how):
+    def __init__(self, ambiguity, reading, how, motivo=None):
         self.ambiguity = ambiguity
         self.reading = reading
         self.how = how
+        self.motivo = motivo
 
     @property
     def needs_review(self):
@@ -152,6 +153,38 @@ def _canonizar(expr):
     return expr.replace(
         lambda e: isinstance(e, sp.log) and len(e.args) == 2,
         lambda e: sp.log(e.args[0], e.args[1]))
+
+
+_RE_DECLARACAO = re.compile(r"^\s*([A-Za-z][\w]*)\s*(?:=\s*\1\s*)?"
+                            r"\[\s*([^\]]*)\s*\]\s*$")
+
+
+def _declaracao(texto):
+    """'u[x,t]' e 'u = u[x,t]' -> ('u', ('x', 't'));  'f' -> ('f', None).
+
+    Colchete, e não parêntese, porque u(x,t) já é matemática — aplicação de
+    função — e uma declaração não pode parecer uma conta.
+    """
+    m = _RE_DECLARACAO.match(texto)
+    if not m:
+        return texto.strip(), None
+    args = tuple(v.strip() for v in m.group(2).split(",") if v.strip())
+    return m.group(1), args
+
+
+def declaracoes(texto):
+    """As declarações de uma linha inteira, separadas por vírgula ou ponto e
+    vírgula: 'u[x,t]; f' -> [('u', ('x','t')), ('f', None)]."""
+    achadas = []
+    for pedaco in re.split(r"[;\n]", texto or ""):
+        pedaco = pedaco.strip()
+        if not pedaco:
+            continue
+        if "[" in pedaco:
+            achadas.append(_declaracao(pedaco))
+        else:
+            achadas += [(n.strip(), None) for n in pedaco.split(",") if n.strip()]
+    return achadas
 
 
 class FaltaVariavel(ValueError):
@@ -279,6 +312,7 @@ class Document:
         # é a mesma. Guardá-las separadas evita confundir d/dt com d/dx.
         self.time = sp.Symbol(time_variable) if time_variable else None
         self._functions = set()
+        self._function_args = {}        # u[x,t] -> ('x', 't')
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
         self._dots_are_derivatives = None
@@ -288,8 +322,24 @@ class Document:
     # ------------------------------------------------------- declarações
 
     def function(self, *names):
-        """Declara nomes como funções: `f(x)` é aplicação."""
-        self._functions.update(names)
+        """Declara funções, e opcionalmente de que variáveis elas são.
+
+            doc.function("f")            # f é função
+            doc.function("u[x,t]")       # u é função de x e t
+
+        A segunda forma é mais forte do que qualquer convenção, e por um
+        motivo que vale dizer: declarar que u é função DISSOLVE ambiguidades em
+        vez de escolher entre elas. Se u é função de x e t, então
+        \\frac{\\partial u}{\\partial t} não pode ser "fração literal dos
+        símbolos ∂, u e ∂t" — não há símbolo u para multiplicar. O sítio deixa
+        de ser pergunta porque deixou de ter duas leituras, não porque alguém
+        escolheu uma.
+        """
+        for n in names:
+            nome, args = _declaracao(n)
+            self._functions.add(nome)
+            if args is not None:
+                self._function_args[nome] = args
         return self
 
     def variable(self, *names):
@@ -363,6 +413,18 @@ class Document:
         """
         if amb.key in self._annotations:
             return Resolution(amb, self._annotations[amb.key], Resolution.EXPLICIT)
+
+        # Declarar que u é função de x e t não escolhe entre as leituras: tira
+        # uma delas do mundo. \frac{\partial u}{\partial t} não pode ser
+        # "fração literal dos símbolos ∂, u e ∂t" se não existe símbolo u para
+        # multiplicar. Vale onde a variável está ESCRITA na notação — ∂ e
+        # Leibniz —; a linha continua precisando da convenção, porque f' com
+        # duas variáveis não diz em relação a qual.
+        if (amb.kind in ("leibniz", "partial")
+                and amb.base in self._function_args):
+            args = ", ".join(self._function_args[amb.base])
+            return Resolution(amb, "derivative", Resolution.EXPLICIT,
+                              motivo=f"{amb.base} foi declarada função de {args}")
 
         inferida = None
         if amb.kind == "prime" and self._primes_are_derivatives is not None:
@@ -449,9 +511,13 @@ class Expression:
         # independente, e as suas ocorrências SEM linha também. Sem isto a
         # mesma letra viraria dois objetos distintos na mesma equação — erro
         # silencioso do tipo que este programa existe para impedir.
-        if derivadas:
+        # Funções declaradas são promovidas mesmo sem aparecer derivadas.
+        promovidas = dict(derivadas)
+        for nome, vs in self.document._function_args.items():
+            promovidas.setdefault(nome, tuple(sp.Symbol(v) for v in vs))
+        if promovidas:
             promocao = {sp.Symbol(nome): sp.Function(nome)(*args)
-                        for nome, args in derivadas.items()}
+                        for nome, args in promovidas.items()}
             expr = expr.subs(promocao, simultaneous=True)
 
         expr = _canonizar(expr)
@@ -601,7 +667,10 @@ class Expression:
         duas vezes daria objetos diferentes.
         """
         doc = self.document
-        args = {}
+        # O que foi DECLARADO vale mesmo onde não há derivada: um u solto numa
+        # equação continua sendo a mesma função, e não um símbolo homônimo.
+        args = {nome: [sp.Symbol(v) for v in vs]
+                for nome, vs in doc._function_args.items()}
         for a in sorted(self.ambiguities, key=lambda a: a.span[0]):
             leitura = doc.resolve(a)
             if leitura != "derivative" or a.detail.get("group"):

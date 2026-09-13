@@ -93,6 +93,26 @@ LaTeX do SymPy, que não recusa o que não entende — ele degrada:
 
 Ver `exemplos/tabelas/AUDITORIA-DERIVADAS.md` e `AUDITORIA-INTEGRAIS.md`.
 
+## Declarar dissolve a dúvida
+
+```
+u = u[x,t]
+\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
+```
+
+Nenhuma pergunta, nenhum âmbar. E não porque alguém escolheu uma leitura: se
+`u` é função de `x` e `t`, então `\frac{\partial u}{\partial t}` **não pode**
+ser "fração literal dos símbolos ∂, u e ∂t" — não há símbolo `u` para
+multiplicar. O sítio para de ser pergunta porque parou de ter duas respostas.
+
+É mais forte do que uma convenção, e por isso o sítio fica verde e não âmbar: o
+motivo é uma declaração, não uma regra aplicada sem olhar. A leitura diz de
+onde veio — *u foi declarada função de x, t*.
+
+Colchete, e não parêntese, porque `u(x,t)` já é matemática. Vale na célula
+(daqui para baixo) ou no campo **Funções** (documento inteiro), com a mesma
+notação.
+
 ## Mais de uma variável independente
 
 Para a **linha** não: `f'` com duas variáveis não diria em relação a qual, e é
