@@ -221,6 +221,59 @@ function codigo(d) {
   }
 }
 
+/* --------------------------------------------------------------- avaliação */
+
+/* Ler e avaliar são atos diferentes, e é por isso que avaliar é um botão e não
+ * um efeito de digitar: a integral fica parada até alguém pedir a conta. */
+
+function avaliar() {
+  var caixa = $('avaliacao');
+  $('bloco-avaliacao').hidden = false;
+  caixa.innerHTML = '<p class="modulo-desc">calculando…</p>';
+  pedir('/api/avaliar', { latex: $('entrada').value, convencoes: convencoes() })
+    .then(function (d) { caixa.textContent = ''; caixa.appendChild(valor(d)); })
+    .catch(function (e) {
+      caixa.innerHTML = '<div class="bloqueio">' + escapar(e) + '</div>';
+    });
+}
+
+function valor(d) {
+  var div = document.createElement('div');
+  div.className = 'resultado';
+
+  if (d.erro) {
+    div.innerHTML = '<div class="bloqueio">' + escapar(d.erro) + '</div>';
+    (d.pendentes || []).forEach(function (p) {
+      var q = document.createElement('p');
+      q.className = 'modulo-desc';
+      q.textContent = p;
+      div.appendChild(q);
+    });
+    return div;
+  }
+
+  var m = document.createElement('div');
+  try { katex.render(d.latex_exato, m, { displayMode: true, throwOnError: false }); }
+  catch (e) { m.textContent = d.exato; }
+  div.appendChild(m);
+
+  if (d.numerico) {
+    var n = document.createElement('p');
+    n.className = 'modulo-desc';
+    n.textContent = '≈ ' + d.numerico + '  (aproximação; o valor é o de cima)';
+    div.appendChild(n);
+  }
+  if (!d.fechou) {
+    var aviso = document.createElement('div');
+    aviso.className = 'nao-apresentavel';
+    aviso.textContent = 'não fechou: o SymPy devolveu a conta por fazer, '
+      + 'não o valor dela';
+    div.appendChild(aviso);
+  }
+  $('tempo').textContent = d.ms + ' ms';
+  return div;
+}
+
 /* ---------------------------------------------------------------- módulos */
 
 function modulos() {
@@ -318,6 +371,7 @@ function resultado(r) {
 
 function mostrar(d) {
   ultimo = d;
+  $('bloco-avaliacao').hidden = true;      // o valor era de outra equação
   estados(d);
   perguntas(d);
   arvore(d);
@@ -355,6 +409,7 @@ $('copiar').addEventListener('click', function (e) {
   });
 });
 $('abrir-modulos').addEventListener('click', modulos);
+$('avaliar').addEventListener('click', avaliar);
 
 $('entrada').focus();
 ler();

@@ -29,100 +29,18 @@ existe. Quem responde a essa outra pergunta é o módulo `korvin`.
 
 from __future__ import annotations
 
-import multiprocessing as mp
-import queue
-import sys
-
 import sympy as sp
 from sympy.core.function import AppliedUndef
 
+from ..prazo import SEM_PROCESSOS, TempoEsgotado, desempacotar, empacotar, no_prazo
 from . import Module, Operation, Provenance, Result, register
+
+# Reexportados: os testes do módulo apontam para eles, e o prazo é parte do
+# contrato desta operação, não um detalhe interno.
+_no_prazo, _empacotar, _desempacotar = no_prazo, empacotar, desempacotar
 
 PRAZO_RESOLVER = 20
 PRAZO_CONFERIR = 10
-
-
-# ------------------------------------------------------------------ prazo
-
-class TempoEsgotado(Exception):
-    def __init__(self, segundos):
-        self.segundos = segundos
-        super().__init__(f"não terminou em {segundos} s")
-
-
-def _empacotar(o):
-    """Objeto do SymPy não atravessa processo por pickle.
-
-    A classe de uma função indefinida — o `y` de y(x) — só se despickla se por
-    acaso for atributo de um módulo, e a nossa nunca é: ela nasce dentro do
-    leitor. O erro estoura na thread que alimenta a fila, o filho sai com
-    código 0, e o pai espera para sempre por uma resposta que já foi perdida.
-    O srepr atravessa sempre.
-    """
-    if isinstance(o, sp.Basic):
-        return ("expr", sp.srepr(o))
-    if isinstance(o, (list, tuple)):
-        return ("lista", [_empacotar(i) for i in o], isinstance(o, tuple))
-    return ("cru", o)
-
-
-def _desempacotar(p):
-    if p[0] == "expr":
-        return sp.sympify(p[1])
-    if p[0] == "lista":
-        itens = [_desempacotar(i) for i in p[1]]
-        return tuple(itens) if p[2] else itens
-    return p[1]
-
-
-def _correr(fila, alvo, args):
-    try:
-        fila.put(("ok", _empacotar(alvo(*args))))
-    except Exception as e:                                      # noqa: BLE001
-        fila.put(("erro", f"{type(e).__name__}: {e}"))
-
-
-SEM_PROCESSOS = sys.platform == "emscripten"
-"""No navegador (Pyodide) não há processos.
-
-Lá o prazo é de quem hospeda: a página roda o motor num Web Worker e mata o
-worker quando estoura. É o mesmo desenho — alguém de fora com poder de matar —,
-só que o mecanismo é outro. Aqui dentro, então, roda-se direto.
-"""
-
-
-def _no_prazo(alvo, segundos, *args):
-    """Roda `alvo(*args)` em processo separado, com prazo.
-
-    Processo e não thread de propósito: o `dsolve` não oferece ponto de
-    interrupção, e uma thread pendurada continua queimando CPU até o fim do
-    programa. Processo se mata.
-    """
-    if SEM_PROCESSOS:
-        return alvo(*args)
-    try:
-        ctx = mp.get_context("fork")
-    except ValueError:                      # sistema sem fork
-        ctx = mp.get_context("spawn")
-
-    fila = ctx.Queue()
-    processo = ctx.Process(target=_correr, args=(fila, alvo, args), daemon=True)
-    processo.start()
-    try:
-        # Esperar NA FILA, não no processo: Queue.empty() logo depois do join
-        # mente, porque o dado ainda está a caminho do cano. Esperar no
-        # processo e perguntar à fila depois perde a resposta.
-        estado, carga = fila.get(timeout=segundos)
-    except queue.Empty:
-        raise TempoEsgotado(segundos) from None
-    finally:
-        if processo.is_alive():
-            processo.terminate()
-        processo.join(5)
-
-    if estado == "erro":
-        raise RuntimeError(carga)
-    return _desempacotar(carga)
 
 
 # ------------------------------------------------------------- a equação
@@ -213,7 +131,7 @@ def _checkodesol(equacao, solucao):
 def _confere(equacao, solucao):
     """A solução volta zero quando substituída? ('sim'/'não'/'não deu tempo')"""
     try:
-        veredito = _no_prazo(_checkodesol, PRAZO_CONFERIR, equacao, solucao)
+        veredito = no_prazo(_checkodesol, PRAZO_CONFERIR, equacao, solucao)
     except TempoEsgotado:
         return None, f"não deu tempo de conferir em {PRAZO_CONFERIR} s"
     except Exception as e:                                      # noqa: BLE001
@@ -255,7 +173,7 @@ def resolver(expression):
     linhas = [("equação", sp.sstr(equacao)), ("ordem", str(ordem))]
 
     try:
-        solucao = _no_prazo(_dsolve, PRAZO_RESOLVER, equacao, funcao)
+        solucao = no_prazo(_dsolve, PRAZO_RESOLVER, equacao, funcao)
     except TempoEsgotado as e:
         return _sem_solucao(linhas, str(e))
     except Exception as e:                                      # noqa: BLE001
@@ -298,7 +216,7 @@ def classificar(expression):
     """
     equacao, funcao, _ = edo(expression)
     try:
-        padroes = _no_prazo(sp.classify_ode, PRAZO_CONFERIR, equacao, funcao)
+        padroes = no_prazo(sp.classify_ode, PRAZO_CONFERIR, equacao, funcao)
     except TempoEsgotado as e:
         padroes = ()
         nota = str(e)

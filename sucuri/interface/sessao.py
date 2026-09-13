@@ -15,6 +15,7 @@ import time
 import sympy as sp
 
 from ..document import Document, Resolution, Unresolved
+from ..prazo import TempoEsgotado, no_prazo
 
 
 def _chave(kind, base, detail):
@@ -149,10 +150,82 @@ class Sessao:
         saida["versoes"] = versoes()
         return saida
 
+    # ---------------------------------------------------------- avaliação
+
+    def avaliar(self, latex=None):
+        """Faz a conta que a leitura deixou parada — e diz o que ela é.
+
+        O Sucuri lê; avaliar é outro ato, e por isso é um botão e não um efeito
+        de digitar. A integral fica `Integral(x**2, (x, 0, 1))` até alguém
+        pedir, e aí vira 1/3.
+
+        Três respostas possíveis, e o rótulo distingue as três, porque tratá-las
+        como a mesma coisa é o erro de sempre:
+
+          exata          a conta fechou: 1/3
+          não fechou     o SymPy devolveu o mesmo objeto, sem calcular
+          não terminou   estourou o prazo
+
+        Quando o resultado é um número, vai junto a aproximação decimal — como
+        aproximação, rotulada, nunca no lugar do valor exato.
+        """
+        if latex is not None:
+            self.latex = latex
+        inicio = time.perf_counter()
+        saida = {"latex": self.latex, "exato": None, "latex_exato": None,
+                 "numerico": None, "fechou": False, "erro": None}
+
+        doc, _ = self.documento()
+        expressao = doc.read(self.latex)
+        if expressao.pending:
+            saida["erro"] = "há sítios pendentes; resolva antes de avaliar"
+            saida["pendentes"] = expressao.questions()
+            saida["ms"] = round((time.perf_counter() - inicio) * 1000, 1)
+            return saida
+
+        try:
+            objeto = expressao.to_sympy()
+            valor = no_prazo(_avaliar, PRAZO_AVALIAR, objeto)
+        except TempoEsgotado as e:
+            saida["erro"] = str(e)
+        except Exception as e:                                  # noqa: BLE001
+            saida["erro"] = f"{type(e).__name__}: {e}"
+        else:
+            saida["exato"] = sp.sstr(valor)
+            saida["latex_exato"] = sp.latex(valor)
+            saida["fechou"] = not _parou(valor)
+            # Aproximação decimal só de conta que fechou: avaliar numericamente
+            # o que ficou parado devolve ruído com cara de resposta.
+            if saida["fechou"] and valor.is_number and not valor.is_Integer:
+                try:
+                    saida["numerico"] = str(sp.N(valor, 12))
+                except Exception:                               # noqa: BLE001
+                    pass
+
+        saida["ms"] = round((time.perf_counter() - inicio) * 1000, 1)
+        return saida
+
     def expressao(self):
         """A Expression atual, para os módulos operarem sobre ela."""
         doc, _ = self.documento()
         return doc.read(self.latex)
+
+
+PRAZO_AVALIAR = 20
+
+
+def _avaliar(objeto):
+    """`doit` faz a conta; `simplify` arruma o que sobrou dela."""
+    return sp.simplify(objeto.doit())
+
+
+def _parou(valor):
+    """A conta ficou parada onde estava?
+
+    Integral, Sum ou Derivative sobrando no resultado querem dizer que o SymPy
+    não soube fazer — e devolver isso como se fosse resposta seria fingir.
+    """
+    return bool(valor.atoms(sp.Integral, sp.Sum, sp.Product, sp.Derivative))
 
 
 # ------------------------------------------------------------- auxiliares

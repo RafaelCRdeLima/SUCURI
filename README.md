@@ -195,6 +195,23 @@ A interface não decide nada de matemática. Entre ela e o motor passa JSON
 (`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
 decisões que ela transporta são as do usuário: convenção e anotação.
 
+## Ler e avaliar são atos diferentes
+
+`\int_0^1 x^2` é lido como `Integral(x**2, (x, 0, 1))` e fica assim: parada. O
+Sucuri lê; a conta é outro ato, e por isso é um botão — **Avaliar** — e não um
+efeito de digitar.
+
+A resposta vem com o nome do que ela é:
+
+| | |
+|---|---|
+| fechou | `1/3`, e a aproximação `≈ 0,333…` **ao lado**, nunca no lugar |
+| não fechou | o SymPy devolveu a conta por fazer, e o rótulo diz isso |
+| não terminou | estourou o prazo |
+
+Tratar as três como a mesma coisa é o erro de sempre. E sítio pendente bloqueia
+a avaliação como bloqueia a leitura: nada se calcula sobre o que ninguém leu.
+
 ## Módulos de domínio
 
 O Sucuri lê e desambigua; ele não sabe teoria de Galois nem geometria

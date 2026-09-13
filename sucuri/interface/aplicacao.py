@@ -42,6 +42,12 @@ class Aplicacao:
                      corpo.get("detalhe"), corpo["leitura"])
         return s.ler(corpo.get("latex"))
 
+    def avaliar(self, corpo):
+        s = self.sessao(corpo.get("sessao"))
+        if "convencoes" in corpo:
+            s.configurar(corpo["convencoes"])
+        return s.avaliar(corpo.get("latex"))
+
     def modulos(self, corpo):
         from .. import modules
 
@@ -84,5 +90,5 @@ class Aplicacao:
         saida["operacao"] = operacao.name
         return saida
 
-    ROTAS = {"/api/ler": ler, "/api/anotar": anotar,
+    ROTAS = {"/api/ler": ler, "/api/anotar": anotar, "/api/avaliar": avaliar,
              "/api/modulos": modulos, "/api/operar": operar}
