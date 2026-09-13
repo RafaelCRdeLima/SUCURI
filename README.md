@@ -61,6 +61,53 @@ A distinção não é cosmética. Uma convenção geral — "linha é derivada" 
 acertar nove sítios e errar o décimo, e quem a declarou não olhou cada um. O
 âmbar diz: funciona, mas ninguém conferiu este caso.
 
+## A árvore reconhecida
+
+`Expression.tree()` devolve o que o programa entendeu, nó a nó — e cada nó
+nascido de um sítio ambíguo carrega **como** aquele sítio foi resolvido. É isso
+que permite à interface pintar de âmbar o que veio de convenção:
+
+```
+igualdade
+  soma
+    potência
+      função varphi aplicada a (x)
+    produto
+      número 3
+      derivada de ordem 1 de varphi em x  [inferida]  <- conferir
+      função varphi aplicada a (x)
+    derivada de ordem 2 de varphi em x    [inferida]  <- conferir
+  soma
+    produto
+      número 2
+      derivada de ordem 1 de r em x       [explícita]
+    ...
+```
+
+Derivadas são folhas na leitura do usuário: quem lê quer ver "derivada segunda
+de φ", não a árvore interna dela. `to_dict()` serializa para a interface web.
+
+## Uso
+
+```python
+import sucuri
+
+# caso avulso — sem convenção, RECUSA, que é o padrão
+e = sucuri.parse(r"\varphi'' + \varphi' = r")
+e.questions()                      # as perguntas, em vez de um palpite
+
+# com a convenção declarada
+e = sucuri.parse(r"\varphi'' + \varphi' = r",
+                 independent_variable='x', primes='derivative')
+e.to_sympy()
+e.inferred                         # o que veio de convenção e pede conferência
+
+# trabalho continuado: o documento guarda convenções e anotações
+doc = sucuri.Document(independent_variable='x').primes_are_derivatives()
+doc.annotate("prime", "r", "derivative", order=1)
+doc.read(...).tree()
+```
+
 ## Identidade visual
 
 Em `identidade/`: marca e variantes, ícones de 48 a 1024 px, tokens em CSS e o

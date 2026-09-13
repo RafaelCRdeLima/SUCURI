@@ -196,7 +196,7 @@ class Expression:
         if self.pending:
             raise Unresolved(self.pending)
 
-        texto, reposicoes, derivadas = self._normalize()
+        texto, reposicoes, derivadas, _ = self._normalize()
         from sympy.parsing.latex import parse_latex
         expr = parse_latex(texto)
         if reposicoes:
@@ -219,6 +219,7 @@ class Expression:
         texto = self.source
         reposicoes = {}
         derivadas = set()
+        origens = {}          # subexpressão -> Resolution do sítio que a gerou
         contador = 0
 
         # O marcador precisa sobreviver ao parser de LaTeX como UM símbolo.
@@ -235,7 +236,8 @@ class Expression:
 
         # De trás para frente: preserva os deslocamentos dos sítios anteriores.
         for a in sorted(self.ambiguities, key=lambda a: -a.span[0]):
-            leitura = doc.resolve(a)
+            resolucao = doc.resolution(a)
+            leitura = resolucao.reading
             ini, fim = a.span
 
             if a.kind == "prime":
@@ -243,10 +245,13 @@ class Expression:
                 nome, simbolo = marcador()
                 if leitura == "derivative":
                     derivadas.add(a.base)
-                    reposicoes[simbolo] = sp.Derivative(
-                        sp.Function(a.base)(x), (x, ordem))
+                    alvo = sp.Derivative(sp.Function(a.base)(x), (x, ordem))
+                    reposicoes[simbolo] = alvo
+                    origens[alvo] = resolucao
                 else:
-                    reposicoes[simbolo] = sp.Symbol(a.base + "'" * ordem)
+                    alvo = sp.Symbol(a.base + "'" * ordem)
+                    reposicoes[simbolo] = alvo
+                    origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
             elif a.kind == "leibniz":
@@ -260,6 +265,7 @@ class Expression:
                     alvo = (sp.Symbol("d")**a.detail["order"] * sp.Symbol(a.base)
                             / sp.Symbol("d" + a.detail["wrt"])**a.detail["order"])
                 reposicoes[simbolo] = alvo
+                origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
             elif a.kind == "juxtaposition" and leitura == "product":
@@ -267,7 +273,19 @@ class Expression:
                 abre = texto.find("(", ini)
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
-        return texto, reposicoes, derivadas
+        return texto, reposicoes, derivadas, origens
+
+    def tree(self):
+        """A árvore reconhecida, com a proveniência de cada nó.
+
+        É o painel central da interface: mostra o que o programa entendeu, e
+        marca em âmbar o que ele entendeu por convenção em vez de por decisão.
+        """
+        from .tree import build
+        if self.pending:
+            raise Unresolved(self.pending)
+        _, _, _, origens = self._normalize()
+        return build(self.to_sympy(), origens)
 
     def to_latex(self):
         """Volta ao LaTeX a partir da semântica — o round-trip de conferência."""
