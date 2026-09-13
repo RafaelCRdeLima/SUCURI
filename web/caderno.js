@@ -9,7 +9,6 @@
 
 var $ = function (id) { return document.getElementById(id); };
 var SESSAO = 'caderno';
-var fontes = [];            // a fonte de cada célula, na ordem
 var anotacoes = [];
 
 function pedir(rota, corpo) {
@@ -28,7 +27,26 @@ function escapar(t) {
 
 /* ------------------------------------------------------------- as células */
 
-function criarCelula(fonte, indice) {
+/* A ORDEM DO DOM é a identidade de uma célula, e não um índice guardado.
+ *
+ * Guardar o número numa closure funcionava enquanto só se acrescentava no fim.
+ * Inserir no meio desloca todas as seguintes, e cada uma continuaria escrevendo
+ * na posição antiga do vetor — a folha e o vetor sairiam de sincronia sem que
+ * nada avisasse. Com a ordem do DOM mandando, não há segunda cópia para
+ * divergir: as fontes se leem da folha quando são precisas.
+ */
+
+function celulas() {
+  return Array.prototype.filter.call($('folha').children, function (n) {
+    return n.classList.contains('celula');
+  });
+}
+
+function fontesAtuais() {
+  return celulas().map(function (c) { return c._area.value; });
+}
+
+function criarCelula(fonte) {
   var div = document.createElement('div');
   div.className = 'celula';
 
@@ -48,19 +66,16 @@ function criarCelula(fonte, indice) {
   area.rows = 1;
   area.spellcheck = false;
   area.value = fonte || '';
-  setTimeout(function () {
+  function ajustar() {
     area.style.height = 'auto';
     area.style.height = (area.scrollHeight + 2) + 'px';
-  }, 0);
-  area.addEventListener('input', function () {
-    area.style.height = 'auto';
-    area.style.height = (area.scrollHeight + 2) + 'px';
-    fontes[indice] = area.value;
-  });
+  }
+  setTimeout(ajustar, 0);
+  area.addEventListener('input', ajustar);
   area.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
-      executar(indice);
+      executar(div);
     }
   });
   div.appendChild(area);
@@ -75,33 +90,50 @@ function criarCelula(fonte, indice) {
   return div;
 }
 
+/* O lugar entre duas células, que só existe para ser clicado. Discreto até o
+ * ponteiro chegar: um traço e um "+". */
+function criarInseridor() {
+  var div = document.createElement('div');
+  div.className = 'inserir';
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-label', 'inserir célula aqui');
+  b.title = 'inserir célula aqui';
+  b.textContent = '+';
+  b.addEventListener('click', function () {
+    var nova = criarCelula('');
+    $('folha').insertBefore(nova, div.nextSibling);
+    $('folha').insertBefore(criarInseridor(), nova.nextSibling);
+    nova._area.focus();
+  });
+  div.appendChild(b);
+  return div;
+}
+
 function acrescentar(fonte) {
-  var indice = fontes.length;
-  fontes.push(fonte || '');
-  var celula = criarCelula(fonte, indice);
-  $('folha').appendChild(celula);
+  var folha = $('folha');
+  var celula = criarCelula(fonte);
+  if (!folha.children.length) { folha.appendChild(criarInseridor()); }
+  folha.appendChild(celula);
+  folha.appendChild(criarInseridor());
   celula._area.focus();
   return celula;
 }
 
-function celulaDe(indice) {
-  return $('folha').children[indice];
-}
-
 /* --------------------------------------------------------------- executar */
 
-function executar(indice) {
-  var celula = celulaDe(indice);
-  fontes[indice] = celula._area.value;
+function executar(celula) {
+  var fonte = celula._area.value;
   celula._saida.innerHTML = '<p class="modulo-desc">…</p>';
 
-  var ultima = indice === fontes.length - 1;
-  pedir('/api/caderno/executar',
-        { fonte: fontes[indice], anotacoes: anotacoes })
+  var lista = celulas();
+  var ultima = lista[lista.length - 1] === celula;
+  pedir('/api/caderno/executar', { fonte: fonte, anotacoes: anotacoes })
     .then(function (d) {
       pintar(celula, d);
-      if (ultima && fontes[indice].trim()) { acrescentar(''); }
-      else { celulaDe(indice + 1)._area.focus(); }
+      if (ultima && fonte.trim()) { acrescentar(''); return; }
+      var depois = celulas()[celulas().indexOf(celula) + 1];
+      if (depois) { depois._area.focus(); }
     })
     .catch(function (e) {
       celula._saida.innerHTML = '<div class="bloqueio">' + escapar(e) + '</div>';
@@ -116,23 +148,22 @@ function refazer() {
    * qualquer erro no meio — ou uma resposta que não veio — deixava a página em
    * branco, sem uma palavra. Apagar o que está na tela antes de ter o que pôr
    * no lugar é apostar que nada dá errado. */
-  var vivas = fontes.filter(function (f) { return f.trim(); });
+  var vivas = fontesAtuais().filter(function (f) { return f.trim(); });
   if (!vivas.length) { return; }
 
   pedir('/api/caderno/refazer',
         { fontes: vivas, anotacoes: anotacoes })
     .then(function (d) {
       var novas = document.createDocumentFragment();
-      var recomeco = [];
+      novas.appendChild(criarInseridor());
       vivas.forEach(function (f, i) {
-        var c = criarCelula(f, i);
-        recomeco.push(f);
+        var c = criarCelula(f);
         novas.appendChild(c);
+        novas.appendChild(criarInseridor());
         if (d.celulas && d.celulas[i]) { pintar(c, d.celulas[i]); }
       });
       var folha = $('folha');
       folha.textContent = '';
-      fontes = recomeco;
       folha.appendChild(novas);
       acrescentar('');
     })
@@ -342,7 +373,8 @@ function serializar() {
   }
   linhas.push('');
   return linhas.join('\n')
-    + fontes.filter(function (f) { return f.trim(); }).join('\n' + SEPARADOR + '\n')
+    + fontesAtuais().filter(function (f) { return f.trim(); })
+        .join('\n' + SEPARADOR + '\n')
     + '\n';
 }
 
@@ -364,7 +396,6 @@ function desserializar(texto) {
 
 function limpar() {
   $('folha').textContent = '';
-  fontes = [];
 }
 
 function novo() {
@@ -381,13 +412,11 @@ function reiniciar() {
   /* Só o acumulado. As células ficam onde estão, com o texto intacto — some o
    * que o motor guardou por ter executado. */
   pedir('/api/caderno/reiniciar', {}).then(function () {
-    for (var i = 0; i < fontes.length; i++) {
-      var c = celulaDe(i);
-      if (!c) { continue; }
+    celulas().forEach(function (c) {
       c._saida.textContent = '';
       c._nome.textContent = '';
       c.className = 'celula';
-    }
+    });
     avisar('motor reiniciado: eq1, eq2 e as declarações não existem mais; '
            + 'o que está escrito continua aí');
   });

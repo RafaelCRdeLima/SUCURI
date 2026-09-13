@@ -141,3 +141,21 @@ def test_a_tela_de_carregamento_fecha_antes_da_pagina(pagina):
 def test_as_paginas_publicadas_tem_as_divs_balanceadas(pagina):
     html = (WEB / pagina).read_text(encoding="utf-8")
     assert html.count("<div") == html.count("</div>"), pagina
+
+
+def test_a_folha_nao_guarda_uma_segunda_copia_das_fontes():
+    """Inserir célula no meio quebra índice guardado.
+
+    O caderno guardava o número de cada célula numa closure, o que funcionava
+    enquanto só se acrescentava no fim. Inserir no meio desloca todas as
+    seguintes, e cada uma continuaria escrevendo na posição antiga do vetor —
+    folha e vetor sairiam de sincronia sem que nada avisasse. A ordem do DOM
+    passou a ser a identidade, e não há segunda cópia para divergir.
+    """
+    js = (ESTATICO / "caderno.js").read_text(encoding="utf-8")
+    assert "function fontesAtuais()" in js
+    assert "function criarInseridor()" in js
+    # nenhum vetor paralelo de fontes
+    assert "var fontes = [" not in js
+    assert "fontes.push" not in js
+    assert "fontes[indice]" not in js

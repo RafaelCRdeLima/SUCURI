@@ -28,7 +28,25 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
   padding:2px 6px;border-radius:5px;color:var(--tinta)}
 
 .folha{display:block;background:#fff;padding:22px;gap:0}
-.celula{border-left:3px solid var(--areia-2);padding:0 0 0 16px;margin-bottom:26px}
+.celula{border-left:3px solid var(--areia-2);padding:0 0 0 16px}
+
+/* O lugar entre duas células. Some até o ponteiro chegar — a folha é para ler,
+   não para mostrar o que ela sabe fazer —, mas responde ao teclado, porque
+   quem navega por tabulação não tem ponteiro para aproximar. */
+.inserir{position:relative;height:26px;display:flex;align-items:center;
+  justify-content:center}
+.inserir button{width:24px;height:24px;padding:0;flex:none;border-radius:999px;
+  border:1px solid var(--areia-2);background:#fff;color:var(--tinta-2);
+  font-size:15px;line-height:1;cursor:pointer;opacity:0;
+  display:flex;align-items:center;justify-content:center}
+.inserir::before{content:"";position:absolute;left:0;right:0;height:1px;
+  background:var(--areia-2);opacity:0}
+.inserir:hover button,.inserir button:focus-visible{opacity:1}
+.inserir:hover::before,.inserir:focus-within::before{opacity:1}
+.inserir button:hover{border-color:var(--folha);color:var(--folha)}
+@media (prefers-reduced-motion:no-preference){
+  .inserir button,.inserir::before{transition:opacity .12s ease}
+}
 .celula.comando{border-left-color:var(--folha)}
 .celula.erro{border-left-color:var(--argila)}
 .celula.declaracao{border-left-color:var(--ambar)}
