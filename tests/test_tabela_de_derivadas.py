@@ -48,7 +48,7 @@ def test_linha_com_argumento_e_derivada_e_nao_marcador():
 def test_marcador_vazado_vira_erro_e_nao_resultado():
     """A rede de proteção: se algum dia vazar de novo, para."""
     e = doc().read("f'(x)")
-    e._normalize = lambda: (" Z_{0} (x)", {}, set(), {})
+    e._normalize = lambda: (" Z_{0} (x)", {}, {}, {}, {})
     with pytest.raises(NotacaoNaoReconhecida, match="defeito do Sucuri"):
         e.to_sympy()
 

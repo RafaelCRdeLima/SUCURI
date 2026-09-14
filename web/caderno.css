@@ -70,6 +70,9 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
 
 .celula textarea{min-height:0;height:auto;padding:10px 12px}
 .saida{margin-top:12px}
+/* A valência: a primeira coisa que se confere num tensor. */
+.valencia{margin:0 0 10px;font-family:var(--mono);font-size:12.5px;
+  color:var(--tinta-2)}
 .saida .livro{padding:16px;border:1px solid var(--areia-2);
   border-radius:var(--sucuri-raio-card);background:var(--areia);overflow-x:auto}
 .saida .livro .katex{font-size:1.3em}

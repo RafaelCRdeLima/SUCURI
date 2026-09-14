@@ -73,6 +73,14 @@ function estados(d) {
   } else {
     caixa.appendChild(pastilha('ok', ICONE_OK, 'árvore válida'));
   }
+  if (d.indices_livres) {
+    /* A valência é a primeira coisa que se confere num tensor. */
+    caixa.appendChild(pastilha(d.indices_livres.length ? 'neutro' : 'ok',
+      d.indices_livres.length ? '' : ICONE_OK,
+      d.indices_livres.length
+        ? 'índices livres: ' + d.indices_livres.join(', ')
+        : 'todos os índices contraídos'));
+  }
   if (d.inferidas) {
     caixa.appendChild(pastilha('aviso', ICONE_AVISO,
       plural(d.inferidas, 'leitura por convenção', 'leituras por convenção')));

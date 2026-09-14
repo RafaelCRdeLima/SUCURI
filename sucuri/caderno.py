@@ -47,8 +47,9 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 
 # As outras duas coisas que um nome pode ser, além de função de alguma coisa.
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
-_RE_ESPECIE = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*"
-                         r"(euler|s[ií]mbolo|constante)\s*$", re.I)
+_RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
+                         r"\s*=\s*(euler|s[ií]mbolo|constante"
+                         r"|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
 VERBOS = {
     "resolver": "resolver", "solve": "resolver", "dsolve": "resolver",
@@ -152,22 +153,40 @@ class Caderno:
                           self._comando(verbo, alvo, segundo))
         return self._matematica(fonte)
 
-    def _especie(self, nome, especie):
-        """`e = euler`, `a = símbolo`.
+    def _especie(self, nomes, especie):
+        r"""`e = euler`, `a = símbolo`, `\mu = índice`.
 
         A mesma pergunta das outras declarações — o que é este nome? — com as
-        outras duas respostas possíveis. Vira anotação de sítio, e não
-        convenção, porque é uma decisão sobre AQUELE nome, não uma regra
-        aplicada a tudo sem olhar.
+        outras respostas possíveis. Vira anotação de sítio ou lista do
+        documento, e não convenção cega: é uma decisão sobre AQUELES nomes.
         """
-        if especie == "euler":
-            self.sessao.anotar("euler", nome, {}, "euler")
-            texto = f"{nome} é o número de Euler"
+        lista = [n.strip() for n in nomes.split(",") if n.strip()]
+
+        if especie.startswith("índice") or especie.startswith("indice"):
+            import re as _re
+            achou = _re.search(r"\((\s*\d+\s*)\)", especie)
+            dimensao = int(achou.group(1)) if achou else None
+            self.sessao.indices.extend(n for n in lista
+                                       if n not in self.sessao.indices)
+            if dimensao:
+                self.sessao.dimensao = dimensao
+            dim = self.sessao.dimensao
+            texto = (f"{', '.join(lista)} " +
+                     ("é índice" if len(lista) == 1 else "são índices") +
+                     f" de um espaço de dimensão {dim}")
+        elif especie == "euler":
+            for n in lista:
+                self.sessao.anotar("euler", n, {}, "euler")
+            texto = f"{', '.join(lista)} é o número de Euler"
         else:
-            self.sessao.anotar("juxtaposition", nome, {}, "product")
-            texto = f"{nome} é símbolo, não função: {nome}(…) é produto"
-        return Celula(None, f"{nome} = {especie}", "declaracao",
-                      {"declarado": [{"nome": nome, "especie": especie}],
+            for n in lista:
+                self.sessao.anotar("juxtaposition", n, {}, "product")
+            texto = (f"{', '.join(lista)}: símbolo, não função — "
+                     f"{lista[0]}(…) é produto")
+
+        return Celula(None, f"{nomes} = {especie}", "declaracao",
+                      {"declarado": [{"nome": n, "especie": especie}
+                                     for n in lista],
                        "texto": texto})
 
     def _declarar(self, fonte):

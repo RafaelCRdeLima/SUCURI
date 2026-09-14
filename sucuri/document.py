@@ -194,6 +194,11 @@ def declaracoes(texto):
     return achadas
 
 
+def _limpo_indice(nome):
+    nome = nome.strip()
+    return nome[1:] if nome.startswith("\\") else nome
+
+
 def _porque(nome, args):
     return f"{nome} foi declarada função de {', '.join(str(a) for a in args)}"
 
@@ -348,7 +353,7 @@ _COMANDOS_ESTRUTURA = {"sum", "int", "prod", "oint", "lim", "bigcup", "bigcap",
                        "iint", "iiint", "coprod", "max", "min", "sup", "inf"}
 
 
-def indices_tensoriais(texto):
+def indices_tensoriais(texto, declarados=()):
     r"""(recusas, notas) — o que é perda comprovada e o que é suspeita.
 
     Distinguir índice de expoente pela tipografia é impossível: A^\mu é "A
@@ -357,6 +362,17 @@ def indices_tensoriais(texto):
     marca que só a soma de Einstein deixa —, e avisa-se onde há suspeita.
     """
     recusas, notas = [], []
+
+    # Onde o índice foi DECLARADO não há dúvida nem perda: o fator vira tensor
+    # de verdade antes de o parser ver. A recusa existe para o silêncio, e
+    # declarar acaba com o silêncio.
+    if declarados:
+        from .tensores import localizar
+        cobertos = {i for ini, fim, _, _ in localizar(texto, set(declarados))
+                    for i in range(ini, fim)}
+        if cobertos:
+            texto = "".join(" " if i in cobertos else c
+                            for i, c in enumerate(texto))
 
     for m in _RE_PERDE.finditer(texto):
         base = m.group(1)
@@ -418,7 +434,9 @@ class Document:
         # é a mesma. Guardá-las separadas evita confundir d/dt com d/dx.
         self.time = sp.Symbol(time_variable) if time_variable else None
         self._functions = set()
-        self._function_args = {}        # u[x,t] -> ('x', 't')
+        self._function_args = {}        # u(x,t) -> ('x', 't')
+        self._indices = set()           # nomes declarados como índice
+        self._espaco = None             # o tipo de índice, criado quando precisa
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
         self._dots_are_derivatives = None
@@ -495,6 +513,29 @@ class Document:
         """
         self._e_is_euler = bool(yes)
         return self
+
+    def index(self, *nomes, dimensao=None):
+        r"""Declara nomes como ÍNDICES: \mu, \nu, ...
+
+        Declarar o índice é o que torna A^\mu não-ambíguo: não há potência
+        possível com um índice no expoente. É a mesma mecânica de u = u(t,x),
+        que dissolve a dúvida do ∂ em vez de escolher entre as leituras.
+        """
+        from .tensores import DIMENSAO_PADRAO, Espaco
+
+        for n in nomes:
+            self._indices.add(_limpo_indice(n))
+        if self._espaco is None:
+            self._espaco = Espaco(dimensao or DIMENSAO_PADRAO)
+        elif dimensao and dimensao != self._espaco.dimensao:
+            raise ValueError(
+                f"o documento já tem índices de dimensão "
+                f"{self._espaco.dimensao}; não dá para misturar com {dimensao}")
+        return self
+
+    @property
+    def espaco(self):
+        return self._espaco
 
     def annotate(self, kind, base, reading, **detail):
         """Resolve um sítio específico, uma vez e para sempre."""
@@ -619,11 +660,11 @@ class Expression:
         if self.pending:
             raise Unresolved(self.pending)
 
-        recusas, _ = indices_tensoriais(self.source)
+        recusas, _ = indices_tensoriais(self.source, self.document._indices)
         if recusas:
             raise NotacaoTensorial(recusas)
 
-        texto, reposicoes, derivadas, _ = self._normalize()
+        texto, reposicoes, derivadas, _, tensores = self._normalize()
         from sympy.parsing.latex import parse_latex
         expr = parse_latex(texto)
         if reposicoes:
@@ -643,6 +684,23 @@ class Expression:
             expr = expr.subs(promocao, simultaneous=True)
 
         expr = _canonizar(expr)
+
+        # Reconstruir ANTES de conferir: o marcador de um fator tensorial ainda
+        # é símbolo neste ponto, e a barreira de marcador vazado — que existe
+        # para pegar defeito nosso — acusaria o funcionamento normal.
+        #
+        # Reconstruir, e não substituir: trocar um símbolo por um tensor dentro
+        # de um Mul devolve um Mul comum, e a contração não acontece.
+        from .tensores import IndicesIncompativeis, reconstruir
+        try:
+            expr = reconstruir(expr, tensores)
+        except IndicesIncompativeis:
+            raise
+        except ValueError as e:
+            if "same indices" in str(e):
+                raise IndicesIncompativeis() from None
+            raise
+
         self._conferir(texto, expr)
         return expr
 
@@ -677,6 +735,7 @@ class Expression:
         texto = self.source
         reposicoes = {}
         derivadas = {}
+        tensores = {}
         origens = {}          # subexpressão -> Resolution do sítio que a gerou
         contador = 0
 
@@ -700,8 +759,23 @@ class Expression:
         # mesma falha que a linha teve um dia, agora com várias variáveis.
         argumentos = self._argumentos()
 
-        # De trás para frente: preserva os deslocamentos dos sítios anteriores.
-        for a in sorted(self.ambiguities, key=lambda a: -a.span[0]):
+        # Sítios e fatores tensoriais no MESMO passo, de trás para frente.
+        # Dois passos separados invalidariam as posições um do outro: quem
+        # reescreve na frente desloca tudo o que vem depois.
+        fatores = self._fatores_tensoriais()
+        itens = ([(a.span[0], "sitio", a) for a in self.ambiguities]
+                 + [(ini, "tensor", (ini, fim, base, pos))
+                    for ini, fim, base, pos in fatores])
+
+        for _, especie, item in sorted(itens, key=lambda i: -i[0]):
+            if especie == "tensor":
+                ini, fim, base, posicoes = item
+                nome, simbolo = marcador()
+                from .tensores import construir
+                tensores[simbolo] = construir(doc.espaco, base, posicoes)
+                texto = texto[:ini] + nome + texto[fim:]
+                continue
+            a = item
             # Sítio dentro de outro sítio não se substitui aqui: o texto dele já
             # foi engolido, e quem o resolve é a leitura recursiva do fragmento.
             if contido(a, self.ambiguities):
@@ -783,7 +857,31 @@ class Expression:
                 abre = texto.find("(", ini)
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
-        return _inofensivas(texto), reposicoes, derivadas, origens
+        return _inofensivas(texto), reposicoes, derivadas, origens, tensores
+
+    def _fatores_tensoriais(self):
+        """Os fatores tensoriais, e a recusa onde eles esbarram numa derivada.
+
+        ∂_μ A^ν é derivada COM índice, e isso não é multiplicação de um fator
+        por outro — é um objeto próprio, que o SymPy trata em outro lugar. A
+        ponte ainda não vai até lá, e dizer isso é melhor do que montar um
+        produto que parece certo.
+        """
+        from .tensores import localizar
+
+        doc = self.document
+        if not doc._indices:
+            return []
+        fatores = localizar(self.source, doc._indices)
+        ocupados = {i for a in self.ambiguities for i in range(*a.span)}
+        for ini, fim, base, _ in fatores:
+            if base in ("partial", "nabla") or any(
+                    i in ocupados for i in range(ini, fim)):
+                raise NotacaoTensorial([
+                    "derivada com índice (∂_μ, ∇_μ) ainda não atravessa a "
+                    "ponte: ela não é um fator multiplicando outro, é um "
+                    "objeto próprio, e montar um produto aqui pareceria certo"])
+        return fatores
 
     def _argumentos(self):
         """De que variáveis cada função incógnita depende, na entrada inteira.
@@ -891,7 +989,7 @@ class Expression:
         from .tree import build
         if self.pending:
             raise Unresolved(self.pending)
-        _, _, _, origens = self._normalize()
+        _, _, _, origens, _ = self._normalize()
         return build(self.to_sympy(), origens)
 
     def to_latex(self):

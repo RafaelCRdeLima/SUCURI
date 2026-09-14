@@ -39,6 +39,8 @@ class Sessao:
         # `configurar` reescreve o que veio do cabeçalho a cada chamada — e o
         # campo vazio apagava a declaração feita na folha, sem aviso.
         self.funcoes_declaradas = []
+        self.indices = []           # nomes declarados como índice tensorial
+        self.dimensao = 4
         self.variaveis = []
         self.anotacoes = {}         # chave -> (kind, base, detail, reading)
 
@@ -53,6 +55,7 @@ class Sessao:
             "pontos": self.pontos,
             "funcoes": list(self.funcoes),
             "declaradas": list(self.funcoes_declaradas),
+            "indices": list(self.indices),
             "variaveis": list(self.variaveis),
             "anotacoes": [
                 {"kind": k, "base": b, "detalhe": d, "leitura": r}
@@ -101,6 +104,8 @@ class Sessao:
         todas = self.funcoes + self.funcoes_declaradas
         if todas:
             doc.function(*todas)
+        if self.indices:
+            doc.index(*self.indices, dimensao=self.dimensao)
         if self.variaveis:
             doc.variable(*self.variaveis)
 
@@ -147,6 +152,7 @@ class Sessao:
             "notas": _desacordos(expr, doc),
             "faltando": falta,
             "diferencial": False,
+            "indices_livres": None,
             "sympy": None,
             "codigo": None,
             "latex_semantico": None,
@@ -161,6 +167,13 @@ class Sessao:
                 saida["latex_semantico"] = sp.latex(objeto)
                 saida["arvore"] = expr.tree().to_dict()
                 saida["diferencial"] = _e_diferencial(objeto)
+                # A valência é a primeira coisa que se confere num tensor: um
+                # índice livre a mais de um lado da igualdade é erro, e é erro
+                # que ninguém vê a olho.
+                from ..tensores import livres
+                soltos = livres(objeto)
+                if soltos or _e_tensorial(objeto):
+                    saida["indices_livres"] = soltos
             except Unresolved as e:
                 saida["erro"] = str(e)
             except FaltaVariavel as e:
@@ -311,6 +324,11 @@ def _desacordos(expressao, doc):
                 f"o mesmo objeto. Se {a.base} depende de mais variáveis, "
                 f"declare {a.base} = {a.base}(…) com todas.")
     return notas
+
+
+def _e_tensorial(objeto):
+    from sympy.tensor.tensor import TensExpr
+    return isinstance(objeto, TensExpr) or bool(objeto.atoms(TensExpr))
 
 
 def _e_diferencial(objeto):

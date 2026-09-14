@@ -154,7 +154,35 @@ u = u(x)
 Não bloqueia, porque não é erro. Mas ficar calado faz quem escreveu `∂/∂x` ver
 `d/dx` e concluir que o programa errou.
 
-## Notação tensorial: ainda não
+## Notação tensorial
+
+```
+\mu, \nu, \lambda = índices
+
+g_{\mu\nu} A^\mu A^\nu      →  g(-L₀,-L₁)·A(L₀)·A(L₁)   todos contraídos
+\Gamma^\lambda_{\mu\nu}     →  índices livres: λ, -μ, -ν
+A^\mu B_\mu + C^\nu        →  os termos da soma têm índices livres diferentes
+```
+
+Quem decide que `\mu` é índice, e não expoente, é a **declaração** — não há
+potência possível com um índice no expoente. É a mesma mecânica de
+`u = u(t,x)`: declarar dissolve a dúvida em vez de escolher entre as leituras.
+
+A contração é do SymPy (`sympy.tensor.tensor`), e vem de graça junto com a
+consistência: somar termos de valências diferentes levanta erro. É erro de
+relatividade, não de digitação, e a olho ninguém vê.
+
+Dois cuidados no caminho. `subs` **não** serve para trocar um símbolo por um
+tensor: devolve um `Mul` comum, os índices repetidos ficam parados e a
+expressão sai errada sem reclamar — a árvore é reconstruída multiplicando de
+verdade. E a valência aparece na tela, porque é a primeira coisa que se confere
+num tensor.
+
+Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela não é um
+fator multiplicando outro, é um objeto próprio, e montar um produto ali
+pareceria certo — então recusa.
+
+### Sem declarar, a recusa continua
 
 Índice não é expoente, e o parser do SymPy não sabe a diferença. Medido:
 
@@ -169,14 +197,12 @@ Nada disso levanta erro e nada disso tem símbolo estranho na saída: são
 expressões **bem formadas e falsas**, a pior classe de erro que este programa
 conhece. Quem escrevesse relatividade receberia contas silenciosamente erradas.
 
-O Sucuri recusa onde o parser **comprovadamente perde** — sobrescrito antes de
+Sem índice declarado, o Sucuri recusa onde o parser **comprovadamente perde** — sobrescrito antes de
 subscrito, e o mesmo índice grego em cima e embaixo (soma de Einstein) — e
 **avisa** onde há só suspeita, porque `A^\mu` é mesmo "A elevado a μ" em algum
 texto, e distinguir índice de expoente pela tipografia é impossível.
 
-O SymPy tem tensores de verdade em `sympy.tensor.tensor`, com contração
-automática. A ponte do LaTeX até lá é o que falta — e é exatamente o tipo de
-coisa que este programa existe para fazer.
+Declarar o índice é o que abre a ponte, e aí nada disso acontece.
 
 ## O que NÃO é ambiguidade
 

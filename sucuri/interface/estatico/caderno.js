@@ -278,6 +278,14 @@ function pintarDeclaracao(saida, d) {
 }
 
 function pintarMath(saida, d) {
+  if (d.indices_livres) {
+    var val = document.createElement('p');
+    val.className = 'valencia';
+    val.textContent = d.indices_livres.length
+      ? 'índices livres: ' + d.indices_livres.join(', ')
+      : 'todos os índices contraídos';
+    saida.appendChild(val);
+  }
   (d.ambiguidades || []).forEach(function (a) {
     saida.appendChild(SUCURI_SITIO(a, decidir));
   });
