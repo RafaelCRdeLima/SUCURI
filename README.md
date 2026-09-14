@@ -216,6 +216,33 @@ texto, e distinguir índice de expoente pela tipografia é impossível.
 
 Declarar o índice é o que abre a ponte, e aí nada disso acontece.
 
+## Métrica e curvatura
+
+A notação de índice diz a **estrutura** — que `g` tem dois índices embaixo, que
+`A^\mu B_\mu` está contraído. Não diz o que `g` **vale**. Christoffel, Ricci e
+Riemann precisam do outro lado: componentes numa carta.
+
+```
+x = coordenadas(t, r, \theta, \phi)
+g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)
+
+christoffel(g)  →  13 componentes não nulas, Γ^t_{tr} = M/((-2M + r)r), …
+ricci(g)        →  0 componentes não nulas
+escalar(g)      →  0
+```
+
+Schwarzschild inteiro, e o Ricci nulo que é o teste de sanidade de toda
+relatividade. O cálculo é do `sympy.diffgeom`; o que faltava era **dizer a
+métrica em LaTeX**.
+
+Ela vai pela **diagonal** porque o parser não lê matriz — `\begin{pmatrix}`
+levanta `LaTeXParsingError` — e porque é assim que os livros dão quase todas as
+métricas que importam. Kerr, com o seu termo cruzado *dt dφ*, ainda não entra.
+
+O que volta são **componentes**, e não o tensor: trocar de carta troca todas
+elas. Por isso a resposta diz sempre em que coordenadas está. O que não muda
+são as afirmações invariantes — Ricci nulo é Ricci nulo em qualquer carta.
+
 ## O que NÃO é ambiguidade
 
 `∂` está reservado à derivada parcial. Ninguém nunca escreveu

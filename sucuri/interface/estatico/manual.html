@@ -245,7 +245,38 @@ digitação, e a olho ninguém vê:</p>
   <samp class="erro-esperado">os termos da soma têm índices livres diferentes</samp>
 </div>
 
-<h2>8. O caderno</h2>
+<h2>8. Métrica e curvatura</h2>
+
+<p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
+índices embaixo. Não diz o que <code>g</code> <em>vale</em>. Para Christoffel,
+Ricci e Riemann é preciso o outro lado: componentes, numa carta. Declare as
+coordenadas e depois a métrica, pela diagonal:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <samp class="saida">g é a métrica em (t, r, \theta, \phi), diagonal, com 4 componentes</samp>
+  <p class="explica">Schwarzschild. A diagonal, e não <code>\begin{pmatrix}</code>,
+    porque o parser de LaTeX do SymPy não lê matriz — e porque é assim que os
+    livros dão quase todas as métricas que importam.</p>
+</div>
+
+<p>Daí saem <code>christoffel</code>, <code>riemann</code>, <code>ricci</code>
+e <code>escalar</code>. O que volta são <em>componentes</em>, e por isso a
+resposta diz sempre em que coordenadas está: trocar de carta troca todas
+elas.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">0 componente(s) não nula(s)</samp>
+  <p class="explica">Ricci nulo — Schwarzschild é solução do vácuo. Este é o
+    teste de sanidade de toda relatividade, e o programa o faz em segundos.
+    Ao contrário de uma componente, «Ricci é nulo» não depende da carta.</p>
+</div>
+
+<h2>9. O caderno</h2>
 
 <table class="tabela">
   <tr><td><strong>Novo</strong></td><td>apaga o escrito e o acumulado</td></tr>
@@ -262,7 +293,7 @@ digitação, e a olho ninguém vê:</p>
 uma, um <strong>×</strong> para apagar, com <em>desfazer</em> na faixa de
 aviso.</p>
 
-<h2>9. O que ele ainda não faz</h2>
+<h2>10. O que ele ainda não faz</h2>
 
 <p>Dizer isto é parte do trabalho. Nada abaixo falha em silêncio — tudo recusa
 com o motivo.</p>
@@ -279,6 +310,8 @@ com o motivo.</p>
     onde essa regra não alcança o silêncio volta.</li>
   <li><strong>Sistemas de equações</strong>: um verbo por vez, uma equação por
     vez.</li>
+  <li><strong>Métrica não diagonal</strong>: a declaração pede a diagonal.
+    Kerr, com o seu termo cruzado <em>dt dφ</em>, ainda não entra.</li>
 </ul>
 
 <p class="fecho">O código, as auditorias e a lista completa de limites estão em

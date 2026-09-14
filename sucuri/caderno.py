@@ -32,8 +32,10 @@ import sympy as sp
 from .interface.sessao import Sessao, codigo_python
 
 # Um verbo e um nome; ou um verbo e dois, para os que comparam duas coisas.
-_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*"
-                         r"(?:,\s*([A-Za-z_]\w*)\s*)?\)\s*$")
+# O nome pode vir com barra — `\eta`, `\Gamma` —, porque é assim que se
+# escreve o nome da métrica. A barra é da escrita, não do objeto.
+_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(\\?[A-Za-z_]\w*)\s*"
+                         r"(?:,\s*(\\?[A-Za-z_]\w*)\s*)?\)\s*$")
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -41,6 +43,15 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*"
 # ambíguo — e engoli-la como declaração seria decidir por quem escreveu.
 # `u = u(t,x)` é tautologia: ninguém escreve isso como equação.
 _RE_DECLARA = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*\1\s*\([^)]*\)\s*$")
+
+# `x = coordenadas(t, r, \theta, \phi)` e `g = métrica(...)`: as componentes.
+# A métrica vai pela DIAGONAL porque o parser de LaTeX não lê matriz —
+# \begin{pmatrix} levanta erro —, e porque é assim que os livros dão quase
+# todas as métricas que importam.
+_RE_COORDENADAS = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*coordenadas?\s*"
+                             r"\((.*)\)\s*$", re.I | re.S)
+_RE_METRICA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*m[ée]trica\s*"
+                         r"\((.*)\)\s*$", re.I | re.S)
 
 # O tipo do Schutz: A = tensor(M, N) recebe M 1-formas e N vetores, o que em
 # índices dá M em cima e N embaixo. Números literais, e não nomes: aceitar
@@ -58,6 +69,12 @@ _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante"
                          r"|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
+VERBOS_GEOMETRIA = {
+    "christoffel": "christoffel", "cristoffel": "christoffel",
+    "ricci": "ricci", "riemann": "riemann",
+    "escalar": "escalar", "curvatura": "escalar",
+}
+
 VERBOS = {
     "resolver": "resolver", "solve": "resolver", "dsolve": "resolver",
     "avaliar": "avaliar", "evaluate": "avaliar", "doit": "avaliar",
@@ -66,10 +83,15 @@ VERBOS = {
     "latex": "latex",
     "separar": "separar", "separate": "separar",
     "conferir": "conferir", "check": "conferir", "verificar": "conferir",
+    **VERBOS_GEOMETRIA,
 }
 
 # Os que operam sobre DUAS equações: a conta e a candidata.
 DE_DOIS = {"conferir"}
+
+
+def fonte_metrica(nome, texto):
+    return f"{nome} = métrica({texto.strip()})"
 
 
 def _conta(n, um, muitos):
@@ -114,6 +136,13 @@ class Celula:
                 **self.dados}
 
 
+def _sem_barra(nome):
+    """`\\eta` e `eta` nomeiam a mesma coisa; a barra é de escrita."""
+    if nome and nome.startswith("\\"):
+        return nome[1:]
+    return nome
+
+
 class Caderno:
     """As convenções de um documento, e as equações que se acumulam sob elas.
 
@@ -125,6 +154,7 @@ class Caderno:
         self.sessao = Sessao()
         self.nomes = {}             # nome -> latex escrito
         self.prontos = {}           # nome -> objeto produzido por um verbo
+        self.metricas = {}          # nome -> Metrica, com componentes
         self.contador = 0
 
     # ------------------------------------------------------------- estado
@@ -145,6 +175,14 @@ class Caderno:
 
     def executar(self, fonte):
         """Uma célula: declaração, verbo, ou matemática."""
+        coord = _RE_COORDENADAS.match(fonte or "")
+        if coord:
+            return self._coordenadas(coord.group(1), coord.group(2))
+
+        metrica = _RE_METRICA.match(fonte or "")
+        if metrica:
+            return self._metrica(metrica.group(1), metrica.group(2))
+
         tensorial = _RE_TENSOR.match(fonte or "")
         if tensorial:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
@@ -170,10 +208,79 @@ class Caderno:
         comando = _RE_COMANDO.match(fonte or "")
         if comando and comando.group(1).lower() in VERBOS:
             verbo = VERBOS[comando.group(1).lower()]
-            alvo, segundo = comando.group(2), comando.group(3)
+            alvo, segundo = (_sem_barra(comando.group(2)),
+                             _sem_barra(comando.group(3)))
             return Celula(None, fonte, "comando",
                           self._comando(verbo, alvo, segundo))
         return self._matematica(fonte)
+
+    def _argumentos(self, texto):
+        """Separa por vírgula de primeiro nível, e lê cada pedaço em LaTeX."""
+        pedacos, atual, fundo = [], [], 0
+        for c in texto:
+            if c in "({[":
+                fundo += 1
+            elif c in ")}]":
+                fundo -= 1
+            if c == "," and fundo == 0:
+                pedacos.append("".join(atual))
+                atual = []
+            else:
+                atual.append(c)
+        pedacos.append("".join(atual))
+        return [p.strip() for p in pedacos if p.strip()]
+
+    def _coordenadas(self, nome, texto):
+        r"""`x = coordenadas(t, r, \theta, \phi)`."""
+        escritos = self._argumentos(texto)
+        simbolos = []
+        for escrito in escritos:
+            lido = self.sessao.expressao_de(escrito).to_sympy()
+            if not isinstance(lido, sp.Symbol):
+                return Celula(None, f"{nome} = coordenadas(...)", "declaracao",
+                              {"erro": f"'{escrito}' não é um símbolo: "
+                                       f"coordenada é um nome, não uma conta"})
+            simbolos.append(lido)
+        self.sessao.coordenadas = simbolos
+        self.sessao.escrita_coord = {str(s): e for s, e in zip(simbolos, escritos)}
+        return Celula(None, f"{nome} = coordenadas({texto.strip()})",
+                      "declaracao",
+                      {"declarado": [{"nome": str(s)} for s in simbolos],
+                       "texto": f"as coordenadas são {', '.join(escritos)} — "
+                                f"variedade de dimensão {len(simbolos)}"})
+
+    def _metrica(self, nome, texto):
+        r"""`g = métrica(-(1-2M/r), 1/(1-2M/r), r^2, r^2\sin^2\theta)`."""
+        from .geometria import Metrica
+
+        limpo = _sem_barra(nome)
+        if not self.sessao.coordenadas:
+            return Celula(None, fonte_metrica(nome, texto), "declaracao",
+                          {"erro": "declare as coordenadas antes da métrica: "
+                                   "componente sem coordenada não diz de quê "
+                                   "é componente"})
+        componentes = []
+        for escrito in self._argumentos(texto):
+            expressao = self.sessao.expressao_de(escrito)
+            if expressao.pending:
+                return Celula(None, fonte_metrica(nome, texto), "declaracao",
+                              {"erro": f"'{escrito}': "
+                                       + "; ".join(expressao.questions())})
+            componentes.append(expressao.to_sympy())
+        try:
+            metrica = Metrica(limpo, self.sessao.coordenadas, componentes,
+                              self.sessao.escrita_coord)
+        except ValueError as e:
+            return Celula(None, fonte_metrica(nome, texto), "declaracao",
+                          {"erro": str(e)})
+
+        metrica.escrito = nome
+        self.metricas[limpo] = metrica
+        return Celula(None, fonte_metrica(nome, texto), "declaracao",
+                      {"declarado": [{"nome": limpo, "metrica": True}],
+                       "texto": f"{nome} é a métrica em ({metrica.coordenadas}), "
+                                f"diagonal, com {len(componentes)} componentes",
+                       "latex_exato": sp.latex(metrica.matriz())})
 
     def _tensor(self, nome, formas, vetores):
         """`A = tensor(0, 2)` — o tipo do Schutz.
@@ -287,6 +394,8 @@ class Caderno:
         return expressao
 
     def _comando(self, verbo, alvo, segundo=None):
+        if verbo in VERBOS_GEOMETRIA.values():
+            return self._geometria(verbo, alvo)
         try:
             expressao = self._objeto(alvo)
             if verbo in DE_DOIS:
@@ -341,6 +450,44 @@ class Caderno:
         saida = resultado.to_dict()
         saida["nomeados"] = [self._nome_de(o) for o in resultado.produz]
         return saida
+
+    def _geometria(self, verbo, alvo):
+        """Christoffel, Ricci, Riemann, escalar — a partir das componentes.
+
+        O que sai são COMPONENTES num sistema de coordenadas, e não o tensor:
+        trocar de carta troca todas elas. O que não muda são as afirmações
+        invariantes — Ricci nulo é Ricci nulo em qualquer carta —, e por isso o
+        resultado diz em que coordenadas está.
+        """
+        from . import geometria
+
+        if alvo not in self.metricas:
+            conhecidas = ", ".join(self.metricas) or "nenhuma ainda"
+            return {"erro": f"não conheço a métrica '{alvo}' "
+                            f"(tenho: {conhecidas})"}
+        metrica = self.metricas[alvo]
+        calculo = getattr(geometria, verbo)
+        resultado = calculo(metrica)
+
+        base = {"alvo": alvo, "proveniencia": "estabelecida",
+                "apresentavel": True,
+                "coordenadas": metrica.coordenadas}
+        if verbo == "escalar":
+            base.update({"rotulo": f"escalar de Ricci de {alvo}",
+                         "exato": sp.sstr(resultado),
+                         "latex_exato": sp.latex(resultado),
+                         "linhas": [["coordenadas", metrica.coordenadas]]})
+            return base
+
+        simbolo = {"christoffel": "\\Gamma", "ricci": "R", "riemann": "R"}[verbo]
+        linhas = [["coordenadas", metrica.coordenadas]]
+        linhas += [[simbolo + rot, sp.sstr(valor)] for rot, valor in resultado]
+        if not resultado:
+            linhas.append(["resultado", "todas as componentes são nulas"])
+        base.update({"rotulo": f"{verbo} de {alvo}: "
+                               f"{len(resultado)} componente(s) não nula(s)",
+                     "linhas": linhas})
+        return base
 
     def _sessao_de(self, nome):
         """Uma sessão com as convenções do caderno e o latex da célula."""

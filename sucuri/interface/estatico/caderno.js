@@ -318,9 +318,18 @@ function pintarComando(saida, d) {
     var t = document.createElement('table');
     d.linhas.forEach(function (linha) {
       var tr = document.createElement('tr');
-      linha.forEach(function (c) {
+      linha.forEach(function (c, i) {
         var td = document.createElement('td');
-        td.textContent = c;
+        /* O que é notação — \Gamma^{t}_{tr}, \theta — vai tipografado. Ler
+         * índice em texto corrido é justamente o que este programa evita.
+         * Componente do SymPy (M/((-2*M + r)*r)) não tem barra nem índice
+         * entre chaves, e fica como está. */
+        if (/\\[a-zA-Z]|[\^_]\{/.test(String(c))) {
+          try { katex.render(String(c), td, { throwOnError: false }); }
+          catch (e) { td.textContent = c; }
+        } else {
+          td.textContent = c;
+        }
         tr.appendChild(td);
       });
       t.appendChild(tr);

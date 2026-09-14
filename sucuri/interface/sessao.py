@@ -41,6 +41,8 @@ class Sessao:
         self.funcoes_declaradas = []
         self.indices = []           # nomes declarados como índice tensorial
         self.tensores = {}          # nome -> (formas, vetores), tipo do Schutz
+        self.coordenadas = []       # os símbolos das coordenadas
+        self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
         self.dimensao = 4
         self.variaveis = []
         self.anotacoes = {}         # chave -> (kind, base, detail, reading)
