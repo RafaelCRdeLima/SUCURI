@@ -234,7 +234,7 @@ def resolver(expression):
 
     if conferida:
         return Result("solução", solucao, latex=sp.latex(solucao), rows=linhas,
-                      provenance=Provenance.ESTABLISHED)
+                      produz=[solucao], provenance=Provenance.ESTABLISHED)
 
     # O solver devolveu algo que a substituição não confirmou. É o caso em que
     # a resposta parece perfeita e não se sustenta — não se apresenta.
@@ -306,11 +306,14 @@ def separar(expression):
     linhas = [("ansatz", sp.sstr(funcao) + " = "
                + " · ".join(sp.sstr(f) for f in fatores)),
               ("constante", "k")]
+    produzidas = []
     for fator, parte in zip(fatores, partes):
-        linhas.append((f"equação em {fator.args[0]}", sp.sstr(sp.Eq(parte, k))))
+        # A equação ordinária de verdade, e não a fração igualada a k: é ela
+        # que o dsolve resolve e que o usuário vai querer nomear.
+        ordinaria = sp.Eq(sp.together(parte * fator), k * fator)
+        produzidas.append(ordinaria)
+        linhas.append((f"equação em {fator.args[0]}", sp.sstr(ordinaria)))
         try:
-            ordinaria = sp.Eq(sp.together(parte * fator.func(fator.args[0])),
-                              k * fator.func(fator.args[0]))
             linhas.append((f"solução em {fator.args[0]}",
                            sp.sstr(no_prazo(sp.dsolve, PRAZO_CONFERIR,
                                             ordinaria, fator))))
@@ -318,6 +321,7 @@ def separar(expression):
             linhas.append((f"solução em {fator.args[0]}", f"não saiu: {e}"))
 
     return Result("separação de variáveis", partes, rows=linhas,
+                  produz=produzidas,
                   provenance=Provenance.INAPPLICABLE,
                   blocked_by=["isto não resolve a equação: separar SUPÕE que a "
                               "solução é um produto. O que sai são os modos, e "

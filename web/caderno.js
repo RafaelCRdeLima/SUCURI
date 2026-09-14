@@ -322,6 +322,27 @@ function pintarComando(saida, d) {
     caixa.appendChild(t);
     saida.appendChild(caixa);
   }
+  /* O que a conta produziu, com nome: é o que permite continuar. Sem isso,
+   * ler duas EDOs numa tabela e ter de redigitá-las para seguir. */
+  if ((d.nomeados || []).length) {
+    var lista = document.createElement('div');
+    lista.className = 'nomeados';
+    d.nomeados.forEach(function (o) {
+      var linha = document.createElement('div');
+      linha.className = 'nomeado';
+      var nome = document.createElement('span');
+      nome.className = 'celula-nome';
+      nome.textContent = o.nome;
+      linha.appendChild(nome);
+      var corpo = document.createElement('div');
+      try { katex.render(o.latex, corpo, { throwOnError: false }); }
+      catch (e) { corpo.textContent = o.sympy; }
+      linha.appendChild(corpo);
+      lista.appendChild(linha);
+    });
+    saida.appendChild(lista);
+  }
+
   (d.bloqueado_por || []).forEach(function (b) {
     var p = document.createElement('div');
     p.className = 'bloqueio';

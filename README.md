@@ -337,6 +337,17 @@ O `pdsolve` não resolve a onda — e ele é só um dos caminhos do SymPy. O
 `pde_separate_mul` separa, o `dsolve` resolve cada pedaço, e o `checkpdesol`
 confere d'Alembert.
 
+O que uma conta **produz** ganha nome, e é isso que faz o caderno compor:
+
+```
+separar(eq1)     →  eq2   T″(t) = k T(t)
+                    eq3   c² X″(x) = k X(x)
+resolver(eq2)    →  eq4   T(t) = C₁e^(−√k t) + C₂e^(√k t)
+```
+
+Operação que devolve equações sem nome devolve becos: quem lê duas EDOs numa
+tabela não tem como pedir a próxima conta sobre elas senão redigitando.
+
 `separar` **não se apresenta como solução**: separar SUPÕE que a solução é um
 produto, e a suposição é uma restrição. O que sai são os modos; a solução geral
 é a superposição deles, e a separação não prova que ela seja completa.

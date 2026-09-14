@@ -321,3 +321,44 @@ def test_o_verbo_de_dois_argumentos():
 
     faltando = c.executar("conferir(eq1)").to_dict()
     assert "duas" in faltando["erro"]
+
+
+# ------------------------------------- o que a conta produz ganha nome
+
+def test_separar_produz_equacoes_com_nome():
+    """Uma operação que devolve equações sem nome devolve becos: o usuário lê
+    duas EDOs numa tabela e não tem como pedir a próxima conta sobre elas senão
+    redigitando."""
+    c = Caderno()
+    c.executar("u = u(t,x)")
+    c.executar("c = símbolo")
+    c.executar(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+
+    d = c.executar("separar(eq1)").to_dict()
+    nomes = [o["nome"] for o in d["nomeados"]]
+    assert nomes == ["eq2", "eq3"]
+    assert "Derivative(T(t), (t, 2))" in d["nomeados"][0]["sympy"]
+
+
+def test_o_nome_produzido_serve_para_a_conta_seguinte():
+    """É o ponto inteiro: separar deixa de ser folha da árvore."""
+    c = Caderno()
+    c.executar("u = u(t,x)")
+    c.executar("c = símbolo")
+    c.executar(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+    c.executar("separar(eq1)")
+
+    d = c.executar("resolver(eq2)").to_dict()
+    assert d["proveniencia"] == "estabelecida"
+    assert any("T(t)" in str(l[1]) for l in d["linhas"] if l[0] == "solução")
+    # e a própria solução ganha nome, para conferir ou exportar depois
+    assert d["nomeados"][0]["nome"] == "eq4"
+
+
+def test_o_erro_lista_os_nomes_produzidos_tambem():
+    c = Caderno()
+    c.executar("y = y(x)")
+    c.executar("y'' + y = 0")
+    c.executar("resolver(eq1)")
+    erro = c.executar("resolver(eq9)").to_dict()["erro"]
+    assert "eq1" in erro and "eq2" in erro

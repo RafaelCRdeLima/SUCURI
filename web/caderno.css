@@ -77,6 +77,12 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
 .saida .rodape{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .saida .rodape button{flex:none;font-size:12.5px;padding:6px 12px}
 
+/* O que a conta produziu, com nome — a matéria-prima do próximo passo. */
+.nomeados{margin-top:12px;border-top:1px solid var(--areia-2);padding-top:10px}
+.nomeado{display:flex;align-items:baseline;gap:14px;padding:5px 0}
+.nomeado .celula-nome{min-width:3.2em}
+.nomeado .katex{font-size:1.05em}
+
 .nova{display:flex;gap:10px;margin-top:8px}
 .nova button{flex:none}
 

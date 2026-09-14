@@ -64,6 +64,24 @@ VERBOS = {
 DE_DOIS = {"conferir"}
 
 
+class Pronta:
+    """Um objeto que já é SymPy — veio de um verbo, não de leitura.
+
+    Cumpre o contrato mínimo que os módulos pedem de uma expressão (`pending` e
+    `to_sympy`), e com isso o que uma operação PRODUZ entra no caderno com
+    nome, do mesmo jeito que o que foi escrito. É o que faz separar(eq1) deixar
+    de ser um beco: as duas EDOs viram eq2 e eq3, e resolver(eq2) funciona.
+    """
+
+    pending = ()
+
+    def __init__(self, objeto):
+        self._objeto = objeto
+
+    def to_sympy(self):
+        return self._objeto
+
+
 class Celula:
     """Uma entrada do caderno e o que ela produziu."""
 
@@ -87,7 +105,8 @@ class Caderno:
 
     def __init__(self):
         self.sessao = Sessao()
-        self.nomes = {}             # nome -> latex
+        self.nomes = {}             # nome -> latex escrito
+        self.prontos = {}           # nome -> objeto produzido por um verbo
         self.contador = 0
 
     # ------------------------------------------------------------- estado
@@ -188,10 +207,20 @@ class Caderno:
             self.nomes[nome] = latex
         return Celula(nome, latex, "math", leitura)
 
+    def _registrar(self, objeto):
+        """Dá nome a uma equação que saiu de uma conta, e não da folha."""
+        nome = self._proximo_nome()
+        self.prontos[nome] = Pronta(objeto)
+        return nome
+
     def _objeto(self, nome):
+        if nome in self.prontos:
+            return self.prontos[nome]
         if nome not in self.nomes:
-            conhecidos = ", ".join(self.nomes) or "nenhum ainda"
-            raise KeyError(f"não conheço '{nome}' (tenho: {conhecidos})")
+            conhecidos = ", ".join(sorted(
+                list(self.nomes) + list(self.prontos),
+                key=lambda n: int(n[2:]) if n[2:].isdigit() else 0))
+            raise KeyError(f"não conheço '{nome}' (tenho: {conhecidos or 'nenhum ainda'})")
         expressao = self.sessao.expressao_de(self.nomes[nome])
         if expressao.pending:
             raise ValueError(
@@ -215,9 +244,10 @@ class Caderno:
             argumentos = ((expressao, candidata) if verbo in DE_DOIS
                           else (expressao,))
             try:
-                saida = operacao.run(*argumentos).to_dict()
+                resultado = operacao.run(*argumentos)
             except ValueError as e:
                 return {"erro": str(e), "alvo": alvo}
+            saida = self._nomear(resultado)
             saida["alvo"] = alvo
             return saida
 
@@ -233,8 +263,25 @@ class Caderno:
         if verbo == "simplificar":
             objeto = sp.simplify(expressao.to_sympy())
             return {"alvo": alvo, "exato": sp.sstr(objeto),
-                    "latex_exato": sp.latex(objeto)}
+                    "latex_exato": sp.latex(objeto),
+                    "nomeados": [self._nome_de(objeto)]}
         return self._resolver(alvo, expressao)
+
+    def _nome_de(self, objeto):
+        nome = self._registrar(objeto)
+        return {"nome": nome, "sympy": sp.sstr(objeto),
+                "latex": sp.latex(objeto)}
+
+    def _nomear(self, resultado):
+        """Batiza o que a operação produziu, e devolve os nomes junto.
+
+        Uma operação que devolve equações sem nome devolve becos: o usuário lê
+        duas EDOs numa tabela e não tem como pedir a próxima conta sobre elas
+        senão redigitando.
+        """
+        saida = resultado.to_dict()
+        saida["nomeados"] = [self._nome_de(o) for o in resultado.produz]
+        return saida
 
     def _sessao_de(self, nome):
         """Uma sessão com as convenções do caderno e o latex da célula."""
@@ -258,7 +305,7 @@ class Caderno:
         objeto = expressao.to_sympy()
         if _e_diferencial(objeto):
             resultado = load("resolver").operations["resolver"].run(expressao)
-            saida = resultado.to_dict()
+            saida = self._nomear(resultado)
             saida["alvo"] = alvo
             return saida
 

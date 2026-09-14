@@ -43,9 +43,14 @@ class Result:
     """
 
     def __init__(self, label, payload, *, latex=None, rows=None,
-                 provenance=Provenance.INAPPLICABLE, blocked_by=()):
+                 provenance=Provenance.INAPPLICABLE, blocked_by=(), produz=()):
         self.label = label
         self.payload = payload
+        # As equações que esta operação PRODUZIU, para o hospedeiro dar nome a
+        # elas. Sem isso, uma operação que devolve equações devolve becos: o
+        # usuário lê duas EDOs numa tabela e não tem como pedir a próxima conta
+        # sobre elas senão redigitando.
+        self.produz = list(produz)
         self._latex = latex
         self.rows = list(rows) if rows else []
         self.provenance = provenance
