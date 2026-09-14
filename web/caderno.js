@@ -343,13 +343,18 @@ function pintarComando(saida, d) {
     saida.appendChild(lista);
   }
 
+  /* A cor segue a natureza do recado, e não o campo onde ele veio: barreira
+   * (o resultado não se apresenta) é vermelha; nota de alcance (a conta está
+   * certa, e o limite dela precisa ser dito) é verde. Os dois chegam em
+   * `bloqueado_por`, e era isso que apagava a diferença. */
+  var barreira = d.apresentavel === false;
   (d.bloqueado_por || []).forEach(function (b) {
     var p = document.createElement('div');
-    p.className = 'bloqueio';
+    p.className = barreira ? 'bloqueio' : 'nota-escopo';
     p.textContent = b;
     saida.appendChild(p);
   });
-  if (d.apresentavel === false) {
+  if (barreira) {
     var aviso = document.createElement('div');
     aviso.className = 'nao-apresentavel';
     aviso.textContent = 'proveniência: ' + d.proveniencia

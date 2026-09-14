@@ -279,3 +279,30 @@ def test_candidata_errada_nao_se_apresenta():
     r = R.conferir(eq, errada)
     assert r.provenance == Provenance.UNSOURCED
     assert r.presentable is False
+
+
+def test_nao_conferir_e_nao_poder_conferir_sao_desfechos_diferentes():
+    """"Não conferiu" diz algo sobre a CANDIDATA; "não deu para conferir" diz
+    algo sobre o CONFERIDOR. Chamar a segunda de primeira é acusar sem prova.
+    """
+    d = onda()
+    eq = d.read(r"\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}")
+
+    errada = R.conferir(eq, d.read(r"u = F(x - c t) + x^2 t"))
+    assert errada.label == "candidata NÃO verificada"
+    assert any("não satisfaz a equação" in b for b in errada.blocked_by)
+
+    # uma candidata que o checkpdesol não sabe testar
+    class Impossivel:
+        pending = ()
+        def to_sympy(self):
+            import sympy as sp
+            t, k = sp.symbols("t k")
+            T = sp.Function("T")
+            return sp.Eq(sp.Derivative(T(t), (t, 2)), k * T(t))
+
+    indeciso = R.conferir(eq, Impossivel())
+    assert indeciso.label == "não deu para conferir"
+    assert any("só sobre o conferidor" in b for b in indeciso.blocked_by)
+    # os dois seguem não apresentáveis: nenhum é conclusão
+    assert errada.presentable is False and indeciso.presentable is False

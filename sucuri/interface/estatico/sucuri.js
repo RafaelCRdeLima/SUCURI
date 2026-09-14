@@ -443,9 +443,10 @@ function resultado(r) {
     });
     div.appendChild(t);
   }
+  var barreira = r.apresentavel === false;
   (r.bloqueado_por || []).forEach(function (b) {
     var p = document.createElement('div');
-    p.className = 'bloqueio';
+    p.className = barreira ? 'bloqueio' : 'nota-escopo';
     p.textContent = b;
     div.appendChild(p);
   });

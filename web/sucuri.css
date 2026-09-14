@@ -171,8 +171,17 @@ button:focus-visible{outline:2px solid var(--folha);outline-offset:2px}
 .resultado table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12.5px}
 .resultado td{border-bottom:1px solid var(--areia-2);padding:5px 8px;vertical-align:top}
 .resultado tr:last-child td{border-bottom:none}
+/* Bloqueio é barreira: o resultado NÃO pode ser apresentado como conclusão.
+   Vermelho, porque interrompe. */
 .bloqueio{font-size:12.5px;color:var(--sucuri-erro-fg);background:var(--sucuri-erro-bg);
   border-radius:6px;padding:8px 10px;margin-top:10px}
+
+/* Nota de alcance é outra coisa: a conta está certa, e o que ela NÃO faz
+   precisa ser dito. "separar não resolve a equação" não é falha da conta, é o
+   limite dela — e em vermelho parecia erro, que foi o que aconteceu. */
+.nota-escopo{font-size:12.5px;color:var(--sucuri-sucesso-fg);
+  background:var(--sucuri-sucesso-bg);border-radius:6px;padding:8px 10px;
+  margin-top:10px;border-left:3px solid var(--folha)}
 .proveniencia{font-size:12.5px;margin-top:10px;color:var(--tinta-2)}
 .nao-apresentavel{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg);
   border-radius:6px;padding:8px 10px}

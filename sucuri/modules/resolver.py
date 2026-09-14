@@ -350,10 +350,22 @@ def conferir(expression, candidata):
         return Result("candidata verificada", solucao,
                       latex=sp.latex(solucao), rows=linhas,
                       provenance=Provenance.ESTABLISHED)
+
+    # Três desfechos, e não dois. "Não conferiu" e "não deu para conferir" são
+    # afirmações diferentes: a primeira diz algo sobre a candidata, a segunda
+    # só sobre o conferidor. Chamar a segunda de primeira é acusar sem prova.
+    if ok is None:
+        return Result("não deu para conferir", solucao,
+                      latex=sp.latex(solucao), rows=linhas,
+                      provenance=Provenance.UNSOURCED,
+                      blocked_by=["a conferência não pôde ser feita; isto não "
+                                  "diz nada sobre a candidata, só sobre o "
+                                  "conferidor"])
     return Result("candidata NÃO verificada", solucao,
                   latex=sp.latex(solucao), rows=linhas,
                   provenance=Provenance.UNSOURCED,
-                  blocked_by=["a substituição não devolveu zero"])
+                  blocked_by=["a substituição não devolveu zero: a candidata "
+                              "não satisfaz a equação"])
 
 
 MODULE = register(Module(
