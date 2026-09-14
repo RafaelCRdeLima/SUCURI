@@ -103,3 +103,61 @@ def test_declarar_indices_no_caderno():
 def test_a_dimensao_e_declaravel():
     c = Caderno()
     assert "dimensão 3" in c.executar(r"\alpha = índice(3)").to_dict()["texto"]
+
+
+# --------------------------------------------- o tipo do Schutz: (M, N)
+
+def test_declarar_o_tipo_diz_o_posto_antes_do_uso():
+    """Um tensor do tipo (M/N) é uma função de M 1-formas e N vetores, o que em
+    índices dá M em cima e N embaixo. Declarar isso diz o posto ANTES da
+    primeira aparição — o uso sozinho dizia depois."""
+    d = doc()
+    d.tensor("g", 0, 2)
+    with pytest.raises(ValueError, match=r"tipo \(0,2\)"):
+        d.read(r"g_{\mu\nu\lambda}").to_sympy()
+
+
+def test_a_valencia_certa_nao_gera_nota():
+    from sucuri.tensores import desacordo_de_tipo
+
+    d = doc()
+    d.tensor("T", 1, 1)
+    d.read(r"T^\mu_\nu").to_sympy()
+    assert desacordo_de_tipo(d.espaco, "T", [("mu", True), ("nu", False)]) is None
+
+
+def test_valencia_diferente_da_declarada_e_nota_e_nao_erro():
+    """g^{μν} tendo declarado g do tipo (0,2) é a métrica INVERSA: não é erro,
+    é outro tensor. Mas levantar índice exige métrica, e o Sucuri não a aplica
+    sozinho — então vale dizer."""
+    from sucuri.tensores import desacordo_de_tipo
+
+    d = doc()
+    d.tensor("g", 0, 2)
+    d.read(r"g^{\mu\nu}").to_sympy()            # não levanta erro
+    aviso = desacordo_de_tipo(d.espaco, "g", [("mu", True), ("nu", True)])
+    assert "levantar ou baixar índice exige a métrica" in aviso
+
+
+def test_o_tipo_no_caderno():
+    c = Caderno()
+    c.executar(r"\mu, \nu = índices")
+    d = c.executar("g = tensor(0, 2)").to_dict()
+    assert d["tipo"] == "declaracao"
+    assert d["declarado"][0]["tipo"] == [0, 2]
+    assert "recebe 0 1-formas e 2 vetores" in d["texto"]
+
+    lido = c.executar(r"g_{\mu\nu}").to_dict()
+    assert lido["indices_livres"] == ["-mu", "-nu"]
+    assert lido["notas"] == []
+
+    trocado = c.executar(r"g^{\mu\nu}").to_dict()
+    assert any("tipo (0,2)" in n for n in trocado["notas"])
+
+
+def test_so_numero_literal_no_tipo():
+    """`A = tensor(m, n)` com m e n definidos antes faria do caderno uma
+    linguagem de programação — a porta que os verbos fechados existem para não
+    abrir. Quem escrever isso recebe a leitura normal, não uma declaração."""
+    c = Caderno()
+    assert c.executar("A = tensor(m, n)").to_dict()["tipo"] != "declaracao"

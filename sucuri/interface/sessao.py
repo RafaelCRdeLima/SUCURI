@@ -40,6 +40,7 @@ class Sessao:
         # campo vazio apagava a declaração feita na folha, sem aviso.
         self.funcoes_declaradas = []
         self.indices = []           # nomes declarados como índice tensorial
+        self.tensores = {}          # nome -> (formas, vetores), tipo do Schutz
         self.dimensao = 4
         self.variaveis = []
         self.anotacoes = {}         # chave -> (kind, base, detail, reading)
@@ -56,6 +57,7 @@ class Sessao:
             "funcoes": list(self.funcoes),
             "declaradas": list(self.funcoes_declaradas),
             "indices": list(self.indices),
+            "tensores": dict(self.tensores),
             "variaveis": list(self.variaveis),
             "anotacoes": [
                 {"kind": k, "base": b, "detalhe": d, "leitura": r}
@@ -106,6 +108,8 @@ class Sessao:
             doc.function(*todas)
         if self.indices:
             doc.index(*self.indices, dimensao=self.dimensao)
+        for nome, (formas, vetores) in self.tensores.items():
+            doc.tensor(nome, formas, vetores)
         if self.variaveis:
             doc.variable(*self.variaveis)
 
@@ -283,6 +287,25 @@ def _faltando(erro, latex):
             "candidatos": _candidatas(latex)}
 
 
+def _valencias(expressao, doc):
+    """Onde a valência escrita não é a declarada.
+
+    Não é erro: g^{μν} tendo declarado g do tipo (0,2) é a métrica inversa. Mas
+    levantar índice exige métrica, e o Sucuri não a aplica sozinho — o que sai
+    é OUTRO tensor com o mesmo nome.
+    """
+    if not doc._indices or not doc._tensores:
+        return []
+    from ..tensores import desacordo_de_tipo, localizar
+
+    notas = []
+    for _, _, base, posicoes in localizar(expressao.source, doc._indices):
+        aviso = desacordo_de_tipo(doc.espaco, base, posicoes)
+        if aviso and aviso not in notas:
+            notas.append(aviso)
+    return notas
+
+
 def _candidatas(latex):
     sitios = find(latex)
     cobertos = {i for a in sitios for i in range(*a.span)}
@@ -313,7 +336,8 @@ def _desacordos(expressao, doc):
     leitura sai certa. Mas ficar calado faz o usuário ver "d/dx" onde escreveu
     "∂/∂x" e concluir que o programa errou — que foi o que aconteceu.
     """
-    notas = list(indices_tensoriais(expressao.source)[1])
+    notas = list(indices_tensoriais(expressao.source, doc._indices)[1])
+    notas += _valencias(expressao, doc)
     for a in expressao.ambiguities:
         parcial = a.kind == "partial" or a.detail.get("partial")
         args = doc._function_args.get(a.base)

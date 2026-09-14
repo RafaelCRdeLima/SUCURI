@@ -42,6 +42,13 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*([A-Za-z_]\w*)\s*"
 # `u = u(t,x)` é tautologia: ninguém escreve isso como equação.
 _RE_DECLARA = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*\1\s*\([^)]*\)\s*$")
 
+# O tipo do Schutz: A = tensor(M, N) recebe M 1-formas e N vetores, o que em
+# índices dá M em cima e N embaixo. Números literais, e não nomes: aceitar
+# `A = tensor(m, n)` com m e n definidos antes faria do caderno uma linguagem
+# de programação, que é a porta que os verbos fechados existem para não abrir.
+_RE_TENSOR = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*tensor\s*\(\s*"
+                        r"(\d+)\s*,\s*(\d+)\s*\)\s*$", re.I)
+
 # A forma antiga, para dizer o que mudou em vez de falhar em LaTeX.
 _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 
@@ -63,6 +70,16 @@ VERBOS = {
 
 # Os que operam sobre DUAS equações: a conta e a candidata.
 DE_DOIS = {"conferir"}
+
+
+def _conta(n, um, muitos):
+    return f"{n} {um if n == 1 else muitos}"
+
+
+def _indices_em(n, onde):
+    if n == 0:
+        return f"nenhum índice {onde}"
+    return f"{_conta(n, 'índice', 'índices')} {onde}"
 
 
 class Pronta:
@@ -128,6 +145,11 @@ class Caderno:
 
     def executar(self, fonte):
         """Uma célula: declaração, verbo, ou matemática."""
+        tensorial = _RE_TENSOR.match(fonte or "")
+        if tensorial:
+            return self._tensor(tensorial.group(1), int(tensorial.group(2)),
+                                int(tensorial.group(3)))
+
         especie = _RE_ESPECIE.match(fonte or "")
         if especie:
             return self._especie(especie.group(1), especie.group(2).lower())
@@ -152,6 +174,24 @@ class Caderno:
             return Celula(None, fonte, "comando",
                           self._comando(verbo, alvo, segundo))
         return self._matematica(fonte)
+
+    def _tensor(self, nome, formas, vetores):
+        """`A = tensor(0, 2)` — o tipo do Schutz.
+
+        Diz o posto ANTES da primeira aparição, e diz a valência canônica. O
+        uso sozinho dizia só o posto, e dizia tarde.
+        """
+        limpo = nome[1:] if nome.startswith("\\") else nome
+        self.sessao.tensores[limpo] = (formas, vetores)
+        return Celula(None, f"{nome} = tensor({formas}, {vetores})",
+                      "declaracao",
+                      {"declarado": [{"nome": limpo,
+                                      "tipo": [formas, vetores]}],
+                       "texto": (f"{limpo} é tensor do tipo ({formas},{vetores}): "
+                                 f"recebe {_conta(formas, '1-forma', '1-formas')}"
+                                 f" e {_conta(vetores, 'vetor', 'vetores')}"
+                                 f" — {_indices_em(formas, 'em cima')},"
+                                 f" {_indices_em(vetores, 'embaixo')}")})
 
     def _especie(self, nomes, especie):
         r"""`e = euler`, `a = símbolo`, `\mu = índice`.

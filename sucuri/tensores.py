@@ -64,6 +64,7 @@ class Espaco:
         self.tipo = TensorIndexType(nome, dim=dimensao)
         self._indices = {}
         self._cabecas = {}
+        self._tipos = {}            # nome -> (formas, vetores), tipo do Schutz
 
     def indice(self, nome):
         if nome not in self._indices:
@@ -73,19 +74,44 @@ class Espaco:
             self._indices[nome] = achado[0] if isinstance(achado, list) else achado
         return self._indices[nome]
 
-    def cabeca(self, nome, posto):
-        """O TensorHead de `nome`, com o posto que a notação mostrou.
+    def declarar(self, nome, formas, vetores):
+        """O tipo do Schutz: (M, N) recebe M formas e N vetores.
 
-        O posto vem do uso, e não de declaração: quem escreve g_{\\mu\\nu} já
-        disse que g tem dois índices. Usar o mesmo nome com postos diferentes é
-        erro, e vale dizer qual foi o primeiro.
+        Um tensor do tipo (M/N) é uma função de M 1-formas e N vetores, o que
+        em índices dá M em cima e N embaixo. g_{\u03bc\u03bd} é (0,2);
+        g^{\u03bc\u03bd} é (2,0); a delta de Kronecker é (1,1).
+
+        Declarar isso diz duas coisas que o uso não diz: o POSTO antes da
+        primeira aparição, e a valência CANÔNICA — a partir da qual as outras
+        se obtêm levantando ou baixando com a métrica.
         """
+        self._tipos[nome] = (formas, vetores)
+        return self.cabeca(nome, formas + vetores)
+
+    def tipo_de(self, nome):
+        return self._tipos.get(nome)
+
+    def cabeca(self, nome, posto):
+        """O TensorHead de `nome`, com o posto declarado ou o que o uso mostrou.
+
+        Sem declaração, o posto vem do uso: quem escreve g_{\u03bc\u03bd} já
+        disse que g tem dois índices. Com declaração, o posto vem de lá — e a
+        diferença aparece na primeira linha, e não na segunda.
+        """
+        declarado = self._tipos.get(nome)
+        if declarado and sum(declarado) != posto and nome in self._cabecas:
+            formas, vetores = declarado
+            raise ValueError(
+                f"'{nome}' foi declarado do tipo ({formas},{vetores}), que tem "
+                f"{formas + vetores} índice(s), e aqui aparece com {posto}")
         if nome in self._cabecas:
             cabeca, primeiro = self._cabecas[nome]
             if primeiro != posto:
+                qual = (f"foi declarado com {primeiro}" if declarado
+                        else f"apareceu com {primeiro}")
                 raise ValueError(
-                    f"'{nome}' apareceu com {primeiro} índice(s) e agora com "
-                    f"{posto}: um tensor tem um posto só")
+                    f"'{nome}' {qual} índice(s) e agora com {posto}: "
+                    f"um tensor tem um posto só")
             return cabeca
         cabeca = TensorHead(nome, [self.tipo] * posto)
         self._cabecas[nome] = (cabeca, posto)
@@ -115,6 +141,26 @@ def localizar(latex, declarados):
             continue
         achados.append((m.start(), m.end(), limpo(m.group(1)), posicoes))
     return achados
+
+
+def desacordo_de_tipo(espaco, base, posicoes):
+    """A valência escrita bate com a declarada?
+
+    Não é erro escrever g^{\u03bc\u03bd} tendo declarado g do tipo (0,2): é a
+    métrica inversa, obtida levantando os índices. Mas levantar exige métrica,
+    e o Sucuri não a aplica sozinho — então o objeto que sai é OUTRO tensor com
+    o mesmo nome, e vale dizer.
+    """
+    tipo = espaco.tipo_de(base)
+    if not tipo:
+        return None
+    cima = sum(1 for _, c in posicoes if c)
+    baixo = len(posicoes) - cima
+    if (cima, baixo) == tipo:
+        return None
+    return (f"{base} foi declarado do tipo ({tipo[0]},{tipo[1]}) e aqui aparece "
+            f"como ({cima},{baixo}): levantar ou baixar índice exige a métrica, "
+            f"e o Sucuri não a aplica sozinho")
 
 
 def construir(espaco, base, posicoes):

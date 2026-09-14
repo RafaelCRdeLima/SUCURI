@@ -164,6 +164,18 @@ g_{\mu\nu} A^\mu A^\nu      →  g(-L₀,-L₁)·A(L₀)·A(L₁)   todos contra
 A^\mu B_\mu + C^\nu        →  os termos da soma têm índices livres diferentes
 ```
 
+O tipo é declarável na notação do Schutz — `(M, N)` recebe M 1-formas e N
+vetores, o que em índices dá M em cima e N embaixo:
+
+```
+g = tensor(0,2)     g_{\mu\nu\lambda}  →  'g' foi declarado do tipo (0,2),
+                                          que tem 2 índices, e aqui aparece com 3
+                    g^{\mu\nu}         →  nota: levantar índice exige a métrica,
+                                          e o Sucuri não a aplica sozinho
+```
+
+Sem isso o posto vem do uso — e vem tarde, na segunda linha em vez da primeira.
+
 Quem decide que `\mu` é índice, e não expoente, é a **declaração** — não há
 potência possível com um índice no expoente. É a mesma mecânica de
 `u = u(t,x)`: declarar dissolve a dúvida em vez de escolher entre as leituras.

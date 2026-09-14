@@ -436,6 +436,7 @@ class Document:
         self._functions = set()
         self._function_args = {}        # u(x,t) -> ('x', 't')
         self._indices = set()           # nomes declarados como índice
+        self._tensores = {}             # nome -> (formas, vetores)
         self._espaco = None             # o tipo de índice, criado quando precisa
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
@@ -531,6 +532,21 @@ class Document:
             raise ValueError(
                 f"o documento já tem índices de dimensão "
                 f"{self._espaco.dimensao}; não dá para misturar com {dimensao}")
+        return self
+
+    def tensor(self, nome, formas, vetores):
+        """Declara o TIPO do Schutz: (M, N) recebe M formas e N vetores.
+
+        Em índices, M em cima e N embaixo. Diz o posto antes da primeira
+        aparição — e a valência canônica, a partir da qual as outras se obtêm
+        levantando ou baixando.
+        """
+        from .tensores import DIMENSAO_PADRAO, Espaco
+
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._tensores[_limpo_indice(nome)] = (formas, vetores)
+        self._espaco.declarar(_limpo_indice(nome), formas, vetores)
         return self
 
     @property
