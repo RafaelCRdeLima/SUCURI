@@ -16,7 +16,8 @@ import time
 import sympy as sp
 
 from ..ambiguity import _COMANDOS, find
-from ..document import Document, FaltaVariavel, Resolution, Unresolved
+from ..document import (Document, FaltaVariavel, Resolution, Unresolved,
+                        indices_tensoriais)
 from ..prazo import TempoEsgotado, no_prazo
 
 
@@ -299,7 +300,7 @@ def _desacordos(expressao, doc):
     leitura sai certa. Mas ficar calado faz o usuário ver "d/dx" onde escreveu
     "∂/∂x" e concluir que o programa errou — que foi o que aconteceu.
     """
-    notas = []
+    notas = list(indices_tensoriais(expressao.source)[1])
     for a in expressao.ambiguities:
         parcial = a.kind == "partial" or a.detail.get("partial")
         args = doc._function_args.get(a.base)

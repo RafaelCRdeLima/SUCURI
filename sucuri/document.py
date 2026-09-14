@@ -289,6 +289,101 @@ def _com_palpite(nome):
     return f"{nome} (quis dizer \\{min(perto)[1]}?)"
 
 
+_GRUPO = r"(?:\{[^{}]*\}|\\[a-zA-Z]+|[A-Za-z0-9])"
+_RE_BASE = r"(?:\\[a-zA-Z]+|[A-Za-z])"
+_RE_SUPER = re.compile(rf"({_RE_BASE})\s*\^\s*({_GRUPO})")
+_RE_SUB = re.compile(rf"({_RE_BASE})\s*_\s*({_GRUPO})")
+# Só esta ordem: o parser do SymPy lê x_i^2 direito (Symbol('x_{i}')**2) e
+# estraga x^2_i (devolve x**2, sem o índice). Recusar a ordem que funciona
+# seria recusar matemática legítima.
+_RE_PERDE = re.compile(rf"({_RE_BASE})\s*\^\s*{_GRUPO}\s*_")
+
+
+class NotacaoTensorial(Exception):
+    r"""Índice não é expoente, e o parser não sabe a diferença.
+
+    Medido no SymPy 1.12 e 1.13:
+
+        A^\mu                    ->  A**mu            (A elevado a μ)
+        x^2_i                    ->  x**2             (o índice some)
+        \Gamma^\lambda_{\mu\nu}  ->  Gamma**lambda_{mu*nu}
+        g_{\mu\nu}               ->  Symbol('g_{mu*nu}')
+
+    Nada disso levanta erro, e nada disso tem símbolo estranho na saída: são
+    expressões bem formadas e falsas, que é a pior classe de erro que este
+    programa conhece.
+
+    A recusa é estreita de propósito, e cobre só onde o parser COMPROVADAMENTE
+    perde informação. A suspeita — um grego no expoente, índices no subscrito —
+    vira nota, não recusa: distinguir índice de expoente pela tipografia é
+    impossível, e A^\mu é mesmo "A elevado a μ" em algum texto.
+    """
+
+    def __init__(self, motivos):
+        self.motivos = list(motivos)
+        super().__init__(
+            "notação tensorial não é lida: " + "; ".join(self.motivos)
+            + ". O parser trataria o índice de cima como EXPOENTE e descartaria "
+            "o de baixo, devolvendo uma conta bem formada e errada. O SymPy tem "
+            "tensores em sympy.tensor.tensor, mas o Sucuri ainda não faz essa "
+            "ponte.")
+
+
+def _gregos_em(padrao, texto):
+    achados = set()
+    for m in padrao.finditer(texto):
+        if _limpo_macro(m.group(1)) in _COMANDOS_ESTRUTURA:
+            continue
+        for nome in re.findall(r"\\([a-zA-Z]+)", m.group(2)):
+            if nome in _MACROS_SIMBOLO:
+                achados.add(nome)
+    return achados
+
+
+def _limpo_macro(t):
+    return t[1:] if t.startswith("\\") else t
+
+
+_COMANDOS_ESTRUTURA = {"sum", "int", "prod", "oint", "lim", "bigcup", "bigcap",
+                       "iint", "iiint", "coprod", "max", "min", "sup", "inf"}
+
+
+def indices_tensoriais(texto):
+    r"""(recusas, notas) — o que é perda comprovada e o que é suspeita.
+
+    Distinguir índice de expoente pela tipografia é impossível: A^\mu é "A
+    elevado a μ" ou "A com índice contravariante μ", e as duas se escrevem
+    igual. Então não se adivinha. Recusa-se onde o parser PERDE — e onde há a
+    marca que só a soma de Einstein deixa —, e avisa-se onde há suspeita.
+    """
+    recusas, notas = [], []
+
+    for m in _RE_PERDE.finditer(texto):
+        base = m.group(1)
+        if _limpo_macro(base) in _COMANDOS_ESTRUTURA:
+            continue
+        recusas.append(f"'{base}' tem sobrescrito e subscrito nessa ordem, e o "
+                       f"parser descarta o de baixo")
+
+    em_cima = _gregos_em(_RE_SUPER, texto)
+    embaixo = _gregos_em(_RE_SUB, texto)
+    for nome in sorted(em_cima & embaixo):
+        recusas.append(f"o índice \\{nome} aparece em cima e embaixo "
+                       f"(soma de Einstein)")
+
+    soltos = sorted(em_cima - embaixo)
+    if soltos and not recusas:
+        notas.append(
+            "há letra grega no expoente (" + ", ".join("\\" + n for n in soltos)
+            + "): se for índice contravariante, a leitura está errada — o "
+              "parser trata como POTÊNCIA, e notação tensorial ainda não é lida")
+    if embaixo and not recusas:
+        notas.append(
+            "há índice grego em subscrito: ele vira parte do NOME do símbolo, "
+            "então T_{\\mu\\nu} e T_{\\nu\\mu} são o mesmo símbolo para o SymPy")
+    return recusas, notas
+
+
 class NotacaoNaoReconhecida(Exception):
     """O parser degradou uma notação em vez de recusá-la.
 
@@ -523,6 +618,10 @@ class Expression:
         """
         if self.pending:
             raise Unresolved(self.pending)
+
+        recusas, _ = indices_tensoriais(self.source)
+        if recusas:
+            raise NotacaoTensorial(recusas)
 
         texto, reposicoes, derivadas, _ = self._normalize()
         from sympy.parsing.latex import parse_latex

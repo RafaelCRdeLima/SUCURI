@@ -154,6 +154,30 @@ u = u(x)
 Não bloqueia, porque não é erro. Mas ficar calado faz quem escreveu `∂/∂x` ver
 `d/dx` e concluir que o programa errou.
 
+## Notação tensorial: ainda não
+
+Índice não é expoente, e o parser do SymPy não sabe a diferença. Medido:
+
+```python
+>>> parse_latex(r"A^\mu")                    A**mu          # A elevado a μ
+>>> parse_latex(r"x^2_i")                    x**2           # o índice some
+>>> parse_latex(r"\Gamma^\lambda_{\mu\nu}")  Gamma**lambda_{mu*nu}
+>>> parse_latex(r"g_{\mu\nu}")               Symbol('g_{mu*nu}')
+```
+
+Nada disso levanta erro e nada disso tem símbolo estranho na saída: são
+expressões **bem formadas e falsas**, a pior classe de erro que este programa
+conhece. Quem escrevesse relatividade receberia contas silenciosamente erradas.
+
+O Sucuri recusa onde o parser **comprovadamente perde** — sobrescrito antes de
+subscrito, e o mesmo índice grego em cima e embaixo (soma de Einstein) — e
+**avisa** onde há só suspeita, porque `A^\mu` é mesmo "A elevado a μ" em algum
+texto, e distinguir índice de expoente pela tipografia é impossível.
+
+O SymPy tem tensores de verdade em `sympy.tensor.tensor`, com contração
+automática. A ponte do LaTeX até lá é o que falta — e é exatamente o tipo de
+coisa que este programa existe para fazer.
+
 ## O que NÃO é ambiguidade
 
 `∂` está reservado à derivada parcial. Ninguém nunca escreveu
