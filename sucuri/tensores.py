@@ -62,6 +62,7 @@ class Espaco:
     def __init__(self, dimensao=DIMENSAO_PADRAO, nome="L"):
         self.dimensao = dimensao
         self.tipo = TensorIndexType(nome, dim=dimensao)
+        self.escrita = {}           # 'mu' -> '\\mu', como o usuário escreveu
         self._indices = {}
         self._cabecas = {}
         self._tipos = {}            # nome -> (formas, vetores), tipo do Schutz
@@ -211,8 +212,60 @@ def reconstruir(expr, tensores):
     return andar(expr)
 
 
-def livres(expr):
-    """Os índices que sobraram sem par — a valência do que foi escrito."""
-    if isinstance(expr, TensExpr):
-        return [str(i) for i in expr.get_free_indices()]
-    return []
+def mudos_na_ordem(texto, declarados):
+    """Os índices contraídos, na ordem em que aparecem no que foi escrito.
+
+    Contraído é o que aparece em cima E embaixo. A ordem importa porque é ela
+    que casa com a numeração dos índices mudos do SymPy.
+    """
+    cima, baixo, ordem = set(), set(), []
+    for _, _, _, posicoes in localizar(texto, set(declarados)):
+        for nome, eh_cima in posicoes:
+            (cima if eh_cima else baixo).add(nome)
+            if nome not in ordem:
+                ordem.append(nome)
+    return [n for n in ordem if n in cima and n in baixo]
+
+
+def latex_de(expr, espaco=None, mudos=()):
+    r"""O LaTeX do tensor, com os índices que a pessoa escreveu.
+
+    O SymPy renomeia todo índice contraído para L_0, L_1 — e faz certo: índice
+    mudo é nome ligado, e qualquer letra serve. Mas quem escreveu 
+u quer ver
+    
+u, e não L_0.
+
+    E há um estrago junto: o impressor emite os índices colados, então
+    g{}_{\mu L_{0}} sai como "\muL_{0}" — a macro \mu engole o L e vira \muL,
+    que não existe. O KaTeX pinta de vermelho, e a equação parece errada
+    quando o que está errado é a impressão dela. Devolver as letras originais
+    conserta os dois, porque letra grega é macro e macro não cola em macro.
+    """
+    texto = sp.latex(expr)
+    if espaco is None or not isinstance(expr, TensExpr):
+        return texto
+    for k, nome in enumerate(mudos):
+        escrito = espaco.escrita.get(nome, nome)
+        texto = texto.replace(f"{espaco.tipo.dummy_name}_{{{k}}}", escrito)
+    return texto
+
+
+def livres(expr, espaco=None):
+    r"""Os índices que sobraram sem par — a valência do que foi escrito.
+
+    Devolvidos como se escrevem: ^\mu para contravariante, _\mu para
+    covariante. O SymPy diz 'mu' e '-mu', que é nome interno — e mostrar nome
+    interno faz o usuário procurar o que ele mesmo escreveu.
+    """
+    if not isinstance(expr, TensExpr):
+        return []
+    saida = []
+    for i in expr.get_free_indices():
+        nome = str(i)
+        baixo = nome.startswith("-")
+        nome = nome[1:] if baixo else nome
+        if espaco is not None:
+            nome = espaco.escrita.get(nome, nome)
+        saida.append(("_" if baixo else "^") + nome)
+    return saida

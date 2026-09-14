@@ -168,14 +168,18 @@ class Sessao:
                 objeto = expr.to_sympy()
                 saida["sympy"] = sp.sstr(objeto)
                 saida["codigo"] = codigo_python(objeto)
-                saida["latex_semantico"] = sp.latex(objeto)
+                from ..tensores import latex_de, mudos_na_ordem
+                saida["latex_semantico"] = latex_de(
+                    objeto, doc.espaco,
+                    mudos_na_ordem(self.latex, doc._indices)
+                    if doc._indices else ())
                 saida["arvore"] = expr.tree().to_dict()
                 saida["diferencial"] = _e_diferencial(objeto)
                 # A valência é a primeira coisa que se confere num tensor: um
                 # índice livre a mais de um lado da igualdade é erro, e é erro
                 # que ninguém vê a olho.
                 from ..tensores import livres
-                soltos = livres(objeto)
+                soltos = livres(objeto, doc.espaco)
                 if soltos or _e_tensorial(objeto):
                     saida["indices_livres"] = soltos
             except Unresolved as e:

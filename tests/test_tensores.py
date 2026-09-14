@@ -35,7 +35,7 @@ def test_a_contracao_acontece():
 
 def test_a_valencia_do_que_sobra():
     lido = doc().read(r"\Gamma^\lambda_{\mu\nu}").to_sympy()
-    assert livres(lido) == ["lambda", "-mu", "-nu"]
+    assert livres(lido) == ["^lambda", "_mu", "_nu"]
 
 
 def test_o_marcador_precisa_de_reconstrucao_e_nao_de_subs():
@@ -51,7 +51,7 @@ def test_o_marcador_precisa_de_reconstrucao_e_nao_de_subs():
 def test_igualdade_e_coeficiente():
     lido = doc().read(r"T^{\mu\nu} = 8\pi S^{\mu\nu}").to_sympy()
     assert isinstance(lido, sp.Equality)
-    assert livres(lido.lhs) == ["mu", "nu"]
+    assert livres(lido.lhs) == ["^mu", "^nu"]
 
 
 def test_soma_com_indices_livres_diferentes_e_erro():
@@ -148,7 +148,7 @@ def test_o_tipo_no_caderno():
     assert "recebe 0 1-formas e 2 vetores" in d["texto"]
 
     lido = c.executar(r"g_{\mu\nu}").to_dict()
-    assert lido["indices_livres"] == ["-mu", "-nu"]
+    assert lido["indices_livres"] == [r"_\mu", r"_\nu"]
     assert lido["notas"] == []
 
     trocado = c.executar(r"g^{\mu\nu}").to_dict()
@@ -161,3 +161,37 @@ def test_so_numero_literal_no_tipo():
     abrir. Quem escrever isso recebe a leitura normal, não uma declaração."""
     c = Caderno()
     assert c.executar("A = tensor(m, n)").to_dict()["tipo"] != "declaracao"
+
+
+# ---------------------------------------------- o que a tela mostra
+
+def test_o_indice_mudo_volta_a_ser_o_que_a_pessoa_escreveu():
+    r"""O SymPy renomeia todo índice contraído para L_0 — e faz certo: índice
+    mudo é nome ligado. Mas quem escreveu \nu quer ver \nu.
+
+    E há um estrago junto: o impressor emite os índices colados, então
+    g{}_{\mu L_{0}} sai "\muL_{0}" — a macro \mu engole o L e vira \muL, que
+    não existe. O KaTeX pinta de vermelho, e a equação PARECE errada quando o
+    que está errado é a impressão dela.
+    """
+    from sucuri.interface.sessao import Sessao
+
+    s = Sessao()
+    s.indices = [r"\mu", r"\nu"]
+    s.tensores = {"g": (0, 2)}
+    d = s.ler(r"g_{\mu \nu} A^{\nu}")
+
+    assert d["latex_semantico"] == r"g{}_{\mu\nu}A{}^{\nu}"
+    assert "L_" not in d["latex_semantico"]
+    assert r"\muL" not in d["latex_semantico"]
+
+
+def test_a_valencia_sai_como_se_escreve():
+    """'-mu' é nome interno, e mostrar nome interno faz o usuário procurar o
+    que ele mesmo escreveu."""
+    from sucuri.interface.sessao import Sessao
+
+    s = Sessao()
+    s.indices = [r"\mu", r"\nu", r"\lambda"]
+    assert s.ler(r"T^{\mu\nu}_{\lambda}")["indices_livres"] == [
+        r"^\mu", r"^\nu", r"_\lambda"]

@@ -524,14 +524,19 @@ class Document:
         """
         from .tensores import DIMENSAO_PADRAO, Espaco
 
-        for n in nomes:
-            self._indices.add(_limpo_indice(n))
         if self._espaco is None:
             self._espaco = Espaco(dimensao or DIMENSAO_PADRAO)
         elif dimensao and dimensao != self._espaco.dimensao:
             raise ValueError(
                 f"o documento já tem índices de dimensão "
                 f"{self._espaco.dimensao}; não dá para misturar com {dimensao}")
+
+        for n in nomes:
+            limpo = _limpo_indice(n)
+            self._indices.add(limpo)
+            # Guarda como foi ESCRITO: é isso que volta para a tela no lugar do
+            # índice mudo que o SymPy inventa.
+            self._espaco.escrita[limpo] = n.strip()
         return self
 
     def tensor(self, nome, formas, vetores):
