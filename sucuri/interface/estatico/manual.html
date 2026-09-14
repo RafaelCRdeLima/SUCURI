@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUCURI — manual</title>
+<meta name="description" content="Como usar o Sucuri: escrever, declarar, resolver, e o que cada resposta quer dizer.">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="sucuri.css">
+<link rel="stylesheet" href="caderno.css">
+<link rel="stylesheet" href="manual.css">
+</head>
+<body>
+<div class="app">
+
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <span class="wordmark">SUCURI</span>
+  <a class="modo" href="caderno.html">caderno</a>
+  <a class="modo" href="index.html">uma equação</a>
+  <span class="arquivo">manual</span>
+</header>
+
+<main class="manual">
+
+<p class="abertura">Você escreve matemática em LaTeX. O Sucuri lê como SymPy, e
+mostra o que entendeu — em matemática de livro, e em código que você pode
+copiar. <strong>Onde a notação deixa dúvida, ele pergunta em vez de
+adivinhar.</strong> É essa a única regra, e tudo aqui sai dela.</p>
+
+<p class="nota-manual">Todos os exemplos deste manual são executados pela suíte
+de testes a cada mudança. O que está escrito aqui como saída é a saída.</p>
+
+<h2>1. Escrever e executar</h2>
+
+<p>No <a href="caderno.html">caderno</a>, escreva na célula e tecle
+<kbd>Shift</kbd>+<kbd>Enter</kbd>. Cada célula que vira matemática ganha um
+nome — <code>eq1</code>, <code>eq2</code> — e é por ele que você se refere a ela
+depois.</p>
+
+<div class="exemplo">
+  <code class="entrada">x^2 + 1</code>
+  <samp class="saida">x**2 + 1</samp>
+</div>
+
+<h2>2. Quando ele pergunta</h2>
+
+<p>Nem toda notação diz o que significa. <code>y''</code> pode ser a derivada
+segunda de <em>y</em>, ou um símbolo chamado “y duas linhas” — as duas se
+escrevem igual, e o Sucuri não escolhe por você:</p>
+
+<div class="exemplo">
+  <code class="entrada">y'' + y = 0</code>
+  <samp class="pergunta">y''  →  derivada de ordem 2 de y  |  símbolo chamado y''</samp>
+</div>
+
+<p>Você responde clicando na leitura certa — ou, melhor, <strong>declarando</strong>,
+que responde de uma vez para o caderno inteiro.</p>
+
+<h2>3. Declarar</h2>
+
+<p>Declarar não escolhe entre as leituras: <strong>dissolve a dúvida</strong>. Se
+<em>y</em> é função de <em>x</em>, então <code>y'</code> só pode ser
+<em>dy/dx</em> — não há o que perguntar.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <samp class="saida">Eq(y(x) + Derivative(y(x), (x, 2)), 0)</samp>
+</div>
+
+<table class="tabela">
+  <tr><td><code>u = u(t,x)</code></td><td>u é função de t e x</td></tr>
+  <tr><td><code>e = euler</code></td><td>e é o número de Euler, não um símbolo</td></tr>
+  <tr><td><code>a = símbolo</code></td><td>a não é função: <code>a(x+1)</code> é produto</td></tr>
+  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais</td></tr>
+  <tr><td><code>g = tensor(0,2)</code></td><td>o tipo do Schutz: 0 formas, 2 vetores</td></tr>
+</table>
+
+<p>Parêntese, como em livro. Escrito com o mesmo nome dos dois lados é
+tautologia — ninguém escreve <code>u = u(t,x)</code> como equação —, e é essa
+repetição que separa declaração de matemática: <code>u(t,x)</code> sozinho
+continua sendo uma expressão.</p>
+
+<h2>4. Os verbos</h2>
+
+<p>São poucos e fechados de propósito. Se aqui se pudesse escrever Python, a
+ponte que este programa é deixaria de ser obrigatória — e sobraria um Jupyter
+com passos a mais.</p>
+
+<h3>resolver</h3>
+
+<p>Um verbo só; o objeto decide a conta. Equação diferencial vai ao solver de
+EDO, com a solução <strong>conferida por substituição</strong>; equação
+algébrica vai ao <code>solve</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">Eq(y(x), C1*sin(x) + C2*cos(x))</samp>
+  <p class="explica">e a linha <em>conferência: substituída na equação, resto 0</em>.
+    Sem ela a resposta não se apresenta como conclusão.</p>
+</div>
+
+<h3>avaliar</h3>
+
+<div class="exemplo">
+  <code class="entrada">\int_0^1 x^2</code>
+  <code class="entrada">avaliar(eq1)</code>
+  <samp class="saida">1/3</samp>
+  <p class="explica">com a aproximação <code>≈ 0,333333333333</code> ao lado —
+    nunca no lugar do valor exato.</p>
+</div>
+
+<p>Integral indefinida devolve a <strong>família</strong>, com a constante:</p>
+
+<div class="exemplo">
+  <code class="entrada">\int \sin x\,dx</code>
+  <code class="entrada">avaliar(eq1)</code>
+  <samp class="saida">-cos(x)</samp>
+  <p class="explica">mostrado como <code>−cos(x) + C</code>: o resultado é a
+    família inteira, e o código copiável traz uma primitiva dela.</p>
+</div>
+
+<h3>simplificar</h3>
+
+<div class="exemplo">
+  <code class="entrada">\frac{x^2 - 1}{x - 1}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">x + 1</samp>
+</div>
+
+<h3>exportar</h3>
+
+<p>O pedido mais honesto que um programa destes recebe: <em>me dá o código que
+você usou</em>. O que sai roda sozinho, sem o Sucuri.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <code class="entrada">exportar(eq1)</code>
+  <samp class="saida">eq1 = Eq(y(x) + Derivative(y(x), (x, 2)), 0)</samp>
+  <p class="explica">junto com as declarações de símbolos, a chamada do solver e
+    a linha que confere a solução.</p>
+</div>
+
+<h3>separar e conferir</h3>
+
+<p>Para equações a derivadas parciais. O <code>pdsolve</code> do SymPy resolve
+pouco — a equação da onda ele não resolve —, mas separar variáveis e conferir
+uma candidata resolvem o problema pela via clássica.</p>
+
+<div class="exemplo">
+  <code class="entrada">u = u(t,x)</code>
+  <code class="entrada">c = símbolo</code>
+  <code class="entrada">\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}</code>
+  <code class="entrada">separar(eq1)</code>
+  <samp class="saida">Eq(Derivative(T(t), (t, 2)), k*T(t))</samp>
+  <p class="explica">e a equação em x, cada uma com a sua solução — e cada uma
+    com nome (<code>eq2</code>, <code>eq3</code>), para você continuar:
+    <code>resolver(eq2)</code>.</p>
+</div>
+
+<p><strong>Separar não resolve a equação</strong>, e o resultado diz isso: supõe
+que a solução é um produto. O que sai são os modos; a solução geral é a
+superposição deles, e a separação não prova que ela seja completa.</p>
+
+<p>Já <code>conferir</code> faz o caminho inverso de resolver: <strong>você
+propõe, ele testa</strong>.</p>
+
+<div class="exemplo">
+  <code class="entrada">u = u(t,x)</code>
+  <code class="entrada">c = símbolo</code>
+  <code class="entrada">F = F(z)</code>
+  <code class="entrada">G = G(z)</code>
+  <code class="entrada">\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}</code>
+  <code class="entrada">u = F(x - c t) + G(x + c t)</code>
+  <code class="entrada">conferir(eq1, eq2)</code>
+  <samp class="saida">candidata verificada</samp>
+  <p class="explica">d'Alembert: resto 0. Uma candidata errada sai como
+    <em>candidata NÃO verificada</em>, com o resto que sobrou; e quando o
+    conferidor não consegue testar, ele diz isso em vez de acusar.</p>
+</div>
+
+<h2>5. O que cada resposta quer dizer</h2>
+
+<table class="tabela">
+  <tr><td class="prov est">estabelecida</td>
+      <td>conferida. Pode ser citada como conclusão.</td></tr>
+  <tr><td class="prov sem">sem fonte</td>
+      <td>o programa achou alguma coisa e <em>não</em> conseguiu confirmar.
+          Não se apresenta como conclusão.</td></tr>
+  <tr><td class="prov nap">não aplicável</td>
+      <td>é dado, não conclusão — uma tabela, uma separação, um intermediário.</td></tr>
+</table>
+
+<p>E as cores: <span class="pill ok">verde</span> decidido ou conferido;
+<span class="pill aviso">âmbar</span> veio de uma regra geral e ninguém olhou
+aquele caso; <span class="pill erro">vermelho</span> impede de seguir. Nota de
+alcance — “isto não resolve a equação” — é verde: a conta está certa, o que ela
+não faz é que precisava ser dito.</p>
+
+<h2>6. Quando ele não acha</h2>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' = 6 y^2</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">sem solução encontrada</samp>
+  <p class="explica">com os padrões que o SymPy tentou, e o lembrete que
+    importa: <strong>não achar solução não é prova de que não existe</strong>.
+    Para essa outra pergunta existe o módulo <code>korvin</code>, que decide
+    não-integrabilidade por teoria de Galois — e que não acompanha a versão
+    online.</p>
+</div>
+
+<h2>7. Tensores</h2>
+
+<p>Índice não é expoente, e o parser de LaTeX do SymPy não sabe a diferença:
+sem declaração, <code>A^\mu</code> viraria <em>A elevado a μ</em>. Quem decide
+é você:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">g = tensor(0, 2)</code>
+  <code class="entrada">g_{\mu\nu} A^\mu A^\nu</code>
+  <samp class="saida">g(-L_0, -L_1)*A(L_0)*A(L_1)</samp>
+  <p class="explica">todos os índices contraídos. A valência aparece na tela,
+    porque é a primeira coisa que se confere num tensor.</p>
+</div>
+
+<p>E a consistência vem junto — este é um erro de relatividade, não de
+digitação, e a olho ninguém vê:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">A^\mu B_\mu + C^\nu</code>
+  <samp class="erro-esperado">os termos da soma têm índices livres diferentes</samp>
+</div>
+
+<h2>8. O caderno</h2>
+
+<table class="tabela">
+  <tr><td><strong>Novo</strong></td><td>apaga o escrito e o acumulado</td></tr>
+  <tr><td><strong>Abrir</strong> / <strong>Salvar</strong></td>
+      <td>arquivo de texto, células separadas por <code>%%</code>; abre em
+          qualquer editor</td></tr>
+  <tr><td><strong>Rodar tudo</strong></td><td>refaz tudo a partir do escrito, na ordem</td></tr>
+  <tr><td><strong>Reiniciar</strong></td>
+      <td>joga fora <em>só</em> o acumulado: <code>eq1</code> deixa de existir,
+          e nenhuma linha do que você escreveu se move</td></tr>
+</table>
+
+<p>Entre duas células há um <strong>+</strong> para inserir; no canto de cada
+uma, um <strong>×</strong> para apagar, com <em>desfazer</em> na faixa de
+aviso.</p>
+
+<h2>9. O que ele ainda não faz</h2>
+
+<p>Dizer isto é parte do trabalho. Nada abaixo falha em silêncio — tudo recusa
+com o motivo.</p>
+
+<ul class="limites">
+  <li><strong>Funções que o parser não conhece</strong>:
+    <code>\operatorname{arsinh}</code>, <code>\coth</code>,
+    <code>\left\|·\right\|</code>. O SymPy <em>tem</em> essas funções; o parser
+    de LaTeX é que não as lê.</li>
+  <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): não é
+    um fator multiplicando outro, é um objeto próprio.</li>
+  <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
+    declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
+    onde essa regra não alcança o silêncio volta.</li>
+  <li><strong>Sistemas de equações</strong>: um verbo por vez, uma equação por
+    vez.</li>
+</ul>
+
+<p class="fecho">O código, as auditorias e a lista completa de limites estão em
+<a href="https://github.com/RafaelCRdeLima/SUCURI">github.com/RafaelCRdeLima/SUCURI</a>.</p>
+
+</main>
+
+<footer>
+  <span>manual</span>
+  <span>Sucuri</span>
+</footer>
+
+</div>
+</body>
+</html>

@@ -28,12 +28,16 @@ ANTLR_URL = ("https://files.pythonhosted.org/packages/py3/a/"
 
 # O que a interface local e a online compartilham, byte a byte.
 COMPARTILHADO = ["sucuri.css", "sucuri.js", "sitios.js", "caderno.css",
-                 "caderno.js", "tokens.css", "favicon.svg"]
+                 "caderno.js", "manual.css", "tokens.css", "favicon.svg"]
 
 # As páginas: as mesmas da interface local, com a tela de carregamento
 # injetada. Gerar em vez de copiar à mão é o que impede as duas versões de
 # divergirem sem ninguém perceber.
 PAGINAS = ["index.html", "caderno.html"]
+
+# O manual não carrega motor nenhum: é texto, e a tela de
+# carregamento seria uma espera por nada.
+PAGINAS_SIMPLES = ["manual.html"]
 
 
 def motor_zip():
@@ -81,7 +85,9 @@ def paginas():
                             ganchos + '\n<script src="vendor/katex/katex.min.js"></script>',
                             1)
         (AQUI / nome).write_text(html, encoding="utf-8")
-    print(f"páginas geradas: {', '.join(PAGINAS)}")
+    for nome in PAGINAS_SIMPLES:
+        shutil.copy2(ESTATICO / nome, AQUI / nome)
+    print(f"páginas geradas: {', '.join(PAGINAS + PAGINAS_SIMPLES)}")
 
 
 def impressao(caminho):

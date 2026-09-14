@@ -297,6 +297,18 @@ doc.annotate("prime", "r", "derivative", order=1)
 doc.read(...).tree()
 ```
 
+## Manual
+
+`sucuri/interface/estatico/manual.html` — servido em `/manual.html` nas duas
+versões. Escrever, declarar, os verbos, o que cada resposta quer dizer, e o que
+o programa ainda não faz.
+
+**Os exemplos do manual são executados pela suíte a cada mudança.** Manual cujos
+exemplos ninguém roda apodrece, e apodrece em silêncio — que é a forma que este
+projeto persegue. Quando um exemplo quebra, ou o programa mudou e o manual
+mente, ou o manual está certo e o programa regrediu; os dois merecem parar a
+suíte.
+
 ## A interface
 
 ```bash
