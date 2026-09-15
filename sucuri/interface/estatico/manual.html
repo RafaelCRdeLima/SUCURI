@@ -308,6 +308,20 @@ estrutura, o valor.</p>
     virar potência).</p>
 </div>
 
+<p>O que a tabela imprime tem nome, e nome é alvo de verbo:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">christoffel(g)</code>
+  <code class="entrada">avaliar(\Gamma^{r}_{tt})</code>
+  <samp class="saida">M*(-2*M + r)/r**3</samp>
+  <p class="explica">sem as chaves duplas que a tabela usa — chave é tipografia
+    do TeX, não identidade. E a componente que vale zero <em>não</em> entra na
+    tabela (55 zeros escondem as nove que importam) mas responde quando
+    perguntada: <code>avaliar(\Gamma^{t}_{rr})</code> dá <code>0</code>.</p>
+</div>
+
 <h2>9. O caderno</h2>
 
 <table class="tabela">

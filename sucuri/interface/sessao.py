@@ -236,8 +236,23 @@ class Sessao:
             saida["ms"] = round((time.perf_counter() - inicio) * 1000, 1)
             return saida
 
+        return self.avaliar_objeto(expressao.to_sympy(), saida, inicio)
+
+    def avaliar_objeto(self, objeto, saida=None, inicio=None):
+        """A conta sobre um objeto que JÁ é SymPy — sem passar pela leitura.
+
+        O que um verbo produziu não tem fonte em LaTeX para reler: `eq2` vindo
+        de `separar` é um objeto, não um texto. Reler não é só desnecessário —
+        é impossível, e a versão que tentava estourava KeyError na cara de quem
+        pedisse `avaliar(eq2)`.
+        """
+        if saida is None:
+            saida = {"latex": None, "exato": None, "latex_exato": None,
+                     "numerico": None, "fechou": False, "indefinida": False,
+                     "erro": None}
+        if inicio is None:
+            inicio = time.perf_counter()
         try:
-            objeto = expressao.to_sympy()
             valor = no_prazo(_avaliar, PRAZO_AVALIAR, objeto)
         except TempoEsgotado as e:
             saida["erro"] = str(e)

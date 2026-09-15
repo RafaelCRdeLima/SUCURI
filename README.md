@@ -275,6 +275,12 @@ da tela tem de poder voltar para dentro sem mudar de sentido.
 `contrair` dá a **estrutura**; `avaliar` dá o **valor**. São dois pedidos
 diferentes, e o programa os mantém separados.
 
+O rótulo impresso é um alvo de verbo — `avaliar(A_{t})`, `latex(\Gamma^{r}_{tt})` —
+sem exigir as chaves duplas que a tela usa, porque chave é tipografia do TeX e
+não identidade do objeto. A componente **nula** não entra na tabela, e mesmo
+assim responde quando perguntada: esconder os 55 zeros é mostrar as nove que
+importam, mas dizer "não conheço" a quem pede um deles seria mentir.
+
 O que volta são **componentes**, e não o tensor: trocar de carta troca todas
 elas. Por isso a resposta diz sempre em que coordenadas está. O que não muda
 são as afirmações invariantes — Ricci nulo é Ricci nulo em qualquer carta.

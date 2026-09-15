@@ -51,6 +51,11 @@ class Metrica:
         # trabalha com as FUNÇÕES de coordenada. Trocar uma pela outra é o que
         # liga o que a pessoa escreveu ao que a biblioteca usa.
         troca = dict(zip(self.simbolos, self.sistema.coord_functions()))
+        # E o caminho de volta. O que sai do diffgeom vem em CAMPOS ESCALARES,
+        # não em símbolos: `sstr` imprime `r` e engana, mas `latex` imprime
+        # `\mathbf{r}` e `free_symbols` não vê coordenada nenhuma. Quem lê a
+        # componente quer o r que escreveu.
+        self.de_volta = {f: x for x, f in troca.items()}
         formas = self.sistema.base_oneforms()
         self.tensor = sum(
             (c.subs(troca, simultaneous=True) * TensorProduct(f, f)
@@ -83,19 +88,30 @@ def _rotulo(simbolos, indices, cima=1, escrita=None):
     return "_{" + "".join(nomes) + "}"
 
 
-def nao_nulas(arranjo, simbolos, posto, cima=1, escrita=None):
-    """As componentes que não são zero, com o índice escrito por extenso.
+def nao_nulas(arranjo, simbolos, posto, cima=1, escrita=None, de_volta=None):
+    r"""As componentes que não são zero, com o índice escrito por extenso.
 
     Mostrar as 64 componentes de Christoffel, das quais 55 são zero, é esconder
     as nove que importam. Um livro mostra as nove.
+
+    E devolve SÍMBOLOS: o campo escalar do diffgeom imprime como `r` em texto e
+    como `\mathbf{r}` em LaTeX, então a componente parecia certa na tela e saía
+    errada no que se copiava.
     """
     n = len(simbolos)
-    saida = []
+    saida, todas = [], {}
     for indices in _combinacoes(n, posto):
         valor = sp.simplify(arranjo[indices])
+        if de_volta:
+            valor = sp.simplify(valor.subs(de_volta, simultaneous=True))
+        rotulo = _rotulo(simbolos, indices, cima, escrita)
+        todas[rotulo] = valor
         if valor != 0:
-            saida.append((_rotulo(simbolos, indices, cima, escrita), valor))
-    return saida
+            saida.append((rotulo, valor))
+    # As nulas vão juntas, mas à parte: não entram na tabela (55 zeros escondem
+    # as nove que importam) e mesmo assim se procuram pelo rótulo. Responder
+    # "não conheço" a uma componente que existe e vale zero seria mentir.
+    return saida, todas
 
 
 def _combinacoes(n, posto):
@@ -109,17 +125,20 @@ def _combinacoes(n, posto):
 
 def christoffel(metrica):
     return nao_nulas(metric_to_Christoffel_2nd(metrica.tensor),
-                     metrica.simbolos, 3, escrita=metrica.escrita)
+                     metrica.simbolos, 3, escrita=metrica.escrita,
+                     de_volta=metrica.de_volta)
 
 
 def ricci(metrica):
     return nao_nulas(metric_to_Ricci_components(metrica.tensor),
-                     metrica.simbolos, 2, cima=0, escrita=metrica.escrita)
+                     metrica.simbolos, 2, cima=0, escrita=metrica.escrita,
+                     de_volta=metrica.de_volta)
 
 
 def riemann(metrica):
     return nao_nulas(metric_to_Riemann_components(metrica.tensor),
-                     metrica.simbolos, 4, escrita=metrica.escrita)
+                     metrica.simbolos, 4, escrita=metrica.escrita,
+                     de_volta=metrica.de_volta)
 
 
 def escalar(metrica):
@@ -127,8 +146,9 @@ def escalar(metrica):
     R = metric_to_Ricci_components(metrica.tensor)
     inversa = metrica.matriz().inv()
     n = len(metrica.simbolos)
-    return sp.simplify(sum(inversa[i, j] * R[i, j]
-                           for i in range(n) for j in range(n)))
+    bruto = sum(inversa[i, j] * R[i, j] for i in range(n) for j in range(n))
+    return sp.simplify(sp.sympify(bruto).subs(metrica.de_volta,
+                                              simultaneous=True))
 
 
 def _simbolo_componente(base, coordenada, cima):
@@ -182,10 +202,20 @@ def componentes(expr, espaco, metrica):
                 f"'{nome}' tem {posto} índices: por ora só sei dar componentes "
                 f"de vetor e da métrica")
         tipo = espaco.tipo_de(nome) or (1, 0)
-        cima = bool(tipo[0])
+        canonico = bool(tipo[0])
+        # A valência ESCRITA pode não ser a canônica: `A_\mu` já contraído é o
+        # mesmo A, com o índice descido. Quem desce é a métrica, e aqui ela
+        # está em componentes — então descemos nós, em vez de devolver o
+        # "No metric provided to lower index" do SymPy na cara de quem pediu.
+        escrito = _posicao_escrita(expr, cabeca, canonico)
+        valores = [_simbolo_componente(nome, c, canonico) for c in nomes]
+        if escrito != canonico:
+            matriz = (metrica.matriz() if canonico else metrica.matriz().inv())
+            valores = [sp.simplify(sum(matriz[i, j] * valores[j]
+                                       for j in range(len(nomes))))
+                       for i in range(len(nomes))]
         indice = espaco.indice("_c2")
-        troca[cabeca(indice if cima else -indice)] = [
-            _simbolo_componente(nome, c, cima) for c in nomes]
+        troca[cabeca(indice if escrito else -indice)] = valores
 
     soltos = livres(expr, espaco) or []
     if len(soltos) != 1:
@@ -200,6 +230,16 @@ def componentes(expr, espaco, metrica):
     return [(f"{_base_de(expr, espaco)}{'^' if alto else '_'}{{{escrito}}}",
              sp.simplify(valor))
             for escrito, valor in zip(escritas, bruto)]
+
+
+def _posicao_escrita(expr, cabeca, padrao):
+    """O índice daquela cabeça aparece em cima ou embaixo, no que foi escrito?"""
+    from sympy.tensor.tensor import Tensor
+
+    for arg in sp.preorder_traversal(expr):
+        if isinstance(arg, Tensor) and arg.head == cabeca:
+            return arg.get_indices()[0].is_up
+    return padrao
 
 
 def _base_de(expr, espaco):

@@ -35,8 +35,16 @@ from .interface.sessao import Sessao, codigo_python
 # Um verbo e um nome; ou um verbo e dois, para os que comparam duas coisas.
 # O nome pode vir com barra — `\eta`, `\Gamma` —, porque é assim que se
 # escreve o nome da métrica. A barra é da escrita, não do objeto.
-_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(\\?[A-Za-z_]\w*)\s*"
-                         r"(?:,\s*(\\?[A-Za-z_]\w*)\s*)?\)\s*$")
+#
+# E pode vir com índice: `A_{t}`, `\Gamma^{r}_{tt}` são os rótulos que as
+# tabelas de componentes imprimem, e o que aparece na tela tem de poder ser
+# digitado de volta. Sem isso, `avaliar(A_{t})` não casava aqui, caía no leitor
+# de LaTeX e virava "avaliar vezes (A_t)" — uma pergunta sobre `r(`, que é o
+# `r` de "contrair". Bem formada e absurda.
+_GRUPO_CHAVES = r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}"
+_ROTULO = (r"\\?[A-Za-z_]\w*(?:[_^](?:" + _GRUPO_CHAVES + r"|\\[A-Za-z]+|\w))*")
+_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
+                         r"(?:,\s*(" + _ROTULO + r")\s*)?\)\s*$")
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -167,6 +175,17 @@ def _e_instrucao(linha):
                 _RE_DECLARA, _RE_COLCHETE))
 
 
+def _chave(rotulo):
+    r"""`A_{t}`, `A_t` e `A_ {t}` são o mesmo rótulo.
+
+    Chave e espaço são tipografia do TeX, não identidade do objeto. Exigir a
+    forma exata que a tabela imprimiu — `\Gamma^{r}_{{t}{t}}`, com as chaves
+    duplas que existem só para o KaTeX não colar as macros — seria cobrar do
+    usuário um detalhe de impressão.
+    """
+    return "".join(c for c in (rotulo or "") if c not in "{} \t")
+
+
 def _sem_barra(nome):
     """`\\eta` e `eta` nomeiam a mesma coisa; a barra é de escrita."""
     if nome and nome.startswith("\\"):
@@ -186,6 +205,7 @@ class Caderno:
         self.nomes = {}             # nome -> latex escrito
         self.prontos = {}           # nome -> objeto produzido por um verbo
         self.metricas = {}          # nome -> Metrica, com componentes
+        self.rotulos = {}           # 'A_t' -> valor, o que as tabelas imprimem
         self.contador = 0
 
     # ------------------------------------------------------------- estado
@@ -458,10 +478,24 @@ class Caderno:
     def _objeto(self, nome):
         if nome in self.prontos:
             return self.prontos[nome]
+        # O que a tabela imprimiu também é objeto: `A_{t}` está na tela com
+        # nome e valor, e não poder pedi-lo de volta é pedir que se redigite o
+        # que o programa acabou de calcular.
+        # Das duas formas: o despacho tira a barra de `\eta` (que é escrita), e
+        # `\Gamma^{r}_{tt}` precisa dela de volta para casar com o que a tabela
+        # imprimiu.
+        for tentativa in (_chave(nome), _chave("\\" + (nome or ""))):
+            if tentativa in self.rotulos:
+                return Pronta(self.rotulos[tentativa])
         if nome not in self.nomes:
             conhecidos = ", ".join(sorted(
                 list(self.nomes) + list(self.prontos),
                 key=lambda n: int(n[2:]) if n[2:].isdigit() else 0))
+            if self.rotulos:
+                tabela = ("os rótulos da última tabela: "
+                          + ", ".join(list(self.rotulos)[:6])
+                          + ("…" if len(self.rotulos) > 6 else ""))
+                conhecidos = f"{conhecidos}; e {tabela}" if conhecidos else tabela
             raise KeyError(f"não conheço '{nome}' (tenho: {conhecidos or 'nenhum ainda'})")
         expressao = self.sessao.expressao_de(self.nomes[nome])
         if expressao.pending:
@@ -505,7 +539,11 @@ class Caderno:
         if verbo == "avaliar":
             if isinstance(expressao.to_sympy(), TensExpr):
                 return self._componentes(alvo, expressao)
-            d = Sessao.avaliar(self._sessao_de(alvo))
+            if isinstance(expressao, Pronta):
+                # O que um verbo produziu não tem fonte em LaTeX para reler.
+                d = self.sessao.avaliar_objeto(expressao.to_sympy())
+            else:
+                d = Sessao.avaliar(self._sessao_de(alvo))
             d["alvo"] = alvo
             return d
         if verbo == "simplificar":
@@ -552,7 +590,9 @@ class Caderno:
         """
         from . import geometria
 
-        espaco = expressao.document.espaco
+        # Da SESSÃO, e não da expressão: o que veio de um verbo é objeto puro,
+        # sem documento atrás. O espaço é do caderno de qualquer modo.
+        espaco = self.sessao.documento()[0].espaco
         nome = espaco.metrica if espaco else None
         if nome not in self.metricas:
             return {"erro": "avaliar componentes precisa da métrica com "
@@ -568,6 +608,7 @@ class Caderno:
             linhas = geometria.componentes(objeto, espaco, metrica)
         except ValueError as e:
             return {"erro": str(e), "alvo": alvo}
+        self._guardar_rotulos(linhas)
         return {"alvo": alvo, "proveniencia": "estabelecida",
                 "apresentavel": True,
                 "rotulo": f"{alvo} em componentes: {_conta(len(linhas), 'componente', 'componentes')}",
@@ -575,6 +616,15 @@ class Caderno:
                              metrica.coordenadas]]
                            + [[r, sp.sstr(v), sp.latex(v)] for r, v in linhas]),
                 "latex_tabela": _tabela_latex(linhas)}
+
+    def _guardar_rotulos(self, linhas):
+        r"""O que a tabela imprimiu passa a ser procurável pelo rótulo.
+
+        A tabela ANTERIOR sai de cena: dois `christoffel` de métricas
+        diferentes dariam `\Gamma^{r}_{tt}` para as duas, e devolver a de antes
+        seria devolver a resposta de outra pergunta.
+        """
+        self.rotulos = {_chave(rot): valor for rot, valor in linhas}
 
     def _nome_de(self, objeto):
         nome = self._registrar(objeto)
@@ -621,6 +671,9 @@ class Caderno:
             return base
 
         simbolo = {"christoffel": "\\Gamma", "ricci": "R", "riemann": "R"}[verbo]
+        resultado, todas = resultado
+        self._guardar_rotulos([(simbolo + rot, valor)
+                               for rot, valor in todas.items()])
         linhas = [["coordenadas", metrica.coordenadas, metrica.coordenadas]]
         linhas += [[simbolo + rot, sp.sstr(valor), sp.latex(valor)]
                    for rot, valor in resultado]
