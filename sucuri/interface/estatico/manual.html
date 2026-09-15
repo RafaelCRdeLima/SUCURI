@@ -325,6 +325,19 @@ estrutura, o valor.</p>
 uma, um <strong>×</strong> para apagar, com <em>desfazer</em> na faixa de
 aviso.</p>
 
+<p><strong>Enter</strong> quebra linha; <strong>Shift+Enter</strong> roda. Numa
+célula só cabe mais de uma instrução, uma por linha, e cada uma responde na
+ordem:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices
+A = tensor(1,0)</code>
+  <samp class="saida">A é tensor do tipo (1,0)</samp>
+  <p class="explica">só encadeia quando <em>todas</em> as linhas são instrução
+    reconhecida. Uma equação em LaTeX pode ocupar duas linhas, e parti-la daria
+    duas metades sem sentido no lugar de um erro.</p>
+</div>
+
 <h2>10. O que ele ainda não faz</h2>
 
 <p>Dizer isto é parte do trabalho. Nada abaixo falha em silêncio — tudo recusa

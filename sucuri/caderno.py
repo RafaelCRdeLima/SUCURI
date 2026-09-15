@@ -92,6 +92,19 @@ VERBOS = {
 DE_DOIS = {"conferir"}
 
 
+def _tabela_latex(linhas):
+    r"""A tabela inteira em LaTeX, para caber num documento de verdade.
+
+    O que a tela mostra é tipografado; o que se copia tem de ser copiável —
+    `\theta` com a barra, e não `theta`, que o TeX compõe como três letras
+    romanas. O SymPy já faz a tradução; o que faltava era oferecer o resultado.
+    """
+    if not linhas:
+        return None
+    corpo = " \\\\\n".join(f"{rot} &= {sp.latex(valor)}" for rot, valor in linhas)
+    return "\\begin{aligned}\n" + corpo + "\n\\end{aligned}"
+
+
 def fonte_metrica(nome, texto):
     return f"{nome} = métrica({texto.strip()})"
 
@@ -138,6 +151,22 @@ class Celula:
                 **self.dados}
 
 
+def _e_instrucao(linha):
+    """A linha é comando ou declaração — coisa que se encadeia?
+
+    Pergunta feita pelas MESMAS regras que despacham a célula, e não por uma
+    segunda lista: duas listas divergem, e divergir aqui significa partir uma
+    equação ao meio.
+    """
+    texto = linha or ""
+    comando = _RE_COMANDO.match(texto)
+    if comando and comando.group(1).lower() in VERBOS:
+        return True
+    return any(regra.match(texto) for regra in
+               (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE,
+                _RE_DECLARA, _RE_COLCHETE))
+
+
 def _sem_barra(nome):
     """`\\eta` e `eta` nomeiam a mesma coisa; a barra é de escrita."""
     if nome and nome.startswith("\\"):
@@ -176,6 +205,27 @@ class Caderno:
     # ------------------------------------------------------------ execução
 
     def executar(self, fonte):
+        """Uma célula: uma coisa, ou várias em sequência.
+
+        Enter dentro da célula encadeia; Shift+Enter roda tudo. Mas só quando
+        TODAS as linhas são coisa reconhecida — comando ou declaração. Uma
+        equação em LaTeX pode legitimamente ocupar duas linhas, e quebrá-la em
+        duas leituras daria duas metades sem sentido em vez de um erro.
+        """
+        linhas = [l for l in (fonte or "").split("\n") if l.strip()]
+        if len(linhas) > 1 and all(_e_instrucao(l) for l in linhas):
+            return self._encadeadas(fonte, linhas)
+        return self._uma(fonte)
+
+    def _encadeadas(self, fonte, linhas):
+        """Cada linha por sua vez, e o que cada uma produziu, na ordem."""
+        partes = [self._uma(l).to_dict() for l in linhas]
+        nomes = [d["nome"] for d in partes if d.get("nome")]
+        tipo = "erro" if any(d.get("erro") for d in partes) else "encadeada"
+        return Celula(" ".join(nomes) or None, fonte, "encadeada",
+                      {"partes": partes, "estado_geral": tipo})
+
+    def _uma(self, fonte):
         """Uma célula: declaração, verbo, ou matemática."""
         coord = _RE_COORDENADAS.match(fonte or "")
         if coord:
@@ -521,8 +571,10 @@ class Caderno:
         return {"alvo": alvo, "proveniencia": "estabelecida",
                 "apresentavel": True,
                 "rotulo": f"{alvo} em componentes: {_conta(len(linhas), 'componente', 'componentes')}",
-                "linhas": ([["coordenadas", metrica.coordenadas]]
-                           + [[r, sp.sstr(v)] for r, v in linhas])}
+                "linhas": ([["coordenadas", metrica.coordenadas,
+                             metrica.coordenadas]]
+                           + [[r, sp.sstr(v), sp.latex(v)] for r, v in linhas]),
+                "latex_tabela": _tabela_latex(linhas)}
 
     def _nome_de(self, objeto):
         nome = self._registrar(objeto)
@@ -569,13 +621,16 @@ class Caderno:
             return base
 
         simbolo = {"christoffel": "\\Gamma", "ricci": "R", "riemann": "R"}[verbo]
-        linhas = [["coordenadas", metrica.coordenadas]]
-        linhas += [[simbolo + rot, sp.sstr(valor)] for rot, valor in resultado]
+        linhas = [["coordenadas", metrica.coordenadas, metrica.coordenadas]]
+        linhas += [[simbolo + rot, sp.sstr(valor), sp.latex(valor)]
+                   for rot, valor in resultado]
         if not resultado:
             linhas.append(["resultado", "todas as componentes são nulas"])
         base.update({"rotulo": f"{verbo} de {alvo}: "
                                f"{len(resultado)} componente(s) não nula(s)",
-                     "linhas": linhas})
+                     "linhas": linhas,
+                     "latex_tabela": _tabela_latex(
+                         [(simbolo + rot, valor) for rot, valor in resultado])})
         return base
 
     def _sessao_de(self, nome):

@@ -65,11 +65,18 @@ def exemplos():
 
 
 def tudo_que_saiu(d):
-    """Tudo o que uma célula mostrou, num texto só."""
+    """Tudo o que uma célula mostrou, num texto só.
+
+    Inclusive quando a célula tem várias linhas: desde que Enter encadeia, uma
+    célula pode responder mais de uma vez, e o manual anuncia o conjunto.
+    """
+    if d.get("partes"):
+        return " | ".join(tudo_que_saiu(p) for p in d["partes"])
     pedacos = [str(d.get(k) or "") for k in
-               ("sympy", "texto", "erro", "codigo", "exato", "rotulo")]
-    for chave, valor in (d.get("linhas") or []):
-        pedacos.append(f"{chave}={valor}")
+               ("sympy", "texto", "erro", "codigo", "exato", "rotulo",
+                "latex_tabela")]
+    for linha in (d.get("linhas") or []):
+        pedacos.append("=".join(str(c) for c in linha))
     for o in (d.get("nomeados") or []):
         pedacos.append(str(o.get("sympy")))
     for a in (d.get("ambiguidades") or []):

@@ -145,10 +145,15 @@ function escapar(t) {
 }
 
 function realcar(texto) {
-  var m = RE_VERBO.exec(texto);
-  if (!m) return escapar(texto) + '\n';
-  return escapar(m[1]) + '<b class="verbo">' + escapar(m[2]) + '</b>'
-       + escapar(texto.slice(m[1].length + m[2].length)) + '\n';
+  /* Por LINHA, e não pela célula inteira: desde que Enter encadeia comandos,
+   * a segunda linha é comando tanto quanto a primeira, e deixá-la sem cor
+   * diria que só a de cima age. */
+  return texto.split('\n').map(function (linha) {
+    var m = RE_VERBO.exec(linha);
+    if (!m) return escapar(linha);
+    return escapar(m[1]) + '<b class="verbo">' + escapar(m[2]) + '</b>'
+         + escapar(linha.slice(m[1].length + m[2].length));
+  }).join('\n') + '\n';
 }
 
 /* O lugar entre duas células, que só existe para ser clicado. Discreto até o
@@ -290,14 +295,36 @@ function avisar(texto, acao) {
 function pintar(celula, d) {
   var saida = celula._saida;
   saida.textContent = '';
+  var partes = d.partes || [d];
+  var houveErro = partes.some(function (p) { return !!p.erro; });
+  var ultima = partes[partes.length - 1];
   celula.className = 'celula'
-    + (d.tipo === 'comando' ? ' comando' : '')
-    + (d.tipo === 'declaracao' ? ' declaracao' : '');
+    + (ultima.tipo === 'comando' ? ' comando' : '')
+    + (ultima.tipo === 'declaracao' ? ' declaracao' : '')
+    + (houveErro ? ' erro' : '');
   celula._nome.textContent = d.nome || '';
   if (d.ms !== undefined) { $('tempo').textContent = d.ms + ' ms'; }
 
+  if (d.partes) {
+    /* Uma linha, um resultado, na ordem em que foram escritas. Juntar tudo num
+     * bloco só faria a terceira resposta parecer continuação da segunda. */
+    d.partes.forEach(function (parte) {
+      var bloco = document.createElement('div');
+      bloco.className = 'parte';
+      var eco = document.createElement('p');
+      eco.className = 'parte-fonte';
+      eco.textContent = parte.fonte;
+      bloco.appendChild(eco);
+      corpo(bloco, parte);
+      saida.appendChild(bloco);
+    });
+    return;
+  }
+  corpo(saida, d);
+}
+
+function corpo(saida, d) {
   if (d.erro || (d.pendentes && d.pendentes.length)) {
-    celula.className += ' erro';
     if (d.erro) {
       saida.innerHTML = '<div class="bloqueio">' + escapar(d.erro) + '</div>';
     }
@@ -368,28 +395,32 @@ function pintarComando(saida, d) {
   }
   if ((d.linhas || []).length) {
     var t = document.createElement('table');
+    /* Cada linha é [rótulo, texto, latex]. O terceiro é o que vale quando
+     * existe: `A__theta*r**2` é o texto do SymPy, e o que um documento precisa
+     * é `A^{\theta} r^{2}` — com a barra, sem a qual o TeX compõe três letras
+     * romanas no lugar de um teta. */
     d.linhas.forEach(function (linha) {
       var tr = document.createElement('tr');
-      linha.forEach(function (c, i) {
-        var td = document.createElement('td');
-        /* O que é notação — \Gamma^{t}_{tr}, \theta — vai tipografado. Ler
-         * índice em texto corrido é justamente o que este programa evita.
-         * Componente do SymPy (M/((-2*M + r)*r)) não tem barra nem índice
-         * entre chaves, e fica como está. */
-        if (/\\[a-zA-Z]|[\^_]\{/.test(String(c))) {
-          try { katex.render(String(c), td, { throwOnError: false }); }
-          catch (e) { td.textContent = c; }
-        } else {
-          td.textContent = c;
-        }
-        tr.appendChild(td);
-      });
+      [linha[0], linha[2] !== undefined ? linha[2] : linha[1]]
+        .forEach(function (c) {
+          var td = document.createElement('td');
+          if (/\\[a-zA-Z]|[\^_]\{|\\frac|\\left/.test(String(c))) {
+            try { katex.render(String(c), td, { throwOnError: false }); }
+            catch (e) { td.textContent = c; }
+          } else {
+            td.textContent = c;
+          }
+          tr.appendChild(td);
+        });
       t.appendChild(tr);
     });
     var caixa = document.createElement('div');
     caixa.className = 'resultado';
     caixa.appendChild(t);
     saida.appendChild(caixa);
+    if (d.latex_tabela) {
+      saida.appendChild(rodape([['Copiar LaTeX', d.latex_tabela]]));
+    }
   }
   /* O que a conta produziu, com nome: é o que permite continuar. Sem isso,
    * ler duas EDOs numa tabela e ter de redigitá-las para seguir. */

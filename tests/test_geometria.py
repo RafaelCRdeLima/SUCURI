@@ -83,7 +83,7 @@ def test_o_resultado_diz_em_que_coordenadas_esta():
     """Componente é de uma carta: trocar de coordenadas troca todas elas."""
     c = caderno_schwarzschild()
     d = c.executar("christoffel(g)").to_dict()
-    assert ["coordenadas", r"t, r, \theta, \phi"] in [list(l) for l in d["linhas"]]
+    assert [l[:2] for l in d["linhas"]][0] == ["coordenadas", r"t, r, \theta, \phi"]
 
 
 def test_metrica_que_nao_existe():

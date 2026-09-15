@@ -107,8 +107,8 @@ def test_a_componente_que_sai_volta_para_dentro():
     c = caderno(*SCHWARZSCHILD, r"\mu, \nu = índices", "A = tensor(1,0)",
                 r"g_{\mu\nu} A^{\nu}")
     d = c.executar("avaliar(eq1)").to_dict()
-    for _, valor in d["linhas"][1:]:
-        assert sp.sympify(valor) is not None
+    for linha in d["linhas"][1:]:
+        assert sp.sympify(linha[1]) is not None
 
 
 def test_avaliar_sem_componentes_recusa():

@@ -121,3 +121,16 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
 
 kbd{font-family:var(--mono);font-size:11.5px;border:1px solid var(--areia-2);
   border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--areia)}
+
+/* Uma célula com várias linhas: um resultado por linha, na ordem. Sem o eco da
+ * linha, a terceira resposta parece continuação da segunda. */
+.parte{padding:10px 0}
+.parte + .parte{border-top:1px solid var(--areia-2)}
+.parte-fonte{margin:0 0 8px;font-family:var(--mono);font-size:12.5px;
+  color:var(--tinta-2)}
+
+/* A tabela é monoespaçada a 12,5px, que serve para rótulo e não para fração:
+ * empilhada nesse corpo, a fração fica ilegível — e é o valor que se vem ler
+ * aqui. Um pouco maior, e com ar para o numerador e o denominador. */
+.saida .resultado td{padding:8px}
+.saida .resultado td .katex{font-size:1.25em}

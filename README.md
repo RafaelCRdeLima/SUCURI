@@ -519,6 +519,21 @@ As convenções valem para o caderno inteiro, e mudar uma **refaz tudo**: o que
 já estava escrito passa a significar outra coisa, e mostrar as duas leituras ao
 mesmo tempo seria mostrar duas matemáticas.
 
+### Mais de uma instrução por célula
+
+`Enter` quebra linha, `Shift+Enter` roda. Uma célula aceita várias instruções,
+uma por linha:
+
+```
+contrair(eq1)
+avaliar(eq1)
+```
+
+Só encadeia quando **todas** as linhas são instrução reconhecida — comando ou
+declaração. Uma equação em LaTeX pode legitimamente ocupar duas linhas, e
+parti-la daria duas metades sem sentido no lugar de um erro, que é o tipo de
+silêncio que este programa existe para não produzir.
+
 ## O verbo segue o objeto
 
 Equação diferencial se **resolve**; expressão se **avalia**. São contas
