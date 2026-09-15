@@ -71,23 +71,39 @@ function criarCelula(fonte) {
   cabeca.appendChild(apagar);
   div.appendChild(cabeca);
 
+  /* Textarea não colore texto. A saída é pôr atrás dele um <pre> com a mesma
+   * métrica e deixar o campo transparente, só com o cursor visível. As duas
+   * camadas têm de quebrar linha igual, ou o texto sai dobrado. */
+  var editor = document.createElement('div');
+  editor.className = 'editor';
+  var realce = document.createElement('pre');
+  realce.className = 'realce';
+  realce.setAttribute('aria-hidden', 'true');
+  editor.appendChild(realce);
+
   var area = document.createElement('textarea');
   area.rows = 1;
   area.spellcheck = false;
   area.value = fonte || '';
+  function pintar() { realce.innerHTML = realcar(area.value); }
   function ajustar() {
     area.style.height = 'auto';
     area.style.height = (area.scrollHeight + 2) + 'px';
   }
+  pintar();
   setTimeout(ajustar, 0);
-  area.addEventListener('input', ajustar);
+  area.addEventListener('input', function () { pintar(); ajustar(); });
+  area.addEventListener('scroll', function () {
+    realce.scrollTop = area.scrollTop;
+  });
   area.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault();
       executar(div);
     }
   });
-  div.appendChild(area);
+  editor.appendChild(area);
+  div.appendChild(editor);
 
   var saida = document.createElement('div');
   saida.className = 'saida';
@@ -97,6 +113,42 @@ function criarCelula(fonte) {
   div._area = area;
   div._saida = saida;
   return div;
+}
+
+/* ------------------------------------------------------------- realce
+ *
+ * Verbo é o que AGE: digitar `resolver(eq1)` é dar uma ordem, e digitar
+ * `resolver` no meio de uma equação é escrever a letra r vezes as outras. A
+ * cor separa os dois antes do Shift+Enter, e não depois.
+ *
+ * Por isso o realce só pinta na posição de comando — `verbo(` no começo da
+ * célula. Pintar a palavra onde quer que ela apareça diria que ela age onde
+ * ela não age, que é pior do que não pintar nada.
+ *
+ * A lista é a mesma do Python, e tests/test_realce.py quebra se divergir. */
+var VERBOS = [
+  'resolver', 'solve', 'dsolve',
+  'avaliar', 'evaluate', 'doit',
+  'simplificar', 'simplify',
+  'exportar', 'export',
+  'latex',
+  'separar', 'separate',
+  'conferir', 'check', 'verificar',
+  'contrair', 'contract',
+  'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
+];
+
+var RE_VERBO = new RegExp('^(\\s*)(' + VERBOS.join('|') + ')(\\s*\\()', 'i');
+
+function escapar(t) {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function realcar(texto) {
+  var m = RE_VERBO.exec(texto);
+  if (!m) return escapar(texto) + '\n';
+  return escapar(m[1]) + '<b class="verbo">' + escapar(m[2]) + '</b>'
+       + escapar(texto.slice(m[1].length + m[2].length)) + '\n';
 }
 
 /* O lugar entre duas células, que só existe para ser clicado. Discreto até o

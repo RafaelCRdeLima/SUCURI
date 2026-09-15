@@ -69,6 +69,36 @@ input.arquivo:focus{outline:none;border-color:var(--verde);text-align:left;
   background:var(--sucuri-erro-bg)}
 
 .celula textarea{min-height:0;height:auto;padding:10px 12px}
+
+/* ----------------------------------------------------- realce do verbo
+ *
+ * Textarea não colore o texto que tem dentro. A camada de baixo é um <pre>
+ * com a MESMA métrica — fonte, corpo, entrelinha, recuo, borda —, e o campo
+ * por cima fica transparente com o cursor visível. Qualquer diferença entre
+ * as duas quebra a linha em lugar diferente e o texto sai dobrado; por isso
+ * as duas herdam as medidas da mesma regra. */
+.editor{position:relative}
+.editor .realce,.celula .editor textarea{
+  box-sizing:border-box;margin:0;padding:10px 12px;
+  border:1px solid var(--areia-2);border-radius:var(--sucuri-raio);
+  font-family:var(--mono);font-size:14px;line-height:1.7;
+  white-space:pre-wrap;overflow-wrap:break-word}
+.editor .realce{position:absolute;inset:0;overflow:hidden;
+  background:var(--areia);color:var(--tinta);pointer-events:none}
+/* display:block, e não por gosto: textarea é inline-block, e um inline-block
+ * deixa embaixo o espaço do descendente da linha — 7px que fariam a camada de
+ * baixo mais alta que a de cima, e a borda sairia dobrada. */
+.celula .editor textarea{display:block;position:relative;background:transparent;
+  color:transparent;caret-color:var(--tinta)}
+/* A regra compartilhada acima é mais específica que `textarea:focus`, e
+ * apagaria o anel de foco sem dizer nada. Repor é obrigação: campo que não
+ * mostra onde está o foco é campo que se perde de quem usa teclado. */
+.celula .editor textarea:focus{border-color:var(--folha);
+  box-shadow:0 0 0 3px rgba(111,156,51,.18)}
+/* A seleção é pintada na camada de cima, sobre um texto que está na de baixo:
+ * opaca, ela esconderia justamente o que se está selecionando. */
+.celula .editor textarea::selection{background:rgba(111,156,51,.28)}
+.editor .verbo{color:var(--folha);font-weight:600}
 .saida{margin-top:12px}
 /* A valência: a primeira coisa que se confere num tensor. */
 .valencia{margin:0 0 10px;font-family:var(--mono);font-size:12.5px;
