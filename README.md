@@ -174,6 +174,9 @@ g = tensor(0,2)     g_{\mu\nu\lambda}  →  'g' foi declarado do tipo (0,2),
                                           e o Sucuri não a aplica sozinho
 ```
 
+A nota some quando alguém diz **qual** é a métrica — e aí o índice desce de
+fato (abaixo).
+
 Sem isso o posto vem do uso — e vem tarde, na segunda linha em vez da primeira.
 
 Quem decide que `\mu` é índice, e não expoente, é a **declaração** — não há
@@ -189,6 +192,22 @@ tensor: devolve um `Mul` comum, os índices repetidos ficam parados e a
 expressão sai errada sem reclamar — a árvore é reconstruída multiplicando de
 verdade. E a valência aparece na tela, porque é a primeira coisa que se confere
 num tensor.
+
+### Baixar e levantar índice
+
+```
+\mu, \nu = índices
+g = métrica              →  g é a métrica do espaço — do tipo (0,2)
+A = tensor(1,0)
+g_{\mu\nu} A^{\nu}         →  g(-μ,-L₀)·A(L₀)
+contrair(eq1)            →  A(-μ)            baixou
+```
+
+`A_\mu ≡ g_{\mu\nu}A^\nu` é uma **convenção**, e vale só para a métrica.
+Nenhuma inspeção da expressão distingue a métrica de um (0,2) com nome
+infeliz — aplicá-la a um tensor qualquer daria expressão bem formada e falsa.
+Por isso é declaração, e por isso `contrair` sem `g = métrica` recusa em vez de
+chutar. Na outra direção vale o mesmo: `g^{\mu\nu}A_\nu` → `A^\mu`.
 
 Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela não é um
 fator multiplicando outro, é um objeto próprio, e montar um produto ali
@@ -238,6 +257,23 @@ métrica em LaTeX**.
 Ela vai pela **diagonal** porque o parser não lê matriz — `\begin{pmatrix}`
 levanta `LaTeXParsingError` — e porque é assim que os livros dão quase todas as
 métricas que importam. Kerr, com o seu termo cruzado *dt dφ*, ainda não entra.
+
+Com componentes declaradas, `avaliar` leva a notação até os números:
+
+```
+\mu, \nu = índices
+A = tensor(1,0)
+g_{\mu\nu} A^{\nu}
+avaliar(eq1)   →  A_{t} = A__t·(2M − r)/r        A_{\theta} = A__theta·r²
+                  A_{r} = A__r·r/(r − 2M)        A_{\phi}   = A__phi·r²sin²θ
+```
+
+As componentes de A ninguém declarou, então entram como nomes — na convenção
+do SymPy (`A__t` é A^t), que reentra no programa sem virar potência. O que sai
+da tela tem de poder voltar para dentro sem mudar de sentido.
+
+`contrair` dá a **estrutura**; `avaliar` dá o **valor**. São dois pedidos
+diferentes, e o programa os mantém separados.
 
 O que volta são **componentes**, e não o tensor: trocar de carta troca todas
 elas. Por isso a resposta diz sempre em que coordenadas está. O que não muda

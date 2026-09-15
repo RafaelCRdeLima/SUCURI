@@ -41,6 +41,7 @@ class Sessao:
         self.funcoes_declaradas = []
         self.indices = []           # nomes declarados como índice tensorial
         self.tensores = {}          # nome -> (formas, vetores), tipo do Schutz
+        self.metrica_abstrata = None  # qual nome é A métrica do espaço
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
         self.dimensao = 4
@@ -60,6 +61,7 @@ class Sessao:
             "declaradas": list(self.funcoes_declaradas),
             "indices": list(self.indices),
             "tensores": dict(self.tensores),
+            "metrica": self.metrica_abstrata,
             "variaveis": list(self.variaveis),
             "anotacoes": [
                 {"kind": k, "base": b, "detalhe": d, "leitura": r}
@@ -112,6 +114,9 @@ class Sessao:
             doc.index(*self.indices, dimensao=self.dimensao)
         for nome, (formas, vetores) in self.tensores.items():
             doc.tensor(nome, formas, vetores)
+        # Depois dos tensores: a métrica é um deles, com um papel a mais.
+        if self.metrica_abstrata:
+            doc.metric(self.metrica_abstrata)
         if self.variaveis:
             doc.variable(*self.variaveis)
 

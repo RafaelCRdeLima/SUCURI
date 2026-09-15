@@ -66,6 +66,7 @@ class Espaco:
         self._indices = {}
         self._cabecas = {}
         self._tipos = {}            # nome -> (formas, vetores), tipo do Schutz
+        self.metrica = None         # o nome declarado como A métrica
 
     def indice(self, nome):
         if nome not in self._indices:
@@ -88,6 +89,22 @@ class Espaco:
         """
         self._tipos[nome] = (formas, vetores)
         return self.cabeca(nome, formas + vetores)
+
+    def definir_metrica(self, nome):
+        r"""Diz qual das cabeças é A métrica do espaço — não uma (0,2) qualquer.
+
+        Baixar índice é `A_\mu \equiv g_{\mu\nu}A^\nu`: uma CONVENÇÃO, e que só
+        vale para a métrica. Aplicá-la a um tensor (0,2) qualquer produziria
+        uma expressão bem formada e falsa, que é a pior classe de erro que este
+        programa conhece. Por isso é declaração, e não adivinhação pelo nome.
+        """
+        cabeca = self.declarar(nome, 0, 2)
+        self.tipo.set_metric(cabeca)
+        self.metrica = nome
+        return cabeca
+
+    def cabeca_metrica(self):
+        return self._cabecas[self.metrica][0] if self.metrica else None
 
     def tipo_de(self, nome):
         return self._tipos.get(nome)
@@ -152,6 +169,12 @@ def desacordo_de_tipo(espaco, base, posicoes):
     e o Sucuri não a aplica sozinho — então o objeto que sai é OUTRO tensor com
     o mesmo nome, e vale dizer.
     """
+    # A métrica é a exceção, e não por conveniência: g^{\mu\nu} É a inversa e
+    # g^\mu{}_\nu É a delta — notação corrente, não valência trocada. E agora
+    # há `contrair`, que aplica a convenção de fato; avisar que "o Sucuri não a
+    # aplica sozinho" seria mentir sobre o próprio programa.
+    if base == espaco.metrica and len(posicoes) == 2:
+        return None
     tipo = espaco.tipo_de(base)
     if not tipo:
         return None
@@ -170,6 +193,34 @@ def construir(espaco, base, posicoes):
     argumentos = [espaco.indice(n) if cima else -espaco.indice(n)
                   for n, cima in posicoes]
     return cabeca(*argumentos)
+
+
+class SemMetrica(ValueError):
+    r"""Pedir para contrair sem ter dito qual é a métrica.
+
+    A informação que falta não é calculável: nenhuma inspeção de
+    `g_{\mu\nu}A^\nu` diz se aquele `g` é a métrica do espaço ou um tensor
+    (0,2) com o nome infeliz. Só a declaração diz.
+    """
+
+    def __init__(self):
+        super().__init__(
+            "não sei qual é a métrica: declare `g = métrica` (ou "
+            "`g = métrica(componentes)`) antes de contrair. Baixar índice é "
+            "convenção da métrica, e não de um (0,2) qualquer")
+
+
+def contrair(expr, espaco):
+    r"""`g_{\mu\nu}A^\nu` vira `A_\mu` — baixar o índice, de fato.
+
+    O SymPy faz o colapso em `contract_metric`, mas só reconhece como métrica a
+    cabeça que o espaço registrou. Sem `g = métrica`, recusa.
+    """
+    if espaco is None or espaco.metrica is None:
+        raise SemMetrica()
+    if not isinstance(expr, TensExpr):
+        return expr
+    return expr.contract_metric(espaco.cabeca_metrica())
 
 
 class IndicesIncompativeis(ValueError):

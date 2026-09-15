@@ -28,6 +28,7 @@ from __future__ import annotations
 import re
 
 import sympy as sp
+from sympy.tensor.tensor import TensExpr
 
 from .interface.sessao import Sessao, codigo_python
 
@@ -66,8 +67,8 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # As outras duas coisas que um nome pode ser, além de função de alguma coisa.
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
-                         r"\s*=\s*(euler|s[ií]mbolo|constante"
-                         r"|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
+                         r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
+                         r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
 VERBOS_GEOMETRIA = {
     "christoffel": "christoffel", "cristoffel": "christoffel",
@@ -83,6 +84,7 @@ VERBOS = {
     "latex": "latex",
     "separar": "separar", "separate": "separar",
     "conferir": "conferir", "check": "conferir", "verificar": "conferir",
+    "contrair": "contrair", "contract": "contrair",
     **VERBOS_GEOMETRIA,
 }
 
@@ -243,6 +245,9 @@ class Caderno:
             simbolos.append(lido)
         self.sessao.coordenadas = simbolos
         self.sessao.escrita_coord = {str(s): e for s, e in zip(simbolos, escritos)}
+        # Quem declarou quatro coordenadas declarou um espaço de dimensão 4, e
+        # pedir `índices(4)` depois seria pedir a mesma informação duas vezes.
+        self.sessao.dimensao = len(simbolos)
         return Celula(None, f"{nome} = coordenadas({texto.strip()})",
                       "declaracao",
                       {"declarado": [{"nome": str(s)} for s in simbolos],
@@ -276,6 +281,11 @@ class Caderno:
 
         metrica.escrito = nome
         self.metricas[limpo] = metrica
+        # Um nome, um objeto: o `g` das componentes é o mesmo `g` dos índices.
+        # Ter dois seria pedir que a pessoa declarasse a mesma coisa duas vezes
+        # — e deixaria `avaliar` sem as componentes que ela já deu.
+        self.sessao.metrica_abstrata = limpo
+        self.sessao.tensores.pop(limpo, None)
         return Celula(None, fonte_metrica(nome, texto), "declaracao",
                       {"declarado": [{"nome": limpo, "metrica": True}],
                        "texto": f"{nome} é a métrica em ({metrica.coordenadas}), "
@@ -315,12 +325,28 @@ class Caderno:
             dimensao = int(achou.group(1)) if achou else None
             self.sessao.indices.extend(n for n in lista
                                        if n not in self.sessao.indices)
+            if dimensao and self.sessao.coordenadas and \
+                    dimensao != len(self.sessao.coordenadas):
+                return Celula(None, f"{nomes} = {especie}", "declaracao",
+                              {"erro": f"as coordenadas declaram um espaço de "
+                                       f"dimensão {len(self.sessao.coordenadas)}, "
+                                       f"e aqui os índices são de dimensão "
+                                       f"{dimensao}"})
             if dimensao:
                 self.sessao.dimensao = dimensao
             dim = self.sessao.dimensao
             texto = (f"{', '.join(lista)} " +
                      ("é índice" if len(lista) == 1 else "são índices") +
                      f" de um espaço de dimensão {dim}")
+        elif especie.lower() in ("métrica", "metrica", "metric"):
+            if len(lista) != 1:
+                return Celula(None, f"{nomes} = {especie}", "declaracao",
+                              {"erro": "um espaço tem uma métrica: declare um "
+                                       "nome só"})
+            self.sessao.metrica_abstrata = _sem_barra(lista[0])
+            self.sessao.tensores.pop(_sem_barra(lista[0]), None)
+            texto = (f"{lista[0]} é a métrica do espaço — do tipo (0,2), e "
+                     f"é ela que baixa e levanta índice")
         elif especie == "euler":
             for n in lista:
                 self.sessao.anotar("euler", n, {}, "euler")
@@ -424,7 +450,11 @@ class Caderno:
                     "exato": sp.sstr(expressao.to_sympy()), "alvo": alvo}
         if verbo == "exportar":
             return {"codigo": self.exportar(alvo), "alvo": alvo}
+        if verbo == "contrair":
+            return self._contrair(alvo, expressao)
         if verbo == "avaliar":
+            if isinstance(expressao.to_sympy(), TensExpr):
+                return self._componentes(alvo, expressao)
             d = Sessao.avaliar(self._sessao_de(alvo))
             d["alvo"] = alvo
             return d
@@ -434,6 +464,65 @@ class Caderno:
                     "latex_exato": sp.latex(objeto),
                     "nomeados": [self._nome_de(objeto)]}
         return self._resolver(alvo, expressao)
+
+    def _contrair(self, alvo, expressao):
+        r"""`g_{\mu\nu}A^\nu` vira `A_\mu`: baixar o índice, de fato.
+
+        Não é simplificação nem cosmética — é a convenção da métrica aplicada,
+        e por isso exige que alguém tenha dito qual é a métrica.
+        """
+        from .tensores import SemMetrica, contrair, latex_de, livres
+
+        objeto = expressao.to_sympy()
+        if not isinstance(objeto, TensExpr):
+            return {"erro": f"'{alvo}' não é expressão tensorial: contrair "
+                            f"baixa índice com a métrica, e aqui não há índice",
+                    "alvo": alvo}
+        espaco = expressao.document.espaco
+        try:
+            saida = contrair(objeto, espaco)
+        except SemMetrica as e:
+            return {"erro": str(e), "alvo": alvo}
+        if saida == objeto:
+            return {"erro": "não há índice para baixar ou levantar: a métrica "
+                            "não aparece contraída com nada aqui",
+                    "alvo": alvo}
+        nome = self._registrar(saida)
+        return {"alvo": alvo, "exato": sp.sstr(saida),
+                "latex_exato": latex_de(saida, espaco),
+                "indices_livres": livres(saida, espaco),
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(saida),
+                              "latex": latex_de(saida, espaco)}]}
+
+    def _componentes(self, alvo, expressao):
+        """As componentes, que é o que a métrica declarada com números dá.
+
+        A estrutura vem dos índices; o valor vem das componentes. Avaliar uma
+        expressão tensorial é pedir o segundo, e por isso exige o segundo.
+        """
+        from . import geometria
+
+        espaco = expressao.document.espaco
+        nome = espaco.metrica if espaco else None
+        if nome not in self.metricas:
+            return {"erro": "avaliar componentes precisa da métrica com "
+                            "componentes: declare `g = métrica(...)` com uma "
+                            "entrada por coordenada",
+                    "alvo": alvo}
+        metrica = self.metricas[nome]
+        # SEM contrair antes: é a métrica escrita que carrega as componentes
+        # com que se baixa o índice. Contraí-la primeiro deixa `A_\mu` sozinho
+        # e sem por onde descer.
+        objeto = expressao.to_sympy()
+        try:
+            linhas = geometria.componentes(objeto, espaco, metrica)
+        except ValueError as e:
+            return {"erro": str(e), "alvo": alvo}
+        return {"alvo": alvo, "proveniencia": "estabelecida",
+                "apresentavel": True,
+                "rotulo": f"{alvo} em componentes: {_conta(len(linhas), 'componente', 'componentes')}",
+                "linhas": ([["coordenadas", metrica.coordenadas]]
+                           + [[r, sp.sstr(v)] for r, v in linhas])}
 
     def _nome_de(self, objeto):
         nome = self._registrar(objeto)

@@ -129,3 +129,84 @@ def escalar(metrica):
     n = len(metrica.simbolos)
     return sp.simplify(sum(inversa[i, j] * R[i, j]
                            for i in range(n) for j in range(n)))
+
+
+def _simbolo_componente(base, coordenada, cima):
+    """`A^t`, `A_theta` — a componente que ninguém declarou, com um nome.
+
+    Sem componentes de A, a única coisa honesta a fazer é chamá-las pelo nome:
+    A^t, A^r, … Assim o que sai é a RELAÇÃO — A_t em função de A^t —, que é o
+    que um livro escreve quando baixa um índice de um vetor qualquer.
+
+    O nome vai na convenção do próprio SymPy — `A__t` em cima, `A_t` embaixo —,
+    e não em `A^t`, que reentra como "A elevado a t". O que sai da tela tem de
+    poder voltar para dentro do programa sem mudar de sentido.
+    """
+    return sp.Symbol(f"{base}{'__' if cima else '_'}{coordenada}")
+
+
+def componentes(expr, espaco, metrica):
+    r"""As componentes de uma expressão tensorial, na carta da métrica.
+
+    `g_{\mu\nu}A^\nu` com Schwarzschild devolve as quatro componentes de
+    A_\mu — cada uma em função das de A^\mu, que ninguém declarou e por isso
+    entram como nomes.
+
+    Só funciona onde há componentes: a métrica precisa ter sido declarada com
+    elas. A notação de índice sozinha diz a estrutura, não o valor.
+    """
+    from .tensores import livres
+
+    if espaco is None or espaco.metrica is None:
+        raise ValueError(
+            "não sei qual é a métrica: declare `g = métrica(componentes)` "
+            "antes de avaliar componentes")
+    if len(metrica.simbolos) != espaco.dimensao:
+        raise ValueError(
+            f"a métrica tem {len(metrica.simbolos)} coordenada(s) e os índices "
+            f"são de dimensão {espaco.dimensao}: declare `índices"
+            f"({len(metrica.simbolos)})` para os dois falarem do mesmo espaço")
+
+    troca = {}
+    cabeca_g = espaco.cabeca_metrica()
+    i, j = espaco.indice("_c0"), espaco.indice("_c1")
+    troca[cabeca_g(-i, -j)] = metrica.matriz()
+
+    escritas = [metrica.escrita.get(str(s), str(s)) for s in metrica.simbolos]
+    nomes = [str(s) for s in metrica.simbolos]
+    for nome, (cabeca, posto) in espaco._cabecas.items():
+        if nome == espaco.metrica:
+            continue
+        if posto != 1:
+            raise ValueError(
+                f"'{nome}' tem {posto} índices: por ora só sei dar componentes "
+                f"de vetor e da métrica")
+        tipo = espaco.tipo_de(nome) or (1, 0)
+        cima = bool(tipo[0])
+        indice = espaco.indice("_c2")
+        troca[cabeca(indice if cima else -indice)] = [
+            _simbolo_componente(nome, c, cima) for c in nomes]
+
+    soltos = livres(expr, espaco) or []
+    if len(soltos) != 1:
+        raise ValueError(
+            "sei dar componentes de expressão com um índice livre; esta tem "
+            f"{len(soltos)}")
+    ordem = [espaco.indice("_s0") if soltos[0].startswith("^")
+             else -espaco.indice("_s0")]
+    bruto = expr.replace_with_arrays(troca, ordem)
+
+    alto = soltos[0].startswith("^")
+    return [(f"{_base_de(expr, espaco)}{'^' if alto else '_'}{{{escrito}}}",
+             sp.simplify(valor))
+            for escrito, valor in zip(escritas, bruto)]
+
+
+def _base_de(expr, espaco):
+    """O nome que sobra depois da contração — o que a linha está descrevendo."""
+    from sympy.tensor.tensor import Tensor
+
+    for arg in sp.preorder_traversal(expr):
+        if isinstance(arg, Tensor) and arg.head.name != espaco.metrica:
+            return arg.head.name
+    return "T"

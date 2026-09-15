@@ -554,6 +554,22 @@ class Document:
         self._espaco.declarar(_limpo_indice(nome), formas, vetores)
         return self
 
+    def metric(self, nome):
+        r"""Diz qual nome é A métrica — o que licencia baixar e levantar índice.
+
+        `A_\mu \equiv g_{\mu\nu}A^\nu` é convenção da métrica, e não de um
+        (0,2) qualquer. Nenhuma inspeção da expressão distingue os dois casos;
+        só a declaração distingue.
+        """
+        from .tensores import DIMENSAO_PADRAO, Espaco
+
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._tensores[limpo] = (0, 2)
+        self._espaco.definir_metrica(limpo)
+        return self
+
     @property
     def espaco(self):
         return self._espaco

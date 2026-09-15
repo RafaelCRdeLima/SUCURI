@@ -276,6 +276,38 @@ elas.</p>
     Ao contrário de uma componente, «Ricci é nulo» não depende da carta.</p>
 </div>
 
+<p>Declarada a métrica, o índice desce e sobe — <code>contrair</code> aplica a
+convenção <em>A<sub>μ</sub> ≡ g<sub>μν</sub>A<sup>ν</sup></em>:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">contrair(eq1)</code>
+  <samp class="saida">A(-mu)</samp>
+  <p class="explica">Ele exige o <code>g = métrica</code> porque baixar índice é
+    convenção <em>da métrica</em>, e não de um (0,2) qualquer — e nada na
+    expressão distingue os dois casos. Sem a declaração, recusa.</p>
+</div>
+
+<p>E se a métrica tiver componentes, <code>avaliar</code> dá o outro lado: não a
+estrutura, o valor.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">avaliar(eq1)</code>
+  <samp class="saida">A_{t}</samp>
+  <p class="explica">as quatro componentes de A<sub>μ</sub>, cada uma em função
+    das de A<sup>μ</sup> — que ninguém declarou, e por isso entram como nomes
+    (<code>A__t</code> é A<sup>t</sup> na convenção do SymPy, que reentra sem
+    virar potência).</p>
+</div>
+
 <h2>9. O caderno</h2>
 
 <table class="tabela">
