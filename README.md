@@ -265,7 +265,29 @@ Nome de várias letras é recusado na declaração: `Rm_{abcd}` em LaTeX é R ve
 `m_{abcd}`, e é assim que o parser lê. Sem a recusa, a declaração existiria e
 nunca seria usada, sem aviso. Use uma letra ou um comando (`\Rm`).
 
-Ainda não: T_{(μν)} e T_{[μν]} como notação.
+E a notação de simetrização:
+
+```
+T_{(\mu\nu)}                    →  ½ T_{μν} + ½ T_{νμ}
+T_{[\mu\nu]}                    →  ½ T_{μν} − ½ T_{νμ}
+S_{(\mu|\rho|\nu)}              →  ½ S_{μρν} + ½ S_{νρμ}       ρ fica de fora
+S_{[\mu\nu\rho]}                →  seis termos, com 1/6
+T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}   simplificar →  0
+F_{(\mu\nu)}                    simplificar →  0            F antissimétrico
+```
+
+Antes disto, com os índices declarados, `T_{(\mu\nu)}` era lido como
+`T_{\mu\nu}`: os parênteses sumiam, e `T_{(\mu\nu)} - T_{\mu\nu}` dava **zero**,
+o que é falso para T sem simetria. Sem índices declarados, o parser do SymPy
+faz o mesmo, e agora é recusado.
+
+O fator é 1/n!, o de Wald, MTW e Carroll, e a leitura diz isso numa nota. São
+recusados:
+
+- colchete que não fecha ou aninhado;
+- simetrização de um índice só;
+- barra fora de um colchete;
+- simetrização que junta índice de cima com de baixo (trocá-los pede a métrica).
 
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 

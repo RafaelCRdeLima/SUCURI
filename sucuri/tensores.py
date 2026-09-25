@@ -30,6 +30,7 @@ de relatividade que ninguém pega a olho.
 from __future__ import annotations
 
 import functools
+import itertools
 import operator
 import re
 
@@ -237,6 +238,109 @@ def construir(espaco, base, posicoes):
     argumentos = [espaco.indice(n) if cima else -espaco.indice(n)
                   for n, cima in posicoes]
     return cabeca(*argumentos)
+
+
+class SimetrizacaoMalFormada(ValueError):
+    """Um (…) ou […] nos índices que não fecha, aninha, ou mistura cima e
+    baixo — onde a leitura não teria como ser uma só."""
+
+
+_RE_TOKEN = re.compile(r"\\[a-zA-Z]+|[A-Za-z]|[()\[\]|]")
+
+
+def simetrizacoes(fator):
+    r"""[(tipo, [posições])] — os (…) e […] nos índices de um fator.
+
+    `T_{(\mu
+u)}` dá [('(', [0, 1])]; `T_{[\mu|ho|
+u]}` dá
+    [('[', [0, 2])], porque o que está entre barras fica de fora. As posições
+    são dos slots, na ordem escrita — as mesmas de `construir`.
+    """
+    m = _RE_FATOR.match(fator.strip())
+    if m is None:
+        return []
+    grupos, aberto, excluindo, slot = [], None, False, 0
+    for pedaco in _RE_PEDACO.finditer(m.group(2)):
+        cima = pedaco.group(1) == "^"
+        grupo = pedaco.group(2)
+        dentro = grupo[1:-1] if grupo.startswith("{") else grupo
+        for tok in _RE_TOKEN.findall(dentro):
+            if tok in "([":
+                if aberto:
+                    raise SimetrizacaoMalFormada(
+                        f"'{tok}' dentro de '{aberto[0]}' nos índices de "
+                        f"{fator.strip()}: simetrização aninhada não se lê "
+                        f"de um jeito só")
+                aberto = (tok, [], cima)
+            elif tok in ")]":
+                par = {")": "(", "]": "["}[tok]
+                if not aberto or aberto[0] != par:
+                    raise SimetrizacaoMalFormada(
+                        f"'{tok}' sem o '{par}' correspondente nos índices de "
+                        f"{fator.strip()}")
+                if excluindo:
+                    raise SimetrizacaoMalFormada(
+                        f"barra aberta antes de '{tok}' em {fator.strip()}")
+                grupos.append((aberto[0], aberto[1]))
+                aberto = None
+            elif tok == "|":
+                if not aberto:
+                    raise SimetrizacaoMalFormada(
+                        f"'|' fora de (…) ou […] em {fator.strip()}: a barra "
+                        f"só exclui índice de uma simetrização")
+                excluindo = not excluindo
+            else:
+                if aberto and not excluindo:
+                    if aberto[2] != cima:
+                        raise SimetrizacaoMalFormada(
+                            f"a simetrização em {fator.strip()} junta índice "
+                            f"de cima com de baixo — trocá-los pede a métrica, "
+                            f"e aí é outro tensor")
+                    aberto[1].append(slot)
+                slot += 1
+    if aberto:
+        raise SimetrizacaoMalFormada(
+            f"'{aberto[0]}' sem fechar nos índices de {fator.strip()}")
+    for tipo, slots in grupos:
+        if len(slots) < 2:
+            raise SimetrizacaoMalFormada(
+                f"{tipo}…{')' if tipo == '(' else ']'} com {len(slots)} "
+                f"índice em {fator.strip()}: não há o que trocar")
+    return grupos
+
+
+def simetrizar(tensor, grupos):
+    r"""T_{(\mu
+u)} = ½(T_{\mu
+u} + T_{
+u\mu}); T_{[\mu
+u]} com o sinal.
+
+    O fator é 1/n! — o de Wald, MTW e Carroll, com que T_{(\mu
+u)} = T_{\mu
+u}
+    quando T já é simétrico.
+    """
+    cabeca = tensor.head
+    termos = [(sp.S.One, list(tensor.get_indices()))]
+    for tipo, slots in grupos:
+        n = len(slots)
+        novos = []
+        for coef, indices in termos:
+            for perm in itertools.permutations(range(n)):
+                sinal = 1
+                if tipo == "[":
+                    inversoes = sum(1 for i in range(n) for j in range(i + 1, n)
+                                    if perm[i] > perm[j])
+                    sinal = -1 if inversoes % 2 else 1
+                novo = list(indices)
+                for k, p in enumerate(perm):
+                    novo[slots[k]] = indices[slots[p]]
+                novos.append((coef * sinal / sp.factorial(n), novo))
+        termos = novos
+    return functools.reduce(operator.add,
+                            [c * cabeca(*indices) for c, indices in termos])
 
 
 class SemMetrica(ValueError):

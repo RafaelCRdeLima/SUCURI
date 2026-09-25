@@ -389,6 +389,18 @@ com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</
     não entra: é teorema, e pede torção nula.</p>
 </div>
 
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">T = tensor(0, 2)</code>
+  <code class="entrada">T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">(…) simetriza, […] antissimetriza, com o fator 1/n! de
+    Wald, MTW e Carroll; o que está entre barras, <code>S_{(\mu|\rho|\nu)}</code>,
+    fica de fora. Sem os índices declarados, recusa: o parser do SymPy
+    descarta os parênteses e leria T<sub>(μν)</sub> como T<sub>μν</sub>.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

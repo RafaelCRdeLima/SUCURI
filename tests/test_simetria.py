@@ -165,3 +165,85 @@ def test_comando_serve_de_nome():
               r"\Rm_{abcd} + \Rm_{bacd}"):
         c.executar(f)
     assert c.executar("simplificar(eq1)").to_dict()["exato"] == "0"
+
+
+# ------------------------------------------- T_{(μν)} e T_{[μν]}: a notação
+
+def caderno_indices(*fontes):
+    c = Caderno()
+    for f in (r"\mu, \nu, \rho = índices", "g = métrica", "T = tensor(0, 2)",
+              "S = tensor(0, 3)", "F = tensor(0, 2, antissimétrico)", *fontes):
+        d = c.executar(f).to_dict()
+        assert not d.get("erro"), (f, d.get("erro"))
+    return c
+
+
+def lido(latex, *antes):
+    return caderno_indices(*antes).executar(latex).to_dict()
+
+
+def test_o_parser_realmente_descarta_os_parenteses():
+    """O que a leitura evita, medido: sem ela, T_{(μν)} − T_{μν} dava 0."""
+    from sympy.parsing.latex import parse_latex
+    assert str(parse_latex(r"T_{(\mu\nu)}")) == str(parse_latex(r"T_{\mu\nu}"))
+
+
+@pytest.mark.parametrize("latex, esperado", [
+    (r"T_{(\mu\nu)}", "(1/2)*T(-mu, -nu) + (1/2)*T(-nu, -mu)"),
+    (r"T_{[\mu\nu]}", "-(1/2)*T(-nu, -mu) + (1/2)*T(-mu, -nu)"),
+    (r"S_{(\mu|\rho|\nu)}", "(1/2)*S(-mu, -rho, -nu) + (1/2)*S(-nu, -rho, -mu)"),
+])
+def test_simetrizacao_e_lida(latex, esperado):
+    assert lido(latex)["sympy"] == esperado
+
+
+def test_antissimetrizar_tres_indices_da_seis_termos():
+    s = lido(r"S_{[\mu\nu\rho]}")["sympy"]
+    assert s.count("(1/6)") == 6
+
+
+@pytest.mark.parametrize("latex, zero", [
+    (r"T_{(\mu\nu)} - T_{\mu\nu}", False),      # antes dava 0, em silêncio
+    (r"T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}", True),
+    (r"g_{[\mu\nu]}", True),                    # a métrica é simétrica
+    (r"F_{(\mu\nu)}", True),                    # F é antissimétrico
+    (r"F_{[\mu\nu]} - F_{\mu\nu}", True),
+])
+def test_simplificar_a_simetrizacao(latex, zero):
+    c = caderno_indices(latex)
+    exato = c.executar("simplificar(eq1)").to_dict()["exato"]
+    assert (exato == "0") == zero
+
+
+def test_a_nota_diz_o_fator():
+    notas = lido(r"T_{(\mu\nu)}")["notas"]
+    assert any("1/n!" in n for n in notas)
+
+
+@pytest.mark.parametrize("latex, trecho", [
+    (r"T_{(\mu\nu}", "sem fechar"),
+    (r"T_{(\mu)\nu}", "não há o que trocar"),
+    (r"S_{(\mu[\nu\rho])}", "aninhada"),
+    (r"T_{\mu|\nu}", "fora de (…)"),
+])
+def test_simetrizacao_mal_formada(latex, trecho):
+    assert trecho in lido(latex)["erro"]
+
+
+def test_simetrizacao_entre_cima_e_baixo():
+    c = Caderno()
+    for f in (r"\mu, \nu = índices", "T = tensor(1, 1)"):
+        c.executar(f)
+    assert "junta índice de cima com de baixo" in \
+        c.executar(r"T^{(\mu}_{\nu)}").to_dict()["erro"]
+    assert "atravessa grupos de índice" in \
+        c.executar(r"T^{(\mu}{}_{\nu)}").to_dict()["erro"]
+
+
+def test_sem_indice_declarado_recusa():
+    d = Caderno().executar(r"T_{(\mu\nu)} - T_{\mu\nu}").to_dict()
+    assert "o parser descarta os parênteses" in d["erro"]
+
+
+def test_parenteses_sem_grego_continuam_como_antes():
+    assert Caderno().executar(r"x_{(1)}").to_dict()["sympy"] == "x_{1}"

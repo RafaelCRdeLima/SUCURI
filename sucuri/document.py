@@ -368,11 +368,42 @@ def indices_tensoriais(texto, declarados=()):
     # declarar acaba com o silêncio.
     if declarados:
         from .tensores import localizar
-        cobertos = {i for ini, fim, _, _ in localizar(texto, set(declarados))
+        achados = localizar(texto, set(declarados))
+        if any(re.search(r"[()\[\]]", texto[ini:fim])
+               for ini, fim, _, _ in achados):
+            notas.append(
+                "(…) e […] nos índices simetrizam com o fator 1/n!, como em "
+                "Wald, MTW e Carroll: T_{(\\mu\\nu)} = ½(T_{\\mu\\nu} + "
+                "T_{\\nu\\mu})")
+        cobertos = {i for ini, fim, _, _ in achados
                     for i in range(ini, fim)}
         if cobertos:
             texto = "".join(" " if i in cobertos else c
                             for i, c in enumerate(texto))
+
+    # T_{(\mu\nu)} sem índice declarado: o parser descarta os parênteses e
+    # devolve T_{mu*nu}, e T_{(\mu\nu)} − T_{\mu\nu} daria zero.
+    for m in re.finditer(r"[_^]\s*\{([^{}]*[()\[\]][^{}]*)\}", texto):
+        # Com vírgula é outra coisa — o colchete de Lie em \nabla_{[U,X]} —,
+        # e simetrização nunca tem vírgula.
+        if "," in m.group(1) or texto[:m.start()].rstrip().endswith("\\nabla"):
+            continue
+        gregos = {n for n in re.findall(r"\\([a-zA-Z]+)", m.group(1))
+                  if n in _MACROS_SIMBOLO}
+        if gregos and gregos <= {_limpo_macro(d) for d in declarados}:
+            recusas.append(
+                f"'{m.group(0)}': a simetrização atravessa grupos de índice — "
+                f"de cima para baixo, ou com {{}} no meio. Trocar índice de "
+                f"cima com de baixo pede a métrica, e aí é outro tensor; "
+                f"escreva os índices simetrizados num grupo só")
+            break
+        if gregos:
+            recusas.append(
+                f"'{m.group(0)}' simetriza índices que não foram declarados — "
+                f"o parser descarta os parênteses, e T_{{(\\mu\\nu)}} vira "
+                f"T_{{\\mu\\nu}}. Declare os índices "
+                f"({', '.join(sorted(chr(92) + g for g in gregos))} = índices)")
+            break
 
     for m in _RE_PERDE.finditer(texto):
         base = m.group(1)
@@ -961,8 +992,12 @@ class Expression:
             if especie == "tensor":
                 ini, fim, base, posicoes = item
                 nome, simbolo = marcador()
-                from .tensores import construir
-                tensores[simbolo] = construir(doc.espaco, base, posicoes)
+                from .tensores import construir, simetrizacoes, simetrizar
+                tensor = construir(doc.espaco, base, posicoes)
+                grupos = simetrizacoes(self._corpo[ini:fim])
+                if grupos:
+                    tensor = simetrizar(tensor, grupos)
+                tensores[simbolo] = tensor
                 texto = texto[:ini] + nome + texto[fim:]
                 continue
             a = item
