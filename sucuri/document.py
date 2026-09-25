@@ -818,12 +818,41 @@ class Expression:
                 raise IndicesIncompativeis() from None
             raise
 
+        expr = self._direcionais(expr)
         self._conferir(texto, expr)
         if self.ligadas:
             from .conexao import ParaTodo
             expr = ParaTodo(sp.Tuple(*(sp.Symbol(n) for n in self.ligadas)),
                             expr)
         return expr
+
+    def _direcionais(self, expr):
+        """`U(f)` com U vetor declarado e a leitura "aplicação" escolhida.
+
+        A pergunta continua sendo feita — U(a+b) também pode ser (a+b)U, e as
+        duas leituras são bem tipadas. Escolhida a aplicação, o que sai não é
+        uma função chamada U: é a derivada de f na direção de U.
+        """
+        from .conexao import VETOR, ConexaoNaoLida, Direcional, tem_tensor
+        vetores = {n for n, t in self.document._tensores.items() if t == VETOR}
+        if not vetores:
+            return expr
+
+        def trocar(e):
+            if (isinstance(e, sp.core.function.AppliedUndef)
+                    and e.func.__name__ in vetores):
+                if len(e.args) != 1 or tem_tensor(e.args[0],
+                                                  self.document._tensores):
+                    raise ConexaoNaoLida(
+                        f"{e.func.__name__}(…): um vetor aplicado age sobre UMA "
+                        f"função escalar, U(f); aqui recebe "
+                        f"{', '.join(map(str, e.args))}")
+                return Direcional(sp.Symbol(e.func.__name__), e.args[0])
+            return None
+
+        achados = {e: trocar(e) for e in expr.atoms(sp.core.function.AppliedUndef)}
+        achados = {e: n for e, n in achados.items() if n is not None}
+        return expr.xreplace(achados) if achados else expr
 
     def _conferir(self, texto, expr):
         """A saída é feita só de coisas que alguém leu de propósito?

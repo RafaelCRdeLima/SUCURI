@@ -77,10 +77,11 @@ def test_congruencia_aplica_o_contexto():
     assert [d.rotulo() for _, d in p.passos] == ["nabla_Y(h1)"]
 
 
-def test_hipotese_com_coeficiente_funcao_nao_passa_por_nabla():
-    """∇_Y(fX) ≠ f∇_Y X: relação com coeficiente não constante não entra."""
-    with pytest.raises(SemProva):
-        prova(r"\nabla_Y (f X) = \nabla_Y (f U)", r"f X = f U")
+def test_hipotese_com_coeficiente_funcao_passa_por_nabla_com_leibniz():
+    """De fX = fU sai ∇_Y(fX) = ∇_Y(fU) — o contexto recebe a combinação
+    inteira, e Leibniz a expande dos dois lados do mesmo jeito."""
+    p = prova(r"\nabla_Y (f X) = \nabla_Y (f U)", r"f X = f U")
+    assert [d.rotulo() for _, d in p.passos] == ["nabla_Y(h1)"]
 
 
 DESVIO = [
@@ -242,3 +243,86 @@ def test_identidade_de_bianchi_algebrica():
     p = prova(r"R(U,X)Y + R(X,Y)U + R(Y,U)X = 0",
               DEFINICAO_R, TORCAO_NULA, jacobi)
     assert "h1" in p.hipoteses_usadas and "h2" in p.hipoteses_usadas
+
+
+
+# ------------------------------------------------------------------ Leibniz
+
+@pytest.mark.parametrize("latex", [
+    r"\nabla_U (f X) = \nabla_U f \, X + f \nabla_U X",
+    r"\nabla_U (f g X) = g \nabla_U f \, X + f \nabla_U g \, X + f g \nabla_U X",
+    r"[f U, X] = f [U, X] - \nabla_X f \, U",
+    r"[U, g X] = g [U, X] + \nabla_U g \, X",
+    r"\nabla_{f U + X} Y = f \nabla_U Y + \nabla_X Y",
+])
+def test_leibniz_vale_sem_hipotese(latex):
+    assert prova(latex).passos == []
+
+
+@pytest.mark.parametrize("latex, esperado", [
+    (r"\nabla_U f", "U(f)"),
+    (r"\nabla_U (f g)", "U(f*g)"),
+    (r"\nabla_{U+X} f", "{U + X}(f)"),
+])
+def test_derivada_direcional_e_lida(latex, esperado):
+    assert sp.sstr(ler(latex)) == esperado
+
+
+def test_regra_da_cadeia():
+    from sucuri.prova import escalar_normal
+    f, g = sp.symbols("f g")
+    e = escalar_normal(ler(r"\nabla_U (f^2 g)"), TENSORES)
+    D = sucuri.conexao.Direcional
+    assert sp.expand(e - (2 * f * g * D(U, f) + f**2 * D(U, g))) == 0
+
+
+def test_escalar_nao_e_termo_vetorial():
+    """U(f) tem U dentro e é escalar: U(f)·X é vetor, não produto de dois."""
+    assert linear(ler(r"\nabla_U f \, X"), TENSORES) == {
+        X: sucuri.conexao.Direcional(U, sp.Symbol("f"))}
+
+
+def test_hipotese_escalar_vira_troca():
+    """Com U(f) = 0, ∇_U(fX) = f∇_U X sai — e a tabela diz de onde."""
+    p = prova(r"\nabla_U (f X) = f \nabla_U X", r"\nabla_U f = 0")
+    assert p.hipoteses_usadas == ["h1"]
+    assert [r for r, _, _ in p.trocas] == ["h1"]
+
+
+def test_hipotese_escalar_isola_o_termo():
+    p = prova(r"\nabla_U (f X) = 2 f \nabla_U X",
+              r"f \nabla_U X = \nabla_U f \, X", r"2 \nabla_U f = f")
+    assert "h1" in p.hipoteses_usadas
+
+
+def test_objetivo_escalar():
+    p = prova(r"\nabla_U (f g) = f \nabla_U g + g \nabla_U f")
+    assert p.passos == []
+    with pytest.raises(SemProva, match="sobra"):
+        prova(r"\nabla_U (f g) = f \nabla_U g")
+
+
+def test_escalar_e_funcao_nao_constante():
+    """Sem hipótese, c não é constante: ∇_U(cX) = c∇_U X não passa."""
+    with pytest.raises(SemProva):
+        prova(r"\nabla_U (c X) = c \nabla_U X")
+
+
+def test_u_de_f_escrito_como_aplicacao():
+    """U(f) é pergunta — U aplicado ou U vezes f? Escolhida a aplicação, é a
+    derivada direcional, e não uma função chamada U."""
+    doc = documento()
+    e = doc.read(r"U(f) = 0")
+    assert [a.fragment for a in e.pending] == ["U("]
+    doc.annotate("juxtaposition", "U", "application")
+    assert sp.sstr(doc.read(r"U(f) = 0").to_sympy()) == "Eq(U(f), 0)"
+
+
+def test_leibniz_no_caderno():
+    c = Caderno()
+    for fonte in ("U = tensor(1,0)", "X = tensor(1,0)",
+                  r"\nabla_U f = 0",
+                  r"\nabla_U (f X) = f \nabla_U X"):
+        c.executar(fonte)
+    d = c.executar("provar(eq2, eq1)").to_dict()
+    assert any(l[0] == "eq1, nos coeficientes" for l in d["linhas"])

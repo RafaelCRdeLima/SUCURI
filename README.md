@@ -283,8 +283,11 @@ provaria nada.
 
 O motor sabe sozinho só o que vale para **qualquer** conexão, em qualquer livro:
 
-- ∇_U X é linear em X sobre constantes e linear em U sobre funções;
-- o colchete é bilinear e antissimétrico;
+- ∇_U X é linear em U sobre funções, e no operando segue Leibniz:
+  ∇_U(fX) = U(f)X + f∇_U X;
+- o colchete é antissimétrico e segue Leibniz:
+  [fA, gB] = fg[A,B] + f A(g) B − g B(f) A;
+- U(f) segue a regra da cadeia;
 - R é tensor.
 
 Tudo o mais tem de vir das hipóteses: torção nula, que a curva é geodésica e,
@@ -335,8 +338,35 @@ ao ler uma definição, aplicá-la ao caso que se tem na mão. Com a definição
 geral saem coisas que antes não saíam: a antissimetria `R(A,B)W = -R(B,A)W` e,
 com a identidade de Jacobi como hipótese, a identidade de Bianchi algébrica.
 
-Limites: só igualdades lineares entre campos vetoriais, e a regra de Leibniz
-(∇_U(fX) = U(f)X + f∇_U X) não entra.
+### Funções escalares
+
+Escalar é tudo o que não foi declarado tensor, e `\nabla_U f` com f escalar é
+a derivada direcional U(f):
+
+```
+\nabla_U (f X) = \nabla_U f \, X + f \nabla_U X        provar: ∎, sem hipótese
+[f U, X] = f [U, X] - \nabla_X f \, U                 provar: ∎, sem hipótese
+\nabla_U (f X) = f \nabla_U X                         não passa: falta U(f)X
+\nabla_U f = 0                                        eq1
+provar(eq_acima, eq1)                                 ∎ — "eq1, nos coeficientes"
+```
+
+Todo símbolo que não é número é tratado como **função**, e não como constante.
+É o lado seguro: se c for constante, U(c) = 0 é só um caso particular, e a
+prova que precisar disso pede a hipótese. Nunca sai uma prova errada por tratar
+como constante o que variava.
+
+Hipótese escalar, como `\nabla_U f = 0`, entra como troca nos coeficientes.
+Quando nenhum lado é um termo sozinho, isola-se um. A tabela da prova mostra a
+troca numa linha própria.
+
+`U(f)` também se lê como derivada direcional, mas continua sendo pergunta: U
+aplicado a f, ou U vezes f? As duas leituras são bem tipadas, porque (a+b)U
+também é vetor. Escolhida a aplicação, o que sai é U(f), e não uma função
+chamada U. `\nabla_U f` não tem dúvida.
+
+Limites: só igualdades lineares entre campos vetoriais, com coeficientes
+escalares, e hipóteses escalares só sobre os vetores dados, sem ∀.
 
 ### Sem declarar, a recusa continua
 

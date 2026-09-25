@@ -126,6 +126,34 @@ class Curvatura(sp.Function):
         return f"{r}({u}, {x})({w})"
 
 
+class Direcional(sp.Function):
+    """U(f) — a derivada da função escalar f na direção do campo U.
+
+    É ∇_U f quando f é escalar, e é um ESCALAR: entra como coeficiente, não
+    como termo. Imprime `U(f)` no texto e `\\nabla_{U} f` em LaTeX, porque a
+    segunda relida é a mesma coisa e a primeira é uma pergunta — U aplicado a
+    f, ou U vezes f?
+    """
+
+    nargs = 2
+
+    @property
+    def direcao(self):
+        return self.args[0]
+
+    @property
+    def escalar(self):
+        return self.args[1]
+
+    def _latex(self, printer):
+        direcao = printer._print(self.direcao)
+        return rf"\nabla_{{{direcao}}} {_envolto(printer, self.escalar)}"
+
+    def _sympystr(self, printer):
+        return (f"{_str_direcao(printer, self.direcao)}"
+                f"({printer._print(self.escalar)})")
+
+
 def _envolto(printer, operando):
     dentro = printer._print(operando)
     if isinstance(operando, (sp.Add, sp.Mul)):
@@ -219,9 +247,21 @@ def e_vetor(expr, tensores):
     return False
 
 
-def _tem_tensor(expr, tensores):
-    return (any(s.name in tensores for s in expr.free_symbols)
-            or expr.has(DerivadaCovariante, ColcheteDeLie, Curvatura))
+def tem_tensor(expr, tensores):
+    """Há algo tensorial em `expr` — fora de uma derivada direcional?
+
+    U(f) tem U dentro e é escalar: o U ali é a direção, não um fator.
+    """
+    if isinstance(expr, Direcional):
+        return False
+    if isinstance(expr, (DerivadaCovariante, ColcheteDeLie, Curvatura)):
+        return True
+    if isinstance(expr, sp.Symbol):
+        return expr.name in tensores
+    return any(tem_tensor(a, tensores) for a in expr.args)
+
+
+_tem_tensor = tem_tensor
 
 
 def exigir_vetor(expr, papel, tensores, senao=""):
@@ -455,7 +495,12 @@ def construir(oc, ler, tensores):
         exigir_vetor(direcao, f"∇_{p['direcao']}", tensores,
                      "; se é índice, declare {nome} = índice. A tipografia é "
                      "a mesma, e escolher entre as duas seria adivinhar")
-        return DerivadaCovariante(direcao, ler(p["operando"]))
+        operando = ler(p["operando"])
+        if not tem_tensor(operando, tensores):
+            # ∇_U f com f escalar é a derivada direcional U(f): um escalar, e
+            # não um campo — o motor precisa saber a diferença.
+            return Direcional(direcao, operando)
+        return DerivadaCovariante(direcao, operando)
     if oc.especie == "colchete":
         a, b = (ler(x) for x in p["args"])
         papel = f"[{p['args'][0]}, {p['args'][1]}]"

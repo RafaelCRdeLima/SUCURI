@@ -11,10 +11,11 @@ prova de coisa nenhuma.
 
 Só o que vale para QUALQUER conexão, em qualquer livro:
 
-- ∇_U X é linear em X sobre constantes, e linear em U sobre funções:
-  ∇_{fU} X = f ∇_U X, mas ∇_U (fX) = U(f) X + f ∇_U X — e esta segunda o
-  motor não expande, deixa como está;
-- o colchete de Lie é bilinear sobre constantes e antissimétrico;
+- ∇_U X é linear em U sobre funções, ∇_{fU} X = f ∇_U X, e no operando segue
+  Leibniz: ∇_U (fX) = U(f) X + f ∇_U X;
+- o colchete de Lie é antissimétrico, e com funções também segue Leibniz:
+  [fA, gB] = fg[A,B] + f A(g) B − g B(f) A;
+- U(f) é linear em U sobre funções e segue a regra da cadeia em f;
 - a curvatura R(U,X)W é linear sobre funções nos três argumentos — é um
   tensor, e isso não depende da convenção.
 
@@ -44,7 +45,7 @@ import sympy as sp
 from sympy.core.sorting import default_sort_key
 
 from .conexao import (VETOR, ColcheteDeLie, Curvatura, DerivadaCovariante,
-                      ParaTodo, e_vetor)
+                      Direcional, ParaTodo, e_vetor, tem_tensor)
 
 LIMITE_RELACOES = 4000
 """Quantas relações derivadas a busca aceita antes de desistir."""
@@ -124,7 +125,8 @@ def _linear(expr, tensores):
                 f"'{expr}' não é escalar vezes vetor: tem "
                 f"{len(vetoriais)} fatores vetoriais")
         escalar = sp.Mul(*(a for a in expr.args if a is not vetoriais[0]))
-        return _vezes(escalar, linear(vetoriais[0], tensores))
+        return _vezes(escalar_normal(escalar, tensores),
+                      linear(vetoriais[0], tensores))
     if isinstance(expr, sp.Symbol):
         if not e_vetor(expr, tensores):
             raise NaoEVetorial(f"'{expr}' não é vetor declarado")
@@ -139,8 +141,57 @@ def _linear(expr, tensores):
 
 
 def _vetorial(expr, tensores):
-    return (isinstance(expr, _OPERADORES)
-            or any(s.name in tensores for s in expr.free_symbols))
+    return tem_tensor(expr, tensores)
+
+
+# ------------------------------------------------------------------ escalares
+#
+# Todo símbolo que não é número é tratado como FUNÇÃO, e não constante. É o
+# lado seguro: se c for constante, U(c) = 0 é só um caso particular, e a prova
+# que precisar disso pede a hipótese — nunca sai uma prova errada por supor
+# constante o que variava.
+
+def escalar_normal(expr, tensores):
+    """O escalar com cada U(f) posto em forma normal: direção irredutível e
+    argumento atômico — U(fg) = U(f)g + fU(g), (U+X)(f) = U(f) + X(f)."""
+    expr = sp.sympify(expr)
+    achados = {d: direcional(linear(d.direcao, tensores),
+                             escalar_normal(d.escalar, tensores), tensores)
+               for d in expr.atoms(Direcional)}
+    return expr.xreplace(achados) if achados else expr
+
+
+def _atomos_escalares(expr, tensores):
+    """Do que o escalar depende: símbolos que não são tensor, e os U(f).
+
+    O f de dentro de U(f) também entra, e não atrapalha: a troca por mudos é
+    de cima para baixo, U(f) vira um mudo inteiro antes de se chegar ao f, e a
+    derivada em relação ao f solto só pega o f solto.
+    """
+    return (set(expr.atoms(Direcional))
+            | {s for s in expr.free_symbols if s.name not in tensores})
+
+
+def direcional(direcao, escalar, tensores):
+    """Σ_d c_d · d(escalar), pela regra da cadeia, com `direcao` já linear.
+
+    Na direção é linear sobre funções: (fU)(g) = f U(g). No argumento, a regra
+    da cadeia sobre os átomos: U(φ(f, g)) = φ_f U(f) + φ_g U(g).
+    """
+    escalar = sp.sympify(escalar)
+    if escalar.is_number:
+        return sp.S.Zero
+    atomos = sorted(_atomos_escalares(escalar, tensores), key=default_sort_key)
+    total = sp.S.Zero
+    mudos = {a: sp.Dummy() for a in atomos}
+    aberto = escalar.xreplace(mudos)
+    for a, m in mudos.items():
+        parcial = sp.diff(aberto, m).xreplace({v: k for k, v in mudos.items()})
+        if parcial == 0:
+            continue
+        for td, cd in direcao.items():
+            total += cd * parcial * Direcional(td, a)
+    return sp.expand(total)
 
 
 def _nabla(expr, tensores):
@@ -150,12 +201,11 @@ def _nabla(expr, tensores):
     for td, cd in direcao.items():
         # Na direção, linear sobre funções: qualquer coeficiente sai.
         for to, co in operando.items():
-            if _constante(co):
-                parcela = {DerivadaCovariante(td, to): cd * co}
-            else:
-                # ∇_U(fX) = U(f)X + f∇_U X: a regra de Leibniz pede U(f), que
-                # não é objeto daqui. Fica inteiro, sem expandir.
-                parcela = {DerivadaCovariante(td, co * to): cd}
+            parcela = {DerivadaCovariante(td, to): cd * co}
+            if not _constante(co):
+                # Leibniz: ∇_U(fX) = U(f)X + f∇_U X.
+                parcela = _soma(parcela, {to: cd * direcional(
+                    {td: sp.S.One}, co, tensores)})
             total = _soma(total, parcela)
     return total
 
@@ -165,14 +215,19 @@ def _lie(expr, tensores):
     total = {}
     for ta, ca in a.items():
         for tb, cb in b.items():
-            if not (_constante(ca) and _constante(cb)):
-                parcela = {ColcheteDeLie(ca * ta, cb * tb): sp.S.One}
-            elif ta == tb:
+            if ta == tb:
                 parcela = {}                            # [U, U] = 0
             elif default_sort_key(tb) < default_sort_key(ta):
                 parcela = {ColcheteDeLie(tb, ta): -ca * cb}   # antissimetria
             else:
                 parcela = {ColcheteDeLie(ta, tb): ca * cb}
+            # [fA, gB] = fg[A,B] + f A(g) B − g B(f) A
+            if not _constante(cb):
+                parcela = _soma(parcela, {tb: ca * direcional(
+                    {ta: sp.S.One}, cb, tensores)})
+            if not _constante(ca):
+                parcela = _soma(parcela, {ta: -cb * direcional(
+                    {tb: sp.S.One}, ca, tensores)})
             total = _soma(total, parcela)
     return total
 
@@ -201,9 +256,10 @@ def relacao(equacao, tensores):
 class Contexto:
     """Um lugar com buraco: ∇_U □, ∇_□ W, [□, X], R(U,X)□…
 
-    `sobre_funcoes` diz se é linear sobre funções, ou só sobre constantes. Só
-    os primeiros podem receber relação com coeficiente que não é número:
-    ∇_U(fX) não é f∇_U X.
+    `sobre_funcoes` diz se é linear sobre funções, ou só sobre constantes.
+    Os segundos (∇_U □, [U, □]) também recebem relação com coeficiente que
+    varia: `_aplicar` os preenche com a combinação inteira, e a regra de
+    Leibniz é aplicada ao expandir.
     """
 
     def __init__(self, preencher, rotulo, latex, sobre_funcoes):
@@ -315,9 +371,9 @@ class Derivada:
 
 def _aplicar(contexto, derivada, tensores):
     rel = derivada.relacao
-    if not contexto.sobre_funcoes and not all(_constante(c) for c in rel.values()):
-        return None
-    expressao = sp.Add(*(c * contexto.preencher(t) for t, c in rel.items()))
+    # O contexto recebe a combinação INTEIRA, e não termo a termo: ∇_U(fX) não
+    # é f∇_U X, e é `linear` — com Leibniz — quem sabe expandir.
+    expressao = contexto.preencher(sp.Add(*(c * t for t, c in rel.items())))
     nova = linear(expressao, tensores)
     if not nova:
         return None
@@ -328,10 +384,11 @@ def _aplicar(contexto, derivada, tensores):
 class Prova:
     """O certificado: cada passo, o coeficiente, e a soma conferida."""
 
-    def __init__(self, objetivo, passos, hipoteses_usadas):
+    def __init__(self, objetivo, passos, hipoteses_usadas, trocas=()):
         self.objetivo = objetivo        # a equação, como foi lida
         self.passos = passos            # [(coeficiente, Derivada)]
         self.hipoteses_usadas = hipoteses_usadas
+        self.trocas = list(trocas)      # [(rótulo, átomo, expressão)] escalares
 
 
 class SemProva(Exception):
@@ -351,30 +408,118 @@ def provar(objetivo, hipoteses, tensores):
         # sabe além de ser vetor — e nenhuma hipótese fala dele.
         tensores = {**tensores, **{v.name: VETOR for v in objetivo.variaveis}}
         corpo = objetivo.corpo
-    alvo = relacao(corpo, tensores)
-    if not alvo:
-        return Prova(objetivo, [], [])
 
-    base, gerais = [], []
+    base, gerais, escalares = [], [], {}
     for rotulo, eq in hipoteses.items():
         if isinstance(eq, ParaTodo):
+            if _e_escalar(eq.corpo, tensores):
+                raise NaoEVetorial(
+                    f"{rotulo}: hipótese escalar com ∀ ainda não entra — só "
+                    f"escalares sobre os vetores dados, como U(f) = 0")
             gerais.append((rotulo, eq))
+        elif _e_escalar(eq, tensores):
+            escalares[rotulo] = _regra(eq, rotulo, tensores)
         else:
             base.append(Derivada(relacao(eq, tensores), rotulo))
+    regras = _Regras(escalares)
+
+    if _e_escalar(corpo, tensores):
+        # Igualdade entre escalares: as regras bastam, ou não há o que buscar.
+        resto = regras.aplicar(escalar_normal(corpo.lhs - corpo.rhs, tensores))
+        if resto != 0:
+            raise SemProva(
+                f"sobra {sp.sstr(resto)} depois de expandir e de aplicar as "
+                f"hipóteses escalares. Não achar não é prova de que é falso.")
+        usadas = regras.usadas_em([{None: escalar_normal(corpo.lhs - corpo.rhs,
+                                                        tensores)}])
+        return Prova(objetivo, [], [h for h in hipoteses if h in
+                                    {r for r, _, _ in usadas}], usadas)
+
+    alvo = regras.rel(relacao(corpo, tensores))
+    if not alvo:
+        usadas = regras.usadas_em([relacao(corpo, tensores)])
+        return Prova(objetivo, [], [h for h in hipoteses if h in
+                                    {r for r, _, _ in usadas}], usadas)
+
     base = [d for d in base if d.relacao]
     if not gerais:
-        return _buscar(objetivo, alvo, hipoteses, base, tensores)
+        return _buscar(objetivo, alvo, hipoteses, base, tensores, regras)
     for rodadas in range(1, RODADAS + 1):
         try:
             return _buscar(objetivo, alvo, hipoteses, base + _instancias(
                 gerais, [alvo] + [d.relacao for d in base], tensores, rodadas),
-                tensores)
+                tensores, regras)
         except SemProva as e:
             ultima = e
     raise ultima
 
 
-def _buscar(objetivo, alvo, hipoteses, base, tensores):
+def _e_escalar(eq, tensores):
+    return (isinstance(eq, sp.Equality) and not tem_tensor(eq.lhs, tensores)
+            and not tem_tensor(eq.rhs, tensores))
+
+
+def _regra(eq, rotulo, tensores):
+    """A hipótese escalar como troca `átomo → expressão`.
+
+    `U(f) = 0` troca U(f) por 0 onde aparecer nos coeficientes. Se nenhum lado
+    é um átomo sozinho, isola-se um — o primeiro U(f) em que a equação é de
+    primeiro grau.
+    """
+    lhs = escalar_normal(eq.lhs, tensores)
+    rhs = escalar_normal(eq.rhs, tensores)
+    for a, b in ((lhs, rhs), (rhs, lhs)):
+        if isinstance(a, (sp.Symbol, Direcional)) and not b.has(a):
+            return a, b
+    diferenca = lhs - rhs
+    candidatos = sorted(diferenca.atoms(Direcional), key=default_sort_key,
+                        reverse=True)
+    candidatos += sorted((s for s in diferenca.free_symbols
+                          if s.name not in tensores), key=default_sort_key)
+    for a in candidatos:
+        mudo = sp.Dummy()
+        aberta = diferenca.xreplace({a: mudo})
+        if aberta.has(a) or sp.degree(sp.expand(aberta), mudo) != 1:
+            continue
+        solucoes = sp.solve(aberta, mudo)
+        if len(solucoes) == 1:
+            return a, solucoes[0]
+    raise NaoEVetorial(
+        f"{rotulo}: não consigo usar {sp.sstr(eq)} como troca — nenhum termo "
+        f"se isola nela")
+
+
+class _Regras:
+    """As hipóteses escalares, aplicadas aos coeficientes."""
+
+    def __init__(self, dadas):
+        self.dadas = dadas              # rótulo -> (átomo, expressão)
+        self.trocas = {a: b for a, b in dadas.values()}
+
+    def aplicar(self, c):
+        c = sp.sympify(c)
+        for _ in range(6):
+            nova = c.xreplace(self.trocas) if self.trocas else c
+            if nova == c:
+                break
+            c = nova
+        return _limpo(sp.expand(c))
+
+    def rel(self, relacao):
+        if not self.trocas:
+            return relacao
+        return {t: v for t, c in relacao.items()
+                if not _nulo(v := self.aplicar(c))}
+
+    def usadas_em(self, relacoes):
+        usadas = []
+        for rotulo, (a, b) in self.dadas.items():
+            if any(sp.sympify(c).has(a) for r in relacoes for c in r.values()):
+                usadas.append((rotulo, a, b))
+        return usadas
+
+
+def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
     """A busca, com as hipóteses já instanciadas.
 
     Cada relação que aparece entra numa base escalonada, e o objetivo é
@@ -398,7 +543,7 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
 
     def entra(d):
         derivadas.append(d)
-        escalonada.juntar(d.relacao, len(derivadas) - 1)
+        escalonada.juntar(regras.rel(d.relacao), len(derivadas) - 1)
         return escalonada.combinacao(alvo)
 
     conhecidas = {}
@@ -408,7 +553,7 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
         conhecidas[d.chave()] = d
         achou = entra(d)
         if achou is not None:
-            return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
+            return _pronta(objetivo, alvo, hipoteses, derivadas, achou, regras)
 
     fronteira = list(conhecidas.values())
     for _ in range(profundidade):
@@ -431,7 +576,8 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
                 nova_fronteira.append(n)
                 achou = entra(n)
                 if achou is not None:
-                    return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
+                    return _pronta(objetivo, alvo, hipoteses, derivadas, achou,
+                                   regras)
                 if len(conhecidas) > LIMITE_RELACOES:
                     raise SemProva(
                         f"a busca passou de {LIMITE_RELACOES} relações sem "
@@ -448,14 +594,15 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
         "a prova pedir mais do que a linearidade e as hipóteses dão.")
 
 
-def _pronta(objetivo, alvo, hipoteses, derivadas, combinacao):
+def _pronta(objetivo, alvo, hipoteses, derivadas, combinacao, regras):
     passos = [(v, derivadas[k]) for k, v in sorted(combinacao.items())]
-    _conferir(alvo, passos)
+    _conferir(alvo, passos, regras)
+    trocas = regras.usadas_em([d.relacao for _, d in passos])
     # Na ordem em que foram dadas, e não na da busca: quem lê confere a
     # lista contra a chamada que escreveu.
-    tocadas = {d.hipotese for _, d in passos}
+    tocadas = {d.hipotese for _, d in passos} | {r for r, _, _ in trocas}
     usadas = [h for h in hipoteses if h in tocadas]
-    return Prova(objetivo, passos, usadas)
+    return Prova(objetivo, passos, usadas, trocas)
 
 
 class _Escalonada:
@@ -594,10 +741,10 @@ def _instancias(gerais, relacoes, tensores, rodadas=1):
     return novas
 
 
-def _conferir(alvo, passos):
+def _conferir(alvo, passos, regras):
     """A soma é conferida de novo, do zero: o certificado não é de confiança."""
-    soma = _soma(*(_vezes(v, d.relacao) for v, d in passos))
-    resto = _soma(soma, _vezes(-1, alvo))
+    soma = _soma(*(_vezes(v, regras.rel(d.relacao)) for v, d in passos))
+    resto = regras.rel(_soma(soma, _vezes(-1, alvo)))
     if resto:
         raise AssertionError(
             f"defeito do Sucuri: a combinação achada não confere (sobra {resto})")
@@ -619,4 +766,8 @@ def linhas(prova):
                       f"{sp.sstr(expressao)} = 0",
                       (("-" if v == -1 else "" if v == 1 else sp.latex(v) + r"\,\cdot\,")
                        + d.rotulo_latex() + r":\quad " + _latex_relacao(d.relacao))])
+    for rotulo, a, b in prova.trocas:
+        saida.append([f"{rotulo}, nos coeficientes",
+                      f"{sp.sstr(a)} = {sp.sstr(b)}",
+                      rf"\text{{{rotulo}}}:\quad {sp.latex(a)} = {sp.latex(b)}"])
     return saida
