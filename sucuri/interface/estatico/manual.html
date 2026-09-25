@@ -189,6 +189,27 @@ propõe, ele testa</strong>.</p>
     conferidor não consegue testar, ele diz isso em vez de acusar.</p>
 </div>
 
+<h3>provar</h3>
+
+<p>O objetivo primeiro, e depois as hipóteses — só as nomeadas. Escrever uma
+equação no caderno não é afirmá-la, e uma prova que usasse a conta de
+rascunho da linha de cima não provaria nada.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U X = \nabla_X U</code>
+  <code class="entrada">\nabla_Y \nabla_U X = \nabla_Y \nabla_X U</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">nabla_Y(eq1)</samp>
+  <p class="explica">cada linha da resposta diz de que hipótese veio e o que
+    se fez com ela — aqui, ∇<sub>Y</sub> aplicado aos dois lados de eq1 —, e a
+    soma é conferida de novo antes do ∎. Por ora o verbo trabalha com a
+    conexão sem índice (seção 7); quando não acha, diz que não achar não é
+    prova de que é falso.</p>
+</div>
+
 <h2>5. O que cada resposta quer dizer</h2>
 
 <table class="tabela">

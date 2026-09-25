@@ -211,7 +211,8 @@ chutar. Na outra direção vale o mesmo: `g^{\mu\nu}A_\nu` → `A^\mu`.
 
 Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela não é um
 fator multiplicando outro, é um objeto próprio, e montar um produto ali
-pareceria certo — então recusa.
+pareceria certo — então recusa. A derivada **sem** índice, ∇_U X, atravessa:
+é a seção seguinte.
 
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
@@ -488,7 +489,23 @@ e.inferred                         # o que veio de convenção e pede conferênc
 doc = sucuri.Document(independent_variable='x').primes_are_derivatives()
 doc.annotate("prime", "r", "derivative", order=1)
 doc.read(...).tree()
+
+# a conexão sem índice, e uma prova
+from sucuri.prova import provar, linhas
+doc = sucuri.Document()
+doc.tensor("U", 1, 0); doc.tensor("X", 1, 0); doc.curvature("R")
+eq = lambda s: doc.read(s).to_sympy()
+p = provar(eq(r"\nabla_U \nabla_U X = R(U,X)U"),
+           {"def": eq(r"\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W"
+                      r" - \nabla_B \nabla_A W - \nabla_{[A,B]} W"),
+            "tor": eq(r"\forall A, B: \nabla_A B - \nabla_B A = [A,B]"),
+            "fam": eq(r"[U,X] = 0"), "geo": eq(r"\nabla_U U = 0")},
+           {"U": (1, 0), "X": (1, 0)})
+linhas(p)                          # os passos: rótulo, texto, LaTeX
 ```
+
+O exemplo inteiro, com as recusas e a troca de sinal, está em
+`exemplos/desvio_geodesico.py` — e a suíte o executa.
 
 ## Manual
 
