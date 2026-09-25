@@ -73,7 +73,7 @@ _RE_METRICA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*m[ée]trica\s*"
 # de programação, que é a porta que os verbos fechados existem para não abrir.
 _RE_TENSOR = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*tensor\s*\(\s*"
                         r"(\d+)\s*,\s*(\d+)\s*"
-                        r"(?:,\s*((?:anti-?s?)?sim[ée]tric[oa])\s*)?\)\s*$",
+                        r"(?:,\s*((?:anti-?s?)?sim[ée]tric[oa]|riemann)\s*)?\)\s*$",
                         re.I)
 
 # A forma antiga, para dizer o que mudou em vez de falhar em LaTeX.
@@ -170,6 +170,8 @@ class Celula:
 def _qual_simetria(escrito):
     if not escrito:
         return None
+    if escrito.lower() == "riemann":
+        return "riemann"
     return "antissimetrico" if escrito.lower().startswith("anti") else "simetrico"
 
 
@@ -392,9 +394,19 @@ class Caderno:
         """
         from .tensores import problema_de_simetria
         limpo = nome[1:] if nome.startswith("\\") else nome
+        if not nome.startswith("\\") and len(nome) > 1:
+            # Rm_{abcd} em LaTeX é R vezes m_{abcd}, e é assim que o parser o
+            # lê: a declaração existiria e nunca seria usada, em silêncio.
+            return Celula(None, f"{nome} = tensor({formas}, {vetores})",
+                          "declaracao", {"erro": (
+                f"em LaTeX, {nome} são {len(nome)} letras multiplicadas "
+                f"({' vezes '.join(nome)}), e nunca seria lido como um tensor "
+                f"só. Use uma letra ({nome[0]}) ou um comando "
+                f"(\\{nome})")})
+        grafia = {"antissimetrico": "antissimétrico", "simetrico": "simétrico",
+                  "riemann": "riemann"}
         escrito = f"{nome} = tensor({formas}, {vetores}" + (
-            f", {'antissimétrico' if simetria == 'antissimetrico' else 'simétrico'})"
-            if simetria else ")")
+            f", {grafia[simetria]})" if simetria else ")")
         problema = problema_de_simetria(formas, vetores, simetria)
         if problema:
             return Celula(None, escrito, "declaracao", {"erro": problema})
@@ -408,6 +420,10 @@ class Caderno:
         elif simetria == "antissimetrico":
             nota = ("; antissimétrico — trocar dois slots troca o sinal, e "
                     "slot repetido dá zero")
+        elif simetria == "riemann":
+            nota = ("; com as simetrias do Riemann — antissimétrico em cada "
+                    "par, simétrico na troca dos pares. A identidade cíclica "
+                    "não entra: é teorema, e pede torção nula")
         return Celula(None, escrito,
                       "declaracao",
                       {"declarado": [{"nome": limpo,

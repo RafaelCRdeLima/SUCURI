@@ -141,7 +141,7 @@ class Espaco:
         return cabeca
 
 
-SIMETRIAS = ("simetrico", "antissimetrico")
+SIMETRIAS = ("simetrico", "antissimetrico", "riemann")
 
 
 def _simetria(qual, posto):
@@ -150,6 +150,8 @@ def _simetria(qual, posto):
         return TensorSymmetry.fully_symmetric(posto)
     if qual == "antissimetrico":
         return TensorSymmetry.fully_symmetric(-posto)
+    if qual == "riemann":
+        return TensorSymmetry.riemann()
     return TensorSymmetry.no_symmetry(posto)
 
 
@@ -163,12 +165,18 @@ def problema_de_simetria(formas, vetores, simetria):
     if not simetria:
         return None
     if formas and vetores:
+        dica = (" — o Riemann com as simetrias é o (0,4), R_{abcd}"
+                if simetria == "riemann" else "")
         return (f"simetria entre índice de cima e de baixo, num ({formas},"
                 f"{vetores}), só existe depois de baixar um deles com a "
                 f"métrica — e aí é outro tensor. Declare a simetria no tipo "
-                f"com os índices todos do mesmo lado")
+                f"com os índices todos do mesmo lado{dica}")
     if formas + vetores < 2:
         return "com um slot só não há o que trocar"
+    if simetria == "riemann" and formas + vetores != 4:
+        return (f"as simetrias do Riemann são de quatro slots — dois pares "
+                f"antissimétricos que trocam entre si —, e aqui há "
+                f"{formas + vetores}")
     return None
 
 

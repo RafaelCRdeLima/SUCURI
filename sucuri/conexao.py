@@ -187,6 +187,11 @@ class AvaliadoAntissimetrico(Avaliado):
     """F(X, Y) com F declarado antissimétrico: F(X,Y) = −F(Y,X), F(X,X) = 0."""
 
 
+class AvaliadoRiemann(Avaliado):
+    """R(X, Y, Z, W) com as simetrias do Riemann (0,4): antissimétrico em
+    (X,Y) e em (Z,W), simétrico na troca dos pares."""
+
+
 class Metrica(AvaliadoSimetrico):
     """g(X, Y) — a métrica: um (0,2) que é SIMÉTRICO.
 
@@ -590,6 +595,7 @@ def construir(oc, ler, tensores):
         classe = (Metrica if p["metrica"]
                   else AvaliadoSimetrico if p.get("simetria") == "simetrico"
                   else AvaliadoAntissimetrico if p.get("simetria") == "antissimetrico"
+                  else AvaliadoRiemann if p.get("simetria") == "riemann"
                   else Avaliado)
         return classe(sp.Symbol(nome), *slots)
     if oc.especie == "colchete":

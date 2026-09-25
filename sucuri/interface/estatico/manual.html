@@ -378,6 +378,17 @@ com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</
     índice de cima com de baixo pede a métrica, e aí é outro tensor.</p>
 </div>
 
+<div class="exemplo">
+  <code class="entrada">a, b, c, d = índices</code>
+  <code class="entrada">R = tensor(0, 4, riemann)</code>
+  <code class="entrada">R_{abcd} - R_{cdab}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">as simetrias do Riemann (0,4): antissimétrico em cada par,
+    simétrico na troca dos pares — iguais em todo livro. A identidade cíclica
+    não entra: é teorema, e pede torção nula.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

@@ -243,8 +243,29 @@ valência, e o zero é resposta do verbo. Há duas recusas:
   um deles, e isso é a métrica, não o tensor;
 - simetria num (1,0) ou (0,1): um slot só não tem com quem trocar.
 
-Ainda não: as simetrias do Riemann, que não são simetria total, e
-T_{(μν)} e T_{[μν]} como notação.
+O Riemann tem declaração própria, porque suas simetrias não são totais:
+
+```
+R = tensor(0, 4, riemann)
+
+R_{abcd} + R_{bacd}      simplificar →  0      antissimétrico no primeiro par
+R_{abcd} + R_{abdc}      simplificar →  0      e no segundo
+R_{abcd} - R_{cdab}      simplificar →  0      simétrico na troca dos pares
+R_{abcd} g^{ab}          simplificar →  0
+R(X,X,Y,Z) = 0           provar      →  ∎
+```
+
+Essas simetrias do (0,4) são as mesmas em todos os livros. O que muda entre
+convenções é o sinal geral e a ordem dos índices no (1,3), e nada disso toca
+as trocas de slots. O (1,3), R^a_{bcd}, mistura índices de cima e de baixo e é
+recusado pela regra acima. A identidade cíclica, R_{a[bcd]} = 0, **não** entra:
+não é troca de slots, é teorema, e pede torção nula. Ela vem como hipótese.
+
+Nome de várias letras é recusado na declaração: `Rm_{abcd}` em LaTeX é R vezes
+`m_{abcd}`, e é assim que o parser lê. Sem a recusa, a declaração existiria e
+nunca seria usada, sem aviso. Use uma letra ou um comando (`\Rm`).
+
+Ainda não: T_{(μν)} e T_{[μν]} como notação.
 
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 

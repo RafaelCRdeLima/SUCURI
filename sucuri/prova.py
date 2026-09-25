@@ -50,7 +50,8 @@ import sympy as sp
 from sympy.core.sorting import default_sort_key
 
 from .conexao import (VETOR, Avaliado, AvaliadoAntissimetrico,
-                      AvaliadoSimetrico, ColcheteDeLie, Curvatura,
+                      AvaliadoRiemann, AvaliadoSimetrico, ColcheteDeLie,
+                      Curvatura,
                       DerivadaCovariante, Direcional, ParaTodo, e_vetor,
                       tem_tensor)
 
@@ -198,8 +199,45 @@ def avaliado(a, tensores):
                     continue
                 coef *= _sinal(ordem)
             slots = canonicos
+        elif isinstance(a, AvaliadoRiemann):
+            sinal, slots = _canonico_riemann(slots)
+            if sinal == 0:
+                continue
+            coef *= sinal
         total += coef * type(a)(a.nome, *slots)
     return sp.expand(total)
+
+
+def _grupo_riemann():
+    """As 8 permutações dos slots que as simetrias do Riemann geram, com sinal.
+
+    Geradores: trocar o primeiro par (−), trocar o segundo (−), trocar os
+    pares (+). A identidade cíclica não é permutação — não entra aqui.
+    """
+    geradores = [((1, 0, 2, 3), -1), ((0, 1, 3, 2), -1), ((2, 3, 0, 1), 1)]
+    grupo = {((0, 1, 2, 3), 1)}
+    while True:
+        novos = {(tuple(p[q[i]] for i in range(4)), s * t)
+                 for p, s in grupo for q, t in geradores} - grupo
+        if not novos:
+            return sorted(grupo)
+        grupo |= novos
+
+
+GRUPO_RIEMANN = _grupo_riemann()
+
+
+def _canonico_riemann(slots):
+    """(sinal, slots) do representante canônico — sinal 0 se a expressão é
+    zero, porque a órbita contém os mesmos slots com os dois sinais."""
+    orbita = {}
+    for perm, sinal in GRUPO_RIEMANN:
+        imagem = tuple(slots[i] for i in perm)
+        if orbita.get(imagem, sinal) != sinal:
+            return 0, slots
+        orbita[imagem] = sinal
+    canonico = min(orbita, key=lambda s: tuple(default_sort_key(x) for x in s))
+    return orbita[canonico], list(canonico)
 
 
 def _sinal(permutacao):
@@ -769,6 +807,10 @@ def _casar(padrao, termo, variaveis, sub, tensores):
         # substituição, e a instância é normalizada de novo, com o sinal.
         ordens = [(termo.args[0],) + p
                   for p in itertools.permutations(termo.args[1:])]
+    elif isinstance(termo, AvaliadoRiemann):
+        slots = termo.args[1:]
+        ordens = [(termo.args[0],) + tuple(slots[i] for i in perm)
+                  for perm, _ in GRUPO_RIEMANN]
     if isinstance(termo, ColcheteDeLie):
         # O colchete foi posto em ordem canônica pela antissimetria, e a ordem
         # depende dos NOMES: [A,[B,C]] pode ter virado −[[B,C],A] no padrão e
