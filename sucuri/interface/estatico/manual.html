@@ -245,6 +245,26 @@ digitação, e a olho ninguém vê:</p>
   <samp class="erro-esperado">os termos da soma têm índices livres diferentes</samp>
 </div>
 
+<p>Sem índice, o vetor é o objeto abstrato, e a mesma declaração diz o que
+<code>\nabla_U</code> quer dizer: a derivada na direção de U.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U \nabla_X U - \nabla_X \nabla_U U</code>
+  <samp class="saida">nabla_U(nabla_X(U)) - nabla_X(nabla_U(U))</samp>
+  <p class="explica">aplicação, e não produto: a ordem fica na estrutura, e os
+    dois termos não se cancelam. Sem a declaração o parser leria
+    <code>X*nabla_{U}</code>, que comuta — e a curvatura sumiria.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\nabla_V X</code>
+  <samp class="erro-esperado">'V' não foi declarado</samp>
+  <p class="explica">∇<sub>V</sub> e ∇<sub>μ</sub> se escrevem igual. Quem
+    decide entre direção e índice é a declaração.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
@@ -363,7 +383,10 @@ com o motivo.</p>
     <code>\left\|·\right\|</code>. O SymPy <em>tem</em> essas funções; o parser
     de LaTeX é que não as lê.</li>
   <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): não é
-    um fator multiplicando outro, é um objeto próprio.</li>
+    um fator multiplicando outro, é um objeto próprio. A derivada
+    <em>direcional</em> ∇<sub>U</sub>, com U declarado vetor, já é lida — mas só
+    lida: o colchete [U,X] e o operador R(U,X) ainda não, e nenhuma regra da
+    conexão (torção nula, definição de R) é aplicada.</li>
   <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
     declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
     onde essa regra não alcança o silêncio volta.</li>

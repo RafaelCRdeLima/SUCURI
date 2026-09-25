@@ -6,6 +6,7 @@ Ambiguidade não se adivinha: anota-se. Ver README.md.
 __version__ = "0.1.0"
 
 from .ambiguity import Ambiguity, Reading, find
+from .conexao import DerivadaCovariante, DerivadaCovarianteNaoLida
 from .document import (Document, Expression, FaltaVariavel,
                        NotacaoNaoReconhecida, NotacaoTensorial,
                        Resolution, Unresolved)
@@ -39,4 +40,5 @@ def parse(latex, *, independent_variable=None, primes=None,
 
 
 __all__ = ["parse", "Document", "Expression", "Resolution", "Unresolved",
-           "NotacaoNaoReconhecida", "NotacaoTensorial", "FaltaVariavel", "Ambiguity", "Reading", "Node", "find"]
+           "NotacaoNaoReconhecida", "NotacaoTensorial", "FaltaVariavel",
+           "DerivadaCovariante", "DerivadaCovarianteNaoLida", "Ambiguity", "Reading", "Node", "find"]

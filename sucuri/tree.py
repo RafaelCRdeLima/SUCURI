@@ -37,6 +37,9 @@ def _rotulo(expr):
         ordem = sum(n for _, n in expr.variable_count)
         var = ", ".join(str(v) for v, _ in expr.variable_count)
         return f"derivada de ordem {ordem} de {nome} em {var}"
+    from .conexao import DerivadaCovariante
+    if isinstance(expr, DerivadaCovariante):
+        return f"derivada covariante na direção de {expr.direcao}"
     if isinstance(expr, sp.core.function.AppliedUndef):
         args = ", ".join(str(a) for a in expr.args)
         return f"função {expr.func.__name__} aplicada a ({args})"

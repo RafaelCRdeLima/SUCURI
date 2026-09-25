@@ -650,7 +650,16 @@ class Expression:
     def __init__(self, latex, document):
         self.source = latex
         self.document = document
-        self.ambiguities = find(latex)
+        from .conexao import localizar
+        self.covariantes = localizar(latex, document._tensores,
+                                     document._indices)
+        # Em \nabla_U (X+Y) o detector vê "U (" e pergunta se U é função. Não
+        # é nem função nem fator: é o subscrito de ∇, e a pergunta seria falsa.
+        # Pergunta que não é pergunta gasta a credibilidade das que são.
+        subscritos = {i for c in self.covariantes
+                      for i in range(c.ini, c.fim_direcao)}
+        self.ambiguities = [a for a in find(latex)
+                            if a.span[0] not in subscritos]
 
     # ------------------------------------------------------------- estado
 
@@ -700,6 +709,11 @@ class Expression:
         recusas, _ = indices_tensoriais(self.source, self.document._indices)
         if recusas:
             raise NotacaoTensorial(recusas)
+
+        from .conexao import DerivadaCovarianteNaoLida
+        for c in self.covariantes:
+            if c.problema:
+                raise DerivadaCovarianteNaoLida(c.problema)
 
         texto, reposicoes, derivadas, _, tensores = self._normalize()
         from sympy.parsing.latex import parse_latex
@@ -752,6 +766,10 @@ class Expression:
         nomes = {s.name for s in expr.free_symbols}
         nomes |= {f.func.__name__
                   for f in expr.atoms(sp.core.function.AppliedUndef)}
+        # Com subscrito a macro degradada muda de nome: \coth_x vira o símbolo
+        # "coth_{x}", e \nabla_U o símbolo "nabla_{U}". Comparar só o nome
+        # inteiro deixava os dois passarem calados.
+        raizes = {n.split("_", 1)[0] for n in nomes}
 
         vazados = sorted(n for n in nomes if _RE_MARCADOR.match(n))
         if vazados:
@@ -761,7 +779,7 @@ class Expression:
                 f"isto é defeito do Sucuri, não da entrada")
 
         degradadas = sorted((set(_RE_MACRO.findall(texto)) - _MACROS_SIMBOLO)
-                            & nomes)
+                            & (nomes | raizes))
         if degradadas:
             raise NotacaoNaoReconhecida(degradadas)
 
@@ -799,12 +817,27 @@ class Expression:
         # Sítios e fatores tensoriais no MESMO passo, de trás para frente.
         # Dois passos separados invalidariam as posições um do outro: quem
         # reescreve na frente desloca tudo o que vem depois.
-        fatores = self._fatores_tensoriais()
-        itens = ([(a.span[0], "sitio", a) for a in self.ambiguities]
+        # A derivada covariante engole o operando inteiro, e quem o lê é a
+        # recursão — como no interior de (f+g)'. O que estiver lá dentro não se
+        # substitui aqui, senão seria lido duas vezes.
+        engolidos = {i for c in self.covariantes for i in range(c.ini, c.fim)}
+        fatores = [f for f in self._fatores_tensoriais()
+                   if f[0] not in engolidos]
+        itens = ([(a.span[0], "sitio", a) for a in self.ambiguities
+                  if a.span[0] not in engolidos]
                  + [(ini, "tensor", (ini, fim, base, pos))
-                    for ini, fim, base, pos in fatores])
+                    for ini, fim, base, pos in fatores]
+                 + [(c.ini, "covariante", c) for c in self.covariantes])
 
         for _, especie, item in sorted(itens, key=lambda i: -i[0]):
+            if especie == "covariante":
+                from .conexao import DerivadaCovariante
+                nome, simbolo = marcador()
+                reposicoes[simbolo] = DerivadaCovariante(
+                    sp.Symbol(_limpo_macro(item.direcao)),
+                    self._fragmento(item.operando))
+                texto = texto[:item.ini] + nome + texto[item.fim:]
+                continue
             if especie == "tensor":
                 ini, fim, base, posicoes = item
                 nome, simbolo = marcador()

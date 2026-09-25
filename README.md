@@ -213,6 +213,29 @@ Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela nã
 fator multiplicando outro, é um objeto próprio, e montar um produto ali
 pareceria certo — então recusa.
 
+### A derivada covariante sem índice
+
+```
+U = tensor(1,0)
+X = tensor(1,0)
+\nabla_U \nabla_X U - \nabla_X \nabla_U U   →  nabla_U(nabla_X(U)) - nabla_X(nabla_U(U))
+```
+
+Sem isso o parser lia `\nabla_U X` como `X*nabla_{U}`: um símbolo de nome
+esquisito multiplicando X. O produto comuta, então ∇_U∇_X e ∇_X∇_U saíam
+iguais, e a curvatura, que é justamente a diferença entre os dois, sumia sem
+aviso.
+
+`\nabla_U` e `\nabla_\mu` se escrevem igual, e no Wald a letra latina do
+subscrito **é** índice. Quem decide é a declaração. Um vetor escrito sem índice
+só pode ser o objeto abstrato, e aí ∇_U vira aplicação, com a ordem guardada na
+estrutura. Com o subscrito sem declaração, ou declarado de outro tipo, a leitura
+recusa. Onde não fica claro até onde o operador alcança (`\nabla_U X^\mu`,
+`\nabla_U X_1`), também recusa: nesse caso use parênteses.
+
+O que isso **ainda não** faz é a conta: o colchete `[U,X]`, o operador
+`R(U,X)` e as regras da conexão ficam para depois.
+
 ### Sem declarar, a recusa continua
 
 Índice não é expoente, e o parser do SymPy não sabe a diferença. Medido:
