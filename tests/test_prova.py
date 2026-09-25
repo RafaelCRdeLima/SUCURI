@@ -282,11 +282,11 @@ def test_escalar_nao_e_termo_vetorial():
         X: sucuri.conexao.Direcional(U, sp.Symbol("f"))}
 
 
-def test_hipotese_escalar_vira_troca():
-    """Com U(f) = 0, ∇_U(fX) = f∇_U X sai — e a tabela diz de onde."""
+def test_hipotese_escalar_vezes_vetor():
+    """Com U(f) = 0, ∇_U(fX) = f∇_U X sai — e a tabela diz como: h1·X."""
     p = prova(r"\nabla_U (f X) = f \nabla_U X", r"\nabla_U f = 0")
     assert p.hipoteses_usadas == ["h1"]
-    assert [r for r, _, _ in p.trocas] == ["h1"]
+    assert [d.rotulo() for _, d in p.passos] == ["h1·X"]
 
 
 def test_hipotese_escalar_isola_o_termo():
@@ -298,7 +298,7 @@ def test_hipotese_escalar_isola_o_termo():
 def test_objetivo_escalar():
     p = prova(r"\nabla_U (f g) = f \nabla_U g + g \nabla_U f")
     assert p.passos == []
-    with pytest.raises(SemProva, match="sobra"):
+    with pytest.raises(SemProva):
         prova(r"\nabla_U (f g) = f \nabla_U g")
 
 
@@ -325,4 +325,29 @@ def test_leibniz_no_caderno():
                   r"\nabla_U (f X) = f \nabla_U X"):
         c.executar(fonte)
     d = c.executar("provar(eq2, eq1)").to_dict()
-    assert any(l[0] == "eq1, nos coeficientes" for l in d["linhas"])
+    assert [l[0] for l in d["linhas"]][0] == "eq1·X"
+
+
+
+# ------------------------------------------------- não se divide por função
+
+@pytest.mark.parametrize("objetivo, hipotese", [
+    (r"X = U", r"f X = f U"),                     # falso onde f = 0
+    (r"X = 0", r"\nabla_U f \, X = 0"),           # falso onde U(f) = 0
+    (r"g = 0", r"f g = 0"),                       # escalar: idem
+])
+def test_nao_divide_por_funcao(objetivo, hipotese):
+    """A combinação é só com NÚMEROS. Dividir por f seria concluir fora de
+    onde f se anula — e f pode se anular."""
+    with pytest.raises(SemProva):
+        prova(objetivo, hipotese)
+
+
+def test_multiplicar_por_funcao_e_passo_explicito():
+    p = prova(r"f^2 X = f^2 U", r"f X = f U")
+    assert [d.rotulo() for _, d in p.passos] == ["f·h1"]
+
+
+def test_os_coeficientes_da_prova_sao_numeros():
+    p = prova(r"\nabla_U \nabla_U X = R(U,X)U", *DESVIO)
+    assert all(sp.sympify(v).is_number for v, _ in p.passos)

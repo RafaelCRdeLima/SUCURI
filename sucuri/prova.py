@@ -61,6 +61,9 @@ multiplica as relações, e a maioria das provas não precisa da segunda."""
 
 _OPERADORES = (DerivadaCovariante, ColcheteDeLie, Curvatura)
 
+ESCALAR = sp.S.One
+"""A chave de uma relação ESCALAR: {1: c} diz c = 0, como {X: c} diz cX = 0."""
+
 
 class NaoEVetorial(ValueError):
     """A equação não é entre campos vetoriais, e o motor só sabe desses."""
@@ -244,7 +247,12 @@ def _curvatura(expr, tensores):
 
 
 def relacao(equacao, tensores):
-    """A equação como relação `{termo: coef} = 0`."""
+    """A equação como relação `{termo: coef} = 0` — ou `{1: c}`, se escalar."""
+    if _e_escalar(equacao, tensores):
+        lhs, rhs = ((equacao.lhs, equacao.rhs)
+                    if isinstance(equacao, sp.Equality) else (equacao, 0))
+        c = sp.expand(escalar_normal(lhs - rhs, tensores))
+        return {} if _nulo(c) else {ESCALAR: c}
     if isinstance(equacao, sp.Equality):
         return _soma(linear(equacao.lhs, tensores),
                      _vezes(-1, linear(equacao.rhs, tensores)))
@@ -260,13 +268,19 @@ class Contexto:
     Os segundos (∇_U □, [U, □]) também recebem relação com coeficiente que
     varia: `_aplicar` os preenche com a combinação inteira, e a regra de
     Leibniz é aplicada ao expandir.
+
+    `de` e `para` dizem o que entra e o que sai — vetor ou escalar. U(□) leva
+    escalar em escalar; (□)(f), vetor em escalar; □·X, escalar em vetor.
     """
 
-    def __init__(self, preencher, rotulo, latex, sobre_funcoes):
+    def __init__(self, preencher, rotulo, latex, sobre_funcoes,
+                 de="vetor", para="vetor"):
         self.preencher = preencher
         self.rotulo = rotulo            # com '{}' no lugar do buraco
         self.latex = latex
         self.sobre_funcoes = sobre_funcoes
+        self.de = de                    # o que o buraco recebe
+        self.para = para                # o que sai
 
     def chave(self):
         return self.rotulo
@@ -314,11 +328,39 @@ def _contextos_de(termo, achados):
                 _contextos_de(sub, achados)
 
 
-def contextos(relacoes):
+def contextos(relacoes, alvo=None, tensores=None):
     achados = []
     for rel in relacoes:
         for termo in rel:
             _contextos_de(termo, achados)
+    s, L = sp.sstr, sp.latex
+    for d in sorted({a for rel in relacoes for c in rel.values()
+                     for a in sp.sympify(c).atoms(Direcional)},
+                    key=default_sort_key):
+        u, h = d.direcao, d.escalar
+        achados.append(Contexto(lambda x, u=u: Direcional(u, x),
+                                f"{s(u)}({{}})", rf"{L(u)}\left({{}}\right)",
+                                False, "escalar", "escalar"))
+        achados.append(Contexto(lambda v, h=h: Direcional(v, h),
+                                f"({{}})({s(h)})", rf"\left({{}}\right)\left({L(h)}\right)",
+                                True, "vetor", "escalar"))
+    if alvo:
+        # Multiplicar por uma função, e levar um escalar a um vetor: só com o
+        # que o objetivo tem, que é onde a multiplicação pode servir.
+        atomos = set()
+        for c in alvo.values():
+            atomos |= _atomos_escalares(sp.sympify(c), tensores or {})
+        atomos = {a for a in atomos
+                  if not (isinstance(a, sp.Symbol) and a.name in (tensores or {}))}
+        for a in sorted(atomos, key=default_sort_key):
+            for tipo in ("vetor", "escalar"):
+                achados.append(Contexto(lambda x, a=a: a * x,
+                                        f"{s(a)}·{{}}", rf"{L(a)}\,{{}}",
+                                        True, tipo, tipo))
+        for t in sorted((t for t in alvo if t != ESCALAR), key=default_sort_key):
+            achados.append(Contexto(lambda x, t=t: x * t,
+                                    f"{{}}·{s(t)}", rf"{{}}\,{L(t)}",
+                                    True, "escalar", "vetor"))
     unicos = {}
     for c in achados:
         unicos.setdefault(c.chave(), c)
@@ -326,9 +368,15 @@ def contextos(relacoes):
 
 
 def _profundidade(termo):
-    if not isinstance(termo, _OPERADORES):
+    if not isinstance(termo, _OPERADORES + (Direcional,)):
         return 0
     return 1 + max(_profundidade(a) for a in termo.args)
+
+
+def _profundidade_rel(rel):
+    termos = [t for t in rel if t != ESCALAR]
+    termos += [a for c in rel.values() for a in sp.sympify(c).atoms(Direcional)]
+    return max((_profundidade(t) for t in termos), default=0)
 
 
 # -------------------------------------------------------------- a busca
@@ -369,12 +417,25 @@ class Derivada:
         return texto
 
 
+def _e_rel_escalar(rel):
+    return set(rel) == {ESCALAR}
+
+
 def _aplicar(contexto, derivada, tensores):
     rel = derivada.relacao
+    if (contexto.de == "escalar") != _e_rel_escalar(rel):
+        return None
     # O contexto recebe a combinação INTEIRA, e não termo a termo: ∇_U(fX) não
     # é f∇_U X, e é `linear` — com Leibniz — quem sabe expandir.
-    expressao = contexto.preencher(sp.Add(*(c * t for t, c in rel.items())))
-    nova = linear(expressao, tensores)
+    if _e_rel_escalar(rel):
+        expressao = contexto.preencher(rel[ESCALAR])
+    else:
+        expressao = contexto.preencher(sp.Add(*(c * t for t, c in rel.items())))
+    if contexto.para == "escalar":
+        c = sp.expand(escalar_normal(expressao, tensores))
+        nova = {} if _nulo(c) else {ESCALAR: c}
+    else:
+        nova = linear(expressao, tensores)
     if not nova:
         return None
     return Derivada(nova, derivada.hipotese,
@@ -384,11 +445,10 @@ def _aplicar(contexto, derivada, tensores):
 class Prova:
     """O certificado: cada passo, o coeficiente, e a soma conferida."""
 
-    def __init__(self, objetivo, passos, hipoteses_usadas, trocas=()):
+    def __init__(self, objetivo, passos, hipoteses_usadas):
         self.objetivo = objetivo        # a equação, como foi lida
-        self.passos = passos            # [(coeficiente, Derivada)]
+        self.passos = passos            # [(número, Derivada)]
         self.hipoteses_usadas = hipoteses_usadas
-        self.trocas = list(trocas)      # [(rótulo, átomo, expressão)] escalares
 
 
 class SemProva(Exception):
@@ -409,7 +469,7 @@ def provar(objetivo, hipoteses, tensores):
         tensores = {**tensores, **{v.name: VETOR for v in objetivo.variaveis}}
         corpo = objetivo.corpo
 
-    base, gerais, escalares = [], [], {}
+    base, gerais = [], []
     for rotulo, eq in hipoteses.items():
         if isinstance(eq, ParaTodo):
             if _e_escalar(eq.corpo, tensores):
@@ -417,109 +477,50 @@ def provar(objetivo, hipoteses, tensores):
                     f"{rotulo}: hipótese escalar com ∀ ainda não entra — só "
                     f"escalares sobre os vetores dados, como U(f) = 0")
             gerais.append((rotulo, eq))
-        elif _e_escalar(eq, tensores):
-            escalares[rotulo] = _regra(eq, rotulo, tensores)
         else:
             base.append(Derivada(relacao(eq, tensores), rotulo))
-    regras = _Regras(escalares)
 
-    if _e_escalar(corpo, tensores):
-        # Igualdade entre escalares: as regras bastam, ou não há o que buscar.
-        resto = regras.aplicar(escalar_normal(corpo.lhs - corpo.rhs, tensores))
-        if resto != 0:
-            raise SemProva(
-                f"sobra {sp.sstr(resto)} depois de expandir e de aplicar as "
-                f"hipóteses escalares. Não achar não é prova de que é falso.")
-        usadas = regras.usadas_em([{None: escalar_normal(corpo.lhs - corpo.rhs,
-                                                        tensores)}])
-        return Prova(objetivo, [], [h for h in hipoteses if h in
-                                    {r for r, _, _ in usadas}], usadas)
-
-    alvo = regras.rel(relacao(corpo, tensores))
+    alvo = relacao(corpo, tensores)
     if not alvo:
-        usadas = regras.usadas_em([relacao(corpo, tensores)])
-        return Prova(objetivo, [], [h for h in hipoteses if h in
-                                    {r for r, _, _ in usadas}], usadas)
+        return Prova(objetivo, [], [])
 
     base = [d for d in base if d.relacao]
     if not gerais:
-        return _buscar(objetivo, alvo, hipoteses, base, tensores, regras)
+        return _buscar(objetivo, alvo, hipoteses, base, tensores)
     for rodadas in range(1, RODADAS + 1):
         try:
             return _buscar(objetivo, alvo, hipoteses, base + _instancias(
                 gerais, [alvo] + [d.relacao for d in base], tensores, rodadas),
-                tensores, regras)
+                tensores)
         except SemProva as e:
             ultima = e
     raise ultima
 
 
 def _e_escalar(eq, tensores):
-    return (isinstance(eq, sp.Equality) and not tem_tensor(eq.lhs, tensores)
-            and not tem_tensor(eq.rhs, tensores))
+    if isinstance(eq, sp.Equality):
+        return not (tem_tensor(eq.lhs, tensores) or tem_tensor(eq.rhs, tensores))
+    return not tem_tensor(eq, tensores)
 
 
-def _regra(eq, rotulo, tensores):
-    """A hipótese escalar como troca `átomo → expressão`.
+def _coordenadas(rel):
+    """A relação em coordenadas NUMÉRICAS: {(monômio, termo): número}.
 
-    `U(f) = 0` troca U(f) por 0 onde aparecer nos coeficientes. Se nenhum lado
-    é um átomo sozinho, isola-se um — o primeiro U(f) em que a equação é de
-    primeiro grau.
+    É isto que impede a divisão por função. Combinar relações com
+    coeficientes que são funções seria dividir por elas quando preciso — e de
+    fX = fU sairia X = U, que é falso onde f se anula. Com monômios como
+    coordenadas, a combinação é só com números; multiplicar por uma função é
+    um contexto explícito (f·□), que aparece na prova.
     """
-    lhs = escalar_normal(eq.lhs, tensores)
-    rhs = escalar_normal(eq.rhs, tensores)
-    for a, b in ((lhs, rhs), (rhs, lhs)):
-        if isinstance(a, (sp.Symbol, Direcional)) and not b.has(a):
-            return a, b
-    diferenca = lhs - rhs
-    candidatos = sorted(diferenca.atoms(Direcional), key=default_sort_key,
-                        reverse=True)
-    candidatos += sorted((s for s in diferenca.free_symbols
-                          if s.name not in tensores), key=default_sort_key)
-    for a in candidatos:
-        mudo = sp.Dummy()
-        aberta = diferenca.xreplace({a: mudo})
-        if aberta.has(a) or sp.degree(sp.expand(aberta), mudo) != 1:
-            continue
-        solucoes = sp.solve(aberta, mudo)
-        if len(solucoes) == 1:
-            return a, solucoes[0]
-    raise NaoEVetorial(
-        f"{rotulo}: não consigo usar {sp.sstr(eq)} como troca — nenhum termo "
-        f"se isola nela")
+    coord = {}
+    for t, c in rel.items():
+        for m, q in sp.expand(c).as_coefficients_dict().items():
+            chave = (m, t)
+            coord[chave] = coord.get(chave, 0) + q
+    return {k: q for k, q in coord.items() if q != 0}
 
 
-class _Regras:
-    """As hipóteses escalares, aplicadas aos coeficientes."""
-
-    def __init__(self, dadas):
-        self.dadas = dadas              # rótulo -> (átomo, expressão)
-        self.trocas = {a: b for a, b in dadas.values()}
-
-    def aplicar(self, c):
-        c = sp.sympify(c)
-        for _ in range(6):
-            nova = c.xreplace(self.trocas) if self.trocas else c
-            if nova == c:
-                break
-            c = nova
-        return _limpo(sp.expand(c))
-
-    def rel(self, relacao):
-        if not self.trocas:
-            return relacao
-        return {t: v for t, c in relacao.items()
-                if not _nulo(v := self.aplicar(c))}
-
-    def usadas_em(self, relacoes):
-        usadas = []
-        for rotulo, (a, b) in self.dadas.items():
-            if any(sp.sympify(c).has(a) for r in relacoes for c in r.values()):
-                usadas.append((rotulo, a, b))
-        return usadas
-
-
-def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
+def _buscar(objetivo, alvo, hipoteses, base, tensores):
     """A busca, com as hipóteses já instanciadas.
 
     Cada relação que aparece entra numa base escalonada, e o objetivo é
@@ -527,24 +528,27 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
     gerar todas as relações para só então resolver um sistema com todas elas.
     """
     todos = [alvo] + [d.relacao for d in base]
-    lugares = contextos(todos)
-    profundidade = max((_profundidade(t) for r in todos for t in r), default=0)
+    lugares = contextos(todos, alvo, tensores)
+    profundidade = max(1, max(_profundidade_rel(r) for r in todos))
 
     # O universo: os termos que o problema tem, e os que estão a UM contexto
     # deles. Relação derivada que sai disso não serve para nada que a prova
     # precise — e sem esta poda as instâncias trazem termos, os termos trazem
     # contextos, e a busca não acaba.
     presentes = _chao(todos, tensores)
-    universo = presentes | {c.preencher(t) for c in lugares for t in presentes}
-    universo = {t for u in universo for t in linear(u, tensores)} | presentes
+    universo = presentes | {c.preencher(t) for c in lugares for t in presentes
+                            if c.de == c.para == "vetor"}
+    universo = ({t for u in universo for t in linear(u, tensores)} | presentes
+                | {ESCALAR})
 
     escalonada = _Escalonada()
     derivadas = []
+    alvo_coord = _coordenadas(alvo)
 
     def entra(d):
         derivadas.append(d)
-        escalonada.juntar(regras.rel(d.relacao), len(derivadas) - 1)
-        return escalonada.combinacao(alvo)
+        escalonada.juntar(_coordenadas(d.relacao), len(derivadas) - 1)
+        return escalonada.combinacao(alvo_coord)
 
     conhecidas = {}
     for d in base:
@@ -553,7 +557,7 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
         conhecidas[d.chave()] = d
         achou = entra(d)
         if achou is not None:
-            return _pronta(objetivo, alvo, hipoteses, derivadas, achou, regras)
+            return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
 
     fronteira = list(conhecidas.values())
     for _ in range(profundidade):
@@ -564,8 +568,9 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
                 # a maioria dos contextos leva para fora do universo, e montar
                 # a relação inteira para depois jogá-la fora era o grosso do
                 # tempo.
-                if not all(u in universo for t in d.relacao
-                           for u in linear(c.preencher(t), tensores)):
+                if (c.de == c.para == "vetor" and not _e_rel_escalar(d.relacao)
+                        and not all(u in universo for t in d.relacao
+                                    for u in linear(c.preencher(t), tensores))):
                     continue
                 n = _aplicar(c, d, tensores)
                 if n is None or n.chave() in conhecidas:
@@ -576,15 +581,14 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
                 nova_fronteira.append(n)
                 achou = entra(n)
                 if achou is not None:
-                    return _pronta(objetivo, alvo, hipoteses, derivadas, achou,
-                                   regras)
+                    return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
                 if len(conhecidas) > LIMITE_RELACOES:
                     raise SemProva(
                         f"a busca passou de {LIMITE_RELACOES} relações sem "
                         f"achar; não achar não é prova de que é falso")
         fronteira = nova_fronteira
 
-    faltam = sorted({sp.sstr(t) for t in alvo}
+    faltam = sorted({sp.sstr(t) for t in alvo if t != ESCALAR}
                     - {sp.sstr(t) for d in derivadas for t in d.relacao})
     dica = (f" Nenhuma hipótese fala de {', '.join(faltam)}."
             if faltam else "")
@@ -594,15 +598,14 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores, regras):
         "a prova pedir mais do que a linearidade e as hipóteses dão.")
 
 
-def _pronta(objetivo, alvo, hipoteses, derivadas, combinacao, regras):
+def _pronta(objetivo, alvo, hipoteses, derivadas, combinacao):
     passos = [(v, derivadas[k]) for k, v in sorted(combinacao.items())]
-    _conferir(alvo, passos, regras)
-    trocas = regras.usadas_em([d.relacao for _, d in passos])
+    _conferir(alvo, passos)
     # Na ordem em que foram dadas, e não na da busca: quem lê confere a
     # lista contra a chamada que escreveu.
-    tocadas = {d.hipotese for _, d in passos} | {r for r, _, _ in trocas}
+    tocadas = {d.hipotese for _, d in passos}
     usadas = [h for h in hipoteses if h in tocadas]
-    return Prova(objetivo, passos, usadas, trocas)
+    return Prova(objetivo, passos, usadas)
 
 
 class _Escalonada:
@@ -741,10 +744,17 @@ def _instancias(gerais, relacoes, tensores, rodadas=1):
     return novas
 
 
-def _conferir(alvo, passos, regras):
-    """A soma é conferida de novo, do zero: o certificado não é de confiança."""
-    soma = _soma(*(_vezes(v, regras.rel(d.relacao)) for v, d in passos))
-    resto = regras.rel(_soma(soma, _vezes(-1, alvo)))
+def _conferir(alvo, passos):
+    """A soma é conferida de novo, do zero: o certificado não é de confiança.
+
+    E os coeficientes da combinação têm de ser NÚMEROS — multiplicar por
+    função só por contexto explícito, nunca escondido num coeficiente.
+    """
+    if not all(sp.sympify(v).is_number for v, _ in passos):
+        raise AssertionError(
+            "defeito do Sucuri: coeficiente de combinação que não é número")
+    soma = _soma(*(_vezes(v, d.relacao) for v, d in passos))
+    resto = _coordenadas(_soma(soma, _vezes(-1, alvo)))
     if resto:
         raise AssertionError(
             f"defeito do Sucuri: a combinação achada não confere (sobra {resto})")
@@ -766,8 +776,4 @@ def linhas(prova):
                       f"{sp.sstr(expressao)} = 0",
                       (("-" if v == -1 else "" if v == 1 else sp.latex(v) + r"\,\cdot\,")
                        + d.rotulo_latex() + r":\quad " + _latex_relacao(d.relacao))])
-    for rotulo, a, b in prova.trocas:
-        saida.append([f"{rotulo}, nos coeficientes",
-                      f"{sp.sstr(a)} = {sp.sstr(b)}",
-                      rf"\text{{{rotulo}}}:\quad {sp.latex(a)} = {sp.latex(b)}"])
     return saida

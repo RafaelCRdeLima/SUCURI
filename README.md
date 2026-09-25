@@ -348,7 +348,7 @@ a derivada direcional U(f):
 [f U, X] = f [U, X] - \nabla_X f \, U                 provar: ∎, sem hipótese
 \nabla_U (f X) = f \nabla_U X                         não passa: falta U(f)X
 \nabla_U f = 0                                        eq1
-provar(eq_acima, eq1)                                 ∎ — "eq1, nos coeficientes"
+provar(eq_acima, eq1)                                 ∎ — o passo é "eq1·X"
 ```
 
 Todo símbolo que não é número é tratado como **função**, e não como constante.
@@ -356,9 +356,15 @@ Todo símbolo que não é número é tratado como **função**, e não como cons
 prova que precisar disso pede a hipótese. Nunca sai uma prova errada por tratar
 como constante o que variava.
 
-Hipótese escalar, como `\nabla_U f = 0`, entra como troca nos coeficientes.
-Quando nenhum lado é um termo sozinho, isola-se um. A tabela da prova mostra a
-troca numa linha própria.
+Hipótese escalar, como `\nabla_U f = 0`, é relação como as outras: multiplicada
+por um vetor do problema (`eq1·X`), derivada numa direção (`U(eq1)`), ou por
+uma função (`f·eq1`). Cada uma dessas operações aparece como passo na tabela.
+
+**Não se divide por função.** A combinação que fecha a prova é só com números.
+Dividir por f seria concluir X = U de fX = fU, o que é falso onde f se anula. A
+eliminação é feita em coordenadas numéricas, uma por monômio, e multiplicar por
+função é contexto explícito (`f·eq1`). Uma versão anterior do motor dividia, e
+de fX = fU concluía X = U. Hoje há teste para isso.
 
 `U(f)` também se lê como derivada direcional, mas continua sendo pergunta: U
 aplicado a f, ou U vezes f? As duas leituras são bem tipadas, porque (a+b)U
