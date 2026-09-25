@@ -44,12 +44,15 @@ de contextos, e pode faltar hipótese. O motor diz as duas coisas.
 
 from __future__ import annotations
 
+import itertools
+
 import sympy as sp
 from sympy.core.sorting import default_sort_key
 
-from .conexao import (VETOR, Avaliado, ColcheteDeLie, Curvatura,
-                      DerivadaCovariante, Direcional, Metrica, ParaTodo,
-                      e_vetor, tem_tensor)
+from .conexao import (VETOR, Avaliado, AvaliadoAntissimetrico,
+                      AvaliadoSimetrico, ColcheteDeLie, Curvatura,
+                      DerivadaCovariante, Direcional, ParaTodo, e_vetor,
+                      tem_tensor)
 
 LIMITE_RELACOES = 4000
 """Quantas relações derivadas a busca aceita antes de desistir."""
@@ -179,15 +182,32 @@ def escalar_normal(expr, tensores):
 
 def avaliado(a, tensores):
     """T(Σ c U, …) = Σ c … T(U, …): um (0,n) é linear sobre funções em cada
-    slot — é um tensor. A métrica, além disso, é simétrica."""
+    slot — é um tensor. Simétrico (a métrica, ou o declarado), os slots vão
+    para a ordem canônica; antissimétrico, também, com o sinal da permutação,
+    e slot repetido dá zero."""
     total = sp.S.Zero
     for combinacao in _produto([linear(s, tensores) for s in a.slots]):
         coef = sp.Mul(*(c for _, c in combinacao))
         slots = [t for t, _ in combinacao]
-        if isinstance(a, Metrica):
-            slots = sorted(slots, key=default_sort_key)
+        if isinstance(a, (AvaliadoSimetrico, AvaliadoAntissimetrico)):
+            ordem = sorted(range(len(slots)),
+                           key=lambda i: default_sort_key(slots[i]))
+            canonicos = [slots[i] for i in ordem]
+            if isinstance(a, AvaliadoAntissimetrico):
+                if len(set(slots)) < len(slots):
+                    continue
+                coef *= _sinal(ordem)
+            slots = canonicos
         total += coef * type(a)(a.nome, *slots)
     return sp.expand(total)
+
+
+def _sinal(permutacao):
+    """+1 ou −1: a paridade, contando as inversões."""
+    inversoes = sum(1 for i in range(len(permutacao))
+                    for j in range(i + 1, len(permutacao))
+                    if permutacao[i] > permutacao[j])
+    return -1 if inversoes % 2 else 1
 
 
 def _produto(listas):
@@ -744,8 +764,11 @@ def _casar(padrao, termo, variaveis, sub, tensores):
     if type(padrao) is not type(termo) or len(padrao.args) != len(termo.args):
         return None
     ordens = [termo.args]
-    if isinstance(termo, Metrica):
-        ordens.append((termo.args[0],) + termo.args[:0:-1])   # g(X,Y) = g(Y,X)
+    if isinstance(termo, (AvaliadoSimetrico, AvaliadoAntissimetrico)):
+        # g(X,Y) = g(Y,X), F(X,Y) = −F(Y,X): o casamento só acha a
+        # substituição, e a instância é normalizada de novo, com o sinal.
+        ordens = [(termo.args[0],) + p
+                  for p in itertools.permutations(termo.args[1:])]
     if isinstance(termo, ColcheteDeLie):
         # O colchete foi posto em ordem canônica pela antissimetria, e a ordem
         # depende dos NOMES: [A,[B,C]] pode ter virado −[[B,C],A] no padrão e

@@ -214,6 +214,38 @@ fator multiplicando outro, é um objeto próprio, e montar um produto ali
 pareceria certo — então recusa. A derivada **sem** índice, ∇_U X, atravessa:
 é a seção seguinte.
 
+### Simetria declarada
+
+```
+F = tensor(0, 2, antissimétrico)
+h = tensor(2, 0, simétrico)
+
+F_{\mu\nu} + F_{\nu\mu}     simplificar →  0
+F_{\mu\nu} h^{\mu\nu}        simplificar →  0      antissimétrico com simétrico
+F_{\mu\nu} g^{\mu\nu}        simplificar →  0      o traço de um antissimétrico
+g_{\mu\nu} - g_{\nu\mu}      simplificar →  0      a métrica, sem dizer nada
+F(X, X) = 0                  provar      →  ∎      sem índice, sem hipótese
+```
+
+A simetria é dos slots, e a mesma declaração serve às duas notações. Com
+índice, ela alimenta a canonicalização de Butler-Portugal do SymPy, porque o
+`simplify` sozinho não a usa. Sem índice, o motor põe os slots em ordem
+canônica, com o sinal da permutação, e slot repetido num antissimétrico dá
+zero.
+
+A métrica é simétrica sem precisar dizer. Antes desta declaração existir, nem
+`g_{\mu\nu} - g_{\nu\mu}` zerava. Não era errado, mas era incompleto.
+
+Ler não simplifica: `F_{\mu\nu} + F_{\nu\mu}` aparece como foi escrito, com a
+valência, e o zero é resposta do verbo. Há duas recusas:
+
+- simetria num (1,1): trocar um índice de cima com um de baixo exige baixar
+  um deles, e isso é a métrica, não o tensor;
+- simetria num (1,0) ou (0,1): um slot só não tem com quem trocar.
+
+Ainda não: as simetrias do Riemann, que não são simetria total, e
+T_{(μν)} e T_{[μν]} como notação.
+
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
 ```

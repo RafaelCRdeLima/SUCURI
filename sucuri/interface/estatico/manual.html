@@ -363,6 +363,21 @@ simétrico e linear em cada slot, sem hipótese. A compatibilidade com a métric
     decide entre direção e índice é a declaração.</p>
 </div>
 
+<p>E a simetria dos slots se declara junto com o tipo. Serve às duas notações:
+com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">h = tensor(2, 0, simétrico)</code>
+  <code class="entrada">F_{\mu\nu} h^{\mu\nu}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">antissimétrico contraído com simétrico. A métrica é
+    simétrica sem precisar dizer; e simetria num (1,1) é recusada — trocar
+    índice de cima com de baixo pede a métrica, e aí é outro tensor.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

@@ -438,6 +438,7 @@ class Document:
         self._indices = set()           # nomes declarados como índice
         self._tensores = {}             # nome -> (formas, vetores)
         self._curvaturas = []           # nomes declarados operador de curvatura
+        self._simetrias = {}            # nome -> 'simetrico' | 'antissimetrico'
         self._espaco = None             # o tipo de índice, criado quando precisa
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
@@ -540,7 +541,7 @@ class Document:
             self._espaco.escrita[limpo] = n.strip()
         return self
 
-    def tensor(self, nome, formas, vetores):
+    def tensor(self, nome, formas, vetores, simetria=None):
         """Declara o TIPO do Schutz: (M, N) recebe M formas e N vetores.
 
         Em índices, M em cima e N embaixo. Diz o posto antes da primeira
@@ -549,10 +550,16 @@ class Document:
         """
         from .tensores import DIMENSAO_PADRAO, Espaco
 
+        from .tensores import problema_de_simetria
+        problema = problema_de_simetria(formas, vetores, simetria)
+        if problema:
+            raise ValueError(problema)
         if self._espaco is None:
             self._espaco = Espaco(DIMENSAO_PADRAO)
         self._tensores[_limpo_indice(nome)] = (formas, vetores)
-        self._espaco.declarar(_limpo_indice(nome), formas, vetores)
+        if simetria:
+            self._simetrias[_limpo_indice(nome)] = simetria
+        self._espaco.declarar(_limpo_indice(nome), formas, vetores, simetria)
         return self
 
     def curvature(self, *nomes):
@@ -575,7 +582,9 @@ class Document:
         produto, e os slots de um (0,2) são vetores.
         """
         metrica = self._espaco.metrica if self._espaco else None
-        return {nome: (vetores, nome == metrica)
+        return {nome: (vetores, nome == metrica,
+                       "simetrico" if nome == metrica
+                       else self._simetrias.get(nome))
                 for nome, (formas, vetores) in self._tensores.items()
                 if formas == 0 and vetores >= 1}
 

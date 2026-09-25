@@ -179,7 +179,15 @@ class Avaliado(sp.Function):
         return f"{printer._print(self.nome)}({slots})"
 
 
-class Metrica(Avaliado):
+class AvaliadoSimetrico(Avaliado):
+    """T(X, Y) com T declarado simétrico: T(X,Y) = T(Y,X)."""
+
+
+class AvaliadoAntissimetrico(Avaliado):
+    """F(X, Y) com F declarado antissimétrico: F(X,Y) = −F(Y,X), F(X,X) = 0."""
+
+
+class Metrica(AvaliadoSimetrico):
     """g(X, Y) — a métrica: um (0,2) que é SIMÉTRICO.
 
     A simetria não é convenção de livro: é o que se chama de métrica. Por
@@ -388,9 +396,9 @@ class _Leitor:
         self.texto = texto
         self.indices = set(indices)
         self.curvaturas = [(n, _cabeca_curvatura(n)) for n in curvaturas]
-        # nome -> (quantos slots, é a métrica?)
-        self.formas = [(n, _cabeca_curvatura(n), k, metrica)
-                       for n, (k, metrica) in (formas or {}).items()]
+        # nome -> (quantos slots, é a métrica?, simetria)
+        self.formas = [(n, _cabeca_curvatura(n), k, metrica, simetria)
+                       for n, (k, metrica, simetria) in (formas or {}).items()]
 
     # O que começa em i, se for operador nosso.
     def em(self, i):
@@ -401,10 +409,10 @@ class _Leitor:
             m = regra.match(t, i)
             if m and (i == 0 or not re.match(r"[A-Za-z\\]", t[i - 1])):
                 return self.curvatura(i, m, nome)
-        for nome, regra, k, metrica in self.formas:
+        for nome, regra, k, metrica, simetria in self.formas:
             m = regra.match(t, i)
             if m and (i == 0 or not re.match(r"[A-Za-z\\]", t[i - 1])):
-                return self.avaliado(i, m, nome, k, metrica)
+                return self.avaliado(i, m, nome, k, metrica, simetria)
         if t.startswith("[", i):
             return self.colchete(i)
         return None
@@ -451,7 +459,7 @@ class _Leitor:
                           {"nome": nome, "args": args, "operando": operando},
                           problema)
 
-    def avaliado(self, i, m, nome, k, metrica):
+    def avaliado(self, i, m, nome, k, metrica, simetria=None):
         abre = m.end() - 1
         fecha = _grupo(self.texto, abre, "(", ")")
         if fecha is None:
@@ -464,7 +472,8 @@ class _Leitor:
             problema = (f"{nome} é {quem}, e recebe {k} vetor(es); aqui "
                         f"recebe {len(args)}")
         return Ocorrencia("avaliado", i, abre, fecha,
-                          {"nome": nome, "args": args, "metrica": metrica},
+                          {"nome": nome, "args": args, "metrica": metrica,
+                           "simetria": simetria},
                           problema)
 
     def _direcao(self, i):
@@ -578,7 +587,10 @@ def construir(oc, ler, tensores):
         slots = [ler(a) for a in p["args"]]
         for a, escrito in zip(slots, p["args"]):
             exigir_vetor(a, f"{nome}({', '.join(p['args'])})", tensores)
-        classe = Metrica if p["metrica"] else Avaliado
+        classe = (Metrica if p["metrica"]
+                  else AvaliadoSimetrico if p.get("simetria") == "simetrico"
+                  else AvaliadoAntissimetrico if p.get("simetria") == "antissimetrico"
+                  else Avaliado)
         return classe(sp.Symbol(nome), *slots)
     if oc.especie == "colchete":
         a, b = (ler(x) for x in p["args"])

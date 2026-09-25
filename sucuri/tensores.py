@@ -35,7 +35,7 @@ import re
 
 import sympy as sp
 from sympy.tensor.tensor import (TensAdd, TensExpr, TensorHead, TensorIndexType,
-                                 tensor_indices)
+                                 TensorSymmetry, tensor_indices)
 
 DIMENSAO_PADRAO = 4
 """Quatro, porque quem escreve índice grego quase sempre escreve relatividade.
@@ -66,6 +66,7 @@ class Espaco:
         self._indices = {}
         self._cabecas = {}
         self._tipos = {}            # nome -> (formas, vetores), tipo do Schutz
+        self._simetrias = {}        # nome -> 'simetrico' | 'antissimetrico'
         self.metrica = None         # o nome declarado como A métrica
 
     def indice(self, nome):
@@ -76,7 +77,7 @@ class Espaco:
             self._indices[nome] = achado[0] if isinstance(achado, list) else achado
         return self._indices[nome]
 
-    def declarar(self, nome, formas, vetores):
+    def declarar(self, nome, formas, vetores, simetria=None):
         """O tipo do Schutz: (M, N) recebe M formas e N vetores.
 
         Um tensor do tipo (M/N) é uma função de M 1-formas e N vetores, o que
@@ -88,6 +89,8 @@ class Espaco:
         se obtêm levantando ou baixando com a métrica.
         """
         self._tipos[nome] = (formas, vetores)
+        if simetria:
+            self._simetrias[nome] = simetria
         return self.cabeca(nome, formas + vetores)
 
     def definir_metrica(self, nome):
@@ -98,7 +101,8 @@ class Espaco:
         uma expressão bem formada e falsa, que é a pior classe de erro que este
         programa conhece. Por isso é declaração, e não adivinhação pelo nome.
         """
-        cabeca = self.declarar(nome, 0, 2)
+        # Simétrica sem precisar dizer: é o que se chama de métrica.
+        cabeca = self.declarar(nome, 0, 2, "simetrico")
         self.tipo.set_metric(cabeca)
         self.metrica = nome
         return cabeca
@@ -131,9 +135,41 @@ class Espaco:
                     f"'{nome}' {qual} índice(s) e agora com {posto}: "
                     f"um tensor tem um posto só")
             return cabeca
-        cabeca = TensorHead(nome, [self.tipo] * posto)
+        cabeca = TensorHead(nome, [self.tipo] * posto,
+                            _simetria(self._simetrias.get(nome), posto))
         self._cabecas[nome] = (cabeca, posto)
         return cabeca
+
+
+SIMETRIAS = ("simetrico", "antissimetrico")
+
+
+def _simetria(qual, posto):
+    """A simetria do SymPy — que é o que alimenta a canonicalização."""
+    if qual == "simetrico":
+        return TensorSymmetry.fully_symmetric(posto)
+    if qual == "antissimetrico":
+        return TensorSymmetry.fully_symmetric(-posto)
+    return TensorSymmetry.no_symmetry(posto)
+
+
+def problema_de_simetria(formas, vetores, simetria):
+    """Por que a simetria declarada não cabe no tipo — ou None.
+
+    Trocar um índice de cima com um de baixo não é operação: para compará-los
+    é preciso baixar um deles, e isso é a métrica, não o tensor. E um slot só
+    não tem com quem trocar.
+    """
+    if not simetria:
+        return None
+    if formas and vetores:
+        return (f"simetria entre índice de cima e de baixo, num ({formas},"
+                f"{vetores}), só existe depois de baixar um deles com a "
+                f"métrica — e aí é outro tensor. Declare a simetria no tipo "
+                f"com os índices todos do mesmo lado")
+    if formas + vetores < 2:
+        return "com um slot só não há o que trocar"
+    return None
 
 
 def indices_de(grupo):

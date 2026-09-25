@@ -72,7 +72,9 @@ _RE_METRICA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*m[ée]trica\s*"
 # `A = tensor(m, n)` com m e n definidos antes faria do caderno uma linguagem
 # de programação, que é a porta que os verbos fechados existem para não abrir.
 _RE_TENSOR = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*tensor\s*\(\s*"
-                        r"(\d+)\s*,\s*(\d+)\s*\)\s*$", re.I)
+                        r"(\d+)\s*,\s*(\d+)\s*"
+                        r"(?:,\s*((?:anti-?s?)?sim[ée]tric[oa])\s*)?\)\s*$",
+                        re.I)
 
 # A forma antiga, para dizer o que mudou em vez de falhar em LaTeX.
 _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
@@ -163,6 +165,12 @@ class Celula:
     def to_dict(self):
         return {"nome": self.nome, "fonte": self.fonte, "tipo": self.tipo,
                 **self.dados}
+
+
+def _qual_simetria(escrito):
+    if not escrito:
+        return None
+    return "antissimetrico" if escrito.lower().startswith("anti") else "simetrico"
 
 
 def _e_instrucao(linha):
@@ -264,7 +272,8 @@ class Caderno:
         tensorial = _RE_TENSOR.match(fonte or "")
         if tensorial:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
-                                int(tensorial.group(3)))
+                                int(tensorial.group(3)),
+                                _qual_simetria(tensorial.group(4)))
 
         especie = _RE_ESPECIE.match(fonte or "")
         if especie:
@@ -374,23 +383,41 @@ class Caderno:
                                 f"diagonal, com {len(componentes)} componentes",
                        "latex_exato": sp.latex(metrica.matriz())})
 
-    def _tensor(self, nome, formas, vetores):
-        """`A = tensor(0, 2)` — o tipo do Schutz.
+    def _tensor(self, nome, formas, vetores, simetria=None):
+        """`A = tensor(0, 2)` — o tipo do Schutz; `F = tensor(0, 2,
+        antissimétrico)` — e a simetria dos slots.
 
         Diz o posto ANTES da primeira aparição, e diz a valência canônica. O
         uso sozinho dizia só o posto, e dizia tarde.
         """
+        from .tensores import problema_de_simetria
         limpo = nome[1:] if nome.startswith("\\") else nome
+        escrito = f"{nome} = tensor({formas}, {vetores}" + (
+            f", {'antissimétrico' if simetria == 'antissimetrico' else 'simétrico'})"
+            if simetria else ")")
+        problema = problema_de_simetria(formas, vetores, simetria)
+        if problema:
+            return Celula(None, escrito, "declaracao", {"erro": problema})
         self.sessao.tensores[limpo] = (formas, vetores)
-        return Celula(None, f"{nome} = tensor({formas}, {vetores})",
+        self.sessao.simetrias.pop(limpo, None)
+        if simetria:
+            self.sessao.simetrias[limpo] = simetria
+        nota = ""
+        if simetria == "simetrico":
+            nota = "; simétrico — trocar dois slots não muda nada"
+        elif simetria == "antissimetrico":
+            nota = ("; antissimétrico — trocar dois slots troca o sinal, e "
+                    "slot repetido dá zero")
+        return Celula(None, escrito,
                       "declaracao",
                       {"declarado": [{"nome": limpo,
-                                      "tipo": [formas, vetores]}],
+                                      "tipo": [formas, vetores],
+                                      "simetria": simetria}],
                        "texto": (f"{limpo} é tensor do tipo ({formas},{vetores}): "
                                  f"recebe {_conta(formas, '1-forma', '1-formas')}"
                                  f" e {_conta(vetores, 'vetor', 'vetores')}"
                                  f" — {_indices_em(formas, 'em cima')},"
-                                 f" {_indices_em(vetores, 'embaixo')}")})
+                                 f" {_indices_em(vetores, 'embaixo')}{nota}")})
 
     def _especie(self, nomes, especie):
         r"""`e = euler`, `a = símbolo`, `\mu = índice`.
@@ -568,7 +595,14 @@ class Caderno:
             d["alvo"] = alvo
             return d
         if verbo == "simplificar":
-            objeto = sp.simplify(expressao.to_sympy())
+            objeto = expressao.to_sympy()
+            if isinstance(objeto, TensExpr):
+                # O simplify do SymPy não usa a simetria de um tensor; a
+                # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}
+                # só vira 0 por ela.
+                objeto = objeto.canon_bp()
+            else:
+                objeto = sp.simplify(objeto)
             return {"alvo": alvo, "exato": sp.sstr(objeto),
                     "latex_exato": sp.latex(objeto),
                     "nomeados": [self._nome_de(objeto)]}
