@@ -97,9 +97,10 @@ def test_recusa_com_o_motivo(latex, trecho):
         ler(latex)
 
 
-def test_derivada_com_indice_continua_recusada():
-    with pytest.raises(sucuri.NotacaoTensorial):
-        documento().read(r"\nabla_\mu A^\mu").to_sympy()
+def test_derivada_com_indice_nao_e_a_direcional():
+    """∇_μ com μ declarado índice é a derivada com índice, não ∇_U."""
+    e = documento().read(r"\nabla_\mu A^\mu").to_sympy()
+    assert sp.sstr(e) == "D_A(-L_0, L_0)"
 
 
 def test_volta_ao_latex():

@@ -168,6 +168,12 @@ class Celula:
                 **self.dados}
 
 
+def _latex_de(objeto):
+    """LaTeX com o impressor que sabe escrever ∂_μ A^ν."""
+    from .derivadas import latex
+    return latex(objeto)
+
+
 def _qual_simetria(escrito):
     if not escrito:
         return None
@@ -624,7 +630,8 @@ class Caderno:
             return saida
 
         if verbo == "latex":
-            return {"latex_exato": sp.latex(expressao.to_sympy()),
+            from .derivadas import latex as _latex
+            return {"latex_exato": _latex(expressao.to_sympy()),
                     "exato": sp.sstr(expressao.to_sympy()), "alvo": alvo}
         if verbo == "exportar":
             return {"codigo": self.exportar(alvo), "alvo": alvo}
@@ -651,7 +658,7 @@ class Caderno:
             else:
                 objeto = sp.simplify(objeto)
             return {"alvo": alvo, "exato": sp.sstr(objeto),
-                    "latex_exato": sp.latex(objeto),
+                    "latex_exato": _latex_de(objeto),
                     "nomeados": [self._nome_de(objeto)]}
         return self._resolver(alvo, expressao)
 
@@ -762,7 +769,7 @@ class Caderno:
     def _nome_de(self, objeto):
         nome = self._registrar(objeto)
         return {"nome": nome, "sympy": sp.sstr(objeto),
-                "latex": sp.latex(objeto)}
+                "latex": _latex_de(objeto)}
 
     def _nomear(self, resultado):
         """Batiza o que a operação produziu, e devolve os nomes junto.

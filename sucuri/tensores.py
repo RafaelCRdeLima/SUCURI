@@ -503,7 +503,8 @@ u, e não L_0.
     quando o que está errado é a impressão dela. Devolver as letras originais
     conserta os dois, porque letra grega é macro e macro não cola em macro.
     """
-    texto = sp.latex(expr)
+    from .derivadas import latex as _latex
+    texto = _latex(expr)
     if espaco is None or not isinstance(expr, TensExpr):
         return texto
     for k, nome in enumerate(mudos):

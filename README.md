@@ -209,10 +209,46 @@ infeliz — aplicá-la a um tensor qualquer daria expressão bem formada e falsa
 Por isso é declaração, e por isso `contrair` sem `g = métrica` recusa em vez de
 chutar. Na outra direção vale o mesmo: `g^{\mu\nu}A_\nu` → `A^\mu`.
 
-Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela não é um
-fator multiplicando outro, é um objeto próprio, e montar um produto ali
-pareceria certo — então recusa. A derivada **sem** índice, ∇_U X, atravessa:
-é a seção seguinte.
+### Derivada com índice
+
+```
+\partial_\mu A^\mu                →  d_A(-L_0, L_0)                 a divergência
+\partial_\mu (A^\nu B_\nu)         →  (∂_μ A^ν) B_ν + A^ν ∂_μ B_ν     Leibniz
+\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi   simplificar →  0
+\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi       simplificar →  não zera
+\partial_\lambda g_{\mu\nu} - \partial_\lambda g_{\nu\mu}    simplificar →  0
+g^{\mu\nu} \partial_\nu \phi      contrair    →  ∂^μ φ
+```
+
+O parser do SymPy lê `\partial_\mu A` como o símbolo `partial_{mu}` vezes A. A
+derivada com índice não é um fator multiplicando outro, é um objeto próprio, e
+por isso a ponte a recusava. Agora ela existe como uma cabeça com o índice da
+derivada no primeiro slot: ∂_μ A^ν é `d_A(-mu, nu)`, ∇_μ é `D_A`, ∂_μ∂_ν é
+`dd_…`. Com isso, entra na contração, na soma e na canonicalização como
+qualquer tensor, e o LaTeX sai com a derivada na frente: `\partial_{\mu} A^{\nu}`.
+
+O que vale sem hipótese:
+
+- ∂ e ∇ são lineares e seguem Leibniz, também em escalar;
+- derivadas **parciais** comutam, então ∂_μ∂_ν é simétrica nesses slots;
+- num escalar, ∇_μ φ = ∂_μ φ, por definição, em qualquer conexão;
+- a simetria do tensor derivado se mantém: ∂_λ g_{μν} é simétrica em μν.
+
+O que **não** se supõe: que ∇ comute (é curvatura e torção), e que ∇g = 0 (é
+Levi-Civita, não uma conexão qualquer).
+
+A derivada age no fator imediatamente à direita: `\partial_\mu A^\nu B_\nu` é
+(∂_μ A^ν)B_ν, como em qualquer livro. Um produto pede parênteses. Há três
+recusas:
+
+- `\partial_{\mu\nu}` sem dizer a ordem;
+- derivada sem operando;
+- índice repetido na mesma posição, como `\partial_\mu A_\mu`.
+
+Sem índice declarado, `\partial_p H` continua sendo a derivada parcial em
+relação a p, como sempre foi.
+
+A derivada **sem** índice, ∇_U X, é a seção seguinte.
 
 ### Simetria declarada
 

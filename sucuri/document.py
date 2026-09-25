@@ -802,6 +802,11 @@ class Expression:
         from .conexao import cabecas as _cabecas
         cabecas = _cabecas(latex, document._indices, document._curvaturas,
                            document.formas())
+        # E ∂_μ com μ declarado não é a derivada parcial "em relação a μ" do
+        # sítio de ∂_p H: é derivada com índice, e a pergunta seria falsa.
+        from .derivadas import cabecas as _derivadas, localizar as _achar
+        cabecas |= _derivadas(latex, document._indices)
+        self.derivadas = _achar(latex, document._indices)
         self.ambiguities = [a for a in find(latex)
                             if a.span[0] not in cabecas]
 
@@ -860,6 +865,10 @@ class Expression:
         for c in self.covariantes:
             if c.problema:
                 raise ConexaoNaoLida(c.problema)
+        from .derivadas import DerivadaMalEscrita
+        for d in self.derivadas:
+            if d.problema:
+                raise DerivadaMalEscrita(d.problema)
 
         texto, reposicoes, derivadas, _, tensores = self._normalize()
         from sympy.parsing.latex import parse_latex
@@ -1000,15 +1009,26 @@ class Expression:
         # recursão — como no interior de (f+g)'. O que estiver lá dentro não se
         # substitui aqui, senão seria lido duas vezes.
         engolidos = {i for c in self.covariantes for i in range(c.ini, c.fim)}
+        engolidos |= {i for d in self.derivadas for i in range(d.ini, d.fim)}
         fatores = [f for f in self._fatores_tensoriais()
                    if f[0] not in engolidos]
         itens = ([(a.span[0], "sitio", a) for a in self.ambiguities
                   if a.span[0] not in engolidos]
                  + [(ini, "tensor", (ini, fim, base, pos))
                     for ini, fim, base, pos in fatores]
-                 + [(c.ini, "covariante", c) for c in self.covariantes])
+                 + [(c.ini, "covariante", c) for c in self.covariantes]
+                 + [(d.ini, "derivada", d) for d in self.derivadas])
 
         for _, especie, item in sorted(itens, key=lambda i: -i[0]):
+            if especie == "derivada":
+                from .derivadas import derivar
+                nome, simbolo = marcador()
+                indice = doc.espaco.indice(item.indice)
+                tensores[simbolo] = derivar(
+                    self._fragmento(item.operando), item.operacao,
+                    indice if item.cima else -indice, doc.espaco)
+                texto = texto[:item.ini] + nome + texto[item.fim:]
+                continue
             if especie == "covariante":
                 from .conexao import construir
                 nome, simbolo = marcador()
@@ -1115,9 +1135,10 @@ class Expression:
         """Os fatores tensoriais, e a recusa onde eles esbarram numa derivada.
 
         ∂_μ A^ν é derivada COM índice, e isso não é multiplicação de um fator
-        por outro — é um objeto próprio, que o SymPy trata em outro lugar. A
-        ponte ainda não vai até lá, e dizer isso é melhor do que montar um
-        produto que parece certo.
+        por outro — é um objeto próprio (derivadas.py). O que está dentro de
+        uma derivada reconhecida é lido pela recursão sobre o operando; um ∂ ou
+        ∇ com índice que sobre fora dela não foi reconhecido, e montar um
+        produto ali pareceria certo — então recusa.
         """
         from .tensores import localizar
 
@@ -1125,6 +1146,8 @@ class Expression:
         if not doc._indices:
             return []
         fatores = localizar(self._corpo, doc._indices)
+        derivadas = {i for d in self.derivadas for i in range(d.ini, d.fim)}
+        fatores = [f for f in fatores if f[0] not in derivadas]
         ocupados = {i for a in self.ambiguities for i in range(*a.span)}
         for ini, fim, base, _ in fatores:
             if base in ("partial", "nabla") or any(

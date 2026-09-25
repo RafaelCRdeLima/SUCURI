@@ -422,6 +422,18 @@ com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</
     contas diferentes em <code>contrair</code>.</p>
 </div>
 
+<p>E a derivada com índice é um objeto próprio, e não um fator — ∂ comuta,
+∇ não, e as duas seguem Leibniz:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">com ∇ no lugar de ∂, não zera: ∇<sub>μ</sub>∇<sub>ν</sub>
+    − ∇<sub>ν</sub>∇<sub>μ</sub> é torção e curvatura, e nada se supõe.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
@@ -539,8 +551,9 @@ com o motivo.</p>
     <code>\operatorname{arsinh}</code>, <code>\coth</code>,
     <code>\left\|·\right\|</code>. O SymPy <em>tem</em> essas funções; o parser
     de LaTeX é que não as lê.</li>
-  <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): não é
-    um fator multiplicando outro, é um objeto próprio. A derivada
+  <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): é
+    lida, com Leibniz e com ∂ comutando; mas ∇g = 0 e a comutação de ∇ não
+    se supõem, e ainda não há como declará-las. A derivada
     <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
     com os vetores declarados, já são lidos, e <code>provar</code> encadeia
     hipóteses sobre eles, gerais (<code>\forall</code>) ou não. Mas só

@@ -75,11 +75,11 @@ def test_sem_declarar_indice_continua_recusando():
         sucuri.Document().read(r"g_{\mu\nu} A^\mu A^\nu").to_sympy()
 
 
-def test_derivada_com_indice_ainda_nao_atravessa():
-    """∂_μ A^ν não é um fator multiplicando outro: é um objeto próprio. Montar
-    um produto aqui pareceria certo, e é por isso que a recusa existe."""
-    with pytest.raises(NotacaoTensorial, match="derivada com índice"):
-        doc().read(r"\partial_\mu A^\mu").to_sympy()
+def test_derivada_com_indice_atravessa_como_objeto_proprio():
+    """∂_μ A^ν não é um fator multiplicando outro: é um objeto próprio — e
+    agora existe (derivadas.py). A divergência contrai como qualquer tensor."""
+    e = doc().read(r"\partial_\mu A^\mu").to_sympy()
+    assert sp.sstr(e) == "d_A(-L_0, L_0)"
 
 
 def test_o_que_nao_e_indice_continua_expoente():
