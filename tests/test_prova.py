@@ -159,3 +159,86 @@ def test_provar_so_com_o_que_foi_nomeado():
 def test_provar_encadeia_como_instrucao():
     from sucuri.caderno import _e_instrucao
     assert _e_instrucao("provar(eq5, eq1, eq2)")
+
+
+# ---------------------------------------------------------------- para todo
+
+DEFINICAO_R = (r"\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W"
+               r" - \nabla_B \nabla_A W - \nabla_{[A,B]} W")
+TORCAO_NULA = r"\forall A, B: \nabla_A B - \nabla_B A = [A,B]"
+
+
+def test_forall_e_lido_como_para_todo():
+    e = ler(TORCAO_NULA)
+    assert isinstance(e, sucuri.ParaTodo)
+    assert e.variaveis == sp.symbols("A B")
+
+
+def test_a_variavel_ligada_nao_vaza():
+    doc = documento()
+    doc.read(TORCAO_NULA).to_sympy()
+    with pytest.raises(sucuri.ConexaoNaoLida, match="'A' não foi declarado"):
+        doc.read(r"\nabla_A B").to_sympy()
+
+
+@pytest.mark.parametrize("latex", [
+    r"\forall A, B \quad \nabla_A B = \nabla_B A",
+    r"\forall A, B \colon \nabla_A B = \nabla_B A",
+    r"\forall A, B \; \nabla_A B = \nabla_B A",
+])
+def test_separadores_do_forall(latex):
+    assert isinstance(ler(latex), sucuri.ParaTodo)
+
+
+@pytest.mark.parametrize("latex, trecho", [
+    (r"\forall A, \nabla_A U = 0", "sem separador"),
+    (r"\forall \omega: \nabla_U \omega = 0", r"do tipo \(0,1\)"),
+])
+def test_forall_recusa(latex, trecho):
+    with pytest.raises(sucuri.ConexaoNaoLida, match=trecho):
+        ler(latex)
+
+
+def test_forall_volta_ao_latex():
+    assert sp.latex(ler(r"\forall A: \nabla_A A = 0")) == \
+        r"\forall A:\; \nabla_{A} A = 0"
+
+
+def test_desvio_geodesico_com_definicoes_gerais():
+    """A definição de R e a torção nula ditas UMA vez, para todo vetor."""
+    p = prova(r"\nabla_U \nabla_U X = R(U,X)U", DEFINICAO_R, TORCAO_NULA,
+              r"[U,X] = 0", r"\nabla_U U = 0")
+    rotulos = sorted(d.rotulo() for _, d in p.passos)
+    assert rotulos == sorted(["h1[A→U, B→X, W→U]", "nabla_U(h2[A→U, B→X])",
+                              "nabla_U(h3)", "nabla_{h3}(U)", "nabla_X(h4)"])
+    assert p.hipoteses_usadas == ["h1", "h2", "h3", "h4"]
+
+
+def test_antissimetria_de_R_sai_da_definicao():
+    """Sem hipótese não passava; com a definição geral, sai."""
+    p = prova(r"\forall A, B, W: R(A,B)W = -R(B,A)W", DEFINICAO_R)
+    assert sorted(d.rotulo() for _, d in p.passos) == ["h1", "h1[A→B, B→A]"]
+
+
+def test_objetivo_com_forall_sem_hipotese_sobre_ele():
+    with pytest.raises(SemProva):
+        prova(r"\forall A, B, W: R(A,B)W = -R(B,A)W")
+
+
+def test_forall_nao_instancia_o_que_nao_aparece():
+    """A torção nula geral não prova nada sobre R."""
+    with pytest.raises(SemProva, match="R\\(U, X\\)\\(U\\)"):
+        prova(r"\nabla_U \nabla_U X = R(U,X)U", TORCAO_NULA,
+              r"[U,X] = 0", r"\nabla_U U = 0")
+
+
+def test_identidade_de_bianchi_algebrica():
+    r"""R(A,B)C + R(B,C)A + R(C,A)B = 0, da definição e da torção nula.
+
+    Precisa também da identidade de Jacobi do colchete, que é hipótese: o
+    motor não a sabe sozinho.
+    """
+    jacobi = r"\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0"
+    p = prova(r"R(U,X)Y + R(X,Y)U + R(Y,U)X = 0",
+              DEFINICAO_R, TORCAO_NULA, jacobi)
+    assert "h1" in p.hipoteses_usadas and "h2" in p.hipoteses_usadas

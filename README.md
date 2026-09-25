@@ -301,9 +301,41 @@ de novo, do zero, antes do ∎.
 Quando o motor não acha, diz o que costuma faltar ("nenhuma hipótese fala de
 R(U, X)(U)") e diz também que não achar não é prova de que é falso.
 
-Limites: só igualdades lineares entre campos vetoriais, e hipóteses sobre
-vetores **dados**. Uma definição "para todo W" ainda se escreve para o W que se
-usa.
+### Para todo
+
+Uma definição vale para qualquer vetor, e é assim que se escreve:
+
+```
+\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W   eq1
+\forall A, B: \nabla_A B - \nabla_B A = [A,B]                                           eq2
+[U,X] = 0                                                                                eq3
+\nabla_U U = 0                                                                           eq4
+\nabla_U \nabla_U X = R(U,X)U                                                            eq5
+
+provar(eq5, eq1, eq2, eq3, eq4)
+    − eq1[A→U, B→X, W→U]
+    nabla_U(eq2[A→U, B→X])
+    nabla_U(eq3) · nabla_{eq3}(U) · nabla_X(eq4)
+    somando          ∇_U∇_U X = R(U,X)U  ∎
+```
+
+A definição de R e a torção nula são ditas **uma vez**. A prova instancia cada
+uma onde o problema pede, e diz em qual instância: `eq1[A→U, B→X, W→U]`.
+
+O separador depois da lista é obrigatório: dois-pontos, `\colon`, `\quad`,
+`\;` ou `\,`. Sem ele não se sabe onde a lista acaba: em
+`\forall W, R(U,X)W = …`, a vírgula separa nomes ou encerra a lista? As
+variáveis ligadas são vetores só **dentro** da equação e não vazam para as
+linhas de baixo.
+
+A instanciação não tenta todos os vetores. Ela casa cada termo da hipótese com
+os termos do problema: `R(A,B)W` com `R(U,X)U` dá A=U, B=X, W=U. É o que se faz
+ao ler uma definição, aplicá-la ao caso que se tem na mão. Com a definição
+geral saem coisas que antes não saíam: a antissimetria `R(A,B)W = -R(B,A)W` e,
+com a identidade de Jacobi como hipótese, a identidade de Bianchi algébrica.
+
+Limites: só igualdades lineares entre campos vetoriais, e a regra de Leibniz
+(∇_U(fX) = U(f)X + f∇_U X) não entra.
 
 ### Sem declarar, a recusa continua
 

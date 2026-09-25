@@ -568,6 +568,32 @@ class Document:
                 self._curvaturas.append(limpo)
         return self
 
+    def com_vetores(self, nomes):
+        """Uma cópia em que `nomes` são vetores — para o corpo de um ∀.
+
+        Cópia, e não declaração: a variável ligada não existe fora da equação,
+        e declará-la no documento a faria vazar para as linhas de baixo. As
+        anotações são as mesmas, porque decidir um sítio dentro do ∀ é decidir
+        o sítio.
+        """
+        import copy
+
+        from .conexao import VETOR, ConexaoNaoLida
+        for nome in nomes:
+            if nome in self._indices:
+                raise ConexaoNaoLida(
+                    f"∀{nome}: '{nome}' foi declarado índice, e o ∀ aqui "
+                    f"quantifica campos vetoriais")
+            tipo = self._tensores.get(nome)
+            if tipo is not None and tipo != VETOR:
+                raise ConexaoNaoLida(
+                    f"∀{nome}: '{nome}' foi declarado do tipo "
+                    f"({tipo[0]},{tipo[1]}), e o ∀ aqui quantifica campos "
+                    f"vetoriais")
+        copia = copy.copy(self)
+        copia._tensores = {**self._tensores, **{n: VETOR for n in nomes}}
+        return copia
+
     def metric(self, nome):
         r"""Diz qual nome é A métrica — o que licencia baixar e levantar índice.
 
@@ -663,7 +689,30 @@ class Expression:
 
     def __init__(self, latex, document):
         self.source = latex
+        # `\forall A, B: …` — as variáveis ligadas valem como vetores só
+        # DENTRO da equação, e o prefixo sai do texto que os leitores veem. Sai
+        # trocado por espaços, e não cortado: as posições dos sítios são as da
+        # entrada, e a interface as usa para pintar o que foi escrito.
+        from .conexao import quantificador
+        self.ligadas, self._corpo = quantificador(latex)
+        self._recusa = None
+        if self.ligadas:
+            # A recusa espera a conversão, como todas as outras: construir a
+            # expressão é ler, e ler não falha — quem falha é to_sympy.
+            from .conexao import ConexaoNaoLida
+            try:
+                document = document.com_vetores(self.ligadas)
+            except ConexaoNaoLida as e:
+                self._recusa = e
+        elif re.match(r"\s*\\forall(?![a-zA-Z])", latex):
+            from .conexao import ConexaoNaoLida
+            self._recusa = ConexaoNaoLida(
+                "∀ sem separador depois da lista: escreva \\forall A, B: … "
+                "(ou \\colon, \\quad, \\;). Sem ele não se sabe onde a lista "
+                "acaba — em \\forall W, R(U,X)W a vírgula separa nome ou "
+                "encerra a lista?")
         self.document = document
+        latex = self._corpo
         from .conexao import localizar
         self.covariantes = localizar(latex, document._indices,
                                      document._curvaturas)
@@ -718,10 +767,12 @@ class Expression:
         omissão, porque escolher por omissão é exatamente o que produz o erro
         silencioso.
         """
+        if self._recusa:
+            raise self._recusa
         if self.pending:
             raise Unresolved(self.pending)
 
-        recusas, _ = indices_tensoriais(self.source, self.document._indices)
+        recusas, _ = indices_tensoriais(self._corpo, self.document._indices)
         if recusas:
             raise NotacaoTensorial(recusas)
 
@@ -768,6 +819,10 @@ class Expression:
             raise
 
         self._conferir(texto, expr)
+        if self.ligadas:
+            from .conexao import ParaTodo
+            expr = ParaTodo(sp.Tuple(*(sp.Symbol(n) for n in self.ligadas)),
+                            expr)
         return expr
 
     def _conferir(self, texto, expr):
@@ -802,7 +857,7 @@ class Expression:
         """Reescreve a entrada em forma sem ambiguidade, guardando as trocas."""
         doc = self.document
         x = doc.independent
-        texto = self.source
+        texto = self._corpo
         reposicoes = {}
         derivadas = {}
         tensores = {}
@@ -956,7 +1011,7 @@ class Expression:
         doc = self.document
         if not doc._indices:
             return []
-        fatores = localizar(self.source, doc._indices)
+        fatores = localizar(self._corpo, doc._indices)
         ocupados = {i for a in self.ambiguities for i in range(*a.span)}
         for ini, fim, base, _ in fatores:
             if base in ("partial", "nabla") or any(

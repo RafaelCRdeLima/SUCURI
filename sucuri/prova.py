@@ -43,10 +43,20 @@ from __future__ import annotations
 import sympy as sp
 from sympy.core.sorting import default_sort_key
 
-from .conexao import ColcheteDeLie, Curvatura, DerivadaCovariante, e_vetor
+from .conexao import (VETOR, ColcheteDeLie, Curvatura, DerivadaCovariante,
+                      ParaTodo, e_vetor)
 
 LIMITE_RELACOES = 4000
 """Quantas relações derivadas a busca aceita antes de desistir."""
+
+LIMITE_INSTANCIAS = 300
+"""Quantas instâncias das hipóteses com ∀ a busca aceita."""
+
+RODADAS = 3
+"""Até quantas vezes as instâncias novas podem gerar instâncias de novo.
+
+A busca tenta com uma rodada e só aprofunda se não achar: cada rodada
+multiplica as relações, e a maioria das provas não precisa da segunda."""
 
 _OPERADORES = (DerivadaCovariante, ColcheteDeLie, Curvatura)
 
@@ -57,12 +67,23 @@ class NaoEVetorial(ValueError):
 
 # ------------------------------------------------------------ forma linear
 
+def _nulo(c):
+    c = sp.sympify(c)
+    # simplify é caro, e quase todo coeficiente aqui é número.
+    return c == 0 if c.is_number else sp.simplify(c) == 0
+
+
+def _limpo(c):
+    c = sp.sympify(c)
+    return c if c.is_number else sp.simplify(c)
+
+
 def _soma(*dicts):
     total = {}
     for d in dicts:
         for t, c in d.items():
             total[t] = total.get(t, 0) + c
-    return {t: c for t, c in total.items() if sp.simplify(c) != 0}
+    return {t: c for t, c in total.items() if not _nulo(c)}
 
 
 def _vezes(c, d):
@@ -73,6 +94,9 @@ def _constante(c):
     return sp.sympify(c).is_number
 
 
+_MEMORIA = {}
+
+
 def linear(expr, tensores):
     """{termo: coeficiente} — a expressão como combinação linear.
 
@@ -80,6 +104,15 @@ def linear(expr, tensores):
     operadores aplicados a termos. Os coeficientes são escalares.
     """
     expr = sp.sympify(expr)
+    chave = (expr, frozenset(tensores.items()))
+    if chave not in _MEMORIA:
+        if len(_MEMORIA) > 50000:
+            _MEMORIA.clear()
+        _MEMORIA[chave] = _linear(expr, tensores)
+    return dict(_MEMORIA[chave])
+
+
+def _linear(expr, tensores):
     if expr == 0:
         return {}
     if isinstance(expr, sp.Add):
@@ -247,22 +280,34 @@ def _profundidade(termo):
 class Derivada:
     """Uma relação e de onde ela veio: a hipótese e os contextos aplicados."""
 
-    def __init__(self, relacao, hipotese, contextos=()):
+    def __init__(self, relacao, hipotese, contextos=(), instancia=None):
         self.relacao = relacao
         self.hipotese = hipotese        # o rótulo: 'eq3'
         self.contextos = tuple(contextos)
+        self.instancia = instancia      # [(variável, termo)], se veio de ∀
+
+    def _trocas(self):
+        """Só as que mudam algo: eq1[A→A, B→B] é eq1, e dizer mais é ruído."""
+        return [(v, t) for v, t in (self.instancia or []) if v != t]
 
     def chave(self):
-        return frozenset((t, sp.simplify(c)) for t, c in self.relacao.items())
+        return frozenset((t, _limpo(c)) for t, c in self.relacao.items())
 
     def rotulo(self):
         texto = self.hipotese
+        if self._trocas():
+            texto += "[" + ", ".join(f"{v}→{sp.sstr(t)}"
+                                     for v, t in self._trocas()) + "]"
         for c in self.contextos:
             texto = c.rotulo.replace("{}", texto)
         return texto
 
     def rotulo_latex(self):
         texto = rf"\text{{{self.hipotese}}}"
+        if self._trocas():
+            texto += (r"\left[" + r",\ ".join(
+                rf"{sp.latex(v)} \mapsto {sp.latex(t)}"
+                for v, t in self._trocas()) + r"\right]")
         for c in self.contextos:
             texto = c.latex.replace("{}", texto)
         return texto
@@ -277,7 +322,7 @@ def _aplicar(contexto, derivada, tensores):
     if not nova:
         return None
     return Derivada(nova, derivada.hipotese,
-                    derivada.contextos + (contexto,))
+                    derivada.contextos + (contexto,), derivada.instancia)
 
 
 class Prova:
@@ -300,46 +345,111 @@ def provar(objetivo, hipoteses, tensores):
 
     Levanta `SemProva` quando não acha — dizendo que não achar não é refutar.
     """
-    alvo = relacao(objetivo, tensores)
+    corpo = objetivo
+    if isinstance(objetivo, ParaTodo):
+        # Provar para todo W é provar para um W qualquer, sobre o qual nada se
+        # sabe além de ser vetor — e nenhuma hipótese fala dele.
+        tensores = {**tensores, **{v.name: VETOR for v in objetivo.variaveis}}
+        corpo = objetivo.corpo
+    alvo = relacao(corpo, tensores)
     if not alvo:
         return Prova(objetivo, [], [])
 
-    base = [Derivada(relacao(eq, tensores), rotulo)
-            for rotulo, eq in hipoteses.items()]
+    base, gerais = [], []
+    for rotulo, eq in hipoteses.items():
+        if isinstance(eq, ParaTodo):
+            gerais.append((rotulo, eq))
+        else:
+            base.append(Derivada(relacao(eq, tensores), rotulo))
     base = [d for d in base if d.relacao]
+    if not gerais:
+        return _buscar(objetivo, alvo, hipoteses, base, tensores)
+    for rodadas in range(1, RODADAS + 1):
+        try:
+            return _buscar(objetivo, alvo, hipoteses, base + _instancias(
+                gerais, [alvo] + [d.relacao for d in base], tensores, rodadas),
+                tensores)
+        except SemProva as e:
+            ultima = e
+    raise ultima
+
+
+def _buscar(objetivo, alvo, hipoteses, base, tensores):
+    """A busca, com as hipóteses já instanciadas.
+
+    Cada relação que aparece entra numa base escalonada, e o objetivo é
+    testado logo em seguida: a busca para assim que a prova existe, em vez de
+    gerar todas as relações para só então resolver um sistema com todas elas.
+    """
     todos = [alvo] + [d.relacao for d in base]
     lugares = contextos(todos)
     profundidade = max((_profundidade(t) for r in todos for t in r), default=0)
 
-    conhecidas = {d.chave(): d for d in base}
-    fronteira = list(base)
+    # O universo: os termos que o problema tem, e os que estão a UM contexto
+    # deles. Relação derivada que sai disso não serve para nada que a prova
+    # precise — e sem esta poda as instâncias trazem termos, os termos trazem
+    # contextos, e a busca não acaba.
+    presentes = _chao(todos, tensores)
+    universo = presentes | {c.preencher(t) for c in lugares for t in presentes}
+    universo = {t for u in universo for t in linear(u, tensores)} | presentes
+
+    escalonada = _Escalonada()
+    derivadas = []
+
+    def entra(d):
+        derivadas.append(d)
+        escalonada.juntar(d.relacao, len(derivadas) - 1)
+        return escalonada.combinacao(alvo)
+
+    conhecidas = {}
+    for d in base:
+        if d.chave() in conhecidas:
+            continue
+        conhecidas[d.chave()] = d
+        achou = entra(d)
+        if achou is not None:
+            return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
+
+    fronteira = list(conhecidas.values())
     for _ in range(profundidade):
         nova_fronteira = []
         for d in fronteira:
             for c in lugares:
+                # Termo a termo primeiro, que a memória de `linear` faz barato:
+                # a maioria dos contextos leva para fora do universo, e montar
+                # a relação inteira para depois jogá-la fora era o grosso do
+                # tempo.
+                if not all(u in universo for t in d.relacao
+                           for u in linear(c.preencher(t), tensores)):
+                    continue
                 n = _aplicar(c, d, tensores)
                 if n is None or n.chave() in conhecidas:
                     continue
+                if not all(t in universo for t in n.relacao):
+                    continue
                 conhecidas[n.chave()] = n
                 nova_fronteira.append(n)
+                achou = entra(n)
+                if achou is not None:
+                    return _pronta(objetivo, alvo, hipoteses, derivadas, achou)
                 if len(conhecidas) > LIMITE_RELACOES:
                     raise SemProva(
                         f"a busca passou de {LIMITE_RELACOES} relações sem "
                         f"achar; não achar não é prova de que é falso")
         fronteira = nova_fronteira
 
-    derivadas = list(conhecidas.values())
-    passos = _combinacao(alvo, derivadas)
-    if passos is None:
-        faltam = sorted({sp.sstr(t) for t in alvo}
-                        - {sp.sstr(t) for d in derivadas for t in d.relacao})
-        dica = (f" Nenhuma hipótese fala de {', '.join(faltam)}."
-                if faltam else "")
-        raise SemProva(
-            "não achei combinação das hipóteses que dê isto." + dica +
-            " Não achar não é prova de que é falso: pode faltar hipótese, ou "
-            "a prova pedir mais do que a linearidade e as hipóteses dão.")
+    faltam = sorted({sp.sstr(t) for t in alvo}
+                    - {sp.sstr(t) for d in derivadas for t in d.relacao})
+    dica = (f" Nenhuma hipótese fala de {', '.join(faltam)}."
+            if faltam else "")
+    raise SemProva(
+        "não achei combinação das hipóteses que dê isto." + dica +
+        " Não achar não é prova de que é falso: pode faltar hipótese, ou "
+        "a prova pedir mais do que a linearidade e as hipóteses dão.")
 
+
+def _pronta(objetivo, alvo, hipoteses, derivadas, combinacao):
+    passos = [(v, derivadas[k]) for k, v in sorted(combinacao.items())]
     _conferir(alvo, passos)
     # Na ordem em que foram dadas, e não na da busca: quem lê confere a
     # lista contra a chamada que escreveu.
@@ -348,25 +458,140 @@ def provar(objetivo, hipoteses, tensores):
     return Prova(objetivo, passos, usadas)
 
 
-def _combinacao(alvo, derivadas):
-    """[(λ, derivada)] com Σ λ·relação = alvo, ou None."""
-    if not derivadas:
+class _Escalonada:
+    """Eliminação de Gauss esparsa e incremental, guardando de onde veio cada
+    linha.
+
+    Cada linha nova chega reduzida pelas anteriores, então não contém pivô de
+    nenhuma delas; reduzir sempre pelo pivô da linha MAIS ANTIGA só introduz
+    pivôs de linhas mais novas, e a redução termina.
+    """
+
+    def __init__(self):
+        self.linhas = {}            # pivô -> (vetor, {índice: coeficiente})
+        self.ordem = {}             # pivô -> quando entrou
+
+    def reduzir(self, vetor, combo):
+        vetor, combo = dict(vetor), dict(combo)
+        while True:
+            pivos = [t for t in vetor if t in self.linhas]
+            if not pivos:
+                return vetor, combo
+            t = min(pivos, key=self.ordem.__getitem__)
+            linha, origem = self.linhas[t]
+            fator = vetor[t] / linha[t]
+            vetor = _soma(vetor, _vezes(-fator, linha))
+            combo = _soma(combo, _vezes(-fator, origem))
+
+    def juntar(self, vetor, indice):
+        vetor, combo = self.reduzir(vetor, {indice: sp.S.One})
+        if not vetor:
+            return
+        pivo = max(vetor, key=default_sort_key)
+        self.ordem[pivo] = len(self.ordem)
+        self.linhas[pivo] = (vetor, combo)
+
+    def combinacao(self, alvo):
+        """{índice: λ} com Σ λ·relação = alvo, ou None se ainda não dá."""
+        resto, combo = self.reduzir(alvo, {})
+        if resto:
+            return None
+        # alvo − Σ f·linha = 0, e combo acumulou −f·origem: o sinal volta.
+        return {k: -v for k, v in combo.items()}
+
+
+# ---------------------------------------------------------------- instâncias
+
+def _chao(relacoes, tensores):
+    """Os termos vetoriais concretos do problema — onde um ∀ pode pousar."""
+    achados = set()
+    for rel in relacoes:
+        for termo in rel:
+            for sub in sp.preorder_traversal(termo):
+                if _e_termo(sub, tensores):
+                    achados.add(sub)
+    return achados
+
+
+def _e_termo(expr, tensores):
+    return (isinstance(expr, _OPERADORES)
+            or (isinstance(expr, sp.Symbol) and tensores.get(expr.name) == VETOR))
+
+
+def _casar(padrao, termo, variaveis, sub, tensores):
+    """A substituição que faz `padrao` virar `termo`, ou None."""
+    if padrao in variaveis:
+        if padrao in sub:
+            return sub if sub[padrao] == termo else None
+        return {**sub, padrao: termo} if _e_termo(termo, tensores) else None
+    if not padrao.has(*variaveis):
+        return sub if padrao == termo else None
+    if type(padrao) is not type(termo) or len(padrao.args) != len(termo.args):
         return None
-    termos = sorted({t for t in alvo} | {t for d in derivadas for t in d.relacao},
-                    key=default_sort_key)
-    lambdas = sp.symbols(f"lambda0:{len(derivadas)}")
-    equacoes = [sp.Add(*(l * d.relacao.get(t, 0)
-                         for l, d in zip(lambdas, derivadas))) - alvo.get(t, 0)
-                for t in termos]
-    solucao = sp.linsolve(equacoes, lambdas)
-    if not solucao:
-        return None
-    particular = next(iter(solucao))
-    livres = set().union(*(sp.sympify(v).free_symbols for v in particular)) \
-        & set(lambdas)
-    particular = [sp.simplify(sp.sympify(v).subs({l: 0 for l in livres}))
-                  for v in particular]
-    return [(v, d) for v, d in zip(particular, derivadas) if v != 0]
+    ordens = [termo.args]
+    if isinstance(termo, ColcheteDeLie):
+        # O colchete foi posto em ordem canônica pela antissimetria, e a ordem
+        # depende dos NOMES: [A,[B,C]] pode ter virado −[[B,C],A] no padrão e
+        # não no problema. O casamento só acha a substituição; a instância é
+        # montada da equação original e normalizada de novo, com o sinal certo.
+        ordens.append(termo.args[::-1])
+    for args in ordens:
+        tentativa = sub
+        for p, t in zip(padrao.args, args):
+            tentativa = _casar(p, t, variaveis, tentativa, tensores)
+            if tentativa is None:
+                break
+        else:
+            return tentativa
+    return None
+
+
+def _instancias(gerais, relacoes, tensores, rodadas=1):
+    """As hipóteses com ∀, instanciadas onde o problema as toca.
+
+    Não se instancia com tudo: casa-se cada termo da hipótese com os termos
+    que aparecem no problema — `R(A,B)W` com `R(U,X)U` dá A=U, B=X, W=U. É o
+    que um matemático faz ao ler a definição: aplica ao caso que tem na mão.
+    Casamento que não fixa todas as variáveis não vira instância: completar
+    com todos os vetores à mão multiplicava a busca por nada.
+    """
+    chao = _chao(relacoes, tensores)
+    feitas, novas = set(), []
+    for _ in range(rodadas):
+        rodada = []
+        for rotulo, eq in gerais:
+            variaveis = eq.variaveis
+            locais = {**tensores, **{v.name: VETOR for v in variaveis}}
+            padrao = relacao(eq.corpo, locais)
+            achadas = set()
+            for p in padrao:
+                if not (isinstance(p, _OPERADORES) and p.has(*variaveis)):
+                    continue
+                for t in chao:
+                    s = _casar(p, t, variaveis, {}, tensores)
+                    if s and len(s) == len(variaveis):
+                        achadas.add(frozenset(s.items()))
+            for achada in sorted(achadas, key=lambda s: sp.sstr(sorted(s, key=str))):
+                for sub in (dict(achada),):
+                    chave = (rotulo, frozenset(sub.items()))
+                    if chave in feitas:
+                        continue
+                    feitas.add(chave)
+                    if len(feitas) > LIMITE_INSTANCIAS:
+                        raise SemProva(
+                            f"as hipóteses com ∀ passaram de "
+                            f"{LIMITE_INSTANCIAS} instâncias sem achar; não "
+                            f"achar não é prova de que é falso")
+                    rel = relacao(eq.corpo.xreplace(sub), tensores)
+                    if rel:
+                        rodada.append(Derivada(
+                            rel, rotulo,
+                            instancia=[(v, sub[v]) for v in variaveis]))
+        if not rodada:
+            break
+        novas += rodada
+        chao |= _chao([d.relacao for d in rodada], tensores)
+    return novas
 
 
 def _conferir(alvo, passos):

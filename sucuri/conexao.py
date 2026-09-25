@@ -138,6 +138,51 @@ def _str_direcao(printer, direcao):
     return texto if isinstance(direcao, sp.Symbol) else "{" + texto + "}"
 
 
+class ParaTodo(sp.Basic):
+    """∀A, B: corpo — a equação vale para quaisquer campos vetoriais A, B.
+
+    A diferença para a mesma equação sem ∀ é o que a prova pode fazer com ela:
+    sem ∀, `R(U,X)W = …` fala daqueles U, X, W; com ∀, de todos, e a prova a
+    instancia onde precisar.
+    """
+
+    @property
+    def variaveis(self):
+        return tuple(self.args[0])
+
+    @property
+    def corpo(self):
+        return self.args[1]
+
+    def _latex(self, printer):
+        nomes = ", ".join(printer._print(v) for v in self.variaveis)
+        return rf"\forall {nomes}:\; {printer._print(self.corpo)}"
+
+    def _sympystr(self, printer):
+        nomes = ", ".join(printer._print(v) for v in self.variaveis)
+        return f"para_todo({nomes}: {printer._print(self.corpo)})"
+
+
+_RE_FORALL = re.compile(
+    r"^\s*\\forall(?![a-zA-Z])\s*"
+    r"((?:\\?[A-Za-z]+)(?:\s*,\s*\\?[A-Za-z]+)*)"
+    r"\s*(?::|\\colon(?![a-zA-Z])|\\quad(?![a-zA-Z])|\\;|\\,)")
+
+
+def quantificador(latex):
+    """(nomes ligados, texto com o prefixo trocado por espaços).
+
+    `\\forall A, B, W: …`. O separador é obrigatório — dois-pontos, `\\colon`,
+    `\\quad`, `\\;` ou `\\,` —, porque sem ele não se sabe onde acaba a lista:
+    em `\\forall W, R(U,X)W = …` a vírgula separa nome ou encerra a lista?
+    """
+    m = _RE_FORALL.match(latex or "")
+    if not m:
+        return [], latex
+    nomes = [_limpo(n.strip()) for n in m.group(1).split(",")]
+    return nomes, " " * m.end() + latex[m.end():]
+
+
 class ConexaoNaoLida(Exception):
     """∇, colchete ou curvatura que a declaração não licencia.
 

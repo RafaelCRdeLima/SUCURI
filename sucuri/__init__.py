@@ -6,8 +6,8 @@ Ambiguidade não se adivinha: anota-se. Ver README.md.
 __version__ = "0.1.0"
 
 from .ambiguity import Ambiguity, Reading, find
-from .conexao import (ColcheteDeLie, Curvatura, DerivadaCovariante,
-                      ConexaoNaoLida)
+from .conexao import (ColcheteDeLie, ConexaoNaoLida, Curvatura,
+                      DerivadaCovariante, ParaTodo)
 from .document import (Document, Expression, FaltaVariavel,
                        NotacaoNaoReconhecida, NotacaoTensorial,
                        Resolution, Unresolved)
@@ -43,4 +43,4 @@ def parse(latex, *, independent_variable=None, primes=None,
 __all__ = ["parse", "Document", "Expression", "Resolution", "Unresolved",
            "NotacaoNaoReconhecida", "NotacaoTensorial", "FaltaVariavel",
            "DerivadaCovariante", "ConexaoNaoLida", "ColcheteDeLie",
-           "Curvatura", "Ambiguity", "Reading", "Node", "find"]
+           "Curvatura", "ParaTodo", "Ambiguity", "Reading", "Node", "find"]

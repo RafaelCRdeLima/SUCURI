@@ -296,6 +296,26 @@ afirmá-la.</p>
     chamada não prova.</p>
 </div>
 
+<p>Uma definição vale para qualquer vetor. Com <code>\forall</code> ela se diz
+uma vez, e a prova a instancia onde precisar:</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">[U,X] = 0</code>
+  <code class="entrada">\nabla_U U = 0</code>
+  <code class="entrada">\nabla_U \nabla_U X = R(U,X)U</code>
+  <code class="entrada">provar(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">eq1[A→U, B→X, W→U]</samp>
+  <p class="explica">a tabela diz em que instância cada hipótese geral entrou.
+    O separador depois da lista do ∀ é obrigatório — dois-pontos,
+    <code>\colon</code>, <code>\quad</code> —, e as variáveis ligadas não
+    vazam para as linhas de baixo.</p>
+</div>
+
 <div class="exemplo">
   <code class="entrada">\nabla_V X</code>
   <samp class="erro-esperado">'V' não foi declarado</samp>
@@ -424,10 +444,11 @@ com o motivo.</p>
     um fator multiplicando outro, é um objeto próprio. A derivada
     <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
     com os vetores declarados, já são lidos, e <code>provar</code> encadeia
-    hipóteses sobre eles. Mas só igualdades lineares entre campos vetoriais, e
-    com hipóteses sobre vetores <em>dados</em>: uma definição "para todo W"
-    ainda se escreve para o W que se usa. Regra de Leibniz,
-    ∇<sub>U</sub>(fX) = U(f)X + f∇<sub>U</sub>X, também não.</li>
+    hipóteses sobre eles, gerais (<code>\forall</code>) ou não. Mas só
+    igualdades lineares entre campos vetoriais; a regra de Leibniz,
+    ∇<sub>U</sub>(fX) = U(f)X + f∇<sub>U</sub>X, não entra. E a busca é
+    finita: prova que pede muitas instâncias encadeadas pode demorar ou não
+    sair.</li>
   <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
     declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
     onde essa regra não alcança o silêncio volta.</li>
