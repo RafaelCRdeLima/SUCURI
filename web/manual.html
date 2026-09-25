@@ -312,9 +312,9 @@ afirmá-la.</p>
   <p class="explica">a equação do desvio geodésico. Cada passo da tabela diz de
     que hipótese veio e o que se fez com ela — <code>nabla_U(eq3)</code> é eq3
     com ∇<sub>U</sub> aplicado aos dois lados —, e a soma é conferida de novo
-    antes do ∎. O motor sabe sozinho só a linearidade de ∇, do colchete e de
-    R; o sinal de R vem da definição que você deu, e com o sinal oposto a mesma
-    chamada não prova.</p>
+    antes do ∎. O motor sabe sozinho só o que vale para qualquer conexão —
+    linearidade, Leibniz —; o sinal de R vem da definição que você deu, e com
+    o sinal oposto a mesma chamada não prova.</p>
 </div>
 
 <p>Uma definição vale para qualquer vetor. Com <code>\forall</code> ela se diz
@@ -335,6 +335,25 @@ uma vez, e a prova a instancia onde precisar:</p>
     O separador depois da lista do ∀ é obrigatório — dois-pontos,
     <code>\colon</code>, <code>\quad</code> —, e as variáveis ligadas não
     vazam para as linhas de baixo.</p>
+</div>
+
+<p>Com <code>g = métrica</code>, <code>g(X,Y)</code> é o produto escalar —
+simétrico e linear em cada slot, sem hipótese. A compatibilidade com a métrica
+é hipótese, e com ela e a torção nula sai a fórmula de Koszul:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C) + g(B, \nabla_A C)</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(X,Z) - \nabla_Z g(X,Y) + g([X,Y],Z) - g([X,Z],Y) - g([Y,Z],X)</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">g(eq2[A→X, B→Y], Z)</samp>
+  <p class="explica">a torção nula posta no primeiro slot de g: uma relação
+    entre vetores levada a uma entre escalares. Sem eq2, a mesma chamada não
+    prova.</p>
 </div>
 
 <div class="exemplo">

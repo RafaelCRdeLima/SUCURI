@@ -154,6 +154,39 @@ class Direcional(sp.Function):
                 f"({printer._print(self.escalar)})")
 
 
+class Avaliado(sp.Function):
+    """ω(U), T(U, X) — um tensor do tipo (0,n) com os n slots preenchidos.
+
+    É a notação do Schutz: um (0,n) é uma função de n vetores, e com todos
+    eles dados o resultado é um número em cada ponto — um ESCALAR. O primeiro
+    argumento é o nome do tensor.
+    """
+
+    @property
+    def nome(self):
+        return self.args[0]
+
+    @property
+    def slots(self):
+        return self.args[1:]
+
+    def _latex(self, printer):
+        slots = ", ".join(printer._print(a) for a in self.slots)
+        return rf"{printer._print(self.nome)}\left({slots}\right)"
+
+    def _sympystr(self, printer):
+        slots = ", ".join(printer._print(a) for a in self.slots)
+        return f"{printer._print(self.nome)}({slots})"
+
+
+class Metrica(Avaliado):
+    """g(X, Y) — a métrica: um (0,2) que é SIMÉTRICO.
+
+    A simetria não é convenção de livro: é o que se chama de métrica. Por
+    isso é do objeto, e o motor a usa sem hipótese.
+    """
+
+
 def _envolto(printer, operando):
     dentro = printer._print(operando)
     if isinstance(operando, (sp.Add, sp.Mul)):
@@ -252,7 +285,7 @@ def tem_tensor(expr, tensores):
 
     U(f) tem U dentro e é escalar: o U ali é a direção, não um fator.
     """
-    if isinstance(expr, Direcional):
+    if isinstance(expr, (Direcional, Avaliado)):
         return False
     if isinstance(expr, (DerivadaCovariante, ColcheteDeLie, Curvatura)):
         return True
@@ -351,10 +384,13 @@ def _cabeca_curvatura(nome):
 
 
 class _Leitor:
-    def __init__(self, texto, indices, curvaturas):
+    def __init__(self, texto, indices, curvaturas, formas=None):
         self.texto = texto
         self.indices = set(indices)
         self.curvaturas = [(n, _cabeca_curvatura(n)) for n in curvaturas]
+        # nome -> (quantos slots, é a métrica?)
+        self.formas = [(n, _cabeca_curvatura(n), k, metrica)
+                       for n, (k, metrica) in (formas or {}).items()]
 
     # O que começa em i, se for operador nosso.
     def em(self, i):
@@ -365,6 +401,10 @@ class _Leitor:
             m = regra.match(t, i)
             if m and (i == 0 or not re.match(r"[A-Za-z\\]", t[i - 1])):
                 return self.curvatura(i, m, nome)
+        for nome, regra, k, metrica in self.formas:
+            m = regra.match(t, i)
+            if m and (i == 0 or not re.match(r"[A-Za-z\\]", t[i - 1])):
+                return self.avaliado(i, m, nome, k, metrica)
         if t.startswith("[", i):
             return self.colchete(i)
         return None
@@ -409,6 +449,22 @@ class _Leitor:
                         f"age: R(U,X) é um operador, e sozinho não é vetor")
         return Ocorrencia("curvatura", i, abre, fim,
                           {"nome": nome, "args": args, "operando": operando},
+                          problema)
+
+    def avaliado(self, i, m, nome, k, metrica):
+        abre = m.end() - 1
+        fecha = _grupo(self.texto, abre, "(", ")")
+        if fecha is None:
+            return Ocorrencia("avaliado", i, abre, len(self.texto), {},
+                              f"'{nome}(' sem ')'")
+        args = _virgulas(self.texto[abre + 1:fecha - 1])
+        problema = None
+        if len(args) != k or not all(args):
+            quem = "a métrica" if metrica else f"do tipo (0,{k})"
+            problema = (f"{nome} é {quem}, e recebe {k} vetor(es); aqui "
+                        f"recebe {len(args)}")
+        return Ocorrencia("avaliado", i, abre, fecha,
+                          {"nome": nome, "args": args, "metrica": metrica},
                           problema)
 
     def _direcao(self, i):
@@ -464,14 +520,14 @@ class _Leitor:
         return m.group(0), fim, None
 
 
-def localizar(texto, indices=(), curvaturas=()):
+def localizar(texto, indices=(), curvaturas=(), formas=None):
     """Os operadores de primeiro nível do texto, na ordem em que aparecem.
 
     Os que estão DENTRO de outro — o ∇ interno de ∇_U∇_U X, o colchete em
     ∇_{[U,X]} — ficam para a leitura recursiva do pedaço que os contém.
     `\\nabla_\\mu` fica de fora: é da ponte tensorial, com a sua própria recusa.
     """
-    leitor = _Leitor(texto, indices, curvaturas)
+    leitor = _Leitor(texto, indices, curvaturas, formas)
     achados, i = [], 0
     while i < len(texto):
         oc = leitor.em(i)
@@ -481,6 +537,22 @@ def localizar(texto, indices=(), curvaturas=()):
         achados.append(oc)
         i = max(oc.fim, i + 1)
     return achados
+
+
+def cabecas(texto, indices=(), curvaturas=(), formas=None):
+    """As posições que são cabeça de operador — em QUALQUER nível.
+
+    `localizar` devolve só os de primeiro nível, porque os de dentro são lidos
+    pela recursão. Mas a pergunta de justaposição é feita sobre o texto
+    inteiro: o `g(` de `\\nabla_U (g(X,Y))` também não é pergunta.
+    """
+    leitor = _Leitor(texto, indices, curvaturas, formas)
+    posicoes = set()
+    for i in range(len(texto)):
+        oc = leitor.em(i)
+        if oc is not None:
+            posicoes |= set(range(oc.ini, max(oc.fim_cabeca, oc.ini + 1)))
+    return posicoes
 
 
 def construir(oc, ler, tensores):
@@ -501,6 +573,13 @@ def construir(oc, ler, tensores):
             # não um campo — o motor precisa saber a diferença.
             return Direcional(direcao, operando)
         return DerivadaCovariante(direcao, operando)
+    if oc.especie == "avaliado":
+        nome = p["nome"]
+        slots = [ler(a) for a in p["args"]]
+        for a, escrito in zip(slots, p["args"]):
+            exigir_vetor(a, f"{nome}({', '.join(p['args'])})", tensores)
+        classe = Metrica if p["metrica"] else Avaliado
+        return classe(sp.Symbol(nome), *slots)
     if oc.especie == "colchete":
         a, b = (ler(x) for x in p["args"])
         papel = f"[{p['args'][0]}, {p['args'][1]}]"

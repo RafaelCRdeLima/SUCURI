@@ -351,3 +351,80 @@ def test_multiplicar_por_funcao_e_passo_explicito():
 def test_os_coeficientes_da_prova_sao_numeros():
     p = prova(r"\nabla_U \nabla_U X = R(U,X)U", *DESVIO)
     assert all(sp.sympify(v).is_number for v, _ in p.passos)
+
+
+# ------------------------------------------------------------------ métrica
+
+def documento_com_metrica():
+    doc = documento()
+    doc.tensor("Z", 1, 0)
+    doc.metric("g")
+    return doc
+
+
+def lerg(latex):
+    return documento_com_metrica().read(latex).to_sympy()
+
+
+TENSORES_G = {**TENSORES, "Z": (1, 0), "g": (0, 2)}
+
+
+def provag(objetivo, *hipoteses):
+    return provar(lerg(objetivo),
+                  {f"h{i + 1}": lerg(h) for i, h in enumerate(hipoteses)},
+                  TENSORES_G)
+
+
+COMPATIBILIDADE = (r"\forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C)"
+                   r" + g(B, \nabla_A C)")
+
+
+def test_metrica_e_lida_como_escalar():
+    e = lerg(r"g(X, Y)")
+    assert isinstance(e, sucuri.conexao.Metrica)
+    assert sp.sstr(lerg(r"\nabla_U g(X,Y)")) == "U(g(X, Y))"
+
+
+def test_um_forma_aplicada():
+    assert sp.sstr(ler(r"\omega(U) = 0")) == "Eq(omega(U), 0)"
+
+
+@pytest.mark.parametrize("latex, trecho", [
+    (r"g(X)", "recebe 2"),
+    (r"g(X, f)", "'f' não foi declarado"),
+    (r"g(X, \omega)", r"do tipo \(0,1\)"),
+])
+def test_metrica_recusa(latex, trecho):
+    with pytest.raises(sucuri.ConexaoNaoLida, match=trecho):
+        lerg(latex)
+
+
+@pytest.mark.parametrize("latex", [
+    r"g(X, Y) = g(Y, X)",
+    r"g(f X + Y, Z) = f g(X, Z) + g(Y, Z)",
+    r"\nabla_{[U,X]} f = \nabla_U \nabla_X f - \nabla_X \nabla_U f",
+])
+def test_o_que_vale_para_qualquer_metrica(latex):
+    assert provag(latex).passos == []
+
+
+def test_formula_de_koszul():
+    """2g(∇_X Y, Z) pela métrica e pelo colchete, da compatibilidade e da
+    torção nula — as duas condições que fazem de ∇ a conexão de Levi-Civita."""
+    koszul = (r"2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(X,Z)"
+              r" - \nabla_Z g(X,Y) + g([X,Y],Z) - g([X,Z],Y) - g([Y,Z],X)")
+    p = provag(koszul, COMPATIBILIDADE, TORCAO_NULA)
+    assert p.hipoteses_usadas == ["h1", "h2"]
+    assert len(p.passos) == 6
+    with pytest.raises(SemProva):
+        provag(koszul, COMPATIBILIDADE)          # sem torção nula, não sai
+
+
+def test_compatibilidade_instanciada_no_caderno():
+    c = Caderno()
+    for fonte in ("X = tensor(1,0)", "Y = tensor(1,0)", "Z = tensor(1,0)",
+                  "g = métrica", COMPATIBILIDADE,
+                  r"\nabla_Z g(X,Y) = g(\nabla_Z X, Y) + g(X, \nabla_Z Y)"):
+        c.executar(fonte)
+    d = c.executar("provar(eq2, eq1)").to_dict()
+    assert d["linhas"][0][0] == "eq1[A→Z, B→X, C→Y]"

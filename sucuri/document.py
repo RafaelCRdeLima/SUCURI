@@ -568,6 +568,17 @@ class Document:
                 self._curvaturas.append(limpo)
         return self
 
+    def formas(self):
+        """{nome: (slots, é a métrica?)} — os (0,n) que se escrevem T(U, X).
+
+        Declarado o tipo, `g(X, Y)` não tem duas leituras: com vírgula não é
+        produto, e os slots de um (0,2) são vetores.
+        """
+        metrica = self._espaco.metrica if self._espaco else None
+        return {nome: (vetores, nome == metrica)
+                for nome, (formas, vetores) in self._tensores.items()
+                if formas == 0 and vetores >= 1}
+
     def com_vetores(self, nomes):
         """Uma cópia em que `nomes` são vetores — para o corpo de um ∀.
 
@@ -715,13 +726,15 @@ class Expression:
         latex = self._corpo
         from .conexao import localizar
         self.covariantes = localizar(latex, document._indices,
-                                     document._curvaturas)
+                                     document._curvaturas,
+                                     document.formas())
         # Em \nabla_U (X+Y) o detector vê "U (" e pergunta se U é função; em
         # R(U,X)W, se R multiplica o parêntese. Nenhum dos dois: um é o
         # subscrito de ∇, o outro a curvatura declarada, e a pergunta seria
         # falsa. Pergunta que não é pergunta gasta a credibilidade das que são.
-        cabecas = {i for c in self.covariantes
-                   for i in range(c.ini, max(c.fim_cabeca, c.ini + 1))}
+        from .conexao import cabecas as _cabecas
+        cabecas = _cabecas(latex, document._indices, document._curvaturas,
+                           document.formas())
         self.ambiguities = [a for a in find(latex)
                             if a.span[0] not in cabecas]
 

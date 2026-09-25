@@ -371,8 +371,43 @@ aplicado a f, ou U vezes f? As duas leituras são bem tipadas, porque (a+b)U
 também é vetor. Escolhida a aplicação, o que sai é U(f), e não uma função
 chamada U. `\nabla_U f` não tem dúvida.
 
-Limites: só igualdades lineares entre campos vetoriais, com coeficientes
-escalares, e hipóteses escalares só sobre os vetores dados, sem ∀.
+### A métrica
+
+Com `g = métrica`, `g(X,Y)` é o produto escalar. Com `\omega = tensor(0,1)`,
+`\omega(U)` é ω aplicado a U. Em geral, um (0,n) aplicado a n vetores é
+escalar: é a notação de slots do Schutz, a mesma das declarações. Não sobra
+dúvida: com vírgula, `g(X,Y)` não pode ser produto, e com o tipo declarado os
+slots são vetores.
+
+```
+\forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C) + g(B, \nabla_A C)    eq1
+\forall A, B: \nabla_A B - \nabla_B A = [A,B]                               eq2
+2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(X,Z) - \nabla_Z g(X,Y)
+                    + g([X,Y],Z) - g([X,Z],Y) - g([Y,Z],X)                   eq3
+
+provar(eq3, eq1, eq2)
+    − eq1[A→X, B→Y, C→Z] · − eq1[A→Y, B→X, C→Z] · eq1[A→Z, B→X, C→Y]
+    g(eq2[A→X, B→Y], Z) · − g(eq2[A→X, B→Z], Y) · − g(X, eq2[A→Y, B→Z])
+    somando   a fórmula de Koszul  ∎
+```
+
+A fórmula de Koszul sai das duas condições que fazem de ∇ a conexão de
+Levi-Civita: compatibilidade com a métrica e torção nula. Sem a torção nula,
+não sai. `g(eq2[…], Z)` é a torção nula posta no primeiro slot de g: uma
+relação entre vetores levada a uma relação entre escalares.
+
+O motor sabe sozinho que g é linear sobre funções em cada slot e simétrica.
+Simetria não é convenção de livro, é o que se chama de métrica. Também sabe que
+o colchete age numa função como [A,B](f) = A(B(f)) − B(A(f)), porque essa é a
+definição do colchete. A compatibilidade não entra sozinha: ela é o que
+distingue Levi-Civita de uma conexão qualquer, e vem como hipótese, com ∀ ou
+sem.
+
+Limites: só igualdades lineares, com coeficientes escalares. Provas que pedem
+uma ideia, e não só encadear hipóteses, não saem. Um exemplo é
+g(R(U,X)Y, W) = −g(Y, R(U,X)W): essa prova precisa introduzir h = g(Y,W) e
+comparar [U,X](h) com U(X(h)) − X(U(h)). Nada disso aparece no enunciado, e a
+busca só instancia o que aparece.
 
 ### Sem declarar, a recusa continua
 

@@ -598,8 +598,9 @@ class Caderno:
         nota = f"; não precisou de {', '.join(sobrou)}" if sobrou else ""
         tabela.append(["somando", sp.sstr(objetivo),
                        sp.latex(objetivo) + r"\quad\blacksquare"])
-        texto = (f"provado a partir de {usadas}, e da linearidade de ∇, "
-                 f"do colchete e de R{nota}")
+        texto = (f"provado a partir de {usadas}, e do que vale para "
+                 f"qualquer conexão e métrica — linearidade, Leibniz, "
+                 f"simetria de g{nota}")
         tabela.append(["usou", texto])
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}

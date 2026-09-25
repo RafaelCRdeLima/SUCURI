@@ -15,7 +15,10 @@ Só o que vale para QUALQUER conexão, em qualquer livro:
   Leibniz: ∇_U (fX) = U(f) X + f ∇_U X;
 - o colchete de Lie é antissimétrico, e com funções também segue Leibniz:
   [fA, gB] = fg[A,B] + f A(g) B − g B(f) A;
-- U(f) é linear em U sobre funções e segue a regra da cadeia em f;
+- U(f) é linear em U sobre funções e segue a regra da cadeia em f, e o
+  colchete age numa função como [A,B](f) = A(B(f)) − B(A(f));
+- g(X,Y), a métrica, é linear sobre funções em cada slot e simétrica — como
+  todo (0,n) aplicado, ω(U), T(U,X), é linear em cada slot;
 - a curvatura R(U,X)W é linear sobre funções nos três argumentos — é um
   tensor, e isso não depende da convenção.
 
@@ -44,8 +47,9 @@ from __future__ import annotations
 import sympy as sp
 from sympy.core.sorting import default_sort_key
 
-from .conexao import (VETOR, ColcheteDeLie, Curvatura, DerivadaCovariante,
-                      Direcional, ParaTodo, e_vetor, tem_tensor)
+from .conexao import (VETOR, Avaliado, ColcheteDeLie, Curvatura,
+                      DerivadaCovariante, Direcional, Metrica, ParaTodo,
+                      e_vetor, tem_tensor)
 
 LIMITE_RELACOES = 4000
 """Quantas relações derivadas a busca aceita antes de desistir."""
@@ -155,24 +159,55 @@ def _vetorial(expr, tensores):
 # constante o que variava.
 
 def escalar_normal(expr, tensores):
-    """O escalar com cada U(f) posto em forma normal: direção irredutível e
-    argumento atômico — U(fg) = U(f)g + fU(g), (U+X)(f) = U(f) + X(f)."""
+    """O escalar com cada U(f) e cada g(X,Y) em forma normal.
+
+    U(fg) = U(f)g + fU(g), (U+X)(f) = U(f) + X(f); g(fX + Y, Z) =
+    f g(X,Z) + g(Y,Z), e a métrica com os slots em ordem canônica, porque
+    g(X,Y) = g(Y,X).
+    """
     expr = sp.sympify(expr)
-    achados = {d: direcional(linear(d.direcao, tensores),
-                             escalar_normal(d.escalar, tensores), tensores)
-               for d in expr.atoms(Direcional)}
+    achados = {}
+    for a in expr.atoms(Direcional, Avaliado):
+        if isinstance(a, Direcional):
+            achados[a] = direcional(linear(a.direcao, tensores),
+                                    escalar_normal(a.escalar, tensores),
+                                    tensores)
+        else:
+            achados[a] = avaliado(a, tensores)
     return expr.xreplace(achados) if achados else expr
 
 
-def _atomos_escalares(expr, tensores):
-    """Do que o escalar depende: símbolos que não são tensor, e os U(f).
+def avaliado(a, tensores):
+    """T(Σ c U, …) = Σ c … T(U, …): um (0,n) é linear sobre funções em cada
+    slot — é um tensor. A métrica, além disso, é simétrica."""
+    total = sp.S.Zero
+    for combinacao in _produto([linear(s, tensores) for s in a.slots]):
+        coef = sp.Mul(*(c for _, c in combinacao))
+        slots = [t for t, _ in combinacao]
+        if isinstance(a, Metrica):
+            slots = sorted(slots, key=default_sort_key)
+        total += coef * type(a)(a.nome, *slots)
+    return sp.expand(total)
 
-    O f de dentro de U(f) também entra, e não atrapalha: a troca por mudos é
-    de cima para baixo, U(f) vira um mudo inteiro antes de se chegar ao f, e a
-    derivada em relação ao f solto só pega o f solto.
+
+def _produto(listas):
+    """Todas as escolhas de um (termo, coef) de cada dicionário."""
+    if not listas:
+        return [[]]
+    return [[par] + resto for par in listas[0].items()
+            for resto in _produto(listas[1:])]
+
+
+def _atomos_escalares(expr, tensores):
+    """Do que o escalar depende: os U(f), os g(X,Y), e os símbolos soltos.
+
+    O que está DENTRO de U(f) ou de g(X,Y) não entra: o g e o X de g(X,Y) não
+    são funções de que o escalar dependa, são o nome e o slot.
     """
-    return (set(expr.atoms(Direcional))
-            | {s for s in expr.free_symbols if s.name not in tensores})
+    compostos = set(expr.atoms(Direcional, Avaliado))
+    solto = expr.xreplace({a: sp.Dummy() for a in compostos})
+    return compostos | {s for s in solto.free_symbols
+                        if not isinstance(s, sp.Dummy) and s.name not in tensores}
 
 
 def direcional(direcao, escalar, tensores):
@@ -193,7 +228,17 @@ def direcional(direcao, escalar, tensores):
         if parcial == 0:
             continue
         for td, cd in direcao.items():
-            total += cd * parcial * Direcional(td, a)
+            if isinstance(td, ColcheteDeLie):
+                # [A,B](f) = A(B(f)) − B(A(f)): é o que o colchete É, agindo
+                # numa função — a definição, não uma convenção.
+                p, q = td.args
+                um = {p: sp.S.One}
+                outro = {q: sp.S.One}
+                total += cd * parcial * (
+                    direcional(um, direcional(outro, a, tensores), tensores)
+                    - direcional(outro, direcional(um, a, tensores), tensores))
+            else:
+                total += cd * parcial * Direcional(td, a)
     return sp.expand(total)
 
 
@@ -344,6 +389,21 @@ def contextos(relacoes, alvo=None, tensores=None):
         achados.append(Contexto(lambda v, h=h: Direcional(v, h),
                                 f"({{}})({s(h)})", rf"\left({{}}\right)\left({L(h)}\right)",
                                 True, "vetor", "escalar"))
+    for a in sorted({a for rel in relacoes for c in rel.values()
+                     for a in sp.sympify(c).atoms(Avaliado)}, key=default_sort_key):
+        for i in range(len(a.slots)):
+            def encher(v, a=a, i=i):
+                slots = list(a.slots)
+                slots[i] = v
+                return type(a)(a.nome, *slots)
+            marcas = [s(x) for x in a.slots]
+            marcas[i] = "{}"
+            marcas_l = [L(x) for x in a.slots]
+            marcas_l[i] = "{}"
+            achados.append(Contexto(
+                encher, f"{s(a.nome)}({', '.join(marcas)})",
+                rf"{L(a.nome)}\left({', '.join(marcas_l)}\right)",
+                True, "vetor", "escalar"))
     if alvo:
         # Multiplicar por uma função, e levar um escalar a um vetor: só com o
         # que o objetivo tem, que é onde a multiplicação pode servir.
@@ -368,14 +428,15 @@ def contextos(relacoes, alvo=None, tensores=None):
 
 
 def _profundidade(termo):
-    if not isinstance(termo, _OPERADORES + (Direcional,)):
+    if not isinstance(termo, _OPERADORES + (Direcional, Avaliado)):
         return 0
     return 1 + max(_profundidade(a) for a in termo.args)
 
 
 def _profundidade_rel(rel):
     termos = [t for t in rel if t != ESCALAR]
-    termos += [a for c in rel.values() for a in sp.sympify(c).atoms(Direcional)]
+    termos += [a for c in rel.values()
+               for a in sp.sympify(c).atoms(Direcional, Avaliado)]
     return max((_profundidade(t) for t in termos), default=0)
 
 
@@ -472,10 +533,6 @@ def provar(objetivo, hipoteses, tensores):
     base, gerais = [], []
     for rotulo, eq in hipoteses.items():
         if isinstance(eq, ParaTodo):
-            if _e_escalar(eq.corpo, tensores):
-                raise NaoEVetorial(
-                    f"{rotulo}: hipótese escalar com ∀ ainda não entra — só "
-                    f"escalares sobre os vetores dados, como U(f) = 0")
             gerais.append((rotulo, eq))
         else:
             base.append(Derivada(relacao(eq, tensores), rotulo))
@@ -535,7 +592,7 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
     # deles. Relação derivada que sai disso não serve para nada que a prova
     # precise — e sem esta poda as instâncias trazem termos, os termos trazem
     # contextos, e a busca não acaba.
-    presentes = _chao(todos, tensores)
+    presentes = {t for t in _chao(todos, tensores) if _e_termo(t, tensores)}
     universo = presentes | {c.preencher(t) for c in lugares for t in presentes
                             if c.de == c.para == "vetor"}
     universo = ({t for u in universo for t in linear(u, tensores)} | presentes
@@ -653,12 +710,20 @@ class _Escalonada:
 # ---------------------------------------------------------------- instâncias
 
 def _chao(relacoes, tensores):
-    """Os termos vetoriais concretos do problema — onde um ∀ pode pousar."""
+    """Os termos concretos do problema — onde um ∀ pode pousar.
+
+    Os vetoriais, e também os escalares compostos, U(f) e g(X,Y): é neles que
+    pousa uma hipótese como a compatibilidade com a métrica.
+    """
     achados = set()
     for rel in relacoes:
-        for termo in rel:
+        raizes = [t for t in rel if t != ESCALAR]
+        raizes += [a for c in rel.values()
+                   for a in sp.sympify(c).atoms(Direcional, Avaliado)]
+        for termo in raizes:
             for sub in sp.preorder_traversal(termo):
-                if _e_termo(sub, tensores):
+                if _e_termo(sub, tensores) or isinstance(sub, (Direcional,
+                                                               Avaliado)):
                     achados.add(sub)
     return achados
 
@@ -679,6 +744,8 @@ def _casar(padrao, termo, variaveis, sub, tensores):
     if type(padrao) is not type(termo) or len(padrao.args) != len(termo.args):
         return None
     ordens = [termo.args]
+    if isinstance(termo, Metrica):
+        ordens.append((termo.args[0],) + termo.args[:0:-1])   # g(X,Y) = g(Y,X)
     if isinstance(termo, ColcheteDeLie):
         # O colchete foi posto em ordem canônica pela antissimetria, e a ordem
         # depende dos NOMES: [A,[B,C]] pode ter virado −[[B,C],A] no padrão e
@@ -714,8 +781,12 @@ def _instancias(gerais, relacoes, tensores, rodadas=1):
             locais = {**tensores, **{v.name: VETOR for v in variaveis}}
             padrao = relacao(eq.corpo, locais)
             achadas = set()
-            for p in padrao:
-                if not (isinstance(p, _OPERADORES) and p.has(*variaveis)):
+            candidatos = [p for p in padrao if p != ESCALAR]
+            candidatos += [a for c in padrao.values()
+                           for a in sp.sympify(c).atoms(Direcional, Avaliado)]
+            for p in candidatos:
+                if not (isinstance(p, _OPERADORES + (Direcional, Avaliado))
+                        and p.has(*variaveis)):
                     continue
                 for t in chao:
                     s = _casar(p, t, variaveis, {}, tensores)
