@@ -254,8 +254,56 @@ dos argumentos variam de livro para livro. Para *ler* `R(U,X)W` isso não
 importa, porque é o mesmo objeto escrito. Para *calcular* importa, e aí a
 definição terá de ser declarada, não suposta.
 
-As cinco linhas da dedução do desvio geodésico já são lidas. O que falta é a
-conta: aplicar as regras da conexão e encadear os passos.
+### Provar
+
+```
+[U,X] = 0                                                     eq1
+\nabla_U U = 0                                                eq2
+\nabla_U X - \nabla_X U = [U,X]                               eq3
+R(U,X)U = \nabla_U\nabla_X U - \nabla_X\nabla_U U - \nabla_{[U,X]} U   eq4
+\nabla_U \nabla_U X = R(U,X)U                                 eq5
+
+provar(eq5, eq1, eq2, eq3, eq4)
+    − eq4            R(U, X)(U) - nabla_U(nabla_X(U)) + … = 0
+    nabla_U(eq1)     nabla_U([U, X]) = 0
+    nabla_{eq1}(U)   nabla_{[U, X]}(U) = 0
+    nabla_X(eq2)     nabla_X(nabla_U(U)) = 0
+    nabla_U(eq3)     -nabla_U([U, X]) + nabla_U(nabla_U(X)) - nabla_U(nabla_X(U)) = 0
+    somando          ∇_U∇_U X = R(U,X)U  ∎
+```
+
+Essa é a equação do desvio geodésico, deduzida sem índices. `nabla_U(eq3)` é
+eq3 com ∇_U aplicado aos dois lados, e `nabla_{eq1}(U)` é eq1 posta na direção
+de ∇ agindo sobre U.
+
+Só entram as hipóteses **nomeadas** na chamada. Escrever uma equação no caderno
+não é afirmá-la, e uma prova que usasse a conta de rascunho da linha de cima não
+provaria nada.
+
+O motor sabe sozinho só o que vale para **qualquer** conexão, em qualquer livro:
+
+- ∇_U X é linear em X sobre constantes e linear em U sobre funções;
+- o colchete é bilinear e antissimétrico;
+- R é tensor.
+
+Tudo o mais tem de vir das hipóteses: torção nula, que a curva é geodésica e,
+principalmente, a **definição** de R. Esse é o jeito de declarar a convenção de
+sinal em vez de supor uma. Com a definição de sinal oposto, a mesma chamada
+recusa `R(U,X)U` e prova `-R(U,X)U`. Também não passam as coisas que parecem
+verdade e não são: `\nabla_U(fX) = f\nabla_U X` (falta U(f)X),
+`[fU, X] = f[U,X]` e `R(U,X) = -R(X,U)` sem a definição.
+
+Por baixo, tudo vira combinação linear. Das hipóteses saem outras relações,
+aplicando os contextos que aparecem no problema (∇_U □, ∇_□ U, [□, X], …). A
+prova é uma combinação dessas relações que dá o objetivo, e a soma é conferida
+de novo, do zero, antes do ∎.
+
+Quando o motor não acha, diz o que costuma faltar ("nenhuma hipótese fala de
+R(U, X)(U)") e diz também que não achar não é prova de que é falso.
+
+Limites: só igualdades lineares entre campos vetoriais, e hipóteses sobre
+vetores **dados**. Uma definição "para todo W" ainda se escreve para o W que se
+usa.
 
 ### Sem declarar, a recusa continua
 

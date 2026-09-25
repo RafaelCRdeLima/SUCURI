@@ -45,6 +45,11 @@ _GRUPO_CHAVES = r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}"
 _ROTULO = (r"\\?[A-Za-z_]\w*(?:[_^](?:" + _GRUPO_CHAVES + r"|\\[A-Za-z]+|\w))*")
 _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
                          r"(?:,\s*(" + _ROTULO + r")\s*)?\)\s*$")
+# `provar(eq5, eq1, eq2)`: o objetivo e as hipóteses, quantas forem. Forma
+# própria porque os outros verbos recebem um ou dois rótulos, e a lista de
+# hipóteses é justamente o que não pode ficar implícito.
+_RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
+                        r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -173,7 +178,7 @@ def _e_instrucao(linha):
         return True
     return any(regra.match(texto) for regra in
                (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE,
-                _RE_DECLARA, _RE_COLCHETE))
+                _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR))
 
 
 def _chave(rotulo):
@@ -277,6 +282,12 @@ class Caderno:
                 "erro": f"a declaração agora se escreve com parênteses: "
                         f"{nome} = {nome}({dentro}). O colchete ficou reservado "
                         f"a n-tupla."})
+
+        prova = _RE_PROVAR.match(fonte or "")
+        if prova:
+            rotulos = [_sem_barra(r.strip()) for r in prova.group(1).split(",")]
+            return Celula(None, fonte, "comando",
+                          self._provar(rotulos[0], rotulos[1:]))
 
         comando = _RE_COMANDO.match(fonte or "")
         if comando and comando.group(1).lower() in VERBOS:
@@ -562,6 +573,36 @@ class Caderno:
                     "latex_exato": sp.latex(objeto),
                     "nomeados": [self._nome_de(objeto)]}
         return self._resolver(alvo, expressao)
+
+    def _provar(self, alvo, hipoteses):
+        """O objetivo, a partir das hipóteses nomeadas — e de nada mais."""
+        from .prova import NaoEVetorial, SemProva, linhas, provar
+
+        if alvo in hipoteses:
+            return {"erro": f"'{alvo}' está entre as próprias hipóteses: "
+                            f"isso não prova nada", "alvo": alvo}
+        try:
+            objetivo = self._objeto(alvo).to_sympy()
+            dadas = {h: self._objeto(h).to_sympy() for h in hipoteses}
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+
+        try:
+            prova = provar(objetivo, dadas, self.sessao.tensores)
+        except (SemProva, NaoEVetorial) as e:
+            return {"erro": str(e), "alvo": alvo}
+
+        tabela = linhas(prova)
+        usadas = ", ".join(prova.hipoteses_usadas) or "nenhuma hipótese"
+        sobrou = [h for h in hipoteses if h not in prova.hipoteses_usadas]
+        nota = f"; não precisou de {', '.join(sobrou)}" if sobrou else ""
+        tabela.append(["somando", sp.sstr(objetivo),
+                       sp.latex(objetivo) + r"\quad\blacksquare"])
+        texto = (f"provado a partir de {usadas}, e da linearidade de ∇, "
+                 f"do colchete e de R{nota}")
+        tabela.append(["usou", texto])
+        return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
+                "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
 
     def _contrair(self, alvo, expressao):
         r"""`g_{\mu\nu}A^\nu` vira `A_\mu`: baixar o índice, de fato.

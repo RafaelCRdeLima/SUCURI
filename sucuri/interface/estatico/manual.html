@@ -273,6 +273,29 @@ Lie:</p>
     importa.</p>
 </div>
 
+<p>E com a leitura vem a prova. <code>provar</code> recebe o objetivo e as
+hipóteses — só as nomeadas: escrever uma equação no caderno não é
+afirmá-la.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">[U,X] = 0</code>
+  <code class="entrada">\nabla_U U = 0</code>
+  <code class="entrada">\nabla_U X - \nabla_X U = [U,X]</code>
+  <code class="entrada">R(U,X)U = \nabla_U \nabla_X U - \nabla_X \nabla_U U - \nabla_{[U,X]} U</code>
+  <code class="entrada">\nabla_U \nabla_U X = R(U,X)U</code>
+  <code class="entrada">provar(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3, eq4</samp>
+  <p class="explica">a equação do desvio geodésico. Cada passo da tabela diz de
+    que hipótese veio e o que se fez com ela — <code>nabla_U(eq3)</code> é eq3
+    com ∇<sub>U</sub> aplicado aos dois lados —, e a soma é conferida de novo
+    antes do ∎. O motor sabe sozinho só a linearidade de ∇, do colchete e de
+    R; o sinal de R vem da definição que você deu, e com o sinal oposto a mesma
+    chamada não prova.</p>
+</div>
+
 <div class="exemplo">
   <code class="entrada">\nabla_V X</code>
   <samp class="erro-esperado">'V' não foi declarado</samp>
@@ -400,8 +423,11 @@ com o motivo.</p>
   <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): não é
     um fator multiplicando outro, é um objeto próprio. A derivada
     <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
-    com os vetores declarados, já são lidos — mas só lidos: nenhuma regra da
-    conexão (torção nula, definição de R) é aplicada, e nada é provado.</li>
+    com os vetores declarados, já são lidos, e <code>provar</code> encadeia
+    hipóteses sobre eles. Mas só igualdades lineares entre campos vetoriais, e
+    com hipóteses sobre vetores <em>dados</em>: uma definição "para todo W"
+    ainda se escreve para o W que se usa. Regra de Leibniz,
+    ∇<sub>U</sub>(fX) = U(f)X + f∇<sub>U</sub>X, também não.</li>
   <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
     declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
     onde essa regra não alcança o silêncio volta.</li>
