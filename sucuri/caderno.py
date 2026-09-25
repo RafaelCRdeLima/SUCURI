@@ -83,7 +83,8 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
-                         r"|curvatura"
+                         r"|curvatura|kronecker"
+                         r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
                          r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
 VERBOS_GEOMETRIA = {
@@ -472,6 +473,35 @@ class Caderno:
             self.sessao.tensores.pop(_sem_barra(lista[0]), None)
             texto = (f"{lista[0]} é a métrica do espaço — do tipo (0,2), e "
                      f"é ela que baixa e levanta índice")
+        elif especie == "kronecker":
+            if len(lista) != 1:
+                return Celula(None, f"{nomes} = {especie}", "declaracao",
+                              {"erro": "a delta é uma só: declare um nome"})
+            self.sessao.kronecker = _sem_barra(lista[0])
+            texto = (f"{lista[0]}^μ_ν é a delta de Kronecker — a identidade: "
+                     f"{lista[0]}^μ_ν A^ν vira A^μ ao simplificar, e "
+                     f"{lista[0]}^μ_μ vira a dimensão")
+        elif especie.startswith("levi"):
+            import re as _re
+            dentro = _re.search(r"\(\s*([^)]*?)\s*\)", especie)
+            qual = (dentro.group(1).lower() if dentro else "")
+            qual = {"tensor": "tensor", "símbolo": "simbolo",
+                    "simbolo": "simbolo"}.get(qual)
+            if qual is None:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "levi-civita(símbolo) ou levi-civita(tensor)? Os "
+                            "livros não fazem igual. O símbolo vale ±1 em "
+                            "toda carta e é uma densidade: não sobe nem desce "
+                            "com g. O tensor é √|g| vezes o símbolo, e sobe e "
+                            "desce com g. As duas leituras dão contas "
+                            "diferentes em contrair, e escolher seria "
+                            "adivinhar"})
+            for n in lista:
+                self.sessao.levi[_sem_barra(n)] = qual
+            dim = self.sessao.dimensao
+            texto = (f"{', '.join(lista)}: Levi-Civita como "
+                     f"{'tensor — sobe e desce com g' if qual == 'tensor' else 'símbolo — ±1 em toda carta, não sobe nem desce com g'}"
+                     f"; {dim} índices, totalmente antissimétrico")
         elif especie == "curvatura":
             for n in lista:
                 limpo = _sem_barra(n)
@@ -615,8 +645,9 @@ class Caderno:
             if isinstance(objeto, TensExpr):
                 # O simplify do SymPy não usa a simetria de um tensor; a
                 # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}
-                # só vira 0 por ela.
-                objeto = objeto.canon_bp()
+                # só vira 0 por ela. E a delta declarada é contraída antes.
+                from .tensores import simplificar as _simplificar
+                objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
             else:
                 objeto = sp.simplify(objeto)
             return {"alvo": alvo, "exato": sp.sstr(objeto),
@@ -661,7 +692,7 @@ class Caderno:
         Não é simplificação nem cosmética — é a convenção da métrica aplicada,
         e por isso exige que alguém tenha dito qual é a métrica.
         """
-        from .tensores import SemMetrica, contrair, latex_de, livres
+        from .tensores import contrair, latex_de, livres
 
         objeto = expressao.to_sympy()
         if not isinstance(objeto, TensExpr):
@@ -671,7 +702,7 @@ class Caderno:
         espaco = expressao.document.espaco
         try:
             saida = contrair(objeto, espaco)
-        except SemMetrica as e:
+        except ValueError as e:                 # SemMetrica, e o símbolo ε
             return {"erro": str(e), "alvo": alvo}
         if saida == objeto:
             return {"erro": "não há índice para baixar ou levantar: a métrica "

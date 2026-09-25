@@ -69,6 +69,8 @@ class Espaco:
         self._tipos = {}            # nome -> (formas, vetores), tipo do Schutz
         self._simetrias = {}        # nome -> 'simetrico' | 'antissimetrico'
         self.metrica = None         # o nome declarado como A métrica
+        self.kronecker = None       # o nome declarado como a delta
+        self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
         if nome not in self._indices:
@@ -107,6 +109,20 @@ class Espaco:
         self.tipo.set_metric(cabeca)
         self.metrica = nome
         return cabeca
+
+    def definir_kronecker(self, nome):
+        """δ^μ_ν — a identidade. Um índice em cima e um embaixo, sempre."""
+        self.kronecker = nome
+        return self.cabeca(nome, 2)
+
+    def definir_levi(self, nome, qual):
+        """ε com tantos índices quanto a dimensão, totalmente antissimétrico.
+
+        `qual` é 'tensor' (√|g| vezes o símbolo: sobe e desce com g) ou
+        'simbolo' (±1 em toda carta: uma densidade, que a métrica não move).
+        """
+        self.levi[nome] = qual
+        return self.declarar(nome, 0, self.dimensao, "antissimetrico")
 
     def cabeca_metrica(self):
         return self._cabecas[self.metrica][0] if self.metrica else None
@@ -220,6 +236,10 @@ def desacordo_de_tipo(espaco, base, posicoes):
     # aplica sozinho" seria mentir sobre o próprio programa.
     if base == espaco.metrica and len(posicoes) == 2:
         return None
+    # O símbolo de Levi-Civita se escreve em cima ou embaixo, e as duas formas
+    # são o mesmo ±1 — não há valência trocada a apontar.
+    if espaco.levi.get(base) == "simbolo":
+        return None
     tipo = espaco.tipo_de(base)
     if not tipo:
         return None
@@ -234,6 +254,18 @@ def desacordo_de_tipo(espaco, base, posicoes):
 
 def construir(espaco, base, posicoes):
     """O objeto do SymPy: a cabeça aplicada aos índices, com valência."""
+    if base == espaco.kronecker:
+        cima = sum(1 for _, c in posicoes if c)
+        if len(posicoes) != 2 or cima != 1:
+            raise ValueError(
+                f"a delta de Kronecker é δ^μ_ν, com um índice em cima e um "
+                f"embaixo; aqui tem {cima} em cima e {len(posicoes) - cima} "
+                f"embaixo. δ_{{μν}} só é tensor com a métrica — e aí é "
+                f"g_{{μν}}")
+    if base in espaco.levi and len(posicoes) != espaco.dimensao:
+        raise ValueError(
+            f"ε num espaço de dimensão {espaco.dimensao} tem "
+            f"{espaco.dimensao} índices; aqui tem {len(posicoes)}")
     cabeca = espaco.cabeca(base, len(posicoes))
     argumentos = [espaco.indice(n) if cima else -espaco.indice(n)
                   for n, cima in posicoes]
@@ -252,7 +284,8 @@ def simetrizacoes(fator):
     r"""[(tipo, [posições])] — os (…) e […] nos índices de um fator.
 
     `T_{(\mu
-u)}` dá [('(', [0, 1])]; `T_{[\mu|ho|
+u)}` dá [('(', [0, 1])]; `T_{[\mu|
+ho|
 u]}` dá
     [('[', [0, 2])], porque o que está entre barras fica de fora. As posições
     são dos slots, na ordem escrita — as mesmas de `construir`.
@@ -368,7 +401,36 @@ def contrair(expr, espaco):
         raise SemMetrica()
     if not isinstance(expr, TensExpr):
         return expr
+    simbolos = [n for n, q in espaco.levi.items() if q == "simbolo"]
+    presentes = _componentes(expr)
+    if espaco.metrica in presentes and any(n in presentes for n in simbolos):
+        raise ValueError(
+            "o símbolo de Levi-Civita não sobe nem desce com a métrica: é ±1 "
+            "em toda carta, uma densidade, e g_{μα}ε^{α…} não é ε_{μ…}. Para "
+            "subir e descer com g, declare levi-civita(tensor)")
     return expr.contract_metric(espaco.cabeca_metrica())
+
+
+def _componentes(expr):
+    """Os nomes das cabeças que aparecem na expressão tensorial."""
+    from sympy.tensor.tensor import Tensor
+    return {t.component.name for t in sp.preorder_traversal(expr)
+            if isinstance(t, Tensor)}
+
+
+def simplificar(expr, espaco):
+    """δ contraída, e depois a forma canônica — que usa as simetrias.
+
+    δ^μ_ν A^ν vira A^μ; δ^μ_μ vira a dimensão. O que sobra passa pela
+    canonicalização de Butler-Portugal.
+    """
+    if not isinstance(expr, TensExpr):
+        return expr
+    if espaco is not None and espaco.kronecker:
+        expr = expr.contract_delta(espaco.cabeca(espaco.kronecker, 2))
+        if not isinstance(expr, TensExpr):
+            return expr
+    return expr.canon_bp()
 
 
 class IndicesIncompativeis(ValueError):

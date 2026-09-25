@@ -645,6 +645,33 @@ class Document:
         copia._tensores = {**self._tensores, **{n: VETOR for n in nomes}}
         return copia
 
+    def kronecker(self, nome):
+        """Diz que `nome` é a delta de Kronecker — δ^μ_ν, a identidade.
+
+        Declaração, e não reconhecimento pelo nome: \\delta é também variação,
+        quantidade pequena, índice.
+        """
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._tensores[limpo] = (1, 1)
+        self._espaco.definir_kronecker(limpo)
+        return self
+
+    def levi_civita(self, nome, qual):
+        """ε, com a escolha que os livros não fazem igual: 'tensor' ou 'simbolo'."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if qual not in ("tensor", "simbolo"):
+            raise ValueError("levi-civita é (tensor) ou (símbolo)")
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._tensores[limpo] = (0, self._espaco.dimensao)
+        self._simetrias[limpo] = "antissimetrico"
+        self._espaco.definir_levi(limpo, qual)
+        return self
+
     def metric(self, nome):
         r"""Diz qual nome é A métrica — o que licencia baixar e levantar índice.
 

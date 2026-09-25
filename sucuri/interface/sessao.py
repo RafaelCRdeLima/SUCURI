@@ -44,6 +44,8 @@ class Sessao:
         self.simetrias = {}         # nome -> 'simetrico' | 'antissimetrico'
         self.metrica_abstrata = None  # qual nome é A métrica do espaço
         self.curvaturas = []        # nomes declarados operador de curvatura
+        self.kronecker = None       # o nome declarado delta de Kronecker
+        self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
         self.dimensao = 4
@@ -66,6 +68,8 @@ class Sessao:
             "simetrias": dict(self.simetrias),
             "metrica": self.metrica_abstrata,
             "curvaturas": list(self.curvaturas),
+            "kronecker": self.kronecker,
+            "levi": dict(self.levi),
             "variaveis": list(self.variaveis),
             "anotacoes": [
                 {"kind": k, "base": b, "detalhe": d, "leitura": r}
@@ -123,6 +127,10 @@ class Sessao:
             doc.metric(self.metrica_abstrata)
         if self.curvaturas:
             doc.curvature(*self.curvaturas)
+        if self.kronecker:
+            doc.kronecker(self.kronecker)
+        for nome, qual in self.levi.items():
+            doc.levi_civita(nome, qual)
         if self.variaveis:
             doc.variable(*self.variaveis)
 

@@ -401,6 +401,27 @@ com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</
     descarta os parênteses e leria T<sub>(μν)</sub> como T<sub>μν</sub>.</p>
 </div>
 
+<p>A delta de Kronecker e o Levi-Civita também se declaram — δ porque
+<code>\delta</code> é também variação, e ε porque há duas leituras:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">A = tensor(1, 0)</code>
+  <code class="entrada">\delta^\mu_\nu A^\nu</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">A(mu)</samp>
+  <p class="explica">e <code>\delta^\mu_\mu</code> vira a dimensão.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\epsilon = levi-civita</code>
+  <samp class="erro-esperado">levi-civita(símbolo) ou levi-civita(tensor)?</samp>
+  <p class="explica">o símbolo vale ±1 em toda carta e não sobe nem desce com
+    g; o tensor é √|g| vezes o símbolo, e sobe e desce. As duas leituras dão
+    contas diferentes em <code>contrair</code>.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

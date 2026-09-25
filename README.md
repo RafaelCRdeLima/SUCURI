@@ -289,6 +289,33 @@ recusados:
 - barra fora de um colchete;
 - simetrização que junta índice de cima com de baixo (trocá-los pede a métrica).
 
+### Kronecker e Levi-Civita
+
+```
+\delta = kronecker
+\delta^\mu_\nu A^\nu        simplificar →  A^μ
+\delta^\mu_\mu             simplificar →  4          a dimensão
+\delta_{\mu\nu}            recusa: com a métrica, isso é g_{μν}
+
+\epsilon = levi-civita(tensor)      ou  levi-civita(símbolo)
+\epsilon_{\mu\nu\rho\sigma} S^{\mu\nu}    simplificar →  0     S simétrico
+g_{\alpha\mu}\epsilon^{\mu\nu\rho\sigma}      contrair →  ε_α^{νρσ}      só o tensor
+```
+
+δ é declaração porque `\delta` também é variação, número pequeno e índice.
+Ela exige um índice em cima e um embaixo. δ_{μν} fora do espaço euclidiano não
+é tensor; com a métrica, é g_{μν}.
+
+Levi-Civita não se declara sem escolher, porque os livros não fazem igual:
+
+- o **símbolo** vale ±1 em toda carta, é uma densidade, e g não o move:
+  `contrair` recusa baixar-lhe um índice;
+- o **tensor** é √|g| vezes o símbolo, e sobe e desce com g.
+
+Nos dois casos, ε tem tantos índices quanto a dimensão e é totalmente
+antissimétrico. Ainda não: a identidade εε = ±n!δ, cujo sinal depende da
+assinatura da métrica, que ainda não se declara.
+
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
 ```
