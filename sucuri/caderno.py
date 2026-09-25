@@ -76,6 +76,7 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
+                         r"|curvatura"
                          r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
 VERBOS_GEOMETRIA = {
@@ -417,6 +418,15 @@ class Caderno:
             self.sessao.tensores.pop(_sem_barra(lista[0]), None)
             texto = (f"{lista[0]} é a métrica do espaço — do tipo (0,2), e "
                      f"é ela que baixa e levanta índice")
+        elif especie == "curvatura":
+            for n in lista:
+                limpo = _sem_barra(n)
+                if limpo not in self.sessao.curvaturas:
+                    self.sessao.curvaturas.append(limpo)
+            texto = (f"{', '.join(lista)}(U,X)W é o operador de curvatura "
+                     f"aplicado a W, e não produto — a leitura não fixa o "
+                     f"sinal nem a ordem dos argumentos, que variam de livro "
+                     f"para livro")
         elif especie == "euler":
             for n in lista:
                 self.sessao.anotar("euler", n, {}, "euler")

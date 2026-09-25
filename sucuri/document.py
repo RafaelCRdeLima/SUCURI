@@ -437,6 +437,7 @@ class Document:
         self._function_args = {}        # u(x,t) -> ('x', 't')
         self._indices = set()           # nomes declarados como índice
         self._tensores = {}             # nome -> (formas, vetores)
+        self._curvaturas = []           # nomes declarados operador de curvatura
         self._espaco = None             # o tipo de índice, criado quando precisa
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
@@ -554,6 +555,19 @@ class Document:
         self._espaco.declarar(_limpo_indice(nome), formas, vetores)
         return self
 
+    def curvature(self, *nomes):
+        """Diz que `R(U,X)W` é o operador de curvatura aplicado, e não produto.
+
+        Declara o PAPEL, não a convenção: o sinal e a ordem dos argumentos
+        variam de livro para livro e só importam para calcular. Ler `R(U,X)W`
+        é o mesmo em qualquer um deles.
+        """
+        for nome in nomes:
+            limpo = _limpo_indice(nome)
+            if limpo not in self._curvaturas:
+                self._curvaturas.append(limpo)
+        return self
+
     def metric(self, nome):
         r"""Diz qual nome é A métrica — o que licencia baixar e levantar índice.
 
@@ -651,15 +665,16 @@ class Expression:
         self.source = latex
         self.document = document
         from .conexao import localizar
-        self.covariantes = localizar(latex, document._tensores,
-                                     document._indices)
-        # Em \nabla_U (X+Y) o detector vê "U (" e pergunta se U é função. Não
-        # é nem função nem fator: é o subscrito de ∇, e a pergunta seria falsa.
-        # Pergunta que não é pergunta gasta a credibilidade das que são.
-        subscritos = {i for c in self.covariantes
-                      for i in range(c.ini, c.fim_direcao)}
+        self.covariantes = localizar(latex, document._indices,
+                                     document._curvaturas)
+        # Em \nabla_U (X+Y) o detector vê "U (" e pergunta se U é função; em
+        # R(U,X)W, se R multiplica o parêntese. Nenhum dos dois: um é o
+        # subscrito de ∇, o outro a curvatura declarada, e a pergunta seria
+        # falsa. Pergunta que não é pergunta gasta a credibilidade das que são.
+        cabecas = {i for c in self.covariantes
+                   for i in range(c.ini, max(c.fim_cabeca, c.ini + 1))}
         self.ambiguities = [a for a in find(latex)
-                            if a.span[0] not in subscritos]
+                            if a.span[0] not in cabecas]
 
     # ------------------------------------------------------------- estado
 
@@ -710,10 +725,10 @@ class Expression:
         if recusas:
             raise NotacaoTensorial(recusas)
 
-        from .conexao import DerivadaCovarianteNaoLida
+        from .conexao import ConexaoNaoLida
         for c in self.covariantes:
             if c.problema:
-                raise DerivadaCovarianteNaoLida(c.problema)
+                raise ConexaoNaoLida(c.problema)
 
         texto, reposicoes, derivadas, _, tensores = self._normalize()
         from sympy.parsing.latex import parse_latex
@@ -831,11 +846,10 @@ class Expression:
 
         for _, especie, item in sorted(itens, key=lambda i: -i[0]):
             if especie == "covariante":
-                from .conexao import DerivadaCovariante
+                from .conexao import construir
                 nome, simbolo = marcador()
-                reposicoes[simbolo] = DerivadaCovariante(
-                    sp.Symbol(_limpo_macro(item.direcao)),
-                    self._fragmento(item.operando))
+                reposicoes[simbolo] = construir(item, self._fragmento,
+                                                doc._tensores)
                 texto = texto[:item.ini] + nome + texto[item.fim:]
                 continue
             if especie == "tensor":

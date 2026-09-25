@@ -213,28 +213,49 @@ Ainda não atravessa a ponte: **derivada com índice** (∂_μ, ∇_μ). Ela nã
 fator multiplicando outro, é um objeto próprio, e montar um produto ali
 pareceria certo — então recusa.
 
-### A derivada covariante sem índice
+### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
 ```
 U = tensor(1,0)
 X = tensor(1,0)
+R = curvatura
+
 \nabla_U \nabla_X U - \nabla_X \nabla_U U   →  nabla_U(nabla_X(U)) - nabla_X(nabla_U(U))
+[U, X] = 0                                 →  Eq([U, X], 0)
+\nabla_U \nabla_U X = R(U,X)U              →  Eq(nabla_U(nabla_U(X)), R(U, X)(U))
 ```
 
 Sem isso o parser lia `\nabla_U X` como `X*nabla_{U}`: um símbolo de nome
 esquisito multiplicando X. O produto comuta, então ∇_U∇_X e ∇_X∇_U saíam
 iguais, e a curvatura, que é justamente a diferença entre os dois, sumia sem
-aviso.
+aviso. `[U,X]` ele recusava, e `R(U,X)U` virava a pergunta "R aplicada, ou R
+vezes o parêntese?".
 
-`\nabla_U` e `\nabla_\mu` se escrevem igual, e no Wald a letra latina do
-subscrito **é** índice. Quem decide é a declaração. Um vetor escrito sem índice
-só pode ser o objeto abstrato, e aí ∇_U vira aplicação, com a ordem guardada na
-estrutura. Com o subscrito sem declaração, ou declarado de outro tipo, a leitura
-recusa. Onde não fica claro até onde o operador alcança (`\nabla_U X^\mu`,
-`\nabla_U X_1`), também recusa: nesse caso use parênteses.
+A tipografia não resolve nenhum dos três. `\nabla_U` e `\nabla_\mu` se
+escrevem igual, e no Wald a letra latina do subscrito **é** índice. `[a,b]`
+pode ser colchete de Lie, comutador, intervalo ou par. Quem decide é a
+declaração:
 
-O que isso **ainda não** faz é a conta: o colchete `[U,X]`, o operador
-`R(U,X)` e as regras da conexão ficam para depois.
+- **∇_U**: um vetor escrito sem índice só pode ser o objeto abstrato. Aí ∇_U
+  vira aplicação, com a ordem guardada na estrutura. A direção pode ser
+  composta, como em `\nabla_{[U,X]}` ou `\nabla_{U+X}`.
+- **[U,X]**: entre dois vetores declarados, só pode ser o colchete de Lie.
+  Colchete sem vírgula continua sendo agrupamento, como em `[x+1]^2`.
+- **R(U,X)W**: com `R = curvatura`, R não multiplica o parêntese. Exige dois
+  vetores e o vetor sobre o qual age, e `R(U,X)` sozinho recusa.
+
+Quando o que foi declarado não licencia a leitura, recusa. Isso vale para
+subscrito sem declaração, colchete de coisas que não são vetores e curvatura
+agindo sobre uma 1-forma. Também recusa onde não fica claro até onde o operador
+alcança (`\nabla_U X^\mu`, `\nabla_U X_1`): nesse caso use parênteses.
+
+`R = curvatura` declara o **papel** de R, e não a convenção. O sinal e a ordem
+dos argumentos variam de livro para livro. Para *ler* `R(U,X)W` isso não
+importa, porque é o mesmo objeto escrito. Para *calcular* importa, e aí a
+definição terá de ser declarada, não suposta.
+
+As cinco linhas da dedução do desvio geodésico já são lidas. O que falta é a
+conta: aplicar as regras da conexão e encadear os passos.
 
 ### Sem declarar, a recusa continua
 

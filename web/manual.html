@@ -258,6 +258,21 @@ digitação, e a olho ninguém vê:</p>
     <code>X*nabla_{U}</code>, que comuta — e a curvatura sumiria.</p>
 </div>
 
+<p>Com <code>R = curvatura</code>, <code>R(U,X)W</code> é o operador aplicado a
+W, e não R vezes o parêntese. E entre dois vetores o colchete só pode ser o de
+Lie:</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">R(U,X)U = \nabla_U \nabla_X U - \nabla_X \nabla_U U - \nabla_{[U,X]} U</code>
+  <samp class="saida">Eq(R(U, X)(U), nabla_U(nabla_X(U)) - nabla_X(nabla_U(U)) - nabla_{[U, X]}(U))</samp>
+  <p class="explica">a declaração diz o papel de R, não o sinal: a ordem dos
+    argumentos e o sinal variam de livro para livro, e para ler isso não
+    importa.</p>
+</div>
+
 <div class="exemplo">
   <code class="entrada">\nabla_V X</code>
   <samp class="erro-esperado">'V' não foi declarado</samp>
@@ -384,9 +399,9 @@ com o motivo.</p>
     de LaTeX é que não as lê.</li>
   <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): não é
     um fator multiplicando outro, é um objeto próprio. A derivada
-    <em>direcional</em> ∇<sub>U</sub>, com U declarado vetor, já é lida — mas só
-    lida: o colchete [U,X] e o operador R(U,X) ainda não, e nenhuma regra da
-    conexão (torção nula, definição de R) é aplicada.</li>
+    <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
+    com os vetores declarados, já são lidos — mas só lidos: nenhuma regra da
+    conexão (torção nula, definição de R) é aplicada, e nada é provado.</li>
   <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
     declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
     onde essa regra não alcança o silêncio volta.</li>
