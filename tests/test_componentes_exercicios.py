@@ -36,3 +36,14 @@ def test_sem_subs_e_sem_campo_do_diffgeom():
                "g = métrica(-1, a^2, a^2, a^2)", "escalar(g)")
     assert "Subs" not in d["exato"] and "mathbf" not in d["latex_exato"]
     assert d["exato"] == "6*(a(t)*Derivative(a(t), (t, 2)) + Derivative(a(t), t)**2)/a(t)**2"
+
+
+def test_uma_metrica_nao_contamina_a_seguinte():
+    r"""FRW com k em (t, r, θ, φ), depois FRW plano em (t, x, y, z): o cache do
+    SymPy devolvia, na segunda conta, um Subs com o t da primeira carta."""
+    ultimo("x = coordenadas(t, r, \\theta, \\phi)", "a = a(t)",
+           r"g = métrica(-1, \frac{a^2}{1 - k r^2}, a^2 r^2, a^2 r^2 \sin^2\theta)",
+           "escalar(g)")
+    d = ultimo("x = coordenadas(t, x, y, z)", "a = a(t)",
+               "g = métrica(-1, a^2, a^2, a^2)", "escalar(g)")
+    assert "Subs" not in d["exato"]

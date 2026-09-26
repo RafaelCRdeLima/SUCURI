@@ -28,6 +28,28 @@ from sympy.diffgeom import (CoordSystem, Manifold, Patch, TensorProduct,
                             metric_to_Riemann_components)
 
 
+_CARTAS = 0
+
+
+def _isolado(calculo):
+    """Cada cálculo com o cache do SymPy limpo.
+
+    Com o cache cheio, o cálculo de uma métrica recebia objetos feitos no
+    cálculo de outra: o R de FRW em (t, x, y, z) saía com um Subs cujo ponto
+    era o t de uma carta (t, r, θ, φ) usada antes — nem os nomes únicos das
+    cartas impediam. Limpar custa pouco, e um resultado deixa de poder
+    depender do que se calculou antes dele.
+    """
+    import functools
+    from sympy.core.cache import clear_cache
+
+    @functools.wraps(calculo)
+    def envolto(*args, **kwargs):
+        clear_cache()
+        return calculo(*args, **kwargs)
+    return envolto
+
+
 class Metrica:
     """Uma métrica diagonal, com as suas coordenadas."""
 
@@ -43,9 +65,17 @@ class Metrica:
         self.simbolos = list(coordenadas)
         self.componentes = list(componentes)
 
-        self.variedade = Manifold(f"M_{nome}", len(coordenadas))
-        self.carta = Patch(f"P_{nome}", self.variedade)
-        self.sistema = CoordSystem("x", self.carta, self.simbolos)
+        # Um sistema de coordenadas por métrica, com nome único. O SymPy
+        # compara sistemas pelo nome, e não pelos símbolos: duas métricas
+        # chamadas g, em cartas diferentes, davam campos "iguais", e o cache
+        # devolvia, no cálculo de uma, objetos feitos com as coordenadas da
+        # outra — o ponto de um Subs era o t de (t, r, θ, φ) dentro de uma
+        # conta em (t, x, y, z).
+        global _CARTAS
+        _CARTAS += 1
+        self.variedade = Manifold(f"M_{nome}_{_CARTAS}", len(coordenadas))
+        self.carta = Patch(f"P_{nome}_{_CARTAS}", self.variedade)
+        self.sistema = CoordSystem(f"x_{_CARTAS}", self.carta, self.simbolos)
 
         # As componentes vêm escritas nos símbolos das coordenadas; o diffgeom
         # trabalha com as FUNÇÕES de coordenada. Trocar uma pela outra é o que
@@ -124,24 +154,28 @@ def _combinacoes(n, posto):
             yield (i,) + resto
 
 
+@_isolado
 def christoffel(metrica):
     return nao_nulas(metric_to_Christoffel_2nd(metrica.tensor),
                      metrica.simbolos, 3, escrita=metrica.escrita,
                      de_volta=metrica.de_volta)
 
 
+@_isolado
 def ricci(metrica):
     return nao_nulas(metric_to_Ricci_components(metrica.tensor),
                      metrica.simbolos, 2, cima=0, escrita=metrica.escrita,
                      de_volta=metrica.de_volta)
 
 
+@_isolado
 def riemann(metrica):
     return nao_nulas(metric_to_Riemann_components(metrica.tensor),
                      metrica.simbolos, 4, escrita=metrica.escrita,
                      de_volta=metrica.de_volta)
 
 
+@_isolado
 def escalar(metrica):
     """O escalar de Ricci: R = g^{\\mu\\nu} R_{\\mu\\nu}."""
     R = metric_to_Ricci_components(metrica.tensor)
@@ -187,6 +221,7 @@ def _simbolo_componente(base, coordenada, cima):
     return sp.Symbol(f"{base}{'__' if cima else '_'}{coordenada}")
 
 
+@_isolado
 def componentes(expr, espaco, metrica):
     r"""As componentes de uma expressão tensorial, na carta da métrica.
 

@@ -37,7 +37,7 @@ PAGINAS = ["index.html", "caderno.html"]
 
 # O manual não carrega motor nenhum: é texto, e a tela de
 # carregamento seria uma espera por nada.
-PAGINAS_SIMPLES = ["manual.html"]
+PAGINAS_SIMPLES = ["manual.html", "apostila.html"]
 
 
 def motor_zip():

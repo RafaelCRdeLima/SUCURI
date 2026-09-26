@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUCURI — apostila</title>
+<meta name="description" content="Geometria diferencial em exercícios: 45 exercícios de listas reais, em notação indicial e tensorial, resolvidos — ou não — pelo Sucuri.">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="sucuri.css">
+<link rel="stylesheet" href="caderno.css">
+<link rel="stylesheet" href="manual.css">
+</head>
+<body>
+<div class="app">
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <span class="wordmark">SUCURI</span>
+  <a class="modo" href="caderno.html">caderno</a>
+  <a class="modo" href="manual.html">manual</a>
+  <span class="arquivo">apostila</span>
+</header>
+<main class="manual">
+
+<p class="abertura"><strong>Geometria diferencial em exercícios.</strong> Esta
+apostila percorre 45 exercícios de listas usadas em cursos de relatividade
+geral e geometria riemanniana — Cambridge, MIT, Nagoya —, separados pela
+notação em que são naturalmente enunciados: <strong>indicial</strong>, com
+componentes, índices e soma de Einstein; e <strong>tensorial</strong>, sem
+índice, com campos vetoriais, conexões e formas. Para cada um, o que o Sucuri
+faz com ele: resolve, resolve em parte, ou não resolve — e por quê.</p>
+
+<p class="nota-manual">Cada exercício resolvido aqui é executado pela suíte de
+testes a cada mudança do programa: a saída impressa é a saída. Os enunciados
+são paráfrases; o número e a fonte de cada um estão ao lado, para conferir no
+original.</p>
+
+<nav class="sumario">
+  <a href="#como-ler">Como ler</a> ·
+  <a href="#placar">O placar</a> ·
+  <a href="#indicial">I. Notação indicial</a> ·
+  <a href="#componentes">II. Componentes numa carta</a> ·
+  <a href="#tensorial">III. Notação tensorial</a> ·
+  <a href="#formas">IV. Formas diferenciais</a> ·
+  <a href="#nao-sai">V. O que não sai</a> ·
+  <a href="#achados">VI. O que os exercícios ensinaram</a> ·
+  <a href="#fontes">Fontes</a>
+</nav>
+
+<h2 id="como-ler">Como ler</h2>
+
+<p>Cada exercício traz a fonte, o enunciado resumido e as células que o
+resolvem no <a href="caderno.html">caderno</a>, com a resposta. Três selos:</p>
+
+<table class="tabela">
+  <tr><td><span class="pill ok">resolve</span></td>
+      <td>o Sucuri chega ao resultado do exercício — por cálculo, ou por
+          <code>provar</code>, que devolve a cadeia de passos conferida.</td></tr>
+  <tr><td><span class="pill aviso">em parte</span></td>
+      <td>resolve um item, ou o passo que decide, ou só com uma hipótese que
+          o exercício pede para deduzir.</td></tr>
+  <tr><td><span class="pill erro">não resolve</span></td>
+      <td>o exercício pede algo que o Sucuri ainda não sabe escrever ou
+          deduzir — e a seção V diz o quê.</td></tr>
+</table>
+
+<p>Duas coisas que valem para tudo o que segue. <strong>Declarar decide a
+leitura</strong>: um índice só é índice, um vetor só é vetor, depois de
+declarado — o manual explica por quê. E <strong><code>provar</code> só usa as
+hipóteses nomeadas</strong>: o que o motor sabe sozinho é o que vale em
+qualquer livro (linearidade, Leibniz, a antissimetria do colchete, d² = 0); o
+resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
+
+<h2 id="placar">O placar</h2>
+
+<table class="tabela">
+  <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
+  <tr><td>indicial (17)</td><td>5</td><td>3</td><td>9</td></tr>
+  <tr><td>componentes (11)</td><td>7</td><td>3</td><td>1</td></tr>
+  <tr><td>tensorial (17)</td><td>10</td><td>4</td><td>3</td></tr>
+</table>
+
+<p>A notação tensorial vai mais longe, e não por acaso: é nela que o Sucuri
+tem um motor de prova. Dois exercícios enunciados em índices (9 e 11) só
+saem porque foram reescritos sem índice — que é, afinal, o que a notação
+abstrata existe para permitir. Na indicial, o que falta é sobretudo a
+passagem de ∇ para Γ e o determinante da métrica.</p>
+
+<h2 id="indicial">I. Notação indicial</h2>
+
+<h3>1. Simétrico contra antissimétrico <span class="pill ok">resolve</span></h3>
+
+<p>Reall, <em>Part III GR</em>, §1.7: a contração de um par simetrizado com um
+par antissimetrizado se anula, T<sup>(ab)</sup>X<sub>[a|cd|b]</sub> = 0. As
+barras excluem c e d da antissimetrização.</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d = índices</code>
+  <code class="entrada">T = tensor(2, 0)</code>
+  <code class="entrada">X = tensor(0, 4)</code>
+  <code class="entrada">T^{(ab)} X_{[a|cd|b]}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">sem os parênteses em T, a mesma conta não zera. Este foi
+    o primeiro exercício tentado, e ele achou um erro: antes da correção, a
+    resposta era <code>2·T·X + 2·T·X</code> (seção VI).</p>
+</div>
+
+<h3>15. Corrente conservada de um campo de Killing <span class="pill aviso">em parte</span></h3>
+
+<p>Reall §5.3 (também Tong, folha 3, Q5): com T<sub>ab</sub> simétrico e
+∇<sub>a</sub>T<sup>ab</sup> = 0, e X<sup>b</sup> de Killing
+(∇<sub>(a</sub>X<sub>b)</sub> = 0), J<sup>a</sup> = T<sup>a</sup><sub>b</sub>X<sup>b</sup>
+é conservada. O passo que decide é que T, simétrico, só enxerga a parte
+simétrica de ∇X:</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b = índices</code>
+  <code class="entrada">T = tensor(2, 0, simétrico)</code>
+  <code class="entrada">X = tensor(0, 1)</code>
+  <code class="entrada">\frac{1}{2} T^{ab} (\nabla_a X_b - \nabla_b X_a)</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">a expansão ∇<sub>a</sub>(T<sup>ab</sup>X<sub>b</sub>) por
+    Leibniz também sai. O que falta é usar ∇T = 0 e a equação de Killing como
+    hipóteses — e hipóteses em notação indicial o Sucuri ainda não encadeia.</p>
+</div>
+
+<h3>16. Contração de dois Levi-Civita <span class="pill ok">resolve</span></h3>
+
+<p>Reall §8.5, eq. (8.54): em n dimensões,
+ε<sup>a…c…</sup>ε<sub>b…c…</sub> = ±p!(n−p)! δ<sup>[a</sup><sub>b</sub>…δ<sup>…]</sup><sub>…</sub>,
+com o sinal − na assinatura lorentziana; em particular
+ε<sup>abcd</sup>ε<sub>abcd</sub> = −24.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \alpha, \beta = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">-24</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \alpha, \beta = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\alpha\beta}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">-2*delta(rho, -alpha)*delta(sigma, -beta) + 2*delta(sigma, -alpha)*delta(rho, -beta)</samp>
+  <p class="explica">p = 2: −2! · 2!/2! · (δδ − δδ). O sinal vem da assinatura
+    declarada; com <code>métrica(+,+,+,+)</code> a primeira conta dá +24.</p>
+</div>
+
+<h3>6. Derivadas segundas de uma função <span class="pill aviso">em parte</span></h3>
+
+<p>Tong, folha 2, Q2: com torção, 2∇<sub>[μ</sub>∇<sub>ν]</sub>f =
+−T<sup>ρ</sup><sub>μν</sub>∇<sub>ρ</sub>f; sem torção, as derivadas comutam. A
+parte sem torção sai; a com torção não, porque a torção não se declara com
+índice.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu f - \nabla_\nu \nabla_\mu f</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">sem <code>\nabla = levi-civita</code>, a mesma diferença
+    não zera: o Sucuri não supõe torção nula.</p>
+</div>
+
+<h3>7 e 8. A identidade de Ricci <span class="pill ok">resolve</span> (8) <span class="pill aviso">em parte</span> (7)</h3>
+
+<p>Reall §4.2, eq. (4.8), pede provar a identidade de Ricci num vetor,
+∇<sub>c</sub>∇<sub>d</sub>Z<sup>a</sup> − ∇<sub>d</sub>∇<sub>c</sub>Z<sup>a</sup> =
+R<sup>a</sup><sub>bcd</sub>Z<sup>b</sup>; Tong, folha 2, Q3, o análogo numa
+1-forma. No Sucuri, a identidade no vetor é a <em>definição</em> do Riemann —
+é dela que <code>riemann(eq)</code> lê o sinal e a ordem dos slots, porque os
+livros não concordam. Dela, a da 1-forma sai:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu W_\rho - \nabla_\nu \nabla_\mu W_\rho</code>
+  <code class="entrada">simplificar(eq2)</code>
+  <samp class="saida">-R(L_0, -rho, -mu, -nu)*W(-L_0)</samp>
+  <p class="explica">2∇<sub>[μ</sub>∇<sub>ν]</sub>ω<sub>ρ</sub> =
+    −R<sup>σ</sup><sub>ρμν</sub>ω<sub>σ</sub>, a resposta de Tong. A ligação
+    entre a identidade (7) e a definição sem índice R(X,Y)Z aparece em
+    <code>indices</code>, no manual.</p>
+</div>
+
+<h3>9. A simetria de troca de pares do Riemann <span class="pill ok">resolve</span></h3>
+
+<p>Carroll, cap. 3, após a eq. (3.81): as antissimetrias nos dois pares e a
+identidade cíclica implicam R<sub>ρσμν</sub> = R<sub>μνρσ</sub>. Enunciado em
+índices; resolvido <strong>sem índice</strong>, com o (0,4) avaliado nos
+vetores e as três propriedades como hipóteses gerais:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(1, 0)</code>
+  <code class="entrada">Q = tensor(0, 4)</code>
+  <code class="entrada">\forall A, B, C, D: Q(A,B,C,D) = -Q(B,A,C,D)</code>
+  <code class="entrada">\forall A, B, C, D: Q(A,B,C,D) = -Q(A,B,D,C)</code>
+  <code class="entrada">\forall A, B, C, D: Q(A,B,C,D) + Q(A,C,D,B) + Q(A,D,B,C) = 0</code>
+  <code class="entrada">Q(X,Y,Z,W) = Q(Z,W,X,Y)</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">Q foi declarado sem simetria nenhuma — senão a troca de
+    pares estaria embutida, e não haveria o que provar. A tabela da resposta
+    lista as instâncias usadas: quatro da identidade cíclica, como na prova
+    de livro, e as antissimetrias que as alinham.</p>
+</div>
+
+<h3>11. O Riemann a partir da sua parte simétrica <span class="pill ok">resolve</span></h3>
+
+<p>Reall §4.5, eq. (4.25): sem torção,
+R<sup>a</sup><sub>bcd</sub> = ⅔(R<sup>a</sup><sub>(bc)d</sub> − R<sup>a</sup><sub>(bd)c</sub>),
+usando R<sup>a</sup><sub>b(cd)</sub> = 0 e R<sup>a</sup><sub>[bcd]</sub> = 0.
+Também reescrito sem índice:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(1, 0)</code>
+  <code class="entrada">Q = tensor(0, 4)</code>
+  <code class="entrada">\forall A, B, C, D: Q(A,B,C,D) = -Q(A,B,D,C)</code>
+  <code class="entrada">\forall A, B, C, D: Q(A,B,C,D) + Q(A,C,D,B) + Q(A,D,B,C) = 0</code>
+  <code class="entrada">Q(W,X,Y,Z) = \frac{1}{3} \cdot (Q(W,X,Y,Z) + Q(W,Y,X,Z) - Q(W,X,Z,Y) - Q(W,Z,X,Y))</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">provado a partir de eq1, eq2</samp>
+  <p class="explica">⅔ vezes a diferença das partes simetrizadas é ⅓ vezes a
+    soma de quatro termos. O <code>\cdot</code> antes do parêntese não é
+    enfeite: sem ele, <code>\frac{1}{3} (…)</code> é o mesmo que escrever
+    <code>f(…)</code>, e o Sucuri perguntaria.</p>
+</div>
+
+<h2 id="componentes">II. Componentes numa carta</h2>
+
+<p>Aqui o Sucuri está em casa: com as coordenadas e a métrica diagonal
+declaradas, <code>christoffel</code>, <code>riemann</code>,
+<code>ricci</code> e <code>escalar</code> fazem o cálculo inteiro.</p>
+
+<h3>35 e 36. A esfera <span class="pill ok">resolve</span></h3>
+
+<p>Cline, problema 7.2 (esfera unitária: Christoffel, Ricci, R = 2); MIT 8.962,
+PS5 #4, com o exemplo resolvido de Carroll, eq. (3.105) (raio a: R = 2/a²).</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">R_{{\phi}{\phi}}=sin(theta)**2</samp>
+  <p class="explica">e R<sub>θθ</sub> = 1, Γ<sup>θ</sup><sub>φφ</sub> =
+    −sen 2θ/2 = −sen θ cos θ, Γ<sup>φ</sup><sub>θφ</sub> = cotg θ.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(a^2, a^2 \sin^2\theta)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">2/a**2</samp>
+</div>
+
+<h3>37. O plano em coordenadas polares <span class="pill aviso">em parte</span></h3>
+
+<p>Cline, problema 7.6: os Christoffel saem; as componentes de
+∇<sub>i</sub>A<sub>j</sub> e o laplaciano vetorial, não — <code>avaliar</code>
+ainda não leva derivada com índice às componentes.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \theta)</code>
+  <code class="entrada">g = métrica(1, r^2)</code>
+  <code class="entrada">christoffel(g)</code>
+  <samp class="saida">\Gamma^{r}_{{\theta}{\theta}}=-r</samp>
+  <p class="explica">e Γ<sup>θ</sup><sub>rθ</sub> = 1/r, o dado do enunciado.</p>
+</div>
+
+<h3>38. Rindler <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962, PS4 #1: os Christoffel de
+ds² = −(1 + g x)²dt² + dx² + dy² + dz². A aceleração se chama k abaixo, porque
+g é a métrica.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">g = métrica(-(1 + k x)^2, 1, 1, 1)</code>
+  <code class="entrada">christoffel(g)</code>
+  <samp class="saida">\Gamma^{x}_{{t}{t}}=k*(k*x + 1)</samp>
+  <p class="explica">e Γ<sup>t</sup><sub>tx</sub> = k/(1 + kx). E
+    <code>riemann(g)</code> responde <em>todas as componentes são nulas</em>:
+    é Minkowski em outra carta.</p>
+</div>
+
+<h3>39. Espaço-tempo estático em 1+1 <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962, PS5 #6: para ds² = −e<sup>2φ(x)</sup>dt² + e<sup>−2ψ(x)</sup>dx²,
+o Riemann e o escalar de curvatura.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x)</code>
+  <code class="entrada">e = euler</code>
+  <code class="entrada">\phi = \phi(x)</code>
+  <code class="entrada">\psi = \psi(x)</code>
+  <code class="entrada">g = métrica(-e^{2\phi}, e^{-2\psi})</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">2*(-Derivative(phi(x), x)**2 - Derivative(phi(x), x)*Derivative(psi(x), x) - Derivative(phi(x), (x, 2)))*exp(2*psi(x))</samp>
+  <p class="explica">R = −2e<sup>2ψ</sup>(φ″ + φ′² + φ′ψ′). Com φ = ψ = ½ ln|g(x−x₀)|
+    o parêntese se anula e o espaço é plano, como pede o item (b). Este
+    exercício achou dois defeitos (seção VI): a declaração
+    <code>\phi = \phi(x)</code> não era aceita, e a métrica saía plana.</p>
+</div>
+
+<h3>40 e 41. Schwarzschild e a família f(r) <span class="pill ok">resolve</span> (40) <span class="pill aviso">em parte</span> (41)</h3>
+
+<p>Tong, folha 2, Q11: os Christoffel de
+ds² = −f²dt² + f<sup>−2</sup>dr² + r²dΩ². Reall §8.4 pede as 2-formas de
+curvatura de Schwarzschild numa base ortonormal — a base ortonormal o Sucuri
+não tem; o Ricci nulo, que é a conclusão, sai em coordenadas.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \varphi)</code>
+  <code class="entrada">f = f(r)</code>
+  <code class="entrada">g = métrica(-f^2, \frac{1}{f^2}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">christoffel(g)</code>
+  <samp class="saida">\Gamma^{r}_{{t}{t}}=f(r)**3*Derivative(f(r), r)</samp>
+  <p class="explica">e Γ<sup>t</sup><sub>tr</sub> = f′/f, Γ<sup>r</sup><sub>rr</sub> =
+    −f′/f, Γ<sup>r</sup><sub>θθ</sub> = −rf², todos como na folha.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">todas as componentes são nulas</samp>
+</div>
+
+<h3>42. O plano hiperbólico <span class="pill aviso">em parte</span></h3>
+
+<p>Cambridge, Part III Differential Geometry, folha 4, Q9: Christoffel de
+g = (dx² + dy²)/y², e as equações das geodésicas. Os Christoffel e a curvatura
+saem; as equações das geodésicas, não.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y)</code>
+  <code class="entrada">g = métrica(\frac{1}{y^2}, \frac{1}{y^2})</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">-2</samp>
+  <p class="explica">R = 2K, logo curvatura de Gauss K = −1. E
+    Γ<sup>x</sup><sub>xy</sub> = −1/y, Γ<sup>y</sup><sub>xx</sub> = 1/y,
+    Γ<sup>y</sup><sub>yy</sub> = −1/y.</p>
+</div>
+
+<h3>43. A 3-esfera <span class="pill ok">resolve</span></h3>
+
+<p>Cline, problema 7.10: R = 6 e R<sub>ij</sub> = 2g<sub>ij</sub> para a
+3-esfera unitária. (O volume, 2π², é integral — não é do Sucuri.)</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\psi, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\psi, \sin^2\psi \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">R_{{\phi}{\phi}}=2*sin(psi)**2*sin(theta)**2</samp>
+  <p class="explica">que é 2g<sub>φφ</sub>; e <code>escalar(g)</code> dá 6.</p>
+</div>
+
+<h3>45. Robertson–Walker <span class="pill ok">resolve</span></h3>
+
+<p>Carroll, cap. 8, eqs. (8.12)–(8.14) (exemplo resolvido no texto): o escalar
+de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">a = a(t)</code>
+  <code class="entrada">g = métrica(-1, \frac{a^2}{1 - k r^2}, a^2 r^2, a^2 r^2 \sin^2\theta)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">6*(k + a(t)*Derivative(a(t), (t, 2)) + Derivative(a(t), t)**2)/a(t)**2</samp>
+  <p class="explica">R = 6(ä/a + ȧ²/a² + k/a²), a eq. (8.14).</p>
+</div>
+
+<h2 id="tensorial">III. Notação tensorial</h2>
+
+<h3>18 e 19. O colchete de Lie <span class="pill ok">resolve</span></h3>
+
+<p>Reall §1.10 e Richard, ex. 2.2.3–2.2.4: antissimetria, aditividade,
+Leibniz, Jacobi; e [fX, gY] = fg[X,Y] + f X(g) Y − g Y(f) X.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">[f X, g Y] = f g [X, Y] + f \nabla_X g \, Y - g \nabla_Y f \, X</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica"><code>\nabla_X g</code>, com g função, é a derivada
+    direcional X(g). O Leibniz do colchete é do que o motor sabe sozinho.</p>
+</div>
+
+<p>A identidade de Jacobi entre campos vetoriais não está embutida — está a
+sua forma sobre funções, [A,B](f) = A(B(f)) − B(A(f)), que é a definição do
+colchete. E é por ela que Jacobi sai, aplicada a uma função h:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla_{[X,[Y,Z]]} h + \nabla_{[Y,[Z,X]]} h + \nabla_{[Z,[X,Y]]} h = 0</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+</div>
+
+<h3>20. A derivada de Lie do colchete <span class="pill ok">resolve</span></h3>
+
+<p>Richard, ex. 2.3.12: com ℒ<sub>X</sub>Y = [X,Y], ℒ<sub>X</sub> é derivação
+do colchete — que é Jacobi, reescrita. Com Jacobi como hipótese:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
+  <code class="entrada">[X, [Y, Z]] = [[X, Y], Z] + [Y, [X, Z]]</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">eq1[A→X, B→Y, C→Z]</samp>
+  <p class="explica">sem a hipótese, a mesma chamada não prova, e diz que
+    nenhuma hipótese fala daqueles colchetes aninhados.</p>
+</div>
+
+<h3>21. Torção e curvatura são tensores <span class="pill ok">resolve</span></h3>
+
+<p>Richard, ex. 5.4.3 (também Tong, folha 2, Q2): T(fX, gY) = fg T(X,Y) e
+R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla_{f X} \nabla_{g Y} (h Z) - \nabla_{g Y} \nabla_{f X} (h Z) - \nabla_{[f X, g Y]} (h Z) = f g h \cdot (\nabla_X \nabla_Y Z - \nabla_Y \nabla_X Z - \nabla_{[X,Y]} Z)</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">todas as derivadas de f, g e h que o Leibniz produz se
+    cancelam — inclusive as segundas, pelo colchete agindo em h. A da torção
+    sai do mesmo jeito.</p>
+</div>
+
+<h3>23. A fórmula de Koszul <span class="pill ok">resolve</span></h3>
+
+<p>Richard, ex. 5.4.5 (e Reall §3.2): a fórmula de Koszul, das duas condições
+de Levi-Civita — compatibilidade com a métrica e torção nula.</p>
+
+<div class="exemplo">
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C) + g(B, \nabla_A C)</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(Z,X) - \nabla_Z g(X,Y) - g(X,[Y,Z]) + g(Y,[Z,X]) + g(Z,[X,Y])</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">g(eq2[A→X, B→Y], Z)</samp>
+  <p class="explica">três instâncias da compatibilidade e três da torção nula,
+    estas postas dentro de g(□, ·). Sem a torção nula, não sai.</p>
+</div>
+
+<h3>24. A primeira identidade de Bianchi <span class="pill ok">resolve</span></h3>
+
+<p>Richard, ex. 6.2.2: sem torção, R(X,Y)Z + R(Y,Z)X + R(Z,X)Y = 0.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
+  <code class="entrada">R(X,Y)Z + R(Y,Z)X + R(Z,X)Y = 0</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">eq3[A→X, B→Y, C→Z]</samp>
+  <p class="explica">dez passos: as três definições de R, seis instâncias da
+    torção nula (três delas dentro de ∇) e Jacobi uma vez.</p>
+</div>
+
+<h3>26. Grupo de Lie com métrica bi-invariante <span class="pill aviso">em parte</span></h3>
+
+<p>Kovalev, Part III Riemannian Geometry, folha 1, Q5. O item (iii),
+∇<sub>X</sub>Y = ½[X,Y], sai de ∇<sub>X</sub>X = 0 para todo X invariante —
+mas a prova usa esse fato em X + Y, e X + Y não aparece no enunciado. O
+Sucuri só instancia o que aparece; a ideia, você dá:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla_{X+Y} (X+Y) = 0</code>
+  <code class="entrada">\nabla_X X = 0</code>
+  <code class="entrada">\nabla_Y Y = 0</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">\nabla_X Y = \frac{1}{2} [X, Y]</code>
+  <code class="entrada">provar(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3, eq4</samp>
+</div>
+
+<p>Com (iii) como hipótese geral, o item (iv) sai — e com um sinal que merece
+nota. Na convenção R(X,Y) = ∇<sub>X</sub>∇<sub>Y</sub> − ∇<sub>Y</sub>∇<sub>X</sub>
+− ∇<sub>[X,Y]</sub>, o resultado é −¼[[X,Y],Z]; a folha dá +¼, na convenção de
+sinal oposto. A curvatura seccional, ¼|[X,Y]|², é a mesma nas duas.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W</code>
+  <code class="entrada">\forall A, B: \nabla_A B = \frac{1}{2} [A, B]</code>
+  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
+  <code class="entrada">R(X,Y)Z = -\frac{1}{4} [[X,Y],Z]</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+</div>
+
+<h2 id="formas">IV. Formas diferenciais</h2>
+
+<h3>28. dα pela conexão <span class="pill ok">resolve</span></h3>
+
+<p>Kovalev, folha 3, Q3: para conexão sem torção,
+dα(X,Y) = (∇<sub>X</sub>α)(Y) − (∇<sub>Y</sub>α)(X). Com
+(∇<sub>X</sub>α)(Y) = X(α(Y)) − α(∇<sub>X</sub>Y), e a fórmula de dα nos
+vetores como hipótese (ela muda de fator com a normalização — ver 27):</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha = forma(1)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\forall A, B: \iota_B \iota_A \mathrm{d}\alpha = \nabla_A (\alpha(B)) - \nabla_B (\alpha(A)) - \alpha([A,B])</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">\iota_Y \iota_X \mathrm{d}\alpha = \nabla_X (\alpha(Y)) - \alpha(\nabla_X Y) - \nabla_Y (\alpha(X)) + \alpha(\nabla_Y X)</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">alpha(eq2[A→X, B→Y])</samp>
+  <p class="explica">a torção nula entra dentro de α: uma relação entre
+    vetores levada a uma entre escalares.</p>
+</div>
+
+<h3>29–33. A álgebra das formas <span class="pill ok">resolve</span></h3>
+
+<p>Cambridge, Part III Differential Geometry, folha 2, Q8 (ι<sub>X</sub> é
+antiderivação); Tong, folha 1, Q5–6 (Cartan numa 1-forma; d² = 0 e Leibniz
+graduado); Reall §8.1 (α∧β = (−1)<sup>pq</sup>β∧α, associatividade) e §8.5
+(⋆⋆ = ±(−1)<sup>p(n−p)</sup>).</p>
+
+<div class="exemplo">
+  <code class="entrada">\omega = forma(1)</code>
+  <code class="entrada">\eta = forma(2)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\iota_X (\omega \wedge \eta) = \iota_X \omega \, \eta - \omega \wedge \iota_X \eta</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\omega = forma(1)</code>
+  <code class="entrada">\eta = forma(2)</code>
+  <code class="entrada">\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">e d²η = 0, ω∧η = η∧ω (grau 1 com grau 2), a
+    associatividade. A fórmula de Cartan também passa, mas vale dizer: no
+    Sucuri ela é a definição de ℒ<sub>X</sub> nas formas, e o exercício vira
+    identidade.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha = forma(1)</code>
+  <code class="entrada">F = forma(2)</code>
+  <code class="entrada">F = \mathrm{d}\alpha</code>
+  <code class="entrada">\mathrm{d} F = 0</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">d(eq1)</samp>
+  <p class="explica">Maxwell: F = dA implica dF = 0 — o passo é aplicar d aos
+    dois lados da hipótese.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">\star = hodge</code>
+  <code class="entrada">F = forma(2)</code>
+  <code class="entrada">\star \star F = -F</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">em 4D lorentziano, ⋆⋆ = −1 em 2-formas e +1 em 1- e
+    3-formas, como diz Reall. A expressão de ⋆d⋆ por ∇ (a segunda metade do
+    exercício) não sai.</p>
+</div>
+
+<h2 id="nao-sai">V. O que não sai</h2>
+
+<p>Dizer isto é parte do trabalho. Cada item abaixo é um exercício da lista,
+e o motivo é o que falta ao programa — não ao exercício.</p>
+
+<h3>Notação indicial</h3>
+
+<ul class="limites">
+  <li><strong>2, 4 (Reall §3.1; MIT PS3 #7).</strong> Escrever ∇ em termos de
+    ∂ e Γ, e ∂g em termos de Γ. O Sucuri trata ∇<sub>μ</sub> como objeto, sem
+    abri-lo em símbolos de Christoffel com índice.</li>
+  <li><strong>4(b).</strong> g<sub>μκ</sub>∂<sub>λ</sub>g<sup>κν</sup> =
+    −g<sup>κν</sup>∂<sub>λ</sub>g<sub>μκ</sub> pede saber que
+    g<sub>μκ</sub>g<sup>κν</sup> = δ antes de derivar.</li>
+  <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
+    mudança de coordenadas não é operação do Sucuri.</li>
+  <li><strong>5 (MIT PS3 #7).</strong> Divergências com √|g|: o determinante
+    da métrica não existe como objeto com índice.</li>
+  <li><strong>10, 13, 14 (Tong 2 Q4, Q9; Tong 3 Q6).</strong> Bianchi
+    contraída, Weyl, Killing de segunda ordem: pedem hipóteses em notação
+    indicial (a segunda identidade de Bianchi, a equação de Killing), e
+    <code>provar</code> só encadeia hipóteses sem índice. O 15, que tem o
+    mesmo problema, sai em parte (seção I).</li>
+  <li><strong>12 (Tong 2 Q8).</strong> O Riemann em 2 dimensões pelo escalar:
+    pede contar componentes e usar a dimensão como hipótese.</li>
+  <li><strong>17 (Reall §5.3).</strong> A derivada de Lie com índice não
+    existe; sem índice, só em formas.</li>
+</ul>
+
+<h3>Componentes</h3>
+
+<ul class="limites">
+  <li><strong>44 (Tong 3 Q4).</strong> Campos de Killing explícitos na esfera
+    e a álgebra so(3): vetores dados por componentes numa carta não se
+    escrevem.</li>
+  <li><strong>37, 41, 42 (em parte).</strong> Componentes de ∇A, base
+    ortonormal e 2-formas de curvatura, equações das geodésicas.</li>
+</ul>
+
+<h3>Notação tensorial</h3>
+
+<ul class="limites">
+  <li><strong>22 (Reall §3.1).</strong> A diferença de duas conexões: o
+    Sucuri conhece uma ∇ só.</li>
+  <li><strong>25 (Kovalev 1 Q2).</strong> A segunda identidade de Bianchi pede
+    ∇R — a derivada covariante de um tensor, e não de um vetor.</li>
+  <li><strong>27 (Cambridge DG 2 Q9).</strong> dω(X,Y) = Xω(Y) − Yω(X) −
+    ω([X,Y]) é, no Sucuri, hipótese: muda de fator com a normalização do
+    produto exterior, e nenhuma é suposta.</li>
+  <li><strong>34 (Cambridge DG 2 Q11).</strong> Maurer–Cartan pede as
+    constantes de estrutura numa base de campos invariantes — soma sobre
+    índices de base, que a notação sem índice não escreve.</li>
+  <li><strong>31, 33 (em parte).</strong> Pull-back, e ⋆d⋆ em termos de ∇.</li>
+</ul>
+
+<h2 id="achados">VI. O que os exercícios ensinaram</h2>
+
+<p>Um leitor de notação só se testa com notação escrita por outra gente,
+para outro fim. Resolver estas listas achou seis defeitos — quatro deles
+silenciosos, o tipo de erro que este programa existe para não cometer. Todos
+corrigidos, e cada um com teste.</p>
+
+<ul class="limites">
+  <li><strong>O ½ que sumia (exercício 1).</strong> T<sup>(ab)</sup>X<sub>[a|cd|b]</sub>
+    simplificava para 2·T·X + 2·T·X. Em ½(X − Y), o SymPy guarda o ½ como
+    argumento do produto, e não no coeficiente; lendo só o coeficiente, o ½ e
+    o sinal se perdiam. Resposta falsa, sem aviso.</li>
+  <li><strong>O tensor que virava função (exercício 15).</strong>
+    <code>T^{ab} (…)</code> era lido como T aplicado ao parêntese. A barreira
+    pegou — os marcadores internos vazaram, e o programa recusou —, mas a
+    leitura legítima não passava.</li>
+  <li><strong>O índice que virava pergunta.</strong> <code>A^a (B_a + C_a)</code>
+    perguntava se o índice a era função.</li>
+  <li><strong>O nome grego (exercício 39).</strong> <code>\phi = \phi(x)</code>
+    não era declaração; φ ficava constante, e a métrica
+    −e<sup>2φ</sup>dt² + e<sup>−2ψ</sup>dx² saía plana, R = 0.</li>
+  <li><strong>O campo do diffgeom (exercícios 39, 40, 45).</strong> A derivada
+    de uma função da coordenada saía como <code>Subs(…)</code>, com o campo
+    escalar da biblioteca no lugar da coordenada — certo, ilegível, e com um
+    objeto interno vazando para o que se copia.</li>
+  <li><strong>Uma métrica dentro da outra (exercício 45).</strong> Calculado o
+    FRW com k, em (t, r, θ, φ), o FRW plano, em (t, x, y, z), saía com um
+    objeto da primeira carta no meio do resultado: o cache do SymPy devolvia,
+    na conta de uma métrica, pedaços da conta de outra. Só apareceu porque a
+    suíte roda os exercícios em sequência.</li>
+</ul>
+
+<h2 id="fontes">Fontes</h2>
+
+<ul class="limites">
+  <li>H. Reall, <em>Part III General Relativity</em>, notas (2022) —
+    <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</li>
+  <li>D. Tong, <em>General Relativity</em>, Example Sheets 1–3 (2019) —
+    <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk1.pdf">1</a>,
+    <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">2</a>,
+    <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk3.pdf">3</a>.</li>
+  <li>MIT 8.962 <em>General Relativity</em>, Problem Sets 3–5 (OCW) —
+    <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</li>
+  <li>S. Richard, <em>Differential geometry</em>, notas com exercícios
+    (Nagoya, 2024) —
+    <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</li>
+  <li>Cambridge, <em>Part III Differential Geometry</em>, Example Sheets
+    (2016), e A. G. Kovalev, <em>Part III Riemannian Geometry</em>, Example
+    Sheets (2017) —
+    <a href="https://dec41.user.srcf.net/notes/III_M/differential_geometry_eg.pdf">DG</a>,
+    <a href="https://dec41.user.srcf.net/notes/III_L/riemannian_geometry_eg.pdf">RG</a>.</li>
+  <li>J. M. Cline, <em>A Short Course in General Relativity</em>
+    (arXiv:2604.17441) —
+    <a href="https://arxiv.org/abs/2604.17441">arxiv.org</a>.</li>
+  <li>S. M. Carroll, <em>Lecture Notes on General Relativity</em>
+    (gr-qc/9712019) —
+    <a href="https://arxiv.org/abs/gr-qc/9712019">arxiv.org</a>.</li>
+</ul>
+
+<p class="fecho">O manual explica cada declaração e cada verbo usado aqui:
+<a href="manual.html">manual</a>. O código está em
+<a href="https://github.com/RafaelCRdeLima/SUCURI">github.com/RafaelCRdeLima/SUCURI</a>.</p>
+
+</main>
+
+<footer>
+  <span>apostila</span>
+  <span>Sucuri</span>
+</footer>
+
+</div>
+</body>
+</html>
