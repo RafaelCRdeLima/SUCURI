@@ -347,6 +347,10 @@ def _nulo(t, espaco):
         return False
     if base == espaco.kronecker:
         return True
+    # O SÍMBOLO de Levi-Civita vale ±1 em toda carta: ∂ dele é zero, com ou
+    # sem conexão. O tensor não — é √|g| vezes o símbolo.
+    if espaco.levi.get(base) == "simbolo" and operacoes[-1] == "d":
+        return True
     levi = espaco.conexao == "levi-civita"
     if operacoes[-1] == "D" and levi:
         if base == espaco.metrica or espaco.levi.get(base) == "tensor":

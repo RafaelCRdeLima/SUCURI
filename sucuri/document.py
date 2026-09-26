@@ -175,9 +175,13 @@ def _declaracao(texto):
     m = _RE_DECLARACAO.match(texto)
     if not m:
         return texto.strip(), None
-    args = tuple(v.strip() for v in m.group(2).split(",") if v.strip())
     # \phi = \phi(x): o nome grego se escreve com barra, e a função se chama
-    # phi — é assim que a leitura de \phi o encontra.
+    # phi — é assim que a leitura de \phi o encontra. E os argumentos também:
+    # F = F(\varpi) guardava a variável como "\varpi", um símbolo diferente
+    # da coordenada varpi, e F saía constante — a superfície de revolução
+    # ficava plana, em silêncio.
+    args = tuple(v.strip().lstrip("\\") for v in m.group(2).split(",")
+                 if v.strip())
     return m.group(1).lstrip("\\"), args
 
 

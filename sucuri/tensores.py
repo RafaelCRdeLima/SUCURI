@@ -436,6 +436,57 @@ def _paridade(ordem):
     return -1 if inversoes % 2 else 1
 
 
+_METRICOS = [0]
+
+
+def _alinhar_pela_metrica(eps, espaco):
+    """Dois ε tensor com índices de cima e de baixo misturados: sobe todos os
+    do primeiro e desce todos os do segundo, com a métrica declarada.
+
+    O SymPy troca de lado os índices mudos ao montar um produto, como se
+    houvesse sempre métrica — e o ε^{ijk}ε_{klm} escrito vira ε^i{}_j{}^k
+    ε_{kl}{}^m. Com a métrica declarada, desfazer isso é legítimo; com o
+    símbolo, que não sobe nem desce com g, não é, e a identidade não se aplica.
+    Devolve ((E1, E2) prontos, fatores de métrica a mais) ou None.
+    """
+    from sympy.tensor.tensor import TensorIndex
+    if espaco.metrica is None:
+        return None
+    tensores = [(k, f) for k, f in eps if espaco.levi.get(f.head.name) == "tensor"]
+    if len(tensores) < 2:
+        return None
+    (k1, E1), (k2, E2) = tensores[:2]
+    if E1.head.name != E2.head.name:
+        return None
+    g = espaco.cabeca(espaco.metrica, 2)
+    nomes2 = {i.name for i in E2.indices}
+    extras = []
+
+    def novo():
+        _METRICOS[0] += 1
+        return TensorIndex(f"m_{_METRICOS[0]}", espaco.tipo)
+
+    ind1, ind2 = list(E1.indices), list(E2.indices)
+    for j, i in enumerate(ind1):
+        if i.name in nomes2:
+            # Mudo entre os dois: trocar os dois lados não muda a conta.
+            k = next(n for n, x in enumerate(ind2) if x.name == i.name)
+            if not i.is_up:
+                ind1[j], ind2[k] = -i, -ind2[k]
+            continue
+        if not i.is_up:
+            b = novo()
+            extras.append(g(i, -b))
+            ind1[j] = b
+    for k, i in enumerate(ind2):
+        if i.is_up and i.name not in {x.name for x in ind1}:
+            b = novo()
+            extras.append(g(i, b))
+            ind2[k] = -b
+    cabeca = E1.head
+    return ((k1, cabeca(*ind1)), (k2, cabeca(*ind2))), extras
+
+
 def _epsilon_epsilon(expr, espaco):
     r"""ε^{a₁…a_k b…} ε_{a₁…a_k c…} = σ k! Σ_π sgn(π) Π δ^{b}_{c_π}.
 
@@ -459,8 +510,12 @@ def _epsilon_epsilon(expr, espaco):
     baixo = [(k, f) for k, f in eps if not any(i.is_up for i in f.indices)]
     par = next(((a, b) for a in cima for b in baixo
                 if a[1].head.name == b[1].head.name), None)
+    extras = []
     if par is None:
-        return expr
+        alinhado = _alinhar_pela_metrica(eps, espaco)
+        if alinhado is None:
+            return expr
+        par, extras = alinhado
     (k1, E1), (k2, E2) = par
     if espaco.levi[E1.head.name] == "tensor":
         if espaco.assinatura is None:
@@ -487,7 +542,7 @@ def _epsilon_epsilon(expr, espaco):
     soma = functools.reduce(operator.add, termos) if B else sp.S.One
     fator = (sigma * _paridade(ordem1) * _paridade(ordem2)
              * sp.factorial(len(comuns)))
-    outros = [f for k, f in enumerate(fatores) if k not in (k1, k2)]
+    outros = [f for k, f in enumerate(fatores) if k not in (k1, k2)] + extras
     from .derivadas import escalar_de
     return escalar_de(expr) * fator * soma * functools.reduce(
         operator.mul, outros, sp.S.One)
@@ -501,11 +556,21 @@ def simplificar(expr, espaco):
     """
     if not isinstance(expr, TensExpr):
         return expr
+    # Expandir primeiro: ε × (soma) esconde o par εε dentro de cada termo.
+    expr = expr.expand()
+    if not isinstance(expr, TensExpr):
+        return expr
     expr = _epsilon_epsilon(expr, espaco)
     if not isinstance(expr, TensExpr):
         return expr
     if espaco is not None and espaco.kronecker:
         expr = expr.contract_delta(espaco.cabeca(espaco.kronecker, 2))
+        if not isinstance(expr, TensExpr):
+            return expr
+    if espaco is not None and espaco.metrica:
+        # A métrica declarada contrai o que ela aparece contraindo — inclusive
+        # a que a identidade εε pôs ali para alinhar os índices.
+        expr = expr.contract_metric(espaco.cabeca(espaco.metrica, 2))
         if not isinstance(expr, TensExpr):
             return expr
     from .derivadas import normalizar

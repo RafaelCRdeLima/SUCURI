@@ -47,3 +47,11 @@ def test_uma_metrica_nao_contamina_a_seguinte():
     d = ultimo("x = coordenadas(t, x, y, z)", "a = a(t)",
                "g = métrica(-1, a^2, a^2, a^2)", "escalar(g)")
     assert "Subs" not in d["exato"]
+
+
+def test_argumento_de_nome_grego():
+    r"""Hirata, Ph236 HW4 #1: F = F(\varpi) guardava a variável como '\varpi',
+    um símbolo diferente da coordenada varpi, e a superfície saía plana."""
+    d = ultimo(r"x = coordenadas(\varpi, \phi)", r"F = F(\varpi)",
+               r"g = métrica(F, \varpi^2)", "escalar(g)")
+    assert d["exato"] == "Derivative(F(varpi), varpi)/(varpi*F(varpi)**2)"

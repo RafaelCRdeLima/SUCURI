@@ -779,10 +779,15 @@ class Caderno:
                 # os dois lados coincidem.
                 from .tensores import simplificar as _simplificar
                 espaco = self.sessao.documento()[0].espaco
-                diferenca = _simplificar(objeto.lhs - objeto.rhs, espaco)
+                # Cada lado primeiro, e depois a diferença do que sobrou:
+                # simplificar a diferença crua misturava os termos dos dois
+                # lados antes de cada um ter a sua forma, e identidades que
+                # fechavam lado a lado não fechavam juntas.
+                lhs = _simplificar(objeto.lhs, espaco)
+                rhs = _simplificar(objeto.rhs, espaco)
+                diferenca = _simplificar(lhs - rhs, espaco)
                 objeto = sp.true if diferenca == 0 else sp.Eq(
-                    _simplificar(objeto.lhs, espaco),
-                    _simplificar(objeto.rhs, espaco), evaluate=False)
+                    lhs, rhs, evaluate=False)
             elif isinstance(objeto, TensExpr):
                 # O simplify do SymPy não usa a simetria de um tensor; a
                 # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}

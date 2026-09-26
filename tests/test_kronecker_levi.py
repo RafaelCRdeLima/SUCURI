@@ -161,3 +161,29 @@ def test_assinatura_antes_dos_indices_fixa_a_dimensao():
     c = Caderno()
     c.executar("g = métrica(-,+,+)")
     assert "dimensão 3" in c.executar(r"\mu = índice").to_dict()["texto"]
+
+
+# ------------------------------------------ achados na segunda lista
+
+def test_rotacional_de_produto_vetorial():
+    r"""Cambridge IA Vector Calculus, folha 1, Q3. Três defeitos no caminho: o
+    par εε escondido em ε × (soma), sem expandir; os mudos que o SymPy troca
+    de lado ao montar o produto; e a diferença de uma igualdade simplificada
+    crua, antes de cada lado."""
+    c = com_assinatura("g = métrica(euclidiana)", r"\epsilon = levi-civita(tensor)",
+                       r"\nabla = levi-civita", "u = tensor(1,0)", "v = tensor(1,0)",
+                       indices="i, j, k, l, m = índices(3)")
+    certo = (r"\epsilon^{ijk} \nabla_j (\epsilon_{klm} u^l v^m) = u^i \nabla_m v^m"
+             r" - v^i \nabla_l u^l + v^j \nabla_j u^i - u^j \nabla_j v^i")
+    nome = c.executar(certo).to_dict()["nome"]
+    assert c.executar(f"simplificar({nome})").to_dict()["exato"] == "True"
+    errado = certo.split("+ v^j")[0]
+    nome = c.executar(errado).to_dict()["nome"]
+    assert c.executar(f"simplificar({nome})").to_dict()["exato"] != "True"
+
+
+def test_derivada_parcial_do_simbolo_e_zero():
+    c = com_assinatura(r"\epsilon = levi-civita(símbolo)", "X = tensor(0,1)",
+                       indices="i, j, k = índices(3)")
+    assert simplificado(c, r"\epsilon^{ijk} \partial_i \partial_j X_k") == "0"
+    assert simplificado(c, r"\partial_i \epsilon^{ijk}") == "0"
