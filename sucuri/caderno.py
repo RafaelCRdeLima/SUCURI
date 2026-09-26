@@ -366,6 +366,9 @@ class Caderno:
         from .geometria import Metrica
 
         limpo = _sem_barra(nome)
+        assinatura = self._assinatura(nome, texto)
+        if assinatura is not None:
+            return assinatura
         if not self.sessao.coordenadas:
             return Celula(None, fonte_metrica(nome, texto), "declaracao",
                           {"erro": "declare as coordenadas antes da métrica: "
@@ -398,6 +401,45 @@ class Caderno:
                        "texto": f"{nome} é a métrica em ({metrica.coordenadas}), "
                                 f"diagonal, com {len(componentes)} componentes",
                        "latex_exato": sp.latex(metrica.matriz())})
+
+    def _assinatura(self, nome, texto):
+        """`g = métrica(-,+,+,+)` — a assinatura, e não as componentes.
+
+        Com os sinais escritos, porque "lorentziana" não diz qual: há
+        (−,+,+,+) e (+,−,−,−), e os livros se dividem. Riemanniana e
+        euclidiana dizem: todos +. Devolve None se o texto são componentes.
+        """
+        limpo = _sem_barra(nome)
+        fonte = fonte_metrica(nome, texto)
+        pedacos = [p.strip() for p in texto.split(",")]
+        palavra = texto.strip().lower()
+        if palavra in ("lorentziana", "lorentzian", "minkowski"):
+            return Celula(None, fonte, "declaracao", {"erro": (
+                "lorentziana, mas qual? (−,+,+,+) e (+,−,−,−) são as duas "
+                "em uso, e contas como εε e g(U,U) mudam de sinal entre elas. "
+                "Escreva os sinais: g = métrica(-,+,+,+)")})
+        if palavra in ("riemanniana", "euclidiana", "riemannian", "euclidean"):
+            sinais = (1,) * self.sessao.dimensao
+        elif pedacos and all(p in ("+", "-", "−") for p in pedacos):
+            sinais = tuple(-1 if p in ("-", "−") else 1 for p in pedacos)
+        else:
+            return None
+        if self.sessao.indices and len(sinais) != self.sessao.dimensao:
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"a assinatura tem {len(sinais)} sinais, e os índices são de "
+                f"um espaço de dimensão {self.sessao.dimensao}")})
+        self.sessao.dimensao = len(sinais)
+        self.sessao.assinatura = sinais
+        self.sessao.metrica_abstrata = limpo
+        self.sessao.tensores.pop(limpo, None)
+        escrita = ", ".join("−" if x < 0 else "+" for x in sinais)
+        negativos = sum(1 for x in sinais if x < 0)
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "metrica": True,
+                           "assinatura": list(sinais)}],
+            "texto": (f"{nome} é a métrica do espaço, de assinatura "
+                      f"({escrita}) — {negativos} sinal(is) negativo(s), e é "
+                      f"isso que decide o sinal de εε")})
 
     def _tensor(self, nome, formas, vetores, simetria=None):
         """`A = tensor(0, 2)` — o tipo do Schutz; `F = tensor(0, 2,

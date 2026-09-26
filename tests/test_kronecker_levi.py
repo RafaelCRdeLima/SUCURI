@@ -96,3 +96,68 @@ def test_o_simbolo_em_cima_nao_gera_nota_de_valencia():
     c = caderno(r"\epsilon = levi-civita(símbolo)")
     notas = c.executar(r"\epsilon^{\mu\nu\rho\sigma}").to_dict()["notas"]
     assert not any("levantar" in n for n in notas)
+
+
+# ------------------------------------------------- assinatura, e εε
+
+def com_assinatura(*fontes, indices=r"\mu, \nu, \rho, \sigma, \alpha, \beta = índices"):
+    c = Caderno()
+    for f in (indices, r"\delta = kronecker", *fontes):
+        d = c.executar(f).to_dict()
+        assert not d.get("erro"), (f, d.get("erro"))
+    return c
+
+
+LORENTZ = ("g = métrica(-,+,+,+)", r"\epsilon = levi-civita(tensor)")
+
+
+@pytest.mark.parametrize("latex, esperado", [
+    (r"\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}", "-24"),
+    (r"\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}",
+     "-6*delta(sigma, -alpha)"),
+    (r"\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\alpha\beta}",
+     "-2*delta(rho, -alpha)*delta(sigma, -beta) + 2*delta(sigma, -alpha)*delta(rho, -beta)"),
+    (r"\epsilon^{\nu\mu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}", "24"),   # a ordem
+])
+def test_epsilon_epsilon_lorentziano(latex, esperado):
+    assert simplificado(com_assinatura(*LORENTZ), latex) == esperado
+
+
+@pytest.mark.parametrize("fontes, esperado", [
+    (("g = métrica(+,+,+,+)", r"\epsilon = levi-civita(tensor)"), "24"),
+    ((r"\epsilon = levi-civita(símbolo)",), "24"),      # sem assinatura: ±1
+])
+def test_o_sinal_vem_da_assinatura_ou_do_simbolo(fontes, esperado):
+    c = com_assinatura(*fontes)
+    assert simplificado(
+        c, r"\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}") == esperado
+
+
+def test_tensor_sem_assinatura_fica_como_esta():
+    c = com_assinatura("g = métrica", r"\epsilon = levi-civita(tensor)")
+    assert simplificado(
+        c, r"\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}") != "-24"
+
+
+def test_a_identidade_classica_em_tres_dimensoes():
+    c = com_assinatura("g = métrica(euclidiana)", r"\epsilon = levi-civita(tensor)",
+                       indices="i, j, k, m, n = índices(3)")
+    assert simplificado(c, r"\epsilon^{ijk} \epsilon_{imn}") == \
+        "delta(j, -m)*delta(k, -n) - delta(j, -n)*delta(k, -m)"
+
+
+def test_lorentziana_sem_os_sinais_recusa():
+    d = Caderno().executar("g = métrica(lorentziana)").to_dict()
+    assert "(−,+,+,+) e (+,−,−,−)" in d["erro"]
+
+
+def test_assinatura_e_dimensao_tem_de_bater():
+    c = Caderno()
+    c.executar(r"\mu = índice")
+    assert "dimensão 4" in c.executar("g = métrica(-,+,+)").to_dict()["erro"]
+
+
+def test_assinatura_antes_dos_indices_fixa_a_dimensao():
+    c = Caderno()
+    c.executar("g = métrica(-,+,+)")
+    assert "dimensão 3" in c.executar(r"\mu = índice").to_dict()["texto"]

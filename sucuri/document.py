@@ -694,6 +694,14 @@ class Document:
         self._espaco.definir_levi(limpo, qual)
         return self
 
+    def assinatura(self, sinais):
+        """(−1, 1, 1, 1): os sinais da métrica numa base ortonormal."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(len(sinais) or DIMENSAO_PADRAO)
+        self._espaco.assinatura = tuple(sinais)
+        return self
+
     def metric(self, nome):
         r"""Diz qual nome é A métrica — o que licencia baixar e levantar índice.
 

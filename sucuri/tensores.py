@@ -35,7 +35,8 @@ import operator
 import re
 
 import sympy as sp
-from sympy.tensor.tensor import (TensAdd, TensExpr, TensorHead, TensorIndexType,
+from sympy.tensor.tensor import (TensAdd, TensExpr, TensMul, TensorHead,
+                                 TensorIndexType,
                                  TensorSymmetry, tensor_indices)
 
 DIMENSAO_PADRAO = 4
@@ -75,6 +76,7 @@ class Espaco:
         self.metrica = None         # o nome declarado como A métrica
         self.kronecker = None       # o nome declarado como a delta
         self.conexao = None         # 'levi-civita', se declarada
+        self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.riemann = None         # (nome, convenção), se definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
@@ -428,12 +430,77 @@ def _componentes(expr):
             if isinstance(t, Tensor)}
 
 
+def _paridade(ordem):
+    inversoes = sum(1 for i in range(len(ordem)) for j in range(i + 1, len(ordem))
+                    if ordem[i] > ordem[j])
+    return -1 if inversoes % 2 else 1
+
+
+def _epsilon_epsilon(expr, espaco):
+    r"""ε^{a₁…a_k b…} ε_{a₁…a_k c…} = σ k! Σ_π sgn(π) Π δ^{b}_{c_π}.
+
+    σ = (−1)^s para o TENSOR, com s os sinais negativos da assinatura — e por
+    isso a assinatura tem de estar declarada, senão fica como está. Para o
+    SÍMBOLO, σ = 1: ele vale ±1 nas duas posições, e a métrica não entra.
+    Pede também a delta declarada, que é em que a identidade se escreve.
+    """
+    if espaco is None or not espaco.levi or not espaco.kronecker:
+        return expr
+    if isinstance(expr, TensAdd):
+        return functools.reduce(operator.add,
+                                [_epsilon_epsilon(a, espaco) for a in expr.args])
+    if not isinstance(expr, TensMul):
+        return expr
+    from sympy.tensor.tensor import Tensor
+    fatores = [a for a in expr.args if isinstance(a, TensExpr)]
+    eps = [(k, f) for k, f in enumerate(fatores)
+           if isinstance(f, Tensor) and f.head.name in espaco.levi]
+    cima = [(k, f) for k, f in eps if all(i.is_up for i in f.indices)]
+    baixo = [(k, f) for k, f in eps if not any(i.is_up for i in f.indices)]
+    par = next(((a, b) for a in cima for b in baixo
+                if a[1].head.name == b[1].head.name), None)
+    if par is None:
+        return expr
+    (k1, E1), (k2, E2) = par
+    if espaco.levi[E1.head.name] == "tensor":
+        if espaco.assinatura is None:
+            return expr
+        sigma = (-1) ** sum(1 for x in espaco.assinatura if x < 0)
+    else:
+        sigma = 1
+
+    nomes2 = {i.name: j for j, i in enumerate(E2.indices)}
+    comuns = [i.name for i in E1.indices if i.name in nomes2]
+    ordem1 = ([j for j, i in enumerate(E1.indices) if i.name in comuns]
+              + [j for j, i in enumerate(E1.indices) if i.name not in comuns])
+    ordem2 = [nomes2[n] for n in comuns] + [
+        j for j, i in enumerate(E2.indices) if i.name not in comuns]
+    B = [E1.indices[j] for j in ordem1[len(comuns):]]
+    C = [E2.indices[j] for j in ordem2[len(comuns):]]
+    delta = espaco.cabeca(espaco.kronecker, 2)
+    termos = []
+    for perm in itertools.permutations(range(len(B))):
+        termo = sp.S(_paridade(perm))
+        for i, p in enumerate(perm):
+            termo = termo * delta(B[i], C[p])
+        termos.append(termo)
+    soma = functools.reduce(operator.add, termos) if B else sp.S.One
+    fator = (sigma * _paridade(ordem1) * _paridade(ordem2)
+             * sp.factorial(len(comuns)))
+    outros = [f for k, f in enumerate(fatores) if k not in (k1, k2)]
+    return expr.coeff * fator * soma * functools.reduce(
+        operator.mul, outros, sp.S.One)
+
+
 def simplificar(expr, espaco):
     """δ contraída, e depois a forma canônica — que usa as simetrias.
 
     δ^μ_ν A^ν vira A^μ; δ^μ_μ vira a dimensão. O que sobra passa pela
     canonicalização de Butler-Portugal.
     """
+    if not isinstance(expr, TensExpr):
+        return expr
+    expr = _epsilon_epsilon(expr, espaco)
     if not isinstance(expr, TensExpr):
         return expr
     if espaco is not None and espaco.kronecker:

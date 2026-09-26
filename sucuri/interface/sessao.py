@@ -46,6 +46,7 @@ class Sessao:
         self.curvaturas = []        # nomes declarados operador de curvatura
         self.kronecker = None       # o nome declarado delta de Kronecker
         self.conexao = None         # 'levi-civita', se declarada
+        self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.riemann = None         # (nome, convenção) do Riemann definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
@@ -72,6 +73,7 @@ class Sessao:
             "curvaturas": list(self.curvaturas),
             "kronecker": self.kronecker,
             "conexao": self.conexao,
+            "assinatura": list(self.assinatura) if self.assinatura else None,
             "riemann": list(self.riemann) if self.riemann else None,
             "levi": dict(self.levi),
             "variaveis": list(self.variaveis),
@@ -135,6 +137,8 @@ class Sessao:
             doc.kronecker(self.kronecker)
         for nome, qual in self.levi.items():
             doc.levi_civita(nome, qual)
+        if self.assinatura:
+            doc.assinatura(self.assinatura)
         if self.conexao == "levi-civita":
             doc.conexao_levi_civita()
         if self.riemann:

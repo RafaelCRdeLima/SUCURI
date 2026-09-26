@@ -452,6 +452,20 @@ definição que você escreveu:</p>
     <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
 </div>
 
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">-24</samp>
+  <p class="explica">o sinal é (−1)<sup>s</sup>, com s os sinais negativos da
+    assinatura — por isso ela se declara com os sinais, e
+    <code>métrica(lorentziana)</code> sozinha é recusada. Com o símbolo, é +24
+    em qualquer assinatura.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
@@ -571,8 +585,8 @@ com o motivo.</p>
     de LaTeX é que não as lê.</li>
   <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): é
     lida, com Leibniz e com ∂ comutando; ∇g = 0 e a identidade de Ricci vêm
-    de <code>\nabla = levi-civita</code> e <code>R = riemann(eq)</code>. Ainda
-    não: εε = ±n!δ, que pede a assinatura da métrica. A derivada
+    de <code>\nabla = levi-civita</code> e <code>R = riemann(eq)</code>, e εε
+    da assinatura, <code>g = métrica(-,+,+,+)</code>. A derivada
     <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
     com os vetores declarados, já são lidos, e <code>provar</code> encadeia
     hipóteses sobre eles, gerais (<code>\forall</code>) ou não. Mas só

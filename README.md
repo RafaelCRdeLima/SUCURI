@@ -383,8 +383,28 @@ Levi-Civita não se declara sem escolher, porque os livros não fazem igual:
 - o **tensor** é √|g| vezes o símbolo, e sobe e desce com g.
 
 Nos dois casos, ε tem tantos índices quanto a dimensão e é totalmente
-antissimétrico. Ainda não: a identidade εε = ±n!δ, cujo sinal depende da
-assinatura da métrica, que ainda não se declara.
+antissimétrico.
+
+A contração de dois ε pede a assinatura, e a assinatura se declara com os
+sinais:
+
+```
+g = métrica(-,+,+,+)
+\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}     simplificar →  −24
+\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}     simplificar →  −6 δ^σ_α
+\epsilon^{ijk} \epsilon_{imn}                  simplificar →  δ^j_m δ^k_n − δ^j_n δ^k_m   (euclidiana, 3D)
+```
+
+Em geral, ε^{a₁…a_k b…}ε_{a₁…a_k c…} = σ k! δ^{[b…}_{c…]}, com o sinal da
+permutação que alinha os índices contraídos. Para o **tensor**, σ = (−1)^s,
+onde s é o número de sinais negativos. Para o **símbolo**, σ = 1, porque ele
+vale ±1 nas duas posições e a métrica não entra. O tensor sem assinatura
+declarada fica como está, porque o sinal é desconhecido.
+
+`lorentziana` sozinha é recusada: (−,+,+,+) e (+,−,−,−) estão as duas em uso,
+e εε e g(U,U) mudam de sinal entre elas. `riemanniana` e `euclidiana` dizem
+todos +. A assinatura tem de bater com a dimensão dos índices, e declarada
+antes deles, a fixa.
 
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
