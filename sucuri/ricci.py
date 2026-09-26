@@ -125,6 +125,9 @@ def desdobrar(expr, espaco):
             valor = _riemann_de(espaco, conv, *indices[k:])
         elif base == base_escalar and espaco.metrica:
             valor = _escalar_desdobrado(espaco, conv)
+            # Num escalar, ∂ é ∇ — e desdobrado em tensor, é ∇ que vale sem
+            # derivar a métrica.
+            operacoes = operacoes[:-1] + ("D",)
         else:
             return t
         for op, i in zip(reversed(operacoes), reversed(indices[:k])):
@@ -173,28 +176,45 @@ def dobrar(expr, espaco):
     riemann = espaco.riemann[0]
     ric = espaco.cabeca(conv["nome"], 2)
 
+    g = espaco.cabeca(espaco.metrica, 2) if espaco.metrica else None
+
+    def derivado(valor, operacoes, derivadas):
+        for op, i in zip(reversed(operacoes), reversed(derivadas)):
+            valor = derivar(valor, op, i, espaco)
+        return valor
+
     def trocar(t):
-        if t.head.name != riemann:
+        operacoes, base = REGISTRO.get(t.head.name, ((), t.head.name))
+        k = len(operacoes)
+        if base != riemann or len(t.indices) != k + 4:
             return t
-        indices = list(t.indices)
+        derivadas, indices = list(t.indices[:k]), list(t.indices[k:])
         nomes = [i.name for i in indices]
         pares = [n for n in set(nomes) if nomes.count(n) == 2]
         canonico = _canon(t)
         if len(pares) == 1:
             x, y = [i for i in indices if i.name not in pares]
             for u, v in ((x, y), (y, x)):
-                alvo = _canon(_riemann_de(espaco, conv, u, v))
+                alvo = _canon(derivado(_riemann_de(espaco, conv, u, v),
+                                       operacoes, derivadas))
+                dobrado = derivado(ric(u, v), operacoes, derivadas)
                 if canonico == alvo:
-                    return ric(u, v)
+                    return dobrado
                 if canonico == -alvo:
-                    return -ric(u, v)
-        elif len(pares) == 2 and espaco.metrica:
-            alvo = _canon(_escalar_desdobrado(espaco, conv).contract_metric(
-                espaco.cabeca(espaco.metrica, 2)))
+                    return -dobrado
+        elif len(pares) == 2 and g is not None:
+            from .derivadas import normalizar
+            aberto = derivado(_escalar_desdobrado(espaco, conv), operacoes, derivadas)
+            aberto = normalizar(aberto.expand(), espaco)      # ∇g = 0
+            alvo = _canon(aberto.contract_metric(g)) if isinstance(
+                aberto, TensExpr) else aberto
+            # ∂ num escalar: o ∇ mais de dentro é ∂.
+            ops = operacoes[:-1] + ("d",) if operacoes else operacoes
+            dobrado = derivado(sp.Symbol(riemann), ops, derivadas)
             if canonico == alvo:
-                return sp.Symbol(riemann)
+                return dobrado
             if canonico == -alvo:
-                return -sp.Symbol(riemann)
+                return -dobrado
         return t
 
     return _mapear(expr, trocar)
@@ -229,18 +249,20 @@ def apresentar(expr, espaco):
     livres = set(expr.get_free_indices())
 
     def trocar(t):
-        if t.head.name != nome or len(t.indices) != 4:
+        operacoes, base = REGISTRO.get(t.head.name, ((), t.head.name))
+        k = len(operacoes)
+        if base != nome or len(t.indices) != k + 4:
             return t
-        indices = list(t.indices)
+        derivadas, indices = list(t.indices[:k]), list(t.indices[k:])
 
         def nota(forma):
             perm, _ = forma
             return sum((10 if indices[p] in livres else 1)
-                       * (indices[p].is_up == ideal[k]) for k, p in enumerate(perm))
+                       * (indices[p].is_up == ideal[j]) for j, p in enumerate(perm))
 
         perm, sinal = max(_FORMAS, key=nota)     # empate: a primeira, a atual
         if perm == (0, 1, 2, 3):
             return t
-        return sinal * t.head(*(indices[p] for p in perm))
+        return sinal * t.head(*derivadas, *(indices[p] for p in perm))
 
     return _mapear(expr, trocar)

@@ -339,6 +339,33 @@ slot de ρ —, e não na que a canonização prefere.
 dimensões" saem com os coeficientes simplificados. O que pede um número —
 ε, a assinatura — recusa.
 
+### provar com índice
+
+```
+\nabla_a T^{ab} = 0                          eq1
+\nabla_a X_b + \nabla_b X_a = 0              eq2
+\nabla_a (T^{ab} X_b) = 0                    eq3
+provar(eq3, eq1, eq2)
+    eq1 [b→L_1] × X(-L_1)
+    1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)
+```
+
+O mesmo verbo, e a mesma ideia de sem índice: a prova é uma combinação linear
+de relações tiradas das hipóteses, conferida de novo antes do ∎. De H = 0
+valem também H com os índices livres trocados ou contraídos (pela métrica), H
+vezes qualquer tensor, ∇H e ∇∇H. A busca casa cada termo do objetivo com um
+termo dessas formas, módulo as simetrias declaradas, e disso tira a troca de
+índices e o fator; os termos novos viram alvos, algumas rodadas, aprofundando
+em ∇ só quando precisa.
+
+Com `\nabla = levi-civita` e o Riemann declarados, R^ρ{}_{[σμν]} = 0 — a
+primeira identidade de Bianchi, teorema da torção nula — entra sem ser
+hipótese, e o certificado diz quando a usou. Saem assim a conservação de
+T^{ab}X_b com X de Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, a Bianchi contraída a
+partir da segunda identidade de Bianchi, e |∇φ|² + R constante quando
+∇∇φ = Ric (com a Bianchi contraída como lema). Cada uma tem um par falso que
+não sai.
+
 ### O determinante, e a carta cartesiana
 
 ```

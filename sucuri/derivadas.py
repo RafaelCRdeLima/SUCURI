@@ -202,6 +202,32 @@ def _simetria_base(espaco, base):
     return espaco._simetrias.get(base)
 
 
+def _riemann_completo(espaco, base, posto_base):
+    """A base é o Riemann com todas as simetrias (Levi-Civita e métrica)?"""
+    if not espaco.riemann or base != espaco.riemann[0] or posto_base != 4:
+        return False
+    cabeca = espaco.cabeca(base, 4)
+    return cabeca.symmetry == TensorSymmetry.riemann()
+
+
+def _simetria(blocos, riemann=False):
+    """direct_product dos blocos — e, se `riemann`, as simetrias do Riemann
+    nos quatro últimos slots: ∇_λ R_{ρσμν} é antissimétrico em ρσ como R."""
+    if not riemann:
+        return TensorSymmetry.direct_product(*blocos)
+    from sympy.combinatorics import Permutation
+    from sympy.combinatorics.tensor_can import (bsgs_direct_product,
+                                                get_symmetric_group_sgs,
+                                                riemann_bsgs)
+    base, sgs = [], [Permutation(1)]
+    for b in blocos:
+        if b:
+            base, sgs = bsgs_direct_product(base, sgs,
+                                            *get_symmetric_group_sgs(abs(b), b < 0))
+    base, sgs = bsgs_direct_product(base, sgs, *riemann_bsgs)
+    return TensorSymmetry(base, sgs)
+
+
 def cabeca_derivada(espaco, operacoes, base, posto_base):
     """A cabeça de `operacoes` aplicadas à base — criada uma vez só."""
     nome = "".join(operacoes) + "_" + base
@@ -209,18 +235,23 @@ def cabeca_derivada(espaco, operacoes, base, posto_base):
         return espaco._cabecas[nome][0]
     k = len(operacoes)
     blocos = [k] if all(o == "d" for o in operacoes) else [1] * k
-    if (operacoes == ("D", "d") and posto_base == 0
+    if (tuple(operacoes[-2:]) == ("D", "d") and posto_base == 0
             and espaco.conexao == "levi-civita"):
-        blocos = [2]        # ∇_μ∇_ν φ = ∇_ν∇_μ φ: torção nula, num escalar
+        # ∇_μ∇_ν φ = ∇_ν∇_μ φ: torção nula, num escalar — e também sob as
+        # derivadas de fora, ∇_λ∇_μ∇_ν φ = ∇_λ∇_ν∇_μ φ.
+        blocos = [1] * (k - 2) + [2]
     simetria = _simetria_base(espaco, base)
-    if posto_base > 1 and simetria == "simetrico":
+    riemann = _riemann_completo(espaco, base, posto_base)
+    if riemann:
+        pass
+    elif posto_base > 1 and simetria == "simetrico":
         blocos.append(posto_base)
     elif posto_base > 1 and simetria == "antissimetrico":
         blocos.append(-posto_base)
     else:
         blocos += [1] * posto_base
     cabeca = TensorHead(nome, [espaco.tipo] * (k + posto_base),
-                        TensorSymmetry.direct_product(*blocos))
+                        _simetria(blocos, riemann))
     espaco._cabecas[nome] = (cabeca, k + posto_base)
     REGISTRO[nome] = (tuple(operacoes), base)
     return cabeca
@@ -242,7 +273,13 @@ def _produto(fatores):
 
 def _soma(termos):
     termos = [t for t in termos if t != 0]
-    return functools.reduce(operator.add, termos) if termos else sp.S.Zero
+    if not termos:
+        return sp.S.Zero
+    if len(termos) > 2 and all(isinstance(t, TensExpr) for t in termos):
+        # Uma soma só, e não n somas de dois: somar de dois em dois refaz a
+        # soma inteira a cada passo.
+        return TensAdd(*termos).doit()
+    return functools.reduce(operator.add, termos)
 
 
 def derivar(expr, operacao, indice, espaco):
@@ -252,6 +289,16 @@ def derivar(expr, operacao, indice, espaco):
     if isinstance(expr, TensMul):
         coef = escalar_de(expr)
         fatores = [a for a in expr.args if isinstance(a, TensExpr)]
+        # O SymPy chama os mudos de um produto L_0, L_1…, e o índice da
+        # derivada, vindo de fora, pode ter o mesmo nome: fator a fator, o
+        # mudo pareceria livre e repetido. Troca-se o nome do mudo, antes.
+        mudos = {i.name for i in expr.get_indices()} - {
+            i.name for i in expr.get_free_indices()}
+        if indice.name in mudos:
+            from sympy.tensor.tensor import TensorIndex
+            novo = _mudo(espaco)
+            fatores = [f.substitute_indices((TensorIndex(indice.name, espaco.tipo),
+                                             novo)) for f in fatores]
         termos = [_escalar(coef, operacao, indice, espaco) * _produto(fatores)]
         for k, f in enumerate(fatores):
             outros = fatores[:k] + [derivar(f, operacao, indice, espaco)] + \
@@ -261,6 +308,13 @@ def derivar(expr, operacao, indice, espaco):
     if isinstance(expr, Tensor):
         cabeca = expr.head
         indices = list(expr.indices)
+        nomes = [i.name for i in indices]
+        if nomes.count(indice.name) == 2:
+            # Um mudo interno com o nome do índice da derivada (o SymPy dá
+            # L_0 aos dois): o mudo ganha outro nome.
+            novo = _mudo(espaco)
+            indices = [(novo if i.is_up else -novo) if i.name == indice.name
+                       else i for i in indices]
         operacoes, base = REGISTRO.get(cabeca.name, ((), cabeca.name))
         if (operacao == "d" and not operacoes and base == espaco.metrica
                 and any(i.is_up for i in indices)):
@@ -549,14 +603,17 @@ def _simetrica(t, espaco):
         posto_base = len(t.indices) - len(operacoes)
         blocos = [2] + [1] * (len(operacoes) - 2)
         simetria = _simetria_base(espaco, base)
-        if posto_base > 1 and simetria == "simetrico":
+        riemann = _riemann_completo(espaco, base, posto_base)
+        if riemann:
+            pass
+        elif posto_base > 1 and simetria == "simetrico":
             blocos.append(posto_base)
         elif posto_base > 1 and simetria == "antissimetrico":
             blocos.append(-posto_base)
         else:
             blocos += [1] * posto_base
         cabeca = TensorHead(nome, [espaco.tipo] * len(t.indices),
-                            TensorSymmetry.direct_product(*blocos))
+                            _simetria(blocos, riemann))
         espaco._cabecas[nome] = (cabeca, len(t.indices))
     return espaco._cabecas[nome][0]
 

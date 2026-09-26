@@ -218,6 +218,14 @@ def _chave(rotulo):
     return "".join(c for c in (rotulo or "") if c not in "{} \t")
 
 
+def _tem_indice(expr):
+    """Uma expressão (ou igualdade) com tensor de índice?"""
+    from sympy.tensor.tensor import TensExpr
+    if isinstance(expr, sp.Equality):
+        return any(isinstance(l, TensExpr) for l in (expr.lhs, expr.rhs))
+    return isinstance(expr, TensExpr)
+
+
 def _sem_barra(nome):
     """`\\eta` e `eta` nomeiam a mesma coisa; a barra é de escrita."""
     if nome and nome.startswith("\\"):
@@ -918,6 +926,9 @@ class Caderno:
         except (KeyError, ValueError) as e:
             return {"erro": str(e), "alvo": alvo}
 
+        if _tem_indice(objetivo):
+            return self._provar_indices(alvo, objetivo, dadas)
+
         from .formas import com_graus
         try:
             doc = self.sessao.documento()[0]
@@ -937,6 +948,44 @@ class Caderno:
                  f"simetria de g{nota}")
         tabela.append(["usou", texto])
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
+                "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
+
+    def _provar_indices(self, alvo, objetivo, dadas):
+        """provar com índice: o objetivo como combinação das hipóteses, de
+        seus ∇, e do que a forma canônica e a torção nula já sabem."""
+        from .prova_indices import SemProvaIndices, linhas, provar
+        from .tensores import latex_de, simplificar as _simplificar
+        espaco = self.sessao.documento()[0].espaco
+
+        def diferenca(e):
+            return e.lhs - e.rhs if isinstance(e, sp.Equality) else e
+
+        nao = [h for h, e in dadas.items() if not _tem_indice(e)]
+        if nao:
+            return {"erro": f"{', '.join(nao)} não tem índice, e o objetivo "
+                            f"tem: as duas notações não se misturam numa "
+                            f"prova — traduza com indices(eq)", "alvo": alvo}
+        try:
+            prova = provar(diferenca(objetivo),
+                           {h: diferenca(e) for h, e in dadas.items()},
+                           espaco, lambda e: _simplificar(e, espaco))
+        except SemProvaIndices as e:
+            return {"erro": str(e), "alvo": alvo}
+        tabela = linhas(prova, lambda e: latex_de(e, espaco))
+        usadas = [h for h in dadas if h in prova.hipoteses_usadas]
+        teoremas = [h for h in prova.hipoteses_usadas if h not in dadas]
+        sobrou = [h for h in dadas if h not in usadas]
+        texto = ("provado a partir de " + (", ".join(usadas) or "nenhuma hipótese")
+                 + (f", e de {', '.join(teoremas)} (teorema, da torção nula)"
+                    if teoremas else "")
+                 + " — com ∇ delas, trocas de índice e produtos; e do que a "
+                   "forma canônica sabe: simetrias declaradas, [∇,∇] como "
+                   "curvatura, ∇g = 0"
+                 + (f"; não precisou de {', '.join(sobrou)}" if sobrou else ""))
+        tabela.append(["somando", sp.sstr(objetivo),
+                       latex_de(objetivo, espaco) + r"\quad\blacksquare"])
+        tabela.append(["usou", texto])
+        return {"alvo": alvo, "latex_exato": latex_de(objetivo, espaco),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
 
     def _expandir(self, alvo, metrica=None):

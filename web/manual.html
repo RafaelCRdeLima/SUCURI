@@ -241,9 +241,31 @@ rascunho da linha de cima não provaria nada.</p>
   <samp class="saida">nabla_Y(eq1)</samp>
   <p class="explica">cada linha da resposta diz de que hipótese veio e o que
     se fez com ela — aqui, ∇<sub>Y</sub> aplicado aos dois lados de eq1 —, e a
-    soma é conferida de novo antes do ∎. O verbo trabalha sem índice — com a
-    conexão e com formas (seções 9 e 10); quando não acha, diz que não achar
-    não é prova de que é falso.</p>
+    soma é conferida de novo antes do ∎. Sem índice, trabalha com a conexão e
+    com formas (seções 9 e 10); quando não acha, diz que não achar não é prova
+    de que é falso.</p>
+</div>
+
+<p>Com índice, o mesmo verbo. As relações que a busca tira de cada hipótese
+são as que valem para qualquer equação tensorial: trocar os índices livres
+(e contraí-los, com a métrica), multiplicar por um tensor, aplicar ∇ uma ou
+duas vezes. Com Levi-Civita e o Riemann declarados, a primeira identidade de
+Bianchi entra como teorema, e a prova a cita quando usa.</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b = índices</code>
+  <code class="entrada">T = tensor(2, 0, simétrico)</code>
+  <code class="entrada">X = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_a T^{ab} = 0</code>
+  <code class="entrada">\nabla_a X_b + \nabla_b X_a = 0</code>
+  <code class="entrada">\nabla_a (T^{ab} X_b) = 0</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)</samp>
+  <p class="explica">a corrente de um campo de Killing é conservada: eq1
+    vezes X, mais ½ eq2 vezes T. As duas notações não se misturam numa prova:
+    hipótese sem índice num objetivo com índice é recusada.</p>
 </div>
 
 <h3>contrair, indices</h3>
@@ -736,7 +758,8 @@ com o motivo.</p>
   <li><strong><code>provar</code></strong> encadeia hipóteses por álgebra
     linear, com uma busca finita: prova que pede uma <em>ideia</em> — introduzir
     uma quantidade que não aparece no enunciado — não sai, e prova que pede
-    muitas instâncias encadeadas pode demorar. Só trabalha sem índice.</li>
+    muitas instâncias encadeadas pode demorar. Com índice, vai até ∇∇ das
+    hipóteses.</li>
   <li><strong>Formas</strong>: a fórmula de dω nos vetores entra como
     hipótese, porque muda de fator com a normalização; o codiferencial
     δ = ±⋆d⋆ não vem pronto, porque o sinal é de convenção.</li>
