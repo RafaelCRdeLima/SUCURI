@@ -107,6 +107,7 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>g = métrica</code></td><td>a métrica: baixa e levanta índice, e é simétrica</td></tr>
   <tr><td><code>g = métrica(-,+,+,+)</code></td><td>com a assinatura, escrita em sinais</td></tr>
   <tr><td><code>g = métrica(cartesiana)</code></td><td>euclidiana e constante, ∂g = 0; ou <code>(-,+,+,+, constante)</code></td></tr>
+  <tr><td><code>x = coordenadas</code></td><td>x<sup>i</sup>, as coordenadas com índice: ∂<sub>j</sub>x<sup>i</sup> = δ<sup>i</sup><sub>j</sub></td></tr>
   <tr><td><code>g = det(g)</code></td><td>g sem índice é det g<sub>μν</sub>: √−g, ln|g|</td></tr>
   <tr><td><code>g = métrica(…componentes…)</code></td><td>com as componentes da diagonal (seção 8)</td></tr>
   <tr><td><code>\delta = kronecker</code></td><td>a delta: δ<sup>μ</sup><sub>ν</sub></td></tr>
@@ -266,6 +267,39 @@ Bianchi entra como teorema, e a prova a cita quando usa.</p>
   <p class="explica">a corrente de um campo de Killing é conservada: eq1
     vezes X, mais ½ eq2 vezes T. As duas notações não se misturam numa prova:
     hipótese sem índice num objetivo com índice é recusada.</p>
+</div>
+
+<h3>independentes, em_componentes, linearizar</h3>
+
+<p>Três verbos para o que a álgebra de índices não alcança sozinha, todos
+numa dimensão dada em número — <code>índices(4)</code>:</p>
+
+<table class="tabela">
+  <tr><td><code>independentes(T, eq…)</code></td><td>quantas componentes de T
+    sobram, com as simetrias declaradas e as equações dadas (lineares em T).
+    Zero: só o tensor nulo tem essas propriedades. O Riemann com Levi-Civita
+    leva a primeira identidade de Bianchi junto.</td></tr>
+  <tr><td><code>em_componentes(eq)</code></td><td>confere a identidade com o
+    tensor mais geral que as declarações permitem e uma métrica qualquer,
+    componente por componente.</td></tr>
+  <tr><td><code>linearizar(eq, h)</code></td><td>g = η + εh até a primeira
+    ordem em ε: abre ∇ em Γ e Γ em ∂g, troca g e ∂g, e corta.</td></tr>
+</table>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\mu\nu} = \frac{1}{2} R g_{\mu\nu}</code>
+  <code class="entrada">em_componentes(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">em duas dimensões, o tensor de Einstein é identicamente
+    nulo. Em <code>índices(3)</code>, <code>False</code>.</p>
 </div>
 
 <h3>contrair, indices</h3>

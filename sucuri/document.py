@@ -719,6 +719,14 @@ class Document:
         self._espaco._cabecas.pop(limpo, None)
         return self
 
+    def coordenada_indice(self, nome):
+        """x^i, as coordenadas com índice: ∂_j x^i = δ^i_j."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.coordenada = _limpo_indice(nome)
+        return self
+
     def ricci(self, convencao):
         """R_{μν} e R como contrações do Riemann, na convenção da definição."""
         from .tensores import DIMENSAO_PADRAO, Espaco

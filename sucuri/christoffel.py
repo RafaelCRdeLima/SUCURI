@@ -56,6 +56,9 @@ def _mudo(espaco):
 
 
 def _soma(termos):
+    # Expandidos: Γ·(soma) com mudos de mesmo nome dos dois lados confunde a
+    # conferência de índices livres do SymPy ao somar.
+    termos = [t.expand() if isinstance(t, TensExpr) else t for t in termos]
     termos = [t for t in termos if t != 0]
     return functools.reduce(operator.add, termos) if termos else sp.S.Zero
 
@@ -150,7 +153,12 @@ def _abrir(t, espaco):
               else interno)
     total = [derivar(aberto, "d", mu, espaco)]
     if operacoes[0] == "D":
+        # Um Γ por índice LIVRE do operando: em ∇_δ(∇_α V^α) o operando é
+        # escalar, e o par α contraído dentro dele não leva Γ.
+        nomes = [i.name for i in dentro]
         for i in dentro:
+            if nomes.count(i.name) > 1:
+                continue
             s = _mudo(espaco)
             if i.is_up:
                 trocado = _trocar_indice(aberto, i, s)
@@ -283,3 +291,57 @@ def jacobi(expr, espaco):
             return novo
         expr = novo
     return expr
+
+
+# ------------------------------------------------------------ linearizar
+
+EPSILON = sp.Symbol("epsilon")
+
+
+def linearizar(expr, espaco, h):
+    """g = η + εh, até a primeira ordem em ε.
+
+    Depois de `metrizar`, a métrica só aparece como g explícito e como ∂g. A
+    troca é: g_{ab} → g_{ab} + εh_{ab}; g^{ab} → g^{ab} − εh^{ab} (a inversa,
+    até primeira ordem); g^a{}_b é δ, e fica; ∂g → ε∂h. Daí em diante g é o
+    fundo η, constante, e sobe e desce os índices de h — como na teoria
+    linearizada. Os termos de ordem ε² ou mais saem.
+    """
+    if isinstance(expr, sp.Equality):
+        return sp.Eq(linearizar(expr.lhs, espaco, h),
+                     linearizar(expr.rhs, espaco, h), evaluate=False)
+    if not isinstance(expr, TensExpr):
+        return expr
+    g = espaco.metrica
+    H = espaco.cabeca(h, 2)
+
+    def trocar(t):
+        operacoes, base = REGISTRO.get(t.head.name, ((), t.head.name))
+        if base != g:
+            return t
+        indices = list(t.indices)
+        if not operacoes:
+            a, b = indices
+            if a.is_up != b.is_up:
+                return t
+            return t + (EPSILON if not a.is_up else -EPSILON) * H(a, b)
+        if any(o != "d" for o in operacoes):
+            return t
+        k = len(operacoes)
+        valor = H(*indices[k:])
+        for op, i in zip(reversed(operacoes), reversed(indices[:k])):
+            valor = derivar(valor, op, i, espaco)
+        return EPSILON * valor
+
+    expr = _mapear(expr, trocar)
+    if isinstance(expr, TensExpr):
+        expr = expr.expand()
+    return _truncar(expr)
+
+
+def _truncar(expr, ordem=1):
+    def corta(c):
+        c = sp.expand(c)
+        return sum((c.coeff(EPSILON, k) * EPSILON ** k for k in range(ordem + 1)),
+                   sp.S.Zero)
+    return _nos_coeficientes(expr, corta)

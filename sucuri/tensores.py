@@ -82,6 +82,7 @@ class Espaco:
         self.determinante = None    # o nome de det g, se declarado
         self.metrica_constante = False  # ∂g = 0: carta cartesiana ou inercial
         self.ricci = None           # a convenção de ricci(eq), se definida
+        self.coordenada = None      # x = coordenadas: ∂_j x^i = δ^i_j
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
@@ -581,6 +582,12 @@ def simplificar(expr, espaco):
     # no fim, dobrados de volta.
     from .ricci import desdobrar, dobrar
     expr = desdobrar(expr, espaco)
+    if espaco is not None and espaco.coordenada:
+        # ∂_j x^i = δ^i_j antes de contrair δ.
+        from .derivadas import _coordenada, _mapear
+        expr = _mapear(expr, lambda t: _coordenada(t, espaco))
+        if not isinstance(expr, TensExpr):
+            return expr
     if not isinstance(expr, TensExpr):
         return expr
     expr = expr.expand()

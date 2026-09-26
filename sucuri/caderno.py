@@ -50,6 +50,10 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
 # hipóteses é justamente o que não pode ficar implícito.
 _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
                         r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
+# `independentes(C, eq3, eq4)`: um tensor e as equações que ele satisfaz.
+_RE_INDEPENDENTES = re.compile(r"^\s*(?:independentes|independent)\s*\(\s*(" +
+                               _ROTULO + r"(?:\s*,\s*" + _ROTULO +
+                               r")*)\s*\)\s*$", re.I)
 # `\omega = forma(2)`: uma 2-forma — um (0,2) antissimétrico.
 _RE_FORMA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\(\s*(\d+)\s*\)\s*$",
                        re.I)
@@ -89,7 +93,7 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
-                         r"|curvatura|kronecker|hodge"
+                         r"|curvatura|kronecker|hodge|coordenadas?"
                          r"|det(?:erminante)?\s*\(\s*\\?[A-Za-z]\w*\s*\)"
                          r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
                          r"|metric|[ií]ndices?(?:\s*\(\s*(?:\d+|[A-Za-z]\w*)\s*\))?)\s*$", re.I)
@@ -111,6 +115,9 @@ VERBOS = {
     "contrair": "contrair", "contract": "contrair",
     "indices": "indices", "índices": "indices", "indexar": "indices",
     "expandir": "expandir", "expand": "expandir",
+    "independentes": "independentes", "independent": "independentes",
+    "em_componentes": "em_componentes",
+    "linearizar": "linearizar", "linearize": "linearizar",
     **VERBOS_GEOMETRIA,
 }
 
@@ -342,6 +349,12 @@ class Caderno:
                 "erro": f"a declaração agora se escreve com parênteses: "
                         f"{nome} = {nome}({dentro}). O colchete ficou reservado "
                         f"a n-tupla."})
+
+        contagem = _RE_INDEPENDENTES.match(fonte or "")
+        if contagem:
+            rotulos = [_sem_barra(r.strip()) for r in contagem.group(1).split(",")]
+            return Celula(None, fonte, "comando",
+                          self._independentes(rotulos[0], rotulos[1:]))
 
         prova = _RE_PROVAR.match(fonte or "")
         if prova:
@@ -736,6 +749,17 @@ class Caderno:
                          f"{'−' if negativos % 2 else ''}{h}")
             texto = (f"{h}, sem índice, é det {de}_{{μν}}: ∂_λ {h} = {h} "
                      f"{de}^{{μν}} ∂_λ {de}_{{μν}} ao simplificar" + sinal)
+        elif especie.startswith("coordenada"):
+            if len(lista) != 1:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "as coordenadas são um nome só, com índice: "
+                            "x = coordenadas, e x^i é a i-ésima"})
+            limpo = _sem_barra(lista[0])
+            self.sessao.coordenada_indice = limpo
+            self.sessao.tensores[limpo] = (1, 0)
+            texto = (f"{lista[0]}^i são as coordenadas: ∂_j {lista[0]}^i = "
+                     f"δ^i_j, e as derivadas segundas são zero. ∇ não se "
+                     f"aplica — {lista[0]}^i não é campo vetorial")
         elif especie == "curvatura":
             for n in lista:
                 limpo = _sem_barra(n)
@@ -836,6 +860,12 @@ class Caderno:
             return self._geometria(verbo, alvo)
         if verbo == "expandir":
             return self._expandir(alvo, segundo)
+        if verbo == "independentes":
+            return self._independentes(alvo, [segundo] if segundo else [])
+        if verbo == "em_componentes":
+            return self._em_componentes(alvo)
+        if verbo == "linearizar":
+            return self._expandir(alvo, None, linear=segundo)
         try:
             expressao = self._objeto(alvo)
             if verbo in DE_DOIS:
@@ -891,9 +921,12 @@ class Caderno:
                 # simplificar a diferença crua misturava os termos dos dois
                 # lados antes de cada um ter a sua forma, e identidades que
                 # fechavam lado a lado não fechavam juntas.
-                lhs = _simplificar(objeto.lhs, espaco)
-                rhs = _simplificar(objeto.rhs, espaco)
-                diferenca = _simplificar(lhs - rhs, espaco)
+                try:
+                    lhs = _simplificar(objeto.lhs, espaco)
+                    rhs = _simplificar(objeto.rhs, espaco)
+                    diferenca = _simplificar(lhs - rhs, espaco)
+                except ValueError as e:
+                    return {"erro": str(e), "alvo": alvo}
                 objeto = sp.true if diferenca == 0 else sp.Eq(
                     lhs, rhs, evaluate=False)
             elif isinstance(objeto, TensExpr):
@@ -901,7 +934,10 @@ class Caderno:
                 # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}
                 # só vira 0 por ela. E a delta declarada é contraída antes.
                 from .tensores import simplificar as _simplificar
-                objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
+                try:
+                    objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
+                except ValueError as e:
+                    return {"erro": str(e), "alvo": alvo}
             elif self._tem_forma(objeto):
                 from .formas import expressao, normal
                 doc = self.sessao.documento()[0]
@@ -950,6 +986,52 @@ class Caderno:
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
 
+    def _em_componentes(self, alvo):
+        """`em_componentes(eq)`: a identidade vale para o tensor mais geral
+        de cada tipo declarado, e para qualquer métrica, na dimensão dada?"""
+        from .contagem import SemContagem, em_componentes
+        espaco = self.sessao.documento()[0].espaco
+        try:
+            e = self._objeto(alvo).to_sympy()
+            expr = e.lhs - e.rhs if isinstance(e, sp.Equality) else e
+            vale = em_componentes(expr, espaco)
+        except (KeyError, ValueError) as err:
+            return {"erro": str(err), "alvo": alvo}
+        n = espaco.dimensao
+        texto = (f"em dimensão {n}, com a métrica e cada tensor os mais gerais "
+                 f"que as declarações permitem" +
+                 (" (o Riemann com a primeira identidade de Bianchi)"
+                  if espaco.riemann and espaco.conexao == "levi-civita" else "") +
+                 (": vale, componente por componente" if vale else
+                  ": não vale — há um tensor e uma métrica em que falha"))
+        return {"alvo": alvo, "exato": str(vale), "latex_exato": str(vale),
+                "texto": texto}
+
+    def _independentes(self, nome, rotulos):
+        """`independentes(T, eq…)`: quantas componentes de T sobram, com as
+        simetrias declaradas e as equações dadas, na dimensão declarada."""
+        from .contagem import SemContagem, contar
+        espaco = self.sessao.documento()[0].espaco
+        try:
+            eqs = []
+            for r in rotulos:
+                e = self._objeto(r).to_sympy()
+                eqs.append(e.lhs - e.rhs if isinstance(e, sp.Equality) else e)
+            if espaco is None:
+                raise SemContagem("declare os índices, com a dimensão")
+            k, total, simetrias, notas = contar(nome, eqs, espaco)
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e), "alvo": nome}
+        n = espaco.dimensao
+        texto = (f"em dimensão {n}: {total} componentes; as simetrias de {nome} "
+                 f"deixam {simetrias}")
+        if rotulos or notas:
+            texto += ("; com " + ", ".join(list(rotulos) + notas) + f", {k}")
+        texto += (". Nenhuma: só o tensor nulo tem essas propriedades" if k == 0
+                  else "")
+        return {"alvo": nome, "exato": str(k), "latex_exato": str(k),
+                "texto": texto}
+
     def _provar_indices(self, alvo, objetivo, dadas):
         """provar com índice: o objetivo como combinação das hipóteses, de
         seus ∇, e do que a forma canônica e a torção nula já sabem."""
@@ -988,7 +1070,7 @@ class Caderno:
         return {"alvo": alvo, "latex_exato": latex_de(objetivo, espaco),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
 
-    def _expandir(self, alvo, metrica=None):
+    def _expandir(self, alvo, metrica=None, linear=None):
         """`expandir(eq)`: ∇ em ∂ e Γ; `expandir(eq, g)`: e Γ pela métrica.
 
         Uma igualdade sai `True` quando, expandida e simplificada, os dois
@@ -1003,8 +1085,21 @@ class Caderno:
         doc = self.sessao.documento()[0]
         espaco = doc.espaco
         try:
-            objeto = expandir(objeto, espaco)
-            if metrica:
+            if espaco.christoffel or not linear:
+                objeto = expandir(objeto, espaco)
+            if linear:
+                # linearizar(eq, h): g = η + εh — e Γ, se houver, pela métrica.
+                from .christoffel import linearizar
+                if _sem_barra(linear) not in self.sessao.tensores:
+                    return {"erro": f"declare {linear} = tensor(0, 2, simétrico): "
+                                    f"é a perturbação da métrica", "alvo": alvo}
+                if espaco.christoffel:
+                    objeto = metrizar(objeto, espaco)
+                objeto = linearizar(objeto, espaco, _sem_barra(linear))
+                # Daqui em diante g é o fundo η: constante. O espaço é
+                # remontado a cada comando, e isto não vaza para o próximo.
+                espaco.metrica_constante = True
+            elif metrica:
                 if _sem_barra(metrica) != espaco.metrica:
                     return {"erro": f"'{metrica}' não é a métrica declarada",
                             "alvo": alvo}

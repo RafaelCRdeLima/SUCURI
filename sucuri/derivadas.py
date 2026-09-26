@@ -531,6 +531,27 @@ def _nulo(t, espaco):
     return False
 
 
+def _coordenada(t, espaco):
+    """∂_j x^i = δ^i_j, e ∂∂x = 0 — com x declarado as coordenadas."""
+    operacoes, base = REGISTRO.get(t.head.name, ((), None))
+    if not espaco.coordenada or base != espaco.coordenada or not operacoes:
+        return t
+    if any(o != "d" for o in operacoes):
+        raise DerivadaMalEscrita(
+            f"∇ de {base}^i: as coordenadas não são campo vetorial, e ∇ delas "
+            f"não tem sentido — escreva com ∂")
+    if len(operacoes) > 1:
+        return sp.S.Zero
+    j, i = t.indices
+    if espaco.kronecker and i.is_up != j.is_up:
+        d = espaco.cabeca(espaco.kronecker, 2)
+        return d(i, j) if i.is_up else d(j, i)
+    if espaco.metrica:
+        return espaco.cabeca(espaco.metrica, 2)(i, j)
+    raise DerivadaMalEscrita(
+        f"∂_j {base}^i = δ^i_j pede a delta ou a métrica declarada")
+
+
 def _comutavel(t, espaco):
     """∇_μ∇_ν aplicado a alguma coisa — onde o comutador vira curvatura."""
     operacoes, base = REGISTRO.get(t.head.name, ((), None))
@@ -629,7 +650,8 @@ def normalizar(expr, espaco):
     """
     if not isinstance(expr, TensExpr) or espaco is None:
         return expr
-    expr = _mapear(expr, lambda t: sp.S.Zero if _nulo(t, espaco) else t)
+    expr = _mapear(expr, lambda t: sp.S.Zero if _nulo(t, espaco) else
+                   _coordenada(t, espaco))
     if not isinstance(expr, TensExpr):
         return expr
     if espaco.conexao != "levi-civita" or not espaco.riemann:

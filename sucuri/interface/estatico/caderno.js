@@ -137,6 +137,8 @@ var VERBOS = [
   'contrair', 'contract',
   'indices', 'índices', 'indexar',
   'expandir', 'expand',
+  'independentes', 'independent', 'em_componentes',
+  'linearizar', 'linearize',
   'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
 ];
 

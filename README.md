@@ -366,6 +366,36 @@ partir da segunda identidade de Bianchi, e |∇φ|² + R constante quando
 ∇∇φ = Ric (com a Bianchi contraída como lema). Cada uma tem um par falso que
 não sai.
 
+### Contar, conferir em componentes, linearizar
+
+```
+\mu, \nu, \rho, \sigma = índices(4)
+independentes(R)                     20      o Riemann, com Bianchi
+independentes(C, eq1, eq2)           10      o Weyl: e cíclico e sem traço
+em_componentes(eq3)                  True    em índices(2): R_{μν} = ½ R g_{μν}
+linearizar(eq2, h)                   True    g = η + εh, até ordem ε
+x = coordenadas                              ∂_j x^i = δ^i_j
+```
+
+`independentes(T, eq…)` conta: cada componente é uma incógnita, as simetrias
+declaradas as identificam ou zeram, e cada equação dada — linear em T, com g,
+δ, ε — vira uma equação por valor dos índices. Zero quer dizer que só o tensor
+nulo tem aquelas propriedades naquela dimensão: é assim que o Weyl some em
+d = 2, 3. A métrica da contagem é a euclidiana; a dimensão do espaço de
+soluções não depende da assinatura.
+
+`em_componentes(eq)` confere uma identidade com o tensor mais geral que as
+declarações permitem (o Riemann com as suas simetrias e Bianchi) e uma
+métrica simétrica qualquer, componente por componente. Se vale para o mais
+geral, vale para todos.
+
+`linearizar(eq, h)` abre ∇ em Γ e Γ em ∂g, troca g_{ab} por η_{ab} + εh_{ab},
+a inversa por η^{ab} − εh^{ab}, ∂g por ε∂h, e corta em ordem ε. O η fica com o
+nome da métrica, e é ele que sobe e desce os índices de h.
+
+`x = coordenadas`, sem argumentos, são as coordenadas com índice: ∂_j x^i =
+δ^i_j, e ∇x é recusado — x^i não é campo vetorial.
+
 ### O determinante, e a carta cartesiana
 
 ```

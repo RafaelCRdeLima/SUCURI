@@ -138,10 +138,10 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>18</td><td>7</td><td>5</td></tr>
+  <tr><td>indicial (30)</td><td>24</td><td>5</td><td>1</td></tr>
   <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
   <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>51</strong></td><td><strong>15</strong></td><td><strong>19</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>57</strong></td><td><strong>13</strong></td><td><strong>15</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -156,8 +156,9 @@ saem porque foram reescritos sem índice — que é, afinal, o que a notação
 abstrata existe para permitir. Na indicial, a passagem de ∇ para Γ e de Γ
 para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64,
 66), o Ricci como contração declarada (13, 63), e <code>provar</code> com
-hipóteses escritas com índice (10, 14, 15, 68, 69); o que falta é contar
-componentes, usar a dimensão como hipótese, e mudar de coordenadas. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
+hipóteses escritas com índice (10, 14, 15, 68, 69), contar componentes
+independentes (12, 13, 61), as coordenadas com índice (62) e a teoria
+linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
 o que não sai pede base ortonormal, linearização, ou vetores dados por
 componentes.</p>
 
@@ -504,12 +505,23 @@ cima vira lema da de baixo.</p>
     |∇φ|² − R, não sai.</p>
 </div>
 
-<h3>6. Derivadas segundas de uma função <span class="pill aviso">em parte</span></h3>
+<h3>6. Derivadas segundas de uma função <span class="pill ok">resolve</span></h3>
 
 <p>Tong, folha 2, Q2: com torção, 2∇<sub>[μ</sub>∇<sub>ν]</sub>f =
-−T<sup>ρ</sup><sub>μν</sub>∇<sub>ρ</sub>f; sem torção, as derivadas comutam. A
-parte sem torção sai; a com torção não, porque a torção não se declara com
-índice.</p>
+−T<sup>ρ</sup><sub>μν</sub>∇<sub>ρ</sub>f; sem torção, as derivadas comutam.
+Numa carta, a torção é T<sup>ρ</sup><sub>μν</sub> = Γ<sup>ρ</sup><sub>μν</sub> −
+Γ<sup>ρ</sup><sub>νμ</sub> — e com Γ declarado pela sua definição, sem
+Levi-Civita, <code>expandir</code> mostra a identidade.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu f - \nabla_\nu \nabla_\mu f = -(\Gamma^\rho{}_{\mu\nu} - \Gamma^\rho{}_{\nu\mu}) \nabla_\rho f</code>
+  <code class="entrada">expandir(eq2)</code>
+  <samp class="saida">True</samp>
+</div>
 
 <div class="exemplo">
   <code class="entrada">\mu, \nu = índices</code>
@@ -711,7 +723,7 @@ do Riemann, que com Levi-Civita e métrica declaradas o Sucuri usa.</p>
     ρσ vêm de ∇g = 0, e sem métrica não se supõem.</p>
 </div>
 
-<h3>13. O tensor de Weyl <span class="pill aviso">em parte</span></h3>
+<h3>13. O tensor de Weyl <span class="pill ok">resolve</span></h3>
 
 <p>Tong, <em>GR</em>, folha 2, Q9: em d dimensões, C<sub>μνρσ</sub> =
 R<sub>μνρσ</sub> + α(R<sub>μρ</sub>g<sub>νσ</sub> + R<sub>νσ</sub>g<sub>μρ</sub>
@@ -751,9 +763,159 @@ lê da definição. A dimensão pode ser uma letra, <code>índices(d)</code>.</p
   <code class="entrada">g^{\mu\rho} (R_{\mu\nu\rho\sigma} - \frac{1}{d-2} (R_{\mu\rho} g_{\nu\sigma} + R_{\nu\sigma} g_{\mu\rho} - R_{\mu\sigma} g_{\nu\rho} - R_{\nu\rho} g_{\mu\sigma}) + \frac{1}{(d-1)(d-2)} R (g_{\mu\rho} g_{\nu\sigma} - g_{\mu\sigma} g_{\nu\rho}))</code>
   <code class="entrada">simplificar(eq3)</code>
   <samp class="saida">0</samp>
-  <p class="explica">que C tem as simetrias do Riemann também sai. Que C = 0 em
-    d = 2, 3, e quantas componentes independentes têm o Ricci e o Weyl em
-    d = 4, não: é contar, e a dimensão como hipótese (seção V).</p>
+  <p class="explica">que C tem as simetrias do Riemann também sai.</p>
+</div>
+
+<p>Que o Weyl é zero em d = 2, 3, e quantas componentes ele tem em d = 4, é
+contar: <code>independentes(C, eq…)</code> conta as componentes de um tensor
+com as simetrias declaradas e as equações dadas. Zero quer dizer que só o
+tensor nulo as tem.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(3)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">C = tensor(0, 4, riemann)</code>
+  <code class="entrada">C_{\mu\nu\rho\sigma} + C_{\mu\rho\sigma\nu} + C_{\mu\sigma\nu\rho} = 0</code>
+  <code class="entrada">C^\mu{}_{\nu\mu\sigma} = 0</code>
+  <code class="entrada">independentes(C, eq1, eq2)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">com <code>índices(4)</code>, 10; e o Ricci, simétrico, 10
+    também.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \lambda = índices(4)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">\nabla_\lambda R^\rho{}_{\sigma\mu\nu} + \nabla_\mu R^\rho{}_{\sigma\nu\lambda} + \nabla_\nu R^\rho{}_{\sigma\lambda\mu} = 0</code>
+  <code class="entrada">R_{\mu\nu} = 0</code>
+  <code class="entrada">\nabla^\mu (R_{\mu\nu\rho\sigma} - \frac{1}{2} (R_{\mu\rho} g_{\nu\sigma} + R_{\nu\sigma} g_{\mu\rho} - R_{\mu\sigma} g_{\nu\rho} - R_{\nu\rho} g_{\mu\sigma}) + \frac{1}{6} R (g_{\mu\rho} g_{\nu\sigma} - g_{\mu\sigma} g_{\nu\rho})) = 0</code>
+  <code class="entrada">provar(eq5, eq3, eq4)</code>
+  <samp class="saida">provado a partir de eq3, eq4</samp>
+  <p class="explica">no vácuo, ∇<sup>μ</sup>C<sub>μνρσ</sub> = 0. Sem
+    R<sub>μν</sub> = 0, não sai.</p>
+</div>
+
+<h3>12. O Riemann em duas dimensões <span class="pill ok">resolve</span></h3>
+
+<p>Tong, folha 2, Q8: quantas componentes independentes tem o Riemann em
+2, 3 e 4 dimensões? Em 2, R<sub>μνρσ</sub> = ½R(g<sub>μρ</sub>g<sub>νσ</sub> −
+g<sub>μσ</sub>g<sub>νρ</sub>); o que isso diz da relatividade em 2
+dimensões? Com o Riemann declarado e Levi-Civita, a contagem usa as
+simetrias e a primeira identidade de Bianchi — 1, 6 e 20.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(4)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">independentes(R)</code>
+  <samp class="saida">20</samp>
+</div>
+
+<p>A fórmula em 2D: <code>em_componentes(eq)</code> confere uma identidade
+com o tensor mais geral que as declarações permitem — aqui, o Riemann com as
+suas simetrias e Bianchi — e uma métrica qualquer, componente por
+componente. Se vale para o mais geral, vale para todos.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\mu\nu\rho\sigma} = \frac{1}{2} R (g_{\mu\rho} g_{\nu\sigma} - g_{\mu\sigma} g_{\nu\rho})</code>
+  <code class="entrada">em_componentes(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">sem o ½, ou em <code>índices(3)</code>, sai
+    <code>False</code>. E a resposta à pergunta de Tong: em 2D,
+    R<sub>μν</sub> − ½Rg<sub>μν</sub> = 0 com <code>em_componentes</code> também —
+    o tensor de Einstein é identicamente nulo, e a equação de Einstein não diz
+    nada.</p>
+</div>
+
+<h3>61. Componentes de um tensor antissimétrico <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962 (2018), lista 4, P1: quantas componentes independentes tem um
+tensor antissimétrico? n(n−1)/2 para dois índices, e, para p índices, o
+binômio de n e p. <code>independentes</code> conta, dimensão a dimensão.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices(4)</code>
+  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">independentes(F)</code>
+  <samp class="saida">6</samp>
+  <p class="explica">com <code>tensor(0, 3, antissimétrico)</code>, 4; com
+    <code>simétrico</code>, 10.</p>
+</div>
+
+<h3>62. Campos de Killing do espaço euclidiano <span class="pill ok">resolve</span></h3>
+
+<p>NYU, lista 6, 1(v, vi): em ℝ³ com dℓ² = δ<sub>ij</sub>dx<sup>i</sup>dx<sup>j</sup>,
+os campos V<sub>(i)</sub> = ε<sub>ijk</sub>x<sup>j</sup>∂<sub>k</sub> são de
+Killing, e [V<sub>(i)</sub>, V<sub>(j)</sub>] = −ε<sub>ijk</sub>V<sub>(k)</sub>.
+As coordenadas entram com índice: <code>x = coordenadas</code> diz que
+∂<sub>j</sub>x<sup>i</sup> = δ<sup>i</sup><sub>j</sub>. A carta é cartesiana,
+e isso é declaração: <code>métrica(cartesiana)</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k, l, m, n = índices(3)</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(cartesiana)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">x = coordenadas</code>
+  <code class="entrada">\partial_k (\epsilon_{ijl} x^j) + \partial_l (\epsilon_{ijk} x^j)</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k, l, m, n = índices(3)</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(cartesiana)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">x = coordenadas</code>
+  <code class="entrada">\epsilon_{i m l} x^m \partial^l (\epsilon_{j n k} x^n) - \epsilon_{j m l} x^m \partial^l (\epsilon_{i n k} x^n) = -\epsilon_{i j m} \epsilon^m{}_{n k} x^n</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">o comutador [V,W]<sup>k</sup> = V<sup>l</sup>∂<sub>l</sub>W<sup>k</sup>
+    − W<sup>l</sup>∂<sub>l</sub>V<sup>k</sup>. Com o sinal trocado, não sai; com
+    <code>métrica(euclidiana)</code>, que não diz a carta, sobra ∂ε.</p>
+</div>
+
+<h3>71. O Riemann linearizado <span class="pill ok">resolve</span></h3>
+
+<p>Evans, folha 4, Q10(i): com g<sub>αβ</sub> = η<sub>αβ</sub> + εh<sub>αβ</sub> +
+O(ε²), R<sub>αβγδ</sub> = ½ε(h<sub>αδ,βγ</sub> + h<sub>βγ,αδ</sub> −
+h<sub>αγ,βδ</sub> − h<sub>βδ,αγ</sub>) + O(ε²), e o Ricci pelo h
+traço-invertido. <code>linearizar(eq, h)</code> abre ∇ em Γ e Γ em ∂g, troca
+g por η + εh — a inversa por η − εh — e corta em ordem ε. O η fica com o
+nome da métrica, e é ele que sobe e desce os índices de h.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \rho, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">h = tensor(0, 2, simétrico)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\alpha V^\beta = \partial_\alpha V^\beta + \Gamma^\beta{}_{\alpha\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">g_{\alpha\rho} (\nabla_\gamma \nabla_\delta V^\rho - \nabla_\delta \nabla_\gamma V^\rho) = \frac{\epsilon}{2} (\partial_\beta \partial_\gamma h_{\alpha\delta} + \partial_\alpha \partial_\delta h_{\beta\gamma} - \partial_\beta \partial_\delta h_{\alpha\gamma} - \partial_\alpha \partial_\gamma h_{\beta\delta}) V^\beta</code>
+  <code class="entrada">linearizar(eq2, h)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">o lado esquerdo é R<sub>αβγδ</sub>V<sup>β</sup>, pela
+    definição do Riemann na convenção de Evans. Com um sinal trocado, não sai.
+    O Ricci com h̄ também sai, e está nos testes.</p>
 </div>
 
 <h3>67 e 70. A derivada exterior em componentes <span class="pill aviso">em parte</span></h3>
@@ -1341,19 +1503,9 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <ul class="limites">
   <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
     mudança de coordenadas não é operação do Sucuri.</li>
-  <li><strong>12, 13 (Tong 2 Q8, Q9).</strong> O Riemann em 2 dimensões pelo
-    escalar, e o Weyl nulo em d = 2, 3: pedem contar componentes e usar a
-    dimensão como hipótese. O resto do 13 sai (seção I).</li>
-  <li><strong>61 (MIT 2018, lista 4, P1).</strong> Contar componentes
-    independentes de um antissimétrico é combinatória, não álgebra
-    tensorial.</li>
-  <li><strong>62 (NYU HW6).</strong> Os campos de Killing ε<sub>ijk</sub>x<sup>j</sup>∂<sub>k</sub>
-    pedem as coordenadas como funções, x<sup>j</sup> com ∂<sub>k</sub>x<sup>j</sup> = δ.</li>
   <li><strong>14, 68 (em parte).</strong> Integrar ∇∇K = 0 em Minkowski e
     contar os 10 campos de Killing: integrar e contar não são álgebra
     tensorial.</li>
-  <li><strong>71 (Evans 4 Q10).</strong> Riemann linearizado: não há expansão
-    em ordem de ε.</li>
 </ul>
 
 <h3>Componentes</h3>
@@ -1401,7 +1553,7 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <h2 id="achados">VI. O que os exercícios ensinaram</h2>
 
 <p>Um leitor de notação só se testa com notação escrita por outra gente,
-para outro fim. Resolver estas listas achou onze defeitos — seis deles
+para outro fim. Resolver estas listas achou catorze defeitos — sete deles
 silenciosos, o tipo de erro que este programa existe para não cometer. Todos
 corrigidos, e cada um com teste.</p>
 
@@ -1450,6 +1602,21 @@ corrigidos, e cada um com teste.</p>
     declaração: <code>g = métrica(cartesiana)</code>. O mesmo defeito lia
     g<sup>αβ</sup>∂g<sub>αβ</sub>, com um índice levantado pela contração,
     como ∂δ = 0.</li>
+  <li><strong>O Γ num par contraído (exercício 71).</strong>
+    <code>expandir</code> de ∇<sub>δ</sub>(∇<sub>α</sub>V<sup>α</sup>) punha um Γ
+    para cada índice de ∇<sub>α</sub>V<sup>α</sup> — inclusive os dois α, que
+    são mudos: o operando é escalar. A soma dos termos falsos se cancelava,
+    mas os índices não fechavam, e o SymPy recusava.</li>
+  <li><strong>O mudo com o nome da derivada (exercício 10).</strong> O SymPy
+    chama os mudos de um produto L<sub>0</sub>, L<sub>1</sub>…, e o índice de
+    uma derivada de fora podia ter o mesmo nome; derivando fator a fator, o
+    mudo parecia livre e repetido.</li>
+  <li><strong>Descer índice numa chave de cima (exercício 12).</strong> Ao
+    trocar tensores por componentes, o SymPy desce índices errado a partir de
+    um array de índices de cima, com métrica não diagonal: a identidade de
+    Bianchi, verdadeira, dava equações não nulas, e o Riemann mais geral saía
+    zero — e toda identidade saía verdadeira. Os arrays agora são de índices
+    de baixo, e subir o SymPy faz certo.</li>
 </ul>
 
 <h2 id="fontes">Fontes</h2>
