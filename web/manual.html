@@ -466,6 +466,22 @@ definição que você escreveu:</p>
     em qualquer assinatura.</p>
 </div>
 
+<p>E as formas diferenciais, sem índice: d, ∧, ι<sub>X</sub>,
+ℒ<sub>X</sub>. <code>\omega = forma(2)</code> declara uma 2-forma;
+<code>\mathrm{d}</code> é sempre o operador, e <code>d</code> só quando age
+numa forma declarada.</p>
+
+<div class="exemplo">
+  <code class="entrada">\omega = forma(1)</code>
+  <code class="entrada">\eta = forma(2)</code>
+  <code class="entrada">\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">d², Leibniz graduado, a comutatividade graduada, ι como
+    antiderivação e a fórmula de Cartan valem sem hipótese. η∧η = 0 não
+    passa — η tem grau par.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

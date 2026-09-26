@@ -601,6 +601,51 @@ g(R(U,X)Y, W) = −g(Y, R(U,X)W): essa prova precisa introduzir h = g(Y,W) e
 comparar [U,X](h) com U(X(h)) − X(U(h)). Nada disso aparece no enunciado, e a
 busca só instancia o que aparece.
 
+### Formas diferenciais
+
+```
+\omega = forma(1)
+\eta = forma(2)                       uma 2-forma: um (0,2) antissimétrico
+
+\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta   provar → ∎
+\mathcal{L}_X \mathrm{d}\omega = \mathrm{d} \mathcal{L}_X \omega                          provar → ∎
+\iota_Y \iota_X \eta = \eta(X, Y)                                                 provar → ∎
+\eta \wedge \eta = 0                                        não passa: grau par
+\mathrm{d}(f \omega) = \mathrm{d} f \wedge \omega              só com \mathrm{d}\omega = 0
+```
+
+d, ∧, ι_X e ℒ_X sem índice. Na leitura decide a declaração, como no resto:
+
+- `\mathrm{d}` é sempre o operador;
+- `d` sozinho só é operador quando age numa forma declarada, e `df` com f
+  função continua d vezes f;
+- `\wedge` (ou `\land`) só vale entre formas;
+- `\iota_X` e `\mathcal{L}_X` pedem X declarado vetor.
+
+Uma p-forma é um (0,p) antissimétrico, e por isso ω(X,Y) se lê com o que já
+existia.
+
+O motor sabe sem hipótese o que vale em qualquer livro: d² = 0, o Leibniz
+graduado, α∧β = (−1)^{pq}β∧α, ι_X como antiderivação (com ι_X df = X(f) e
+ι_Xι_X = 0), e a fórmula de Cartan, ℒ_X = ι_X d + d ι_X, que é teorema e não
+convenção.
+
+A convenção que entra é ι_Y ι_X ω = ω(X,Y), a do determinante (Lee, Spivak).
+A fórmula dω(X,Y) = X(ω(Y)) − Y(ω(X)) − ω([X,Y]) muda de fator com a
+normalização, e por isso vem como hipótese, com ∀:
+
+```
+\forall A, B: \iota_B \iota_A \mathrm{d}\omega = \nabla_A (\omega(B)) - \nabla_B (\omega(A)) - \omega([A,B])   eq1
+\mathrm{d}\omega = 0                                                                              eq2
+\nabla_X (\omega(Y)) - \nabla_Y (\omega(X)) = \omega([X,Y])                                         eq3
+provar(eq3, eq1, eq2)      − eq1[A→X, B→Y] · iota_Y(iota_X(eq2))   ∎
+```
+
+As relações entre formas entram no mesmo motor das outras. Os termos são
+monômios exteriores, o escalar é o monômio vazio, e os contextos são d □,
+ι_X □, α ∧ □ e f·□. Ainda não: o Hodge, que pede métrica, assinatura e
+orientação.
+
 ### Sem declarar, a recusa continua
 
 Índice não é expoente, e o parser do SymPy não sabe a diferença. Medido:

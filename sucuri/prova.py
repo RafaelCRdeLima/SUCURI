@@ -351,6 +351,14 @@ def _curvatura(expr, tensores):
 
 def relacao(equacao, tensores):
     """A equação como relação `{termo: coef} = 0` — ou `{1: c}`, se escalar."""
+    from .formas import normal, tem_forma
+    if tem_forma(equacao, tensores):
+        # Formas: os termos são monômios exteriores (ω, dω, ω∧η…), e o escalar
+        # é o monômio vazio — a mesma chave 1 das relações escalares.
+        lhs, rhs = ((equacao.lhs, equacao.rhs)
+                    if isinstance(equacao, sp.Equality) else (equacao, 0))
+        return {t: c for t, c in normal(lhs - rhs, tensores).items()
+                if not _nulo(c)}
     if _e_escalar(equacao, tensores):
         lhs, rhs = ((equacao.lhs, equacao.rhs)
                     if isinstance(equacao, sp.Equality) else (equacao, 0))
@@ -472,17 +480,45 @@ def contextos(relacoes, alvo=None, tensores=None):
                   if not (isinstance(a, sp.Symbol) and a.name in (tensores or {}))}
         for a in sorted(atomos, key=default_sort_key):
             for tipo in ("vetor", "escalar"):
-                achados.append(Contexto(lambda x, a=a: a * x,
-                                        f"{s(a)}·{{}}", rf"{L(a)}\,{{}}",
-                                        True, tipo, tipo))
+                c = Contexto(lambda x, a=a: a * x, f"{s(a)}·{{}}",
+                             rf"{L(a)}\,{{}}", True, tipo, tipo)
+                c.multiplica = True
+                achados.append(c)
         for t in sorted((t for t in alvo if t != ESCALAR), key=default_sort_key):
             achados.append(Contexto(lambda x, t=t: x * t,
                                     f"{{}}·{s(t)}", rf"{{}}\,{L(t)}",
                                     True, "escalar", "vetor"))
+    _contextos_de_formas(relacoes, alvo, tensores or {}, achados)
     unicos = {}
     for c in achados:
         unicos.setdefault(c.chave(), c)
     return list(unicos.values())
+
+
+def _contextos_de_formas(relacoes, alvo, tensores, achados):
+    """d □, ι_X □ e α ∧ □ — quando o problema tem forma."""
+    from .formas import (CHAVE, Cunha, DerivadaExterior, Interior, _atomos_de,
+                         tem_forma)
+    if not any(tem_forma(t, tensores) for r in relacoes for t in r
+               if t != ESCALAR):
+        return
+    L = sp.latex
+    achados.append(Contexto(lambda x: DerivadaExterior(x), "d({})",
+                            r"\mathrm{d}\left({}\right)", True,
+                            "qualquer", "forma"))
+    vetores = sorted((sp.Symbol(n) for n, t in tensores.items()
+                      if n != CHAVE and t == VETOR), key=default_sort_key)
+    for X in vetores:
+        achados.append(Contexto(lambda x, X=X: Interior(X, x),
+                                f"iota_{X}({{}})",
+                                rf"\iota_{{{L(X)}}}\left({{}}\right)", True,
+                                "qualquer", "forma"))
+    for t in (alvo or {}):
+        for a in _atomos_de(t) if t != ESCALAR else ():
+            achados.append(Contexto(lambda x, a=a: Cunha(a, x),
+                                    f"{sp.sstr(a)} ^ {{}}",
+                                    rf"{L(a)} \wedge {{}}", True,
+                                    "qualquer", "forma"))
 
 
 def _profundidade(termo):
@@ -542,7 +578,8 @@ def _e_rel_escalar(rel):
 
 def _aplicar(contexto, derivada, tensores):
     rel = derivada.relacao
-    if (contexto.de == "escalar") != _e_rel_escalar(rel):
+    if contexto.de != "qualquer" and \
+            (contexto.de == "escalar") != _e_rel_escalar(rel):
         return None
     # O contexto recebe a combinação INTEIRA, e não termo a termo: ∇_U(fX) não
     # é f∇_U X, e é `linear` — com Leibniz — quem sabe expandir.
@@ -550,7 +587,18 @@ def _aplicar(contexto, derivada, tensores):
         expressao = contexto.preencher(rel[ESCALAR])
     else:
         expressao = contexto.preencher(sp.Add(*(c * t for t, c in rel.items())))
-    if contexto.para == "escalar":
+    from .formas import normal, tem_forma
+    de_formas = any(tem_forma(t, tensores) for t in rel if t != ESCALAR)
+    if de_formas and contexto.de == "vetor" and \
+            not getattr(contexto, "multiplica", False):
+        return None             # ∇_□ X, (□)(f): o buraco pede vetor, não forma
+    if contexto.para == "forma" or de_formas or tem_forma(expressao, tensores):
+        # Multiplicar uma relação de formas por f, ou pô-la num contexto de
+        # formas: quem expande é a forma normal, não `linear`, que só sabe de
+        # campos vetoriais.
+        nova = {t: c for t, c in normal(expressao, tensores).items()
+                if not _nulo(c)}
+    elif contexto.para == "escalar":
         c = sp.expand(escalar_normal(expressao, tensores))
         nova = {} if _nulo(c) else {ESCALAR: c}
     else:
@@ -613,6 +661,8 @@ def provar(objetivo, hipoteses, tensores):
 
 
 def _e_escalar(eq, tensores):
+    from .formas import CHAVE
+    tensores = {k: v for k, v in tensores.items() if k != CHAVE}
     if isinstance(eq, sp.Equality):
         return not (tem_tensor(eq.lhs, tensores) or tem_tensor(eq.rhs, tensores))
     return not tem_tensor(eq, tensores)
@@ -645,6 +695,11 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
     todos = [alvo] + [d.relacao for d in base]
     lugares = contextos(todos, alvo, tensores)
     profundidade = max(1, max(_profundidade_rel(r) for r in todos))
+    from .formas import tem_forma
+    com_formas = any(tem_forma(t, tensores) for r in todos for t in r
+                     if t != ESCALAR)
+    if com_formas:
+        profundidade = max(profundidade, 2)
 
     # O universo: os termos que o problema tem, e os que estão a UM contexto
     # deles. Relação derivada que sai disso não serve para nada que a prova
@@ -683,14 +738,15 @@ def _buscar(objetivo, alvo, hipoteses, base, tensores):
                 # a maioria dos contextos leva para fora do universo, e montar
                 # a relação inteira para depois jogá-la fora era o grosso do
                 # tempo.
-                if (c.de == c.para == "vetor" and not _e_rel_escalar(d.relacao)
+                if (c.de == c.para == "vetor" and not com_formas
+                        and not _e_rel_escalar(d.relacao)
                         and not all(u in universo for t in d.relacao
                                     for u in linear(c.preencher(t), tensores))):
                     continue
                 n = _aplicar(c, d, tensores)
                 if n is None or n.chave() in conhecidas:
                     continue
-                if not all(t in universo for t in n.relacao):
+                if not com_formas and not all(t in universo for t in n.relacao):
                     continue
                 conhecidas[n.chave()] = n
                 nova_fronteira.append(n)

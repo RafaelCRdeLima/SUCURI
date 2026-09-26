@@ -50,6 +50,9 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
 # hipóteses é justamente o que não pode ficar implícito.
 _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
                         r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
+# `\omega = forma(2)`: uma 2-forma — um (0,2) antissimétrico.
+_RE_FORMA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\(\s*(\d+)\s*\)\s*$",
+                       re.I)
 # `R = riemann(eq1)`: R é o Riemann de ∇, na convenção que eq1 escreve.
 _RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*riemann\s*\(\s*(" +
                          _ROTULO + r")\s*\)\s*$", re.I)
@@ -198,7 +201,7 @@ def _e_instrucao(linha):
         return True
     return any(regra.match(texto) for regra in
                (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE,
-                _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR, _RE_RIEMANN))
+                _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR, _RE_RIEMANN, _RE_FORMA))
 
 
 def _chave(rotulo):
@@ -286,6 +289,23 @@ class Caderno:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
                                 int(tensorial.group(3)),
                                 _qual_simetria(tensorial.group(4)))
+
+        forma = _RE_FORMA.match(fonte or "")
+        if forma:
+            p = int(forma.group(2))
+            if p == 0:
+                return Celula(None, fonte, "declaracao", {"erro": (
+                    "uma 0-forma é uma função: não precisa declarar — todo "
+                    "símbolo que não é tensor já é escalar")})
+            celula = self._tensor(forma.group(1), 0, p,
+                                  "antissimetrico" if p >= 2 else None)
+            if not celula.dados.get("erro"):
+                celula.dados["texto"] = (
+                    f"{forma.group(1)} é uma {p}-forma — um (0,{p}) "
+                    f"{'antissimétrico' if p >= 2 else ''}".rstrip() +
+                    ". d, ∧, ι_X e ℒ_X agem nela; ι_Y ι_X ω = ω(X, Y), na "
+                    "convenção do determinante")
+            return celula
 
         riemann = _RE_RIEMANN.match(fonte or "")
         if riemann:
@@ -490,6 +510,11 @@ class Caderno:
                                  f" e {_conta(vetores, 'vetor', 'vetores')}"
                                  f" — {_indices_em(formas, 'em cima')},"
                                  f" {_indices_em(vetores, 'embaixo')}{nota}")})
+
+    def _tem_forma(self, objeto):
+        from .formas import tem_forma
+        doc = self.sessao.documento()[0]
+        return tem_forma(objeto, doc.tensores_com_graus())
 
     def _riemann(self, nome, rotulo):
         """`R = riemann(eq1)` — a convenção vem da definição escrita.
@@ -739,6 +764,10 @@ class Caderno:
                 # só vira 0 por ela. E a delta declarada é contraída antes.
                 from .tensores import simplificar as _simplificar
                 objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
+            elif self._tem_forma(objeto):
+                from .formas import expressao, normal
+                doc = self.sessao.documento()[0]
+                objeto = expressao(normal(objeto, doc.tensores_com_graus()))
             else:
                 objeto = sp.simplify(objeto)
             return {"alvo": alvo, "exato": sp.sstr(objeto),
@@ -759,8 +788,11 @@ class Caderno:
         except (KeyError, ValueError) as e:
             return {"erro": str(e), "alvo": alvo}
 
+        from .formas import com_graus
         try:
-            prova = provar(objetivo, dadas, self.sessao.tensores)
+            doc = self.sessao.documento()[0]
+            prova = provar(objetivo, dadas, com_graus(self.sessao.tensores,
+                                                      doc.graus()))
         except (SemProva, NaoEVetorial) as e:
             return {"erro": str(e), "alvo": alvo}
 

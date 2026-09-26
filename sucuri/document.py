@@ -606,6 +606,16 @@ class Document:
                 self._curvaturas.append(limpo)
         return self
 
+    def graus(self):
+        """{nome: p} — as p-formas: (0,p) antissimétricos, e os (0,1)."""
+        return {nome: vetores for nome, (formas, vetores) in self._tensores.items()
+                if formas == 0 and (vetores == 1 or (
+                    vetores >= 2 and self._simetrias.get(nome) == "antissimetrico"))}
+
+    def tensores_com_graus(self):
+        from .formas import com_graus
+        return com_graus(self._tensores, self.graus())
+
     def formas(self):
         """{nome: (slots, é a métrica?)} — os (0,n) que se escrevem T(U, X).
 
@@ -837,6 +847,11 @@ class Expression:
         from .derivadas import cabecas as _derivadas, localizar as _achar
         cabecas |= _derivadas(latex, document._indices)
         self.derivadas = _achar(latex, document._indices)
+        # E as cadeias de formas: d\omega, \omega \wedge \eta, \iota_X.
+        from .formas import cabecas as _cadeias, localizar as _formas
+        vetores = {n for n, t in document._tensores.items() if t == (1, 0)}
+        cabecas |= _cadeias(latex, document.graus(), vetores)
+        self.formas_escritas = _formas(latex, document.graus(), vetores)
         self.ambiguities = [a for a in find(latex)
                             if a.span[0] not in cabecas]
 
@@ -899,6 +914,9 @@ class Expression:
         for d in self.derivadas:
             if d.problema:
                 raise DerivadaMalEscrita(d.problema)
+        for f in self.formas_escritas:
+            if f.problema:
+                raise ValueError(f.problema)
 
         texto, reposicoes, derivadas, _, tensores = self._normalize()
         from sympy.parsing.latex import parse_latex
@@ -1040,6 +1058,8 @@ class Expression:
         # substitui aqui, senão seria lido duas vezes.
         engolidos = {i for c in self.covariantes for i in range(c.ini, c.fim)}
         engolidos |= {i for d in self.derivadas for i in range(d.ini, d.fim)}
+        engolidos |= {i for f in self.formas_escritas
+                      for i in range(f.ini, f.fim)}
         fatores = [f for f in self._fatores_tensoriais()
                    if f[0] not in engolidos]
         itens = ([(a.span[0], "sitio", a) for a in self.ambiguities
@@ -1047,9 +1067,17 @@ class Expression:
                  + [(ini, "tensor", (ini, fim, base, pos))
                     for ini, fim, base, pos in fatores]
                  + [(c.ini, "covariante", c) for c in self.covariantes]
-                 + [(d.ini, "derivada", d) for d in self.derivadas])
+                 + [(d.ini, "derivada", d) for d in self.derivadas]
+                 + [(f.ini, "forma", f) for f in self.formas_escritas])
 
         for _, especie, item in sorted(itens, key=lambda i: -i[0]):
+            if especie == "forma":
+                from .formas import construir as _construir
+                nome, simbolo = marcador()
+                reposicoes[simbolo] = _construir(item, self._fragmento,
+                                                 doc.tensores_com_graus())
+                texto = texto[:item.ini] + nome + texto[item.fim:]
+                continue
             if especie == "derivada":
                 from .derivadas import derivar
                 nome, simbolo = marcador()
