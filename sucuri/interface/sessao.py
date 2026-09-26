@@ -52,6 +52,7 @@ class Sessao:
         self.christoffel = None     # (nome, convenção) do Γ definido
         self.determinante = None    # o nome declarado det(g)
         self.metrica_constante = False  # g = métrica(cartesiana), ou (…, constante)
+        self.ricci = None           # a convenção de ricci(eq)
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
@@ -155,6 +156,8 @@ class Sessao:
             doc.determinante(self.determinante)
         if self.metrica_constante:
             doc.metrica_constante()
+        if self.ricci:
+            doc.ricci(self.ricci)
         if self.variaveis:
             doc.variable(*self.variaveis)
 

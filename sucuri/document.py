@@ -719,6 +719,14 @@ class Document:
         self._espaco._cabecas.pop(limpo, None)
         return self
 
+    def ricci(self, convencao):
+        """R_{μν} e R como contrações do Riemann, na convenção da definição."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.ricci = convencao
+        return self
+
     def metrica_constante(self):
         """∂g = 0: a carta é cartesiana (ou inercial). É declaração sobre a
         carta, e não sobre o espaço — em polares, a mesma métrica não é."""

@@ -54,7 +54,7 @@ _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
 _RE_FORMA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\(\s*(\d+)\s*\)\s*$",
                        re.I)
 # `R = riemann(eq1)`: R é o Riemann de ∇, na convenção que eq1 escreve.
-_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(riemann|christoffel)\s*"
+_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(riemann|christoffel|ricci)\s*"
                          r"\(\s*(" + _ROTULO + r")\s*\)\s*$", re.I)
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
@@ -92,7 +92,7 @@ _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"|curvatura|kronecker|hodge"
                          r"|det(?:erminante)?\s*\(\s*\\?[A-Za-z]\w*\s*\)"
                          r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
-                         r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
+                         r"|metric|[ií]ndices?(?:\s*\(\s*(?:\d+|[A-Za-z]\w*)\s*\))?)\s*$", re.I)
 
 VERBOS_GEOMETRIA = {
     "christoffel": "christoffel", "cristoffel": "christoffel",
@@ -313,6 +313,8 @@ class Caderno:
         riemann = _RE_RIEMANN.match(fonte or "")
         if riemann and riemann.group(2).lower() == "christoffel":
             return self._christoffel(riemann.group(1), _sem_barra(riemann.group(3)))
+        if riemann and riemann.group(2) == "ricci":
+            return self._ricci(riemann.group(1), _sem_barra(riemann.group(3)))
         if riemann:
             return self._riemann(riemann.group(1), _sem_barra(riemann.group(3)))
 
@@ -448,6 +450,10 @@ class Caderno:
                 "lorentziana, mas qual? (−,+,+,+) e (+,−,−,−) são as duas "
                 "em uso, e contas como εε e g(U,U) mudam de sinal entre elas. "
                 "Escreva os sinais: g = métrica(-,+,+,+)")})
+        if not isinstance(self.sessao.dimensao, int):
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"a assinatura tem um sinal por dimensão, e a dimensão é "
+                f"{self.sessao.dimensao}, uma letra")})
         if palavra in ("riemanniana", "euclidiana", "riemannian", "euclidean"):
             sinais = (1,) * self.sessao.dimensao
         elif pedacos and all(p in ("+", "-", "−") for p in pedacos):
@@ -549,6 +555,38 @@ class Caderno:
                       f"abre ∇ em ∂ e {nome}; expandir(eq, g), com Levi-Civita, "
                       f"escreve {nome} pela métrica")})
 
+    def _ricci(self, nome, rotulo):
+        """`R = ricci(eq2)` — de R_{μν} = R^ρ{}_{μρν}: que par se contrai, e
+        o sinal. O escalar, sem índice, é g^{μν}R_{μν}."""
+        from .ricci import RicciMalDefinido, convencao_de
+        fonte = f"{nome} = ricci({rotulo})"
+        limpo = _sem_barra(nome)
+        if not self.sessao.riemann or self.sessao.riemann[0] != limpo:
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"o Ricci é uma contração do Riemann, com a mesma letra: "
+                f"declare antes {nome} = riemann(eq)")})
+        try:
+            doc = self.sessao.documento()[0]
+            conv = convencao_de(self._objeto(rotulo).to_sympy(), doc.espaco)
+        except (KeyError, ValueError) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.sessao.ricci = conv
+        # R sem índice é o escalar: R(…) é produto, e não função.
+        self.sessao.anotar("juxtaposition", nome, {}, "product")
+        slots = ["·"] * 4
+        slots[conv["mu"]], slots[conv["nu"]] = "μ", "ν"
+        slots[conv["par"][0]], slots[conv["par"][1]] = "ρ", "ρ"
+        sinal = "" if conv["sinal"] > 0 else "−"
+        escalar = (f"; e {nome}, sem índice, é g^{{μν}}{nome}_{{μν}}"
+                   if self.sessao.metrica_abstrata else
+                   f"; {nome} sem índice, o escalar, pede a métrica declarada")
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "ricci": conv}],
+            "texto": (f"{nome}_{{μν}} = {sinal}{nome}({', '.join(slots)}), "
+                      f"contraído como em {rotulo}" + escalar +
+                      ". Ao simplificar, os dois viram contrações do Riemann, "
+                      "e voltam")})
+
     def _riemann(self, nome, rotulo):
         """`R = riemann(eq1)` — a convenção vem da definição escrita.
 
@@ -590,12 +628,17 @@ class Caderno:
 
         if especie.startswith("índice") or especie.startswith("indice"):
             import re as _re
-            achou = _re.search(r"\((\s*\d+\s*)\)", especie)
-            dimensao = int(achou.group(1)) if achou else None
+            achou = _re.search(r"\(\s*(\d+|[A-Za-z]\w*)\s*\)", especie)
+            dimensao = None
+            if achou:
+                # índices(d): a dimensão como letra, para as contas "em d
+                # dimensões". O que pede número — ε, a assinatura — recusa.
+                dimensao = (int(achou.group(1)) if achou.group(1).isdigit()
+                            else sp.Symbol(achou.group(1)))
             self.sessao.indices.extend(n for n in lista
                                        if n not in self.sessao.indices)
             if dimensao and self.sessao.coordenadas and \
-                    dimensao != len(self.sessao.coordenadas):
+                    str(dimensao) != str(len(self.sessao.coordenadas)):
                 return Celula(None, f"{nomes} = {especie}", "declaracao",
                               {"erro": f"as coordenadas declaram um espaço de "
                                        f"dimensão {len(self.sessao.coordenadas)}, "
@@ -656,6 +699,10 @@ class Caderno:
                             "desce com g. As duas leituras dão contas "
                             "diferentes em contrair, e escolher seria "
                             "adivinhar"})
+            if not isinstance(self.sessao.dimensao, int):
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": f"ε tem um índice por dimensão, e a dimensão é "
+                            f"{self.sessao.dimensao}, uma letra"})
             for n in lista:
                 self.sessao.levi[_sem_barra(n)] = qual
             dim = self.sessao.dimensao
@@ -671,6 +718,7 @@ class Caderno:
                             "declare antes g = métrica, e um nome só para "
                             "o determinante"})
             self.sessao.determinante = _sem_barra(lista[0])
+            self.sessao.anotar("juxtaposition", lista[0], {}, "product")
             h = lista[0]
             sinal = ""
             if self.sessao.assinatura:

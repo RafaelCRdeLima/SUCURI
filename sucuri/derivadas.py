@@ -369,18 +369,32 @@ def _escalar(expr, operacao, indice, espaco):
 
 def base_escalar(nome, espaco):
     """O nome da base de ∂φ. g sem índice, com g a métrica, só é escalar se
-    declarado det g — e aí a cabeça tem outro nome, para não ser ∂g_{μν}."""
-    tensor = espaco is not None and (nome == espaco.metrica or nome in espaco._tipos)
+    declarado det g; R sem índice, com R o Riemann, se declarado o Ricci — e
+    aí a cabeça tem outro nome, para não ser ∂g_{μν} nem ∂R^ρ{}_{σμν}."""
+    tensor = espaco is not None and (
+        nome == espaco.metrica or nome in espaco._tipos
+        or (nome in espaco._cabecas and espaco._cabecas[nome][1] > 0)
+        or any(d and nome == d[0] for d in (espaco.riemann, espaco.christoffel)))
     if not tensor:
         return nome
     if nome == espaco.determinante:
         return BASE_DET + nome
+    if espaco.ricci and espaco.riemann and nome == espaco.riemann[0]:
+        return BASE_ESCALAR + nome
+    if espaco.riemann and nome == espaco.riemann[0]:
+        raise DerivadaMalEscrita(
+            f"'{nome}' sem índice, e {nome} é o Riemann: se é o escalar de "
+            f"curvatura, defina o Ricci — {nome}_{{μν}} = {nome}^ρ{{}}_{{μρν}} "
+            f"— e declare {nome} = ricci(eq)")
     raise DerivadaMalEscrita(
         f"'{nome}' sem índice, e {nome} é tensor: se é o determinante da "
         f"métrica, declare {nome} = det({espaco.metrica or nome})")
 
 
 BASE_DET = "det_"
+BASE_ESCALAR = "escalar_"       # a base de ∂R, que não é ∂ do Riemann
+RICCI = "Ric"                   # R com dois índices, com R o Riemann
+NOMES_EXIBIDOS = {}             # nome interno -> como se escreve: Ric -> R
 
 
 # -------------------------------------------------------------- impressão
@@ -391,6 +405,10 @@ class Impressor(LatexPrinter):
 
     def _print_Tensor(self, expr):
         nome = expr.head.name
+        if nome not in REGISTRO and nome in NOMES_EXIBIDOS:
+            from sympy.tensor.tensor import TensorHead
+            cabeca = TensorHead(NOMES_EXIBIDOS[nome], expr.head.index_types)
+            return super()._print_Tensor(cabeca(*expr.indices))
         if nome not in REGISTRO:
             return super()._print_Tensor(expr)
         operacoes, base = REGISTRO[nome]
@@ -399,7 +417,10 @@ class Impressor(LatexPrinter):
         for op, i in zip(operacoes, indices):
             lado = "^" if i.is_up else "_"
             partes.append(f"{_MACRO[op]}{lado}{{{self._print(sp.Symbol(i.name))}}}")
-        corpo = self._print(sp.Symbol(base.removeprefix(BASE_DET)))
+        base = NOMES_EXIBIDOS.get(base, base)
+        for prefixo in (BASE_DET, BASE_ESCALAR):
+            base = base.removeprefix(prefixo)
+        corpo = self._print(sp.Symbol(base))
         for i in indices[len(operacoes):]:
             lado = "^" if i.is_up else "_"
             corpo += f"{{}}{lado}{{{self._print(sp.Symbol(i.name))}}}"
@@ -652,11 +673,20 @@ def convencao_de(equacao, nome):
     return {"sinal": int(coef), **posicoes}
 
 
-def simetria_do_riemann(conv):
+def simetria_do_riemann(conv, levi_civita_com_metrica=False):
     """Antissimétrico nos slots de μ e ν — em qualquer convenção, porque vem
     do comutador. Só se exprime se os dois slots forem vizinhos no começo ou
-    no fim; noutro lugar, fica sem, o que não é falso, só incompleto."""
+    no fim; noutro lugar, fica sem, o que não é falso, só incompleto.
+
+    Com Levi-Civita e métrica declaradas, as outras duas são teorema:
+    R_{ρσμν} = −R_{σρμν} (de ∇g = 0) e a troca de pares (disso e de Bianchi,
+    que vem da torção nula). Com a métrica, valem em qualquer valência — os
+    índices levam a posição consigo.
+    """
     par = sorted((conv["mu"], conv["nu"]))
+    outro = sorted((conv["rho"], conv["sigma"]))
+    if levi_civita_com_metrica and sorted([par, outro]) == [[0, 1], [2, 3]]:
+        return TensorSymmetry.riemann()
     if par == [2, 3]:
         return TensorSymmetry.direct_product(1, 1, -2)
     if par == [0, 1]:

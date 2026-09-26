@@ -100,7 +100,7 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>u = u(t,x)</code></td><td>u é função de t e x</td></tr>
   <tr><td><code>e = euler</code></td><td>e é o número de Euler, não um símbolo</td></tr>
   <tr><td><code>a = símbolo</code></td><td>a não é função: <code>a(x+1)</code> é produto</td></tr>
-  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais — <code>índices(3)</code> dá a dimensão</td></tr>
+  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais — <code>índices(3)</code> dá a dimensão; <code>índices(d)</code>, uma letra</td></tr>
   <tr><td><code>T = tensor(0,2)</code></td><td>o tipo do Schutz: 0 formas, 2 vetores</td></tr>
   <tr><td><code>F = tensor(0,2, antissimétrico)</code></td><td>e a simetria dos slots: <code>simétrico</code>, <code>antissimétrico</code>, <code>riemann</code></td></tr>
   <tr><td><code>\omega = forma(2)</code></td><td>uma 2-forma — um (0,2) antissimétrico</td></tr>
@@ -113,6 +113,7 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>\epsilon = levi-civita(tensor)</code></td><td>ou <code>(símbolo)</code> — os livros não fazem igual</td></tr>
   <tr><td><code>\nabla = levi-civita</code></td><td>a conexão: ∇g = 0, sem torção</td></tr>
   <tr><td><code>R = riemann(eq1)</code></td><td>o Riemann, na convenção que eq1 escreve</td></tr>
+  <tr><td><code>R = ricci(eq2)</code></td><td>R<sub>μν</sub> e R, contrações do Riemann, na convenção que eq2 escreve</td></tr>
   <tr><td><code>\Gamma = christoffel(eq1)</code></td><td>os Christoffel, na ordem de slots que eq1 escreve</td></tr>
   <tr><td><code>R = curvatura</code></td><td>R(U,X)W é o operador de curvatura, sem índice</td></tr>
   <tr><td><code>\star = hodge</code></td><td>o dual de Hodge (pede a assinatura)</td></tr>

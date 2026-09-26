@@ -310,6 +310,35 @@ e sua derivada é zero.
 Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
 `christoffel` das componentes numa carta continua o mesmo.
 
+### O Ricci e o escalar, e a dimensão como letra
+
+```
+\mu, \nu, \rho, \sigma = índices(d)
+R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}              eq2
+R = ricci(eq2)
+
+R^\rho{}_{\mu\nu\rho}              simplificar →  −Ric(−μ, −ν)
+g^{\mu\nu} R_{\mu\nu}               simplificar →  R
+R_{\mu\nu} - R_{\nu\mu}              simplificar →  0
+```
+
+A mesma letra para o Riemann, o Ricci e o escalar, como nos livros: o posto
+distingue. Qual par o Ricci contrai (e com que sinal) varia de livro para
+livro, e `R = ricci(eq)` lê da definição escrita; o escalar é g^{μν}R_{μν}.
+Por dentro, R com dois índices é outra cabeça, `Ric` — um tensor tem um posto
+só. Ao simplificar, os dois viram contrações do Riemann, a canonização as
+compara, e o que coincide com a definição volta a ser R_{μν} ou R.
+
+Com `\nabla = levi-civita` e a métrica declaradas, o Riemann ganha as
+simetrias que são teorema: antissimetria no primeiro par e troca de pares. Daí
+sai a simetria do Ricci. Sem a métrica, só a antissimetria que vem do
+comutador. E a saída é escrita na ordem da convenção — o índice de cima no
+slot de ρ —, e não na que a canonização prefere.
+
+`índices(d)` deixa a dimensão como letra: g^μ{}_μ = d, e as contas "em d
+dimensões" saem com os coeficientes simplificados. O que pede um número —
+ε, a assinatura — recusa.
+
 ### O determinante, e a carta cartesiana
 
 ```

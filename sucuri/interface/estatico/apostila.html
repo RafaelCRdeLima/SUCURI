@@ -138,10 +138,10 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>14</td><td>6</td><td>10</td></tr>
+  <tr><td>indicial (30)</td><td>15</td><td>6</td><td>9</td></tr>
   <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
   <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>47</strong></td><td><strong>14</strong></td><td><strong>24</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>48</strong></td><td><strong>14</strong></td><td><strong>23</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -155,7 +155,8 @@ tem um motor de prova. Dois exercícios enunciados em índices (9 e 11) só
 saem porque foram reescritos sem índice — que é, afinal, o que a notação
 abstrata existe para permitir. Na indicial, a passagem de ∇ para Γ e de Γ
 para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64,
-66); o que falta é sobretudo hipóteses escritas com índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
+66), e o Ricci como contração declarada (13, 63); o que falta é sobretudo
+hipóteses escritas com índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
 o que não sai pede base ortonormal, linearização, ou vetores dados por
 componentes.</p>
 
@@ -576,13 +577,13 @@ identidades saem de d² = 0 (seção IV). Em índices, saem de ∂ comutar contr
   <p class="explica">com o símbolo, ∂ε = 0: ele vale ±1 em toda carta.</p>
 </div>
 
-<h3>63. O comutador num tensor de posto 2 <span class="pill aviso">em parte</span></h3>
+<h3>63. O comutador num tensor de posto 2 <span class="pill ok">resolve</span></h3>
 
 <p>Evans, <em>Part II GR</em>, folha 3, Q1(ii): da identidade de Ricci num
 vetor, deduza [∇<sub>α</sub>,∇<sub>β</sub>]T<sup>μν</sup>, e mostre que
 ∇<sub>α</sub>∇<sub>β</sub>T<sup>αβ</sup> = ∇<sub>β</sub>∇<sub>α</sub>T<sup>αβ</sup>.
-A primeira parte sai; a segunda pede que o Ricci seja simétrico, que é
-teorema — e o Sucuri não o tem.</p>
+A segunda parte pede que o Ricci seja simétrico — teorema, das simetrias
+do Riemann, que com Levi-Civita e métrica declaradas o Sucuri usa.</p>
 
 <div class="exemplo">
   <code class="entrada">\mu, \nu, \rho, \sigma, \alpha, \beta = índices</code>
@@ -594,6 +595,67 @@ teorema — e o Sucuri não o tem.</p>
   <code class="entrada">\nabla_\alpha \nabla_\beta T^{\mu\nu} - \nabla_\beta \nabla_\alpha T^{\mu\nu}</code>
   <code class="entrada">simplificar(eq2)</code>
   <samp class="saida">R(mu, L_0, -alpha, -beta)*T(-L_0, nu) + R(nu, L_0, -alpha, -beta)*T(mu, -L_0)</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \alpha, \beta = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">T = tensor(2, 0)</code>
+  <code class="entrada">\nabla_\alpha \nabla_\beta T^{\alpha\beta} - \nabla_\beta \nabla_\alpha T^{\alpha\beta}</code>
+  <code class="entrada">simplificar(eq2)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">sem <code>g = métrica</code>, sobram dois Riemann contraídos:
+    a troca de pares R<sub>ρσμν</sub> = R<sub>μνρσ</sub> e a antissimetria em
+    ρσ vêm de ∇g = 0, e sem métrica não se supõem.</p>
+</div>
+
+<h3>13. O tensor de Weyl <span class="pill aviso">em parte</span></h3>
+
+<p>Tong, <em>GR</em>, folha 2, Q9: em d dimensões, C<sub>μνρσ</sub> =
+R<sub>μνρσ</sub> + α(R<sub>μρ</sub>g<sub>νσ</sub> + R<sub>νσ</sub>g<sub>μρ</sub>
+− R<sub>μσ</sub>g<sub>νρ</sub> − R<sub>νρ</sub>g<sub>μσ</sub>) +
+βR(g<sub>μρ</sub>g<sub>νσ</sub> − g<sub>μσ</sub>g<sub>νρ</sub>); que α e β
+dão C<sup>μ</sup><sub>νμσ</sub> = 0? Os livros escrevem o Riemann, o Ricci e
+o escalar com a mesma letra, e qual par o Ricci contrai varia: <code>R = ricci(eq2)</code>
+lê da definição. A dimensão pode ser uma letra, <code>índices(d)</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(d)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">a, b = constante</code>
+  <code class="entrada">g^{\mu\rho} (R_{\mu\nu\rho\sigma} + a (R_{\mu\rho} g_{\nu\sigma} + R_{\nu\sigma} g_{\mu\rho} - R_{\mu\sigma} g_{\nu\rho} - R_{\nu\rho} g_{\mu\sigma}) + b R (g_{\mu\rho} g_{\nu\sigma} - g_{\mu\sigma} g_{\nu\rho}))</code>
+  <code class="entrada">simplificar(eq3)</code>
+  <samp class="saida">(R*a + R*b*d - R*b)*g(-nu, -sigma) + (a*d - 2*a + 1)*Ric(-nu, -sigma)</samp>
+  <p class="explica">zerar os dois coeficientes dá α = −1/(d−2) e
+    β = 1/((d−1)(d−2)). <code>Ric</code> é R com dois índices: por dentro,
+    outra cabeça, porque um tensor tem um posto só.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(d)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">g^{\mu\rho} (R_{\mu\nu\rho\sigma} - \frac{1}{d-2} (R_{\mu\rho} g_{\nu\sigma} + R_{\nu\sigma} g_{\mu\rho} - R_{\mu\sigma} g_{\nu\rho} - R_{\nu\rho} g_{\mu\sigma}) + \frac{1}{(d-1)(d-2)} R (g_{\mu\rho} g_{\nu\sigma} - g_{\mu\sigma} g_{\nu\rho}))</code>
+  <code class="entrada">simplificar(eq3)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">que C tem as simetrias do Riemann também sai. Que C = 0 em
+    d = 2, 3, e quantas componentes independentes têm o Ricci e o Weyl em
+    d = 4, não: é contar, e a dimensão como hipótese (seção V).</p>
 </div>
 
 <h3>67 e 70. A derivada exterior em componentes <span class="pill aviso">em parte</span></h3>
@@ -1181,13 +1243,14 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <ul class="limites">
   <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
     mudança de coordenadas não é operação do Sucuri.</li>
-  <li><strong>10, 13, 14 (Tong 2 Q4, Q9; Tong 3 Q6).</strong> Bianchi
-    contraída, Weyl, Killing de segunda ordem: pedem hipóteses em notação
+  <li><strong>10, 14 (Tong 2 Q4; Tong 3 Q6).</strong> Bianchi
+    contraída, Killing de segunda ordem: pedem hipóteses em notação
     indicial (a segunda identidade de Bianchi, a equação de Killing), e
     <code>provar</code> só encadeia hipóteses sem índice. O 15, que tem o
     mesmo problema, sai em parte (seção I).</li>
-  <li><strong>12 (Tong 2 Q8).</strong> O Riemann em 2 dimensões pelo escalar:
-    pede contar componentes e usar a dimensão como hipótese.</li>
+  <li><strong>12, 13 (Tong 2 Q8, Q9).</strong> O Riemann em 2 dimensões pelo
+    escalar, e o Weyl nulo em d = 2, 3: pedem contar componentes e usar a
+    dimensão como hipótese. O resto do 13 sai (seção I).</li>
   <li><strong>61 (MIT 2018, lista 4, P1).</strong> Contar componentes
     independentes de um antissimétrico é combinatória, não álgebra
     tensorial.</li>
