@@ -1,3 +1,5 @@
+*[English version](AUDIT-INTEGRALS.md)*
+
 # Uma tabela de integrais contra o Sucuri
 
 **Fonte.** `en.wikipedia.org/wiki/Lists_of_integrals`, pela API de wikitexto.

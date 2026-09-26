@@ -35,7 +35,9 @@
   <div class="marca">SUCURI</div>
   <div class="barra"><i id="barra"></i></div>
   <div class="passo" id="passo">iniciando…</div>
-  <p class="nota">O motor é o Python e o SymPy de verdade, compilados para o
+  <p class="nota" data-en="The engine is real Python and SymPy, compiled for the
+    browser. The first time it takes a few seconds to arrive; after that it is
+    cached. Nothing you write leaves this machine.">O motor é o Python e o SymPy de verdade, compilados para o
     navegador. Da primeira vez leva alguns segundos para chegar; depois fica em
     cache. Nada do que você escrever sai desta máquina.</p>
 </div>
@@ -67,7 +69,19 @@
   <input type="file" id="entrada-arquivo" accept=".tex,.txt" hidden>
 </div>
 
-<p class="folha-dica" id="dica">
+<p class="folha-dica" id="dica" data-en="Write the equation and <kbd>Shift</kbd>+<kbd>Enter</kbd> — <kbd>Enter</kbd>
+  breaks the line, and a cell takes one command per line. If the notation leaves
+  room for doubt, Sucuri asks — and you can answer once and for all by declaring
+  what each name is: <code>u = u(t,x)</code>, <code>e = euler</code>,
+  <code>a = symbol</code>, <code>\mu, \nu = indices</code>, <code>g = tensor(0,2)</code>,
+  <code>x = coordinates(t,r)</code>, <code>g = metric</code>,
+  <code>g = metric(components)</code>.
+  The verbs: <code>solve(eq1)</code>, <code>evaluate</code>,
+  <code>separate</code>, <code>check(eq1, eq2)</code>,
+  <code>simplify</code>, <code>export</code>, <code>latex</code>,
+  <code>contract</code>, <code>prove(eq3, eq1, eq2)</code>,
+  <code>christoffel</code>, <code>ricci</code>, <code>riemann</code>,
+  <code>scalar</code>.">
   Escreva a equação e <kbd>Shift</kbd>+<kbd>Enter</kbd> — <kbd>Enter</kbd>
   quebra linha, e uma célula aceita um comando por linha. Se a notação deixar
   dúvida, o Sucuri pergunta — e você pode respondê-la de uma vez declarando o
@@ -96,7 +110,8 @@
 <script>
 /* Ganchos do carregamento, definidos antes do transporte subir. */
 function SUCURI_CARREGANDO(d) {
-  document.getElementById('passo').textContent = d.texto + '…';
+  document.getElementById('passo').textContent =
+    (window.T ? T(d.texto) : d.texto) + '…';
   document.getElementById('barra').style.width =
     Math.round(100 * d.etapa / d.total) + '%';
 }
@@ -105,22 +120,26 @@ function SUCURI_CARREGADO(versoes) {
   var v = (versoes || '').split('|');
   if (v.length === 2) {
     document.getElementById('motor').textContent =
-      'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] + '  ·  no navegador';
+      'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] +
+      (window.T ? T('  ·  no navegador') : '  ·  no navegador');
   }
 }
 function SUCURI_REERGUENDO() {
   var tela = document.getElementById('carregando');
   tela.classList.remove('pronto');
-  document.getElementById('passo').textContent = 'recarregando o motor…';
+  document.getElementById('passo').textContent =
+    window.T ? T('recarregando o motor…') : 'recarregando o motor…';
   document.getElementById('barra').style.width = '0%';
 }
 function SUCURI_FALHOU(erro) {
-  document.getElementById('passo').textContent = 'não deu: ' + erro;
+  document.getElementById('passo').textContent =
+    (window.T ? T('não deu: ') : 'não deu: ') + erro;
   document.getElementById('barra').style.background = '#C0442F';
 }
 </script>
 <script src="vendor/katex/katex.min.js"></script>
 <script src="transporte.js"></script>
+<script src="idioma.js"></script>
 <script src="sitios.js"></script>
 <script src="caderno.js"></script>
 </body>

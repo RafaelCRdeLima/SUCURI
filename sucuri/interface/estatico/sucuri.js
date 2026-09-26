@@ -67,23 +67,23 @@ function estados(d) {
 
   if (d.pendentes) {
     caixa.appendChild(pastilha('aviso', ICONE_AVISO,
-      plural(d.pendentes, 'sítio pendente', 'sítios pendentes')));
+      plural(d.pendentes, T('sítio pendente'), T('sítios pendentes'))));
   } else if (d.erro) {
-    caixa.appendChild(pastilha('erro', ICONE_ERRO, 'não foi possível converter'));
+    caixa.appendChild(pastilha('erro', ICONE_ERRO, T('não foi possível converter')));
   } else {
-    caixa.appendChild(pastilha('ok', ICONE_OK, 'árvore válida'));
+    caixa.appendChild(pastilha('ok', ICONE_OK, T('árvore válida')));
   }
   if (d.indices_livres) {
     /* A valência é a primeira coisa que se confere num tensor. */
     caixa.appendChild(pastilha(d.indices_livres.length ? 'neutro' : 'ok',
       d.indices_livres.length ? '' : ICONE_OK,
       d.indices_livres.length
-        ? 'índices livres: ' + d.indices_livres.join(', ')
-        : 'todos os índices contraídos'));
+        ? T('índices livres: ') + d.indices_livres.join(', ')
+        : T('todos os índices contraídos')));
   }
   if (d.inferidas) {
     caixa.appendChild(pastilha('aviso', ICONE_AVISO,
-      plural(d.inferidas, 'leitura por convenção', 'leituras por convenção')));
+      plural(d.inferidas, T('leitura por convenção'), T('leituras por convenção'))));
   }
   (d.avisos || []).forEach(function (a) {
     caixa.appendChild(pastilha('erro', ICONE_ERRO, a));
@@ -119,8 +119,8 @@ function faltando(d) {
   div.className = 'falta';
 
   var texto = document.createElement('p');
-  texto.textContent = 'Derivada em relação a qual variável? Sem isso, '
-    + '"derivada" não diz o bastante.';
+  texto.textContent = T('Derivada em relação a qual variável? Sem isso, ')
+    + T('"derivada" não diz o bastante.');
   div.appendChild(texto);
 
   var linha = document.createElement('div');
@@ -131,7 +131,7 @@ function faltando(d) {
   campo.placeholder = (f.qual === 'temporal') ? 't' : 'x';
   var usar = document.createElement('button');
   usar.className = 'primario';
-  usar.textContent = 'Usar';
+  usar.textContent = T('Usar');
   function adotar(nome) {
     if (!nome) { return; }
     $(alvo).value = nome;
@@ -149,7 +149,7 @@ function faltando(d) {
   atalhos.className = 'atalhos';
   if (f.candidatos.length) {
     /* Atalho, não sugestão: em x' = A e^x sobra o A, que é constante. */
-    atalhos.appendChild(document.createTextNode('letras que aparecem na equação:'));
+    atalhos.appendChild(document.createTextNode(T('letras que aparecem na equação:')));
     f.candidatos.forEach(function (c) {
       var b = document.createElement('button');
       b.textContent = c;
@@ -157,8 +157,8 @@ function faltando(d) {
       atalhos.appendChild(b);
     });
   } else {
-    atalhos.textContent = 'nenhuma letra sobra na equação: a variável não está '
-      + 'escrita ali, e é por isso que ninguém pode tirá-la de lá.';
+    atalhos.textContent = T('nenhuma letra sobra na equação: a variável não está ')
+      + T('escrita ali, e é por isso que ninguém pode tirá-la de lá.');
   }
   div.appendChild(atalhos);
   caixa.appendChild(div);
@@ -213,15 +213,15 @@ function leitura(d) {
 
   if (!d.latex.trim()) {
     caixa.innerHTML = '<span class="vazio">nada escrito ainda</span>';
-    $('rotulo-leitura').textContent = 'Como o Sucuri lê';
+    $('rotulo-leitura').textContent = T('Como o Sucuri lê');
     return;
   }
   if (!alvo) {
     caixa.classList.add('cru');
     alvo = d.latex;
-    $('rotulo-leitura').textContent = 'Ainda não interpretado — só a sua escrita';
+    $('rotulo-leitura').textContent = T('Ainda não interpretado — só a sua escrita');
   } else {
-    $('rotulo-leitura').textContent = 'Como o Sucuri lê';
+    $('rotulo-leitura').textContent = T('Como o Sucuri lê');
   }
   try {
     katex.render(alvo, caixa, { displayMode: true, throwOnError: false });
@@ -253,10 +253,10 @@ function codigo(d) {
     pre.innerHTML = '<span class="cm"># escreva algo à esquerda</span>';
   } else if (d.pendentes) {
     pre.innerHTML = '<span class="cm"># ' + escapar(plural(d.pendentes,
-      'sítio ambíguo espera decisão', 'sítios ambíguos esperam decisão'))
+      T('sítio ambíguo espera decisão'), T('sítios ambíguos esperam decisão')))
       + '</span>';
   } else {
-    pre.innerHTML = '<span class="cm"># ' + escapar(d.erro || 'sem saída') + '</span>';
+    pre.innerHTML = '<span class="cm"># ' + escapar(d.erro || T('sem saída')) + '</span>';
   }
 }
 
@@ -274,7 +274,7 @@ function acaoPrincipal() {
 }
 
 function resolverEdo() {
-  var caixa = abrirValor('resolvendo…');
+  var caixa = abrirValor(T('resolvendo…'));
   pedir('/api/operar', { latex: $('entrada').value, modulo: 'resolver',
                          operacao: 'resolver' })
     .then(function (r) { caixa.textContent = ''; caixa.appendChild(resultado(r)); })
@@ -291,7 +291,7 @@ function abrirValor(aviso) {
 }
 
 function avaliar() {
-  var caixa = abrirValor('calculando…');
+  var caixa = abrirValor(T('calculando…'));
   pedir('/api/avaliar', { latex: $('entrada').value, convencoes: convencoes() })
     .then(function (d) { caixa.textContent = ''; caixa.appendChild(valor(d)); })
     .catch(function (e) {
@@ -326,22 +326,22 @@ function valor(d) {
   if (d.indefinida) {
     var fam = document.createElement('p');
     fam.className = 'modulo-desc';
-    fam.textContent = 'integral indefinida: a resposta é a família inteira, '
-      + 'e o código abaixo traz uma primitiva dela.';
+    fam.textContent = T('integral indefinida: a resposta é a família inteira, ')
+      + T('e o código abaixo traz uma primitiva dela.');
     div.appendChild(fam);
   }
 
   if (d.numerico) {
     var n = document.createElement('p');
     n.className = 'modulo-desc';
-    n.textContent = '≈ ' + d.numerico + '  (aproximação; o valor é o de cima)';
+    n.textContent = '≈ ' + d.numerico + T('  (aproximação; o valor é o de cima)');
     div.appendChild(n);
   }
   if (!d.fechou) {
     var aviso = document.createElement('div');
     aviso.className = 'nao-apresentavel';
-    aviso.textContent = 'não fechou: o SymPy devolveu a conta por fazer, '
-      + 'não o valor dela';
+    aviso.textContent = T('não fechou: o SymPy devolveu a conta por fazer, ')
+      + T('não o valor dela');
     div.appendChild(aviso);
   }
   $('tempo').textContent = d.ms + ' ms';
@@ -396,7 +396,7 @@ function modulos() {
       ops.className = 'operacoes';
       sobra(m).forEach(function (op) {
         var b = document.createElement('button');
-        b.textContent = op.nome;
+        b.textContent = T(op.nome);
         b.title = op.descricao;
         b.addEventListener('click', function () { operar(m.nome, op.nome); });
         ops.appendChild(b);
@@ -461,8 +461,8 @@ function resultado(r) {
   var prov = document.createElement('div');
   prov.className = 'proveniencia' + (r.apresentavel ? '' : ' nao-apresentavel');
   prov.textContent = r.apresentavel
-    ? 'proveniência: ' + r.proveniencia
-    : 'proveniência: ' + r.proveniencia + ' — não apresentável como conclusão';
+    ? T('proveniência: ') + r.proveniencia
+    : T('proveniência: ') + r.proveniencia + T(' — não apresentável como conclusão');
   div.appendChild(prov);
   return div;
 }
@@ -472,8 +472,8 @@ function resultado(r) {
 function mostrar(d) {
   ultimo = d;
   $('bloco-avaliacao').hidden = true;      // o valor era de outra equação
-  $('avaliar').textContent = d.diferencial ? 'Resolver' : 'Avaliar';
-  $('rotulo-valor').textContent = d.diferencial ? 'Solução' : 'Valor';
+  $('avaliar').textContent = d.diferencial ? T('Resolver') : T('Avaliar');
+  $('rotulo-valor').textContent = d.diferencial ? T('Solução') : T('Valor');
   estados(d);
   faltando(d);
   perguntas(d);
@@ -502,20 +502,21 @@ function avisar(texto) {
 /* Erro solto não pode terminar em silêncio: se algo quebrar fora de um painel,
    a página tem de dizer o que houve em vez de só parar. */
 window.addEventListener('error', function (e) {
-  avisar('algo quebrou na página: ' + (e.message || e.error));
+  avisar(T('algo quebrou na página: ') + (e.message || e.error));
 });
 window.addEventListener('unhandledrejection', function (e) {
-  avisar('um pedido não voltou: ' + (e.reason && e.reason.message || e.reason));
+  avisar(T('um pedido não voltou: ') + (e.reason && e.reason.message || e.reason));
 });
 
 function mostrarFalha(e) {
   $('estados').textContent = '';
-  $('estados').appendChild(pastilha('erro', ICONE_ERRO, 'motor fora do ar: ' + e));
+  $('estados').appendChild(pastilha('erro', ICONE_ERRO, T('motor fora do ar: ') + e));
 }
 
 /* ------------------------------------------------------------------ ligar */
 
 $('entrada').addEventListener('input', lerDepois);
+window.addEventListener('sucuri-idioma', ler);
 ['c-independente', 'c-temporal', 'c-funcoes', 'c-variaveis'].forEach(function (id) {
   $(id).addEventListener('input', lerDepois);
 });
@@ -525,8 +526,8 @@ $('entrada').addEventListener('input', lerDepois);
 
 $('copiar').addEventListener('click', function (e) {
   navigator.clipboard.writeText($('codigo').innerText).then(function () {
-    e.target.textContent = 'Código copiado';
-    setTimeout(function () { e.target.textContent = 'Copiar código'; }, 1600);
+    e.target.textContent = T('Código copiado');
+    setTimeout(function () { e.target.textContent = T('Copiar código'); }, 1600);
   });
 });
 $('abrir-modulos').addEventListener('click', modulos);

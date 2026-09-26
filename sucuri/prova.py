@@ -307,7 +307,7 @@ def _nabla(expr, tensores):
     for td, cd in direcao.items():
         # Na direção, linear sobre funções: qualquer coeficiente sai.
         for to, co in operando.items():
-            parcela = {DerivadaCovariante(td, to): cd * co}
+            parcela = {expr.com(td, to): cd * co}
             if not _constante(co):
                 # Leibniz: ∇_U(fX) = U(f)X + f∇_U X.
                 parcela = _soma(parcela, {to: cd * direcional(
@@ -401,12 +401,14 @@ def _contextos_de(termo, achados):
     s = sp.sstr
     if isinstance(termo, DerivadaCovariante):
         u, x = termo.direcao, termo.operando
-        achados.append(Contexto(lambda h, x=x: DerivadaCovariante(h, x),
-                                f"nabla_{{{{}}}}({s(x)})",
-                                rf"\nabla_{{{{{{}}}}}} {sp.latex(x)}", True))
-        achados.append(Contexto(lambda h, u=u: DerivadaCovariante(u, h),
-                                f"nabla_{s(u)}({{}})",
-                                rf"\nabla_{{{sp.latex(u)}}}\left({{}}\right)",
+        nb = f"{termo.acento}_nabla" if termo.acento else "nabla"
+        nl = rf"\{termo.acento}{{\nabla}}" if termo.acento else r"\nabla"
+        achados.append(Contexto(lambda h, x=x, t=termo: t.com(h, x),
+                                f"{nb}_{{{{}}}}({s(x)})",
+                                rf"{nl}_{{{{{{}}}}}} {sp.latex(x)}", True))
+        achados.append(Contexto(lambda h, u=u, t=termo: t.com(u, h),
+                                f"{nb}_{s(u)}({{}})",
+                                rf"{nl}_{{{sp.latex(u)}}}\left({{}}\right)",
                                 False))
     elif isinstance(termo, ColcheteDeLie):
         a, b = termo.args

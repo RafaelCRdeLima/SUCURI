@@ -149,3 +149,16 @@ class Aplicacao:
              "/api/caderno/executar": executar,
              "/api/caderno/refazer": refazer,
              "/api/caderno/reiniciar": reiniciar}
+
+
+def _no_idioma(rota):
+    """A resposta no idioma que a interface pediu: `"idioma": "en"` no corpo.
+    O motor responde em português; a tradução é a última coisa que acontece."""
+    def atender(app, corpo):
+        from ..idioma import traduzir_resposta
+        return traduzir_resposta(rota(app, corpo), (corpo or {}).get("idioma", "pt"))
+    atender.__name__ = rota.__name__
+    return atender
+
+
+Aplicacao.ROTAS = {k: _no_idioma(f) for k, f in Aplicacao.ROTAS.items()}

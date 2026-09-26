@@ -48,8 +48,8 @@ function SUCURI_SITIO(a, aoDecidir) {
    * "decidido aqui": diz o que foi declarado, e portanto por que não há mais
    * o que perguntar. */
   origem.textContent = a.motivo ? a.motivo
-    : a.estado === 'inferida' ? 'da convenção — ninguém olhou este caso'
-    : 'decidido aqui';
+    : a.estado === 'inferida' ? T('da convenção — ninguém olhou este caso')
+    : T('decidido aqui');
   linha.appendChild(origem);
 
   var opcoes = opcoesDoSitio(a, aoDecidir);
@@ -80,7 +80,7 @@ function cabecaDoSitio(a) {
   cabeca.appendChild(frag);
   var nota = document.createElement('span');
   nota.className = 'sitio-nota';
-  nota.textContent = 'o Sucuri não escolhe por você';
+  nota.textContent = T('o Sucuri não escolhe por você');
   cabeca.appendChild(nota);
   return cabeca;
 }
@@ -107,7 +107,7 @@ function opcoesDoSitio(a, aoDecidir) {
   if (a.estado === 'explicita' && !a.motivo) {
     var limpar = document.createElement('button');
     limpar.className = 'opcao';
-    limpar.textContent = 'voltar à convenção';
+    limpar.textContent = T('voltar à convenção');
     limpar.addEventListener('click', function (e) {
       e.stopPropagation();
       aoDecidir(a, null);

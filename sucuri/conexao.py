@@ -52,7 +52,10 @@ import sympy as sp
 VETOR = (1, 0)
 """O tipo do Schutz de um vetor: recebe uma 1-forma, nenhum vetor."""
 
-_RE_NABLA = re.compile(r"\\nabla(?![a-zA-Z])\s*_\s*")
+_RE_NABLA = re.compile(
+    r"(?:\\(?P<acento>tilde|hat|bar|widetilde|widehat|overline)\s*"
+    r"(?:\{\s*\\nabla\s*\}|\\nabla(?![a-zA-Z]))|\\nabla(?![a-zA-Z]))\s*_\s*")
+_ACENTOS = {"widetilde": "tilde", "widehat": "hat", "overline": "bar"}
 _RE_MACRO = re.compile(r"\\([a-zA-Z]+)")
 _RE_LETRA = re.compile(r"[A-Za-z]")
 _RE_NOME = re.compile(r"^\\?[A-Za-z]+$")
@@ -65,9 +68,13 @@ class DerivadaCovariante(sp.Function):
 
     Função de dois argumentos, e não produto: a ordem de aplicação fica na
     ESTRUTURA da árvore, que é onde o SymPy não pode reordená-la.
+
+    Um terceiro argumento, o acento, distingue outra conexão: ∇̃ = \tilde\nabla
+    é uma conexão qualquer, que só compartilha com ∇ as regras que valem para
+    toda conexão.
     """
 
-    nargs = 2
+    nargs = (2, 3)
 
     @property
     def direcao(self):
@@ -77,12 +84,22 @@ class DerivadaCovariante(sp.Function):
     def operando(self):
         return self.args[1]
 
+    @property
+    def acento(self):
+        return self.args[2].name if len(self.args) == 3 else None
+
+    def com(self, direcao, operando):
+        """A mesma conexão, noutros argumentos."""
+        return type(self)(direcao, operando, *self.args[2:])
+
     def _latex(self, printer):
         direcao = printer._print(self.direcao)
-        return rf"\nabla_{{{direcao}}} {_envolto(printer, self.operando)}"
+        nabla = rf"\{self.acento}{{\nabla}}" if self.acento else r"\nabla"
+        return rf"{nabla}_{{{direcao}}} {_envolto(printer, self.operando)}"
 
     def _sympystr(self, printer):
-        return (f"nabla_{_str_direcao(printer, self.direcao)}"
+        nabla = f"{self.acento}_nabla" if self.acento else "nabla"
+        return (f"{nabla}_{_str_direcao(printer, self.direcao)}"
                 f"({printer._print(self.operando)})")
 
 
@@ -430,8 +447,10 @@ class _Leitor:
         operando, fim, problema = self._operando(fim_direcao)
         if direcao is None:
             problema = "∇ com subscrito vazio"
+        acento = m.group("acento")
         return Ocorrencia("nabla", i, fim_direcao, fim,
-                          {"direcao": direcao, "operando": operando}, problema)
+                          {"direcao": direcao, "operando": operando,
+                           "acento": _ACENTOS.get(acento, acento)}, problema)
 
     def colchete(self, i):
         fim = _grupo(self.texto, i, "[", "]")
@@ -582,6 +601,10 @@ def construir(oc, ler, tensores):
                      "; se é índice, declare {nome} = índice. A tipografia é "
                      "a mesma, e escolher entre as duas seria adivinhar")
         operando = ler(p["operando"])
+        if p.get("acento"):
+            if not tem_tensor(operando, tensores):
+                return Direcional(direcao, operando)     # toda conexão: ∇̃_U f = U(f)
+            return DerivadaCovariante(direcao, operando, sp.Symbol(p["acento"]))
         if not tem_tensor(operando, tensores):
             # ∇_U f com f escalar é a derivada direcional U(f): um escalar, e
             # não um campo — o motor precisa saber a diferença.

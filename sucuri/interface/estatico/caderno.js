@@ -64,8 +64,8 @@ function criarCelula(fonte) {
   var apagar = document.createElement('button');
   apagar.type = 'button';
   apagar.className = 'apagar';
-  apagar.setAttribute('aria-label', 'apagar esta célula');
-  apagar.title = 'apagar esta célula';
+  apagar.setAttribute('aria-label', T('apagar esta célula'));
+  apagar.title = T('apagar esta célula');
   apagar.textContent = '×';
   apagar.addEventListener('click', function () { apagarCelula(div); });
   cabeca.appendChild(apagar);
@@ -139,7 +139,11 @@ var VERBOS = [
   'expandir', 'expand',
   'independentes', 'independent', 'em_componentes',
   'linearizar', 'linearize',
-  'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
+  'geodesicas', 'geodésicas', 'geodesics', 'volume', 'serie', 'série', 'orbitas', 'órbitas', 'elemento', 'em_carta', 'cartan', 'tetrada', 'tétrada', 'killing', 'colchete', 'nabla', 'laplaciano', 'restringir',
+  'cunha', 'exterior', 'estrela', 'interior', 'lie', 'iguais', 'ortonormal',
+  'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura',
+  'in_chart', 'in_components', 'orbits', 'element', 'tetrad', 'bracket',
+  'laplacian', 'restrict', 'wedge', 'star', 'equal', 'scalar'
 ];
 
 var RE_VERBO = new RegExp('^(\\s*)(' + VERBOS.join('|') + ')(\\s*\\()', 'i');
@@ -167,8 +171,8 @@ function criarInseridor() {
   div.className = 'inserir';
   var b = document.createElement('button');
   b.type = 'button';
-  b.setAttribute('aria-label', 'inserir célula aqui');
-  b.title = 'inserir célula aqui';
+  b.setAttribute('aria-label', T('inserir célula aqui'));
+  b.title = T('inserir célula aqui');
   b.textContent = '+';
   b.addEventListener('click', function () {
     var nova = criarCelula('');
@@ -206,9 +210,9 @@ function apagarCelula(celula) {
 
   if (!fonte.trim()) { return; }               // célula vazia não merece aviso
   avisar(tinhaNome
-    ? 'célula apagada — o que ela já tinha definido continua no motor até '
-      + '"Rodar tudo" ou "Reiniciar"'
-    : 'célula apagada', { rotulo: 'desfazer', fn: desfazer });
+    ? T('célula apagada — o que ela já tinha definido continua no motor até ')
+      + T('"Rodar tudo" ou "Reiniciar"')
+    : T('célula apagada'), { rotulo: T('desfazer'), fn: desfazer });
 }
 
 function acrescentar(fonte) {
@@ -271,8 +275,8 @@ function refazer() {
     .catch(function (e) {
       /* Mantém o que está na tela: leitura velha é melhor do que tela vazia,
        * desde que o aviso diga que ela é velha. */
-      avisar('não consegui refazer o caderno (' + e + '); o que está na tela '
-             + 'ainda é a leitura anterior');
+      avisar(T('não consegui refazer o caderno (') + e + T('); o que está na tela ')
+             + T('ainda é a leitura anterior'));
     });
 }
 
@@ -282,7 +286,7 @@ function avisar(texto, acao) {
   faixa.hidden = false;
   if (acao) {
     var b = document.createElement('button');
-    b.className = 'desfazer';
+    b.className = T('desfazer');
     b.textContent = acao.rotulo;
     b.addEventListener('click', function () {
       faixa.hidden = true;
@@ -365,8 +369,8 @@ function pintarMath(saida, d) {
     var val = document.createElement('p');
     val.className = 'valencia';
     val.textContent = d.indices_livres.length
-      ? 'índices livres: ' + d.indices_livres.join(', ')
-      : 'todos os índices contraídos';
+      ? T('índices livres: ') + d.indices_livres.join(', ')
+      : T('todos os índices contraídos');
     saida.appendChild(val);
   }
   (d.ambiguidades || []).forEach(function (a) {
@@ -375,8 +379,8 @@ function pintarMath(saida, d) {
   if (d.latex_semantico) {
     saida.appendChild(livro(d.latex_semantico));
     saida.appendChild(rodape([
-      ['Copiar LaTeX', d.latex_semantico],
-      ['Copiar código', d.codigo]
+      [T('Copiar LaTeX'), d.latex_semantico],
+      [T('Copiar código'), d.codigo]
     ]));
   }
 }
@@ -386,7 +390,7 @@ function pintarComando(saida, d) {
     var pre = document.createElement('pre');
     pre.textContent = d.codigo;
     saida.appendChild(pre);
-    saida.appendChild(rodape([['Copiar código', d.codigo]]));
+    saida.appendChild(rodape([[T('Copiar código'), d.codigo]]));
     return;
   }
   var escrito = d.latex_exato || d.latex;
@@ -394,7 +398,7 @@ function pintarComando(saida, d) {
   if (d.numerico) {
     var n = document.createElement('p');
     n.className = 'modulo-desc';
-    n.textContent = '≈ ' + d.numerico + '  (aproximação; o valor é o de cima)';
+    n.textContent = '≈ ' + d.numerico + T('  (aproximação; o valor é o de cima)');
     saida.appendChild(n);
   }
   if ((d.linhas || []).length) {
@@ -423,7 +427,7 @@ function pintarComando(saida, d) {
     caixa.appendChild(t);
     saida.appendChild(caixa);
     if (d.latex_tabela) {
-      saida.appendChild(rodape([['Copiar LaTeX', d.latex_tabela]]));
+      saida.appendChild(rodape([[T('Copiar LaTeX'), d.latex_tabela]]));
     }
   }
   /* O que a conta produziu, com nome: é o que permite continuar. Sem isso,
@@ -461,11 +465,11 @@ function pintarComando(saida, d) {
   if (barreira) {
     var aviso = document.createElement('div');
     aviso.className = 'nao-apresentavel';
-    aviso.textContent = 'proveniência: ' + d.proveniencia
-      + ' — não apresentável como conclusão';
+    aviso.textContent = T('proveniência: ') + d.proveniencia
+      + T(' — não apresentável como conclusão');
     saida.appendChild(aviso);
   }
-  if (escrito) { saida.appendChild(rodape([['Copiar LaTeX', escrito]])); }
+  if (escrito) { saida.appendChild(rodape([[T('Copiar LaTeX'), escrito]])); }
 }
 
 function livro(latex) {
@@ -509,10 +513,10 @@ function decidir(a, leitura) {
 
 /* Erro solto não pode terminar em silêncio. */
 window.addEventListener('error', function (e) {
-  avisar('algo quebrou na página: ' + (e.message || e.error));
+  avisar(T('algo quebrou na página: ') + (e.message || e.error));
 });
 window.addEventListener('unhandledrejection', function (e) {
-  avisar('um pedido não voltou: ' + (e.reason && e.reason.message || e.reason));
+  avisar(T('um pedido não voltou: ') + (e.reason && e.reason.message || e.reason));
 });
 
 /* ------------------------------------------------------------------ ligar */
@@ -584,7 +588,7 @@ function novo() {
   acrescentar('');
   $('arquivo').value = 'caderno.tex';
   pedir('/api/caderno/reiniciar', {}).then(function () {
-    avisar('caderno novo');
+    avisar(T('caderno novo'));
   });
 }
 
@@ -597,8 +601,8 @@ function reiniciar() {
       c._nome.textContent = '';
       c.className = 'celula';
     });
-    avisar('motor reiniciado: eq1, eq2 e as declarações não existem mais; '
-           + 'o que está escrito continua aí');
+    avisar(T('motor reiniciado: eq1, eq2 e as declarações não existem mais; ')
+           + T('o que está escrito continua aí'));
   });
 }
 
@@ -620,7 +624,7 @@ function abrir(arquivo) {
   leitor.onload = function () {
     var lido = desserializar(String(leitor.result));
     if (!lido.fontes.length) {
-      avisar('esse arquivo não tem célula nenhuma');
+      avisar(T('esse arquivo não tem célula nenhuma'));
       return;
     }
     anotacoes = lido.anotacoes;
@@ -636,6 +640,8 @@ function abrir(arquivo) {
 $('b-novo').addEventListener('click', novo);
 $('b-salvar').addEventListener('click', salvar);
 $('b-rodar').addEventListener('click', refazer);
+/* Trocar o idioma refaz o caderno: as saídas voltam no idioma novo. */
+window.addEventListener('sucuri-idioma', refazer);
 $('b-reiniciar').addEventListener('click', reiniciar);
 $('b-abrir').addEventListener('click', function () {
   $('entrada-arquivo').click();

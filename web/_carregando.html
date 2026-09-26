@@ -37,7 +37,9 @@
   <div class="marca">SUCURI</div>
   <div class="barra"><i id="barra"></i></div>
   <div class="passo" id="passo">iniciando…</div>
-  <p class="nota">O motor é o Python e o SymPy de verdade, compilados para o
+  <p class="nota" data-en="The engine is real Python and SymPy, compiled for the
+    browser. The first time it takes a few seconds to arrive; after that it is
+    cached. Nothing you write leaves this machine.">O motor é o Python e o SymPy de verdade, compilados para o
     navegador. Da primeira vez leva alguns segundos para chegar; depois fica em
     cache. Nada do que você escrever sai desta máquina.</p>
 </div>
@@ -47,7 +49,8 @@
 <script>
 /* Ganchos do carregamento, definidos antes do transporte subir. */
 function SUCURI_CARREGANDO(d) {
-  document.getElementById('passo').textContent = d.texto + '…';
+  document.getElementById('passo').textContent =
+    (window.T ? T(d.texto) : d.texto) + '…';
   document.getElementById('barra').style.width =
     Math.round(100 * d.etapa / d.total) + '%';
 }
@@ -56,17 +59,20 @@ function SUCURI_CARREGADO(versoes) {
   var v = (versoes || '').split('|');
   if (v.length === 2) {
     document.getElementById('motor').textContent =
-      'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] + '  ·  no navegador';
+      'SymPy ' + v[0] + '  ·  Sucuri ' + v[1] +
+      (window.T ? T('  ·  no navegador') : '  ·  no navegador');
   }
 }
 function SUCURI_REERGUENDO() {
   var tela = document.getElementById('carregando');
   tela.classList.remove('pronto');
-  document.getElementById('passo').textContent = 'recarregando o motor…';
+  document.getElementById('passo').textContent =
+    window.T ? T('recarregando o motor…') : 'recarregando o motor…';
   document.getElementById('barra').style.width = '0%';
 }
 function SUCURI_FALHOU(erro) {
-  document.getElementById('passo').textContent = 'não deu: ' + erro;
+  document.getElementById('passo').textContent =
+    (window.T ? T('não deu: ') : 'não deu: ') + erro;
   document.getElementById('barra').style.background = '#C0442F';
 }
 </script>
