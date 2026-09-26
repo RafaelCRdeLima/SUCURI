@@ -50,6 +50,8 @@ class Sessao:
         self.hodge = False          # \star declarado
         self.riemann = None         # (nome, convenção) do Riemann definido
         self.christoffel = None     # (nome, convenção) do Γ definido
+        self.determinante = None    # o nome declarado det(g)
+        self.metrica_constante = False  # g = métrica(cartesiana), ou (…, constante)
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
@@ -149,6 +151,10 @@ class Sessao:
             doc.riemann(*self.riemann)
         if self.christoffel:
             doc.christoffel(*self.christoffel)
+        if self.determinante:
+            doc.determinante(self.determinante)
+        if self.metrica_constante:
+            doc.metrica_constante()
         if self.variaveis:
             doc.variable(*self.variaveis)
 

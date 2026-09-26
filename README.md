@@ -310,6 +310,29 @@ e sua derivada é zero.
 Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
 `christoffel` das componentes numa carta continua o mesmo.
 
+### O determinante, e a carta cartesiana
+
+```
+g = métrica(-,+,+,+)
+g = det(g)                     g sem índice é det g_{μν}
+
+\nabla_\mu V^\mu = \frac{1}{\sqrt{-g}} \partial_\mu (\sqrt{-g} V^\mu)      expandir(eq, g) → True
+\Gamma^\beta{}_{\alpha\beta} = \partial_\alpha (\ln \sqrt{-g})              expandir(eq, g) → True
+```
+
+Os livros escrevem g, sem índice, para o determinante; o Sucuri só lê assim
+com `g = det(g)` declarado (o nome pode ser outro), e sem isso recusa: g sem
+índice, sendo g tensor, é ambíguo. Declarado, ∂_λ g = g g^{μν} ∂_λ g_{μν} — a
+fórmula de Jacobi — ao simplificar, e o sinal de g vem da assinatura: na
+lorentziana, g < 0 e |g| = −g.
+
+∂ não comuta com levantar índice: ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ), com ∂g. O
+Sucuri deriva cada tensor na valência **declarada** — `tensor(1,0)` é de cima,
+o índice de uma derivada é de baixo — e põe g explícito no resto. Numa carta
+cartesiana ∂g = 0 e a diferença some, mas a carta é declaração:
+`g = métrica(cartesiana)`, ou `g = métrica(-,+,+,+, constante)` para uma carta
+inercial. `métrica(euclidiana)` diz só a assinatura.
+
 A derivada **sem** índice, ∇_U X, é a seção seguinte.
 
 ### Simetria declarada

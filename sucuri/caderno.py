@@ -90,6 +90,7 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
                          r"|curvatura|kronecker|hodge"
+                         r"|det(?:erminante)?\s*\(\s*\\?[A-Za-z]\w*\s*\)"
                          r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
                          r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
@@ -436,7 +437,12 @@ class Caderno:
         limpo = _sem_barra(nome)
         fonte = fonte_metrica(nome, texto)
         pedacos = [p.strip() for p in texto.split(",")]
-        palavra = texto.strip().lower()
+        constante = False
+        if len(pedacos) > 1 and pedacos[-1].lower() in ("constante", "constant"):
+            constante, pedacos = True, pedacos[:-1]
+        palavra = ",".join(pedacos).strip().lower()
+        if palavra in ("cartesiana", "cartesian"):
+            constante, palavra = True, "euclidiana"
         if palavra in ("lorentziana", "lorentzian", "minkowski"):
             return Celula(None, fonte, "declaracao", {"erro": (
                 "lorentziana, mas qual? (−,+,+,+) e (+,−,−,−) são as duas "
@@ -454,6 +460,7 @@ class Caderno:
                 f"um espaço de dimensão {self.sessao.dimensao}")})
         self.sessao.dimensao = len(sinais)
         self.sessao.assinatura = sinais
+        self.sessao.metrica_constante = constante
         self.sessao.metrica_abstrata = limpo
         self.sessao.tensores.pop(limpo, None)
         escrita = ", ".join("−" if x < 0 else "+" for x in sinais)
@@ -463,7 +470,9 @@ class Caderno:
                            "assinatura": list(sinais)}],
             "texto": (f"{nome} é a métrica do espaço, de assinatura "
                       f"({escrita}) — {negativos} sinal(is) negativo(s), e é "
-                      f"isso que decide o sinal de εε")})
+                      f"isso que decide o sinal de εε" +
+                      ("; e constante — carta cartesiana, ou inercial: ∂g = 0"
+                       if constante else ""))})
 
     def _tensor(self, nome, formas, vetores, simetria=None):
         """`A = tensor(0, 2)` — o tipo do Schutz; `F = tensor(0, 2,
@@ -653,6 +662,24 @@ class Caderno:
             texto = (f"{', '.join(lista)}: Levi-Civita como "
                      f"{'tensor — sobe e desce com g' if qual == 'tensor' else 'símbolo — ±1 em toda carta, não sobe nem desce com g'}"
                      f"; {dim} índices, totalmente antissimétrico")
+        elif especie.startswith("det"):
+            import re as _re
+            de = _sem_barra(_re.search(r"\(\s*(\\?\w+)\s*\)", especie).group(1))
+            if len(lista) != 1 or de != self.sessao.metrica_abstrata:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "det(g) é o determinante da métrica declarada: "
+                            "declare antes g = métrica, e um nome só para "
+                            "o determinante"})
+            self.sessao.determinante = _sem_barra(lista[0])
+            h = lista[0]
+            sinal = ""
+            if self.sessao.assinatura:
+                negativos = sum(1 for x in self.sessao.assinatura if x < 0)
+                sinal = (f"; pela assinatura, {h} "
+                         f"{'< 0' if negativos % 2 else '> 0'}, e |{h}| = "
+                         f"{'−' if negativos % 2 else ''}{h}")
+            texto = (f"{h}, sem índice, é det {de}_{{μν}}: ∂_λ {h} = {h} "
+                     f"{de}^{{μν}} ∂_λ {de}_{{μν}} ao simplificar" + sinal)
         elif especie == "curvatura":
             for n in lista:
                 limpo = _sem_barra(n)

@@ -19,11 +19,16 @@ original, o da derivada e o do mudo, na convenção declarada. É a mesma regra
 que todo livro deduz de Leibniz e da ação em funções — e por isso vale para
 tensor de qualquer posto, e para ∇ dentro de ∇.
 
-## A métrica inversa
+## A métrica inversa e o determinante
 
 ∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ}: de g^{μα}g_{αν} = δ^μ_ν, e ∂δ = 0. Não é
-convenção nem hipótese — é o que "inversa" quer dizer —, e o simplificar a
-aplica sempre que há métrica declarada.
+convenção nem hipótese — é o que "inversa" quer dizer —, e se aplica ao
+derivar (derivadas._derivada_da_inversa).
+
+    g = det(g)             g sem índice é det g_{μν}
+
+∂_λ g = g g^{μν} ∂_λ g_{μν}, a fórmula de Jacobi, o simplificar aplica. O sinal
+de det g vem da assinatura, se declarada: (−1)^s, e |g| = −g na lorentziana.
 """
 
 from __future__ import annotations
@@ -223,40 +228,58 @@ def metrizar(expr, espaco):
     return _mapear(expr, trocar)
 
 
-# ------------------------------------------------------ a métrica inversa
+# ------------------------------------------------------- o determinante
 
-def inversa(expr, espaco):
-    """∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ}; e ∂ g^μ{}_ν = ∂δ = 0.
+def simbolo_det(espaco):
+    """det g como símbolo, com o sinal que a assinatura dá: (−1)^s. Sem
+    assinatura, só real e não nulo — e |g| fica |g|."""
+    nome = espaco.determinante
+    if espaco.assinatura:
+        s = sum(1 for x in espaco.assinatura if x < 0)
+        return sp.Symbol(nome, negative=True) if s % 2 else sp.Symbol(nome, positive=True)
+    return sp.Symbol(nome, real=True, nonzero=True)
 
-    Aplicada até não sobrar derivada da inversa: numa derivada segunda, a
-    primeira aplicação deixa ∂g^{-1} dentro, e a seguinte a desfaz.
-    """
-    if espaco is None or not espaco.metrica or not isinstance(expr, TensExpr):
+
+def _nos_coeficientes(expr, f):
+    if isinstance(expr, TensAdd):
+        return _soma([_nos_coeficientes(a, f) for a in expr.args])
+    if isinstance(expr, TensMul):
+        fatores = [a for a in expr.args if isinstance(a, TensExpr)]
+        return f(escalar_de(expr)) * functools.reduce(operator.mul, fatores)
+    if isinstance(expr, TensExpr):
         return expr
+    return f(sp.sympify(expr))
+
+
+def jacobi(expr, espaco):
+    """∂_λ det g = det g · g^{μν} ∂_λ g_{μν} — a fórmula de Jacobi, que é o
+    que "determinante" quer dizer. E o sinal de det g, se a assinatura o dá."""
+    from .derivadas import base_escalar
+    if espaco is None or not espaco.determinante or not espaco.metrica:
+        return expr
+    nome = espaco.determinante
+    h = simbolo_det(espaco)
+    com_sinal = lambda c: c.subs(sp.Symbol(nome), h)
+    expr = _nos_coeficientes(expr, com_sinal)
+    if not isinstance(expr, TensExpr):
+        return expr
+    base_det = base_escalar(nome, espaco)
     g = espaco.cabeca(espaco.metrica, 2)
 
     def trocar(t):
         operacoes, base = REGISTRO.get(t.head.name, ((), None))
-        if base != espaco.metrica or not operacoes or any(o != "d" for o in operacoes):
+        if base != base_det:
             return t
         indices = list(t.indices)
-        k = len(operacoes)
-        a, b = indices[k:]
-        if not a.is_up and not b.is_up:
-            return t
-        if a.is_up != b.is_up:
-            return sp.S.Zero            # g^μ{}_ν = δ: constante
-        p, q = _mudo(espaco), _mudo(espaco)
-        valor = -g(a, p) * g(b, q) * derivar(g(-p, -q), "d", indices[k - 1], espaco)
-        for op, i in zip(reversed(operacoes[:-1]), reversed(indices[:k - 1])):
+        a, b = _mudo(espaco), _mudo(espaco)
+        valor = h * g(a, b) * derivar(g(-a, -b), "d", indices[-1], espaco)
+        for op, i in zip(reversed(operacoes[:-1]), reversed(indices[:-1])):
             valor = derivar(valor, op, i, espaco)
         return valor
 
     for _ in range(4):
-        novo = _mapear(expr, trocar)
-        if novo == expr:
+        novo = _nos_coeficientes(_mapear(expr, trocar), com_sinal)
+        if novo == expr or not isinstance(novo, TensExpr):
             return novo
         expr = novo
-        if not isinstance(expr, TensExpr):
-            return expr
     return expr

@@ -262,6 +262,12 @@ def derivar(expr, operacao, indice, espaco):
         cabeca = expr.head
         indices = list(expr.indices)
         operacoes, base = REGISTRO.get(cabeca.name, ((), cabeca.name))
+        if (operacao == "d" and not operacoes and base == espaco.metrica
+                and any(i.is_up for i in indices)):
+            return _derivada_da_inversa(indices, indice, espaco)
+        baixado = _na_valencia_declarada(expr, operacoes, base, operacao, espaco)
+        if baixado is not None:
+            return derivar(baixado, operacao, indice, espaco)
         posto_base = len(indices) - len(operacoes)
         nova = cabeca_derivada(espaco, (operacao,) + operacoes, base, posto_base)
         try:
@@ -272,6 +278,77 @@ def derivar(expr, operacao, indice, espaco):
                 "posição — contrair é um em cima e um embaixo, como em "
                 "∂_μ A^μ") from None
     return _escalar(expr, operacao, indice, espaco)
+
+
+def _valencia_declarada(operacoes, base, espaco):
+    """Para cada slot, True se o declarado é em cima; None se não se sabe.
+
+    O índice de uma derivada é de baixo; os do tensor, os da declaração —
+    (M, N) é M em cima e N embaixo —, os de Γ e do Riemann, os da definição.
+    """
+    k = len(operacoes)
+    if base == espaco.metrica:
+        resto = [False, False]
+    elif espaco.christoffel and base == espaco.christoffel[0]:
+        conv = espaco.christoffel[1]
+        resto = [i == conv["cima"] for i in range(3)]
+    elif espaco.riemann and base == espaco.riemann[0]:
+        conv = espaco.riemann[1]
+        resto = [i == conv["rho"] for i in range(4)]
+    elif base in espaco._tipos and espaco.levi.get(base) != "simbolo":
+        formas, vetores = espaco._tipos[base]
+        resto = [True] * formas + [False] * vetores
+    elif k and base not in espaco._cabecas:
+        resto = []                          # derivada de escalar
+    else:
+        return None
+    return [False] * k + resto
+
+
+def _na_valencia_declarada(t, operacoes, base, operacao, espaco):
+    """T com os índices na posição declarada, e g explícito no resto.
+
+    ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ): a métrica que levanta está DENTRO da
+    derivada, e ∂g não é zero. Derivar ∂^μ φ empilhando ∂ na cabeça daria
+    g^{μν}∂_μ∂_ν φ — o termo de ∂g sumia calado. Com ∇ de Levi-Civita, ∇g = 0
+    e tanto faz; com ∂, ou com ∇ qualquer, não.
+    """
+    if not espaco.metrica or (operacao == "D" and espaco.conexao == "levi-civita"):
+        return None
+    if operacao == "d" and espaco.metrica_constante:
+        return None
+    declarada = _valencia_declarada(operacoes, base, espaco)
+    indices = list(t.indices)
+    if declarada is None or len(declarada) != len(indices):
+        return None
+    if all(i.is_up == cima for i, cima in zip(indices, declarada)):
+        return None
+    g = espaco.cabeca(espaco.metrica, 2)
+    novos, fatores = [], []
+    for i, cima in zip(indices, declarada):
+        if i.is_up == cima:
+            novos.append(i)
+            continue
+        s = _mudo(espaco)
+        novos.append(s if cima else -s)
+        fatores.append(g(i, -s) if cima else g(i, s))
+    return _produto(fatores) * t.head(*novos)
+
+
+def _derivada_da_inversa(indices, indice, espaco):
+    """∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ}, e ∂ g^μ{}_ν = ∂δ = 0.
+
+    Aplicada ao derivar, e não depois: ∂g, uma vez escrito, é o tensor
+    ∂_λ g_{αβ}, e os seus índices sobem e descem com g como os de qualquer
+    tensor. Se a regra fosse aplicada depois, ∂_λ g^α{}_α — que é g^{αβ}∂_λ
+    g_{αβ} com um índice levantado — seria lido como ∂δ, e zeraria calado.
+    """
+    a, b = indices
+    if a.is_up != b.is_up:
+        return sp.S.Zero
+    g = espaco.cabeca(espaco.metrica, 2)
+    p, q = _mudo(espaco), _mudo(espaco)
+    return -g(a, p) * g(b, q) * derivar(g(-p, -q), "d", indice, espaco)
 
 
 def _escalar(expr, operacao, indice, espaco):
@@ -285,9 +362,25 @@ def _escalar(expr, operacao, indice, espaco):
         parcial = sp.diff(expr, s)
         if parcial != 0:
             # ∇_μ φ = ∂_μ φ num escalar: a mesma cabeça.
-            cabeca = cabeca_derivada(espaco, ("d",), s.name, 0)
+            cabeca = cabeca_derivada(espaco, ("d",), base_escalar(s.name, espaco), 0)
             termos.append(parcial * cabeca(indice))
     return _soma(termos)
+
+
+def base_escalar(nome, espaco):
+    """O nome da base de ∂φ. g sem índice, com g a métrica, só é escalar se
+    declarado det g — e aí a cabeça tem outro nome, para não ser ∂g_{μν}."""
+    tensor = espaco is not None and (nome == espaco.metrica or nome in espaco._tipos)
+    if not tensor:
+        return nome
+    if nome == espaco.determinante:
+        return BASE_DET + nome
+    raise DerivadaMalEscrita(
+        f"'{nome}' sem índice, e {nome} é tensor: se é o determinante da "
+        f"métrica, declare {nome} = det({espaco.metrica or nome})")
+
+
+BASE_DET = "det_"
 
 
 # -------------------------------------------------------------- impressão
@@ -306,7 +399,7 @@ class Impressor(LatexPrinter):
         for op, i in zip(operacoes, indices):
             lado = "^" if i.is_up else "_"
             partes.append(f"{_MACRO[op]}{lado}{{{self._print(sp.Symbol(i.name))}}}")
-        corpo = self._print(sp.Symbol(base))
+        corpo = self._print(sp.Symbol(base.removeprefix(BASE_DET)))
         for i in indices[len(operacoes):]:
             lado = "^" if i.is_up else "_"
             corpo += f"{{}}{lado}{{{self._print(sp.Symbol(i.name))}}}"
@@ -350,6 +443,11 @@ def _nulo(t, espaco):
     # O SÍMBOLO de Levi-Civita vale ±1 em toda carta: ∂ dele é zero, com ou
     # sem conexão. O tensor não — é √|g| vezes o símbolo.
     if espaco.levi.get(base) == "simbolo" and operacoes[-1] == "d":
+        return True
+    # Métrica declarada constante — coordenadas cartesianas, ou inerciais:
+    # ∂g = 0, e o ε tensor, √|g| vezes o símbolo, também é constante.
+    if espaco.metrica_constante and operacoes[-1] == "d" and (
+            base == espaco.metrica or espaco.levi.get(base) == "tensor"):
         return True
     levi = espaco.conexao == "levi-civita"
     if operacoes[-1] == "D" and levi:

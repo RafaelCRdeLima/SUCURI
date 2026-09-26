@@ -719,6 +719,23 @@ class Document:
         self._espaco._cabecas.pop(limpo, None)
         return self
 
+    def metrica_constante(self):
+        """∂g = 0: a carta é cartesiana (ou inercial). É declaração sobre a
+        carta, e não sobre o espaço — em polares, a mesma métrica não é."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.metrica_constante = True
+        return self
+
+    def determinante(self, nome):
+        """det g, sem índice — que pode ter o nome da própria métrica."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.determinante = _limpo_indice(nome)
+        return self
+
     def levi_civita(self, nome, qual):
         """ε, com a escolha que os livros não fazem igual: 'tensor' ou 'simbolo'."""
         from .tensores import DIMENSAO_PADRAO, Espaco

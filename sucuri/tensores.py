@@ -79,6 +79,8 @@ class Espaco:
         self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.riemann = None         # (nome, convenção), se definido
         self.christoffel = None     # (nome, convenção), se definido
+        self.determinante = None    # o nome de det g, se declarado
+        self.metrica_constante = False  # ∂g = 0: carta cartesiana ou inercial
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
@@ -573,9 +575,10 @@ def simplificar(expr, espaco):
         if not isinstance(expr, TensExpr):
             return expr
     if espaco is not None and espaco.metrica:
-        # ∂ da métrica inversa em ∂ da métrica: é o que "inversa" quer dizer.
-        from .christoffel import inversa
-        expr = inversa(expr, espaco)
+        # ∂ de det g por ∂g — a fórmula de Jacobi. (A de ∂g^{-1} já se aplicou
+        # ao derivar: ver derivadas._derivada_da_inversa.)
+        from .christoffel import jacobi
+        expr = jacobi(expr, espaco)
         if not isinstance(expr, TensExpr):
             return expr
         expr = expr.expand()

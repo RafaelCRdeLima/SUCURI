@@ -138,10 +138,10 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>11</td><td>6</td><td>13</td></tr>
+  <tr><td>indicial (30)</td><td>14</td><td>6</td><td>10</td></tr>
   <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
   <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>44</strong></td><td><strong>14</strong></td><td><strong>27</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>47</strong></td><td><strong>14</strong></td><td><strong>24</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -154,8 +154,8 @@ exercício aparece na seção da sua notação.</p>
 tem um motor de prova. Dois exercícios enunciados em índices (9 e 11) só
 saem porque foram reescritos sem índice — que é, afinal, o que a notação
 abstrata existe para permitir. Na indicial, a passagem de ∇ para Γ e de Γ
-para ∂g já se faz (2, 4, 17, 65); o que falta é sobretudo o determinante da
-métrica e hipóteses escritas com índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
+para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64,
+66); o que falta é sobretudo hipóteses escritas com índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
 o que não sai pede base ortonormal, linearização, ou vetores dados por
 componentes.</p>
 
@@ -350,6 +350,61 @@ expandido pela métrica g.</p>
     Sucuri a lê assim.</p>
 </div>
 
+<h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962, lista 3, #7: ∇<sub>μ</sub>V<sup>μ</sup> = |g|<sup>−1/2</sup>∂<sub>μ</sub>(|g|<sup>1/2</sup>V<sup>μ</sup>).
+Evans, folha 3, Q10: Γ<sup>β</sup><sub>αβ</sub> = ∂<sub>α</sub> ln √−g.
+'t Hooft, (10.13)–(10.14): com F antissimétrico,
+∇<sub>μ</sub>F<sup>μν</sup> = (−g)<sup>−1/2</sup>∂<sub>μ</sub>(√−g F<sup>μν</sup>).
+Os livros escrevem g, sem índice, para det g<sub>μν</sub>; o Sucuri só o lê
+assim declarado — <code>g = det(g)</code> —, e sem a declaração recusa. Daí,
+∂g = g g<sup>μν</sup>∂g<sub>μν</sub> (a fórmula de Jacobi), e o sinal de g vem
+da assinatura.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">g = det(g)</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\mu V^\mu = \frac{1}{\sqrt{|g|}} \partial_\mu (\sqrt{|g|} V^\mu)</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">sem a assinatura, g é só real e não nulo, e |g| fica |g|
+    — o que basta. Com −g no lugar de √|g|, não sai.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">g = det(g)</code>
+  <code class="entrada">\nabla_\alpha V^\beta = \partial_\alpha V^\beta + \Gamma^\beta{}_{\alpha\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\Gamma^\beta{}_{\alpha\beta} = \partial_\alpha (\ln \sqrt{-g})</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">F = tensor(2, 0, antissimétrico)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">g = det(g)</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\mu F^{\mu\nu} = (-g)^{-1/2} \partial_\mu (\sqrt{-g} F^{\mu\nu})</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">o termo Γ<sup>ν</sup><sub>μλ</sub>F<sup>μλ</sup> some porque Γ
+    é simétrico e F não: sem <code>antissimétrico</code>, não sai.</p>
+</div>
+
 <h3>6. Derivadas segundas de uma função <span class="pill aviso">em parte</span></h3>
 
 <p>Tong, folha 2, Q2: com torção, 2∇<sub>[μ</sub>∇<sub>ν]</sub>f =
@@ -466,12 +521,17 @@ que nelas é ∂:</p>
 <div class="exemplo">
   <code class="entrada">i, j, k, l, m = índices(3)</code>
   <code class="entrada">\delta = kronecker</code>
-  <code class="entrada">g = métrica(euclidiana)</code>
+  <code class="entrada">g = métrica(cartesiana)</code>
   <code class="entrada">\epsilon = levi-civita(tensor)</code>
   <code class="entrada">u = tensor(1, 0)</code>
   <code class="entrada">u^j \partial_j u^i = \frac{1}{2} \partial^i (u_j u^j) - \epsilon^{ijk} u_j \epsilon_{klm} \partial^l u^m</code>
   <code class="entrada">simplificar(eq1)</code>
   <samp class="saida">True</samp>
+  <p class="explica">com ∂, e não ∇, a carta importa: u<sub>j</sub> = g<sub>jk</sub>u<sup>k</sup>
+    está dentro da derivada, e ∂g só é zero numa carta cartesiana. Com
+    <code>métrica(euclidiana)</code>, que diz só a assinatura, sobra um termo
+    de ∂g — e a resposta não é <code>True</code>. Antes, o Sucuri supunha
+    ∂g = 0 calado (seção VI).</p>
 </div>
 
 <h3>60. Decomposição de um tensor de posto 2 <span class="pill ok">resolve</span></h3>
@@ -1121,8 +1181,6 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <ul class="limites">
   <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
     mudança de coordenadas não é operação do Sucuri.</li>
-  <li><strong>5 (MIT PS3 #7).</strong> Divergências com √|g|: o determinante
-    da métrica não existe como objeto com índice.</li>
   <li><strong>10, 13, 14 (Tong 2 Q4, Q9; Tong 3 Q6).</strong> Bianchi
     contraída, Weyl, Killing de segunda ordem: pedem hipóteses em notação
     indicial (a segunda identidade de Bianchi, a equação de Killing), e
@@ -1135,8 +1193,6 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     tensorial.</li>
   <li><strong>62 (NYU HW6).</strong> Os campos de Killing ε<sub>ijk</sub>x<sup>j</sup>∂<sub>k</sub>
     pedem as coordenadas como funções, x<sup>j</sup> com ∂<sub>k</sub>x<sup>j</sup> = δ.</li>
-  <li><strong>64, 66 (Evans 3 Q10; 't Hooft).</strong> Γ<sup>β</sup><sub>αβ</sub> = ∂ ln√−g
-    e a divergência com √−g: o determinante, de novo.</li>
   <li><strong>68, 69 (Evans 3 Q6, Q4).</strong> Killing de segunda ordem, e
     |∇φ|² + R constante: hipóteses em índices.</li>
   <li><strong>71 (Evans 4 Q10).</strong> Riemann linearizado: não há expansão
@@ -1188,7 +1244,7 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <h2 id="achados">VI. O que os exercícios ensinaram</h2>
 
 <p>Um leitor de notação só se testa com notação escrita por outra gente,
-para outro fim. Resolver estas listas achou dez defeitos — cinco deles
+para outro fim. Resolver estas listas achou onze defeitos — seis deles
 silenciosos, o tipo de erro que este programa existe para não cometer. Todos
 corrigidos, e cada um com teste.</p>
 
@@ -1228,6 +1284,15 @@ corrigidos, e cada um com teste.</p>
     que fechavam lado a lado não fechavam juntas.</li>
   <li><strong>∂ do símbolo (exercício 51).</strong> O símbolo de Levi-Civita
     vale ±1 em toda carta, e ∂ dele é zero — o que o Sucuri não sabia.</li>
+  <li><strong>∂ que atravessava a métrica (exercícios 59 e 66).</strong>
+    ∂<sub>μ</sub>(∂<sup>μ</sup>φ) é ∂<sub>μ</sub>(g<sup>μν</sup>∂<sub>ν</sub>φ), e
+    a métrica está dentro da derivada; o Sucuri a punha fora, e o termo de ∂g
+    sumia calado. Numa carta cartesiana ∂g = 0 e a resposta coincidia — por
+    isso o 59 saía —, mas a carta não tinha sido dita. Agora ∂ deriva o
+    índice na posição declarada, com g explícito, e a carta cartesiana é
+    declaração: <code>g = métrica(cartesiana)</code>. O mesmo defeito lia
+    g<sup>αβ</sup>∂g<sub>αβ</sub>, com um índice levantado pela contração,
+    como ∂δ = 0.</li>
 </ul>
 
 <h2 id="fontes">Fontes</h2>
