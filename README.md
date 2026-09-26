@@ -2,136 +2,139 @@
 
 *SymPy Unified Compiler for Unambiguous Rendered Input.*
 
-Um ambiente simbólico em que a equação escrita pelo usuário **é** um objeto
-manipulável — e em que nenhuma ambiguidade é adivinhada.
+A symbolic environment in which the equation the user writes **is** a
+manipulable object — and in which no ambiguity is guessed.
 
-> **In English.** The interface has a PT/EN switch in the header (or open
-> `caderno.html?lang=en`). Commands have English names that work in either
-> language — `g = metric(…)`, `\mu, \nu = indices`, `prove(eq3, eq1)`,
-> `solve(eq1)`, `in_chart(eq2)` — and the engine's messages come back in
-> English. The manual is `manual-en.html`, and the exercise book is
-> `tutorial.html`, the English twin of `apostila.html`.
+*[Leia em português](README.pt-BR.md)*
 
-## O problema que ele existe para resolver
+> **Two languages.** The interface has a PT/EN switch in the header (or open
+> `caderno.html?lang=en`), and the engine's messages follow it. Commands have
+> English names that work in either language — `g = metric(…)`,
+> `\mu, \nu = indices`, `prove(eq3, eq1)`, `solve(eq1)`, `in_chart(eq2)`.
+> The manual is `manual-en.html` in English and `manual.html` in Portuguese;
+> the exercise book is `tutorial.html` in English and `apostila.html` in
+> Portuguese.
 
-LaTeX é tipografia, não semântica. Entregar LaTeX a um parser produz erro
-silencioso. Medido no SymPy, com equações reais:
+## The problem it exists to solve
 
-| escrito | entendido |
+LaTeX is typography, not semantics. Handing LaTeX to a parser produces silent
+errors. Measured in SymPy, with real equations:
+
+| written | understood |
 |---|---|
 | `\varphi'' + 3\varphi\varphi' + \varphi^3` | `\varphi^3 + (\varphi + 3\varphi\varphi)` |
-| `\frac{d^2 y}{dx^2}` | `d²·y / dx²`, símbolos `d` e `dx` |
-| `E^2 - f(m^2 + \ldots)` | `f` **aplicada**, não multiplicando |
-| `y'' = r y` | `y''` como **símbolo**, não derivada |
-| `\dot{x}` | **`Symbol('dot') × x`** — o ponto virou multiplicação |
+| `\frac{d^2 y}{dx^2}` | `d²·y / dx²`, symbols `d` and `dx` |
+| `E^2 - f(m^2 + \ldots)` | `f` **applied**, not multiplying |
+| `y'' = r y` | `y''` as a **symbol**, not a derivative |
+| `\dot{x}` | **`Symbol('dot') × x`** — the dot became a multiplication |
 
-Nenhum desses levanta exceção. O parser devolve expressão válida e errada.
+None of these raises an exception. The parser returns a valid, wrong expression.
 
-A última é a mais grave para o domínio: toda a mecânica hamiltoniana se escreve
-com pontos de Newton, e o parser os transforma em produto por um símbolo
-chamado "dot".
+The last one is the most serious for the domain: all of Hamiltonian mechanics is
+written with Newton's dots, and the parser turns them into a product by a symbol
+called "dot".
 
-A primeira linha é a equação de Riccati do caso 2 de Kovacic. A leitura errada
-dela já custou um teorema falso a um projeto real.
+The first row is the Riccati equation of Kovacic's case 2. Misreading it has
+already cost a real project a false theorem.
 
-## O princípio
+## The principle
 
-> **Ambiguidade não se adivinha: anota-se.**
+> **Ambiguity is not guessed: it is annotated.**
 
-O Sucuri varre a entrada, **localiza** os sítios ambíguos, e **recusa-se a
-produzir uma expressão** enquanto algum estiver sem anotação. Resolvido uma vez
-— por declaração do documento ou por escolha do usuário — o nó **guarda** a
-decisão, e a ambiguidade não volta.
+Sucuri scans the input, **locates** the ambiguous sites, and **refuses to
+produce an expression** while any of them is unannotated. Once resolved
+— by a declaration in the document or by the user's choice — the node **keeps**
+the decision, and the ambiguity does not come back.
 
-É o mesmo princípio da camada de proveniência do KORVIN, aplicado à entrada em
-vez do critério: nada conclui a partir do que não foi estabelecido.
+It is the same principle as KORVIN's provenance layer, applied to the input
+instead of the criterion: nothing concludes from what has not been established.
 
-## As três camadas
+## The three layers
 
 ```
-    vista (LaTeX / MathML)
+    view (LaTeX / MathML)
             ↕
-    árvore semântica  ←— a verdade; aqui moram as anotações
+    semantic tree  ←— the truth; the annotations live here
             ↕
-    SymPy (motor)  +  módulos de domínio (KORVIN, ODEROM, ...)
+    SymPy (engine)  +  domain modules (KORVIN, ODEROM, ...)
 ```
 
-A vista é descartável; a árvore, não. Editar a vista é editar a árvore.
+The view is disposable; the tree is not. Editing the view is editing the tree.
 
-## Os três estados de uma leitura
+## The three states of a reading
 
-A identidade visual reserva o âmbar para *ambiguidade resolvida por inferência*,
-e isso é um estado próprio no motor:
+The visual identity reserves amber for *ambiguity resolved by inference*,
+and that is a state of its own in the engine:
 
-| Estado | Como | Cor |
+| State | How | Color |
 |---|---|---|
-| **explícita** | anotação feita para aquele sítio | verde |
-| **inferida** | convenção do documento aplicada ali | **âmbar** |
-| **pendente** | sem leitura definida | bloqueia |
+| **explicit** | annotation made for that site | green |
+| **inferred** | document convention applied there | **amber** |
+| **pending** | no reading defined | blocks |
 
-A distinção não é cosmética. Uma convenção geral — "linha é derivada" — pode
-acertar nove sítios e errar o décimo, e quem a declarou não olhou cada um. O
-âmbar diz: funciona, mas ninguém conferiu este caso.
+The distinction is not cosmetic. A general convention — "prime is a derivative" —
+can get nine sites right and the tenth wrong, and whoever declared it did not look
+at each one. Amber says: it works, but nobody checked this case.
 
-## As tabelas
+## The tables
 
-`exemplos/tabelas/` põe o leitor contra tabelas reais, baixadas da Wikipédia —
-notação escrita por outra gente, para outro fim, que é o único teste honesto de
-um leitor de notação.
+`exemplos/tabelas/` pits the reader against real tables, downloaded from Wikipedia —
+notation written by other people, for another purpose, which is the only honest
+test of a notation reader.
 
 ```bash
 python exemplos/tabelas/derivadas.py
 python exemplos/tabelas/integrais.py
 ```
 
-Uma tabela de derivadas prova-se derivando; uma de integrais prova-se **ao
-contrário**, derivando o lado direito e comparando com o integrando — a
-constante de integração morre na derivada, que é o destino dela.
+A table of derivatives is proved by differentiating; a table of integrals is proved
+**in reverse**, differentiating the right-hand side and comparing it with the
+integrand — the constant of integration dies in the derivative, which is its fate.
 
-Entre as duas, seis erros silenciosos, dois do Sucuri e quatro do parser de
-LaTeX do SymPy, que não recusa o que não entende — ele degrada:
+Between the two, six silent errors, two from Sucuri and four from SymPy's LaTeX
+parser, which does not refuse what it does not understand — it degrades:
 
 ```python
->>> parse_latex("(f + g)' = a")          f + g          # some com a equação
->>> parse_latex(r"\coth x")               coth*x         # o nome vira símbolo
->>> parse_latex(r"\frac{1}{2}\sqrt\frac{\pi}{a}")   1/2   # some com o fator
->>> sp.diff(parse_latex(r"\log_a x"), x)  1/x            # falta o ln(a)
+>>> parse_latex("(f + g)' = a")          f + g          # drops the equation
+>>> parse_latex(r"\coth x")               coth*x         # the name becomes a symbol
+>>> parse_latex(r"\frac{1}{2}\sqrt\frac{\pi}{a}")   1/2   # drops the factor
+>>> sp.diff(parse_latex(r"\log_a x"), x)  1/x            # ln(a) is missing
 ```
 
-Ver `exemplos/tabelas/AUDITORIA-DERIVADAS.md` e `AUDITORIA-INTEGRAIS.md`.
+See `exemplos/tabelas/AUDIT-DERIVATIVES.md` and `AUDIT-INTEGRALS.md`.
 
-## Declarar dissolve a dúvida
+## Declaring dissolves the doubt
 
 ```
 u = u(t,x)
 \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
 ```
 
-Nenhuma pergunta, nenhum âmbar. E não porque alguém escolheu uma leitura: se
-`u` é função de `x` e `t`, então `\frac{\partial u}{\partial t}` **não pode**
-ser "fração literal dos símbolos ∂, u e ∂t" — não há símbolo `u` para
-multiplicar. O sítio para de ser pergunta porque parou de ter duas respostas.
+No question, no amber. And not because someone chose a reading: if
+`u` is a function of `x` and `t`, then `\frac{\partial u}{\partial t}` **cannot**
+be "a literal fraction of the symbols ∂, u and ∂t" — there is no symbol `u` to
+multiply. The site stops being a question because it stopped having two answers.
 
-É mais forte do que uma convenção, e por isso o sítio fica verde e não âmbar: o
-motivo é uma declaração, não uma regra aplicada sem olhar. A leitura diz de
-onde veio — *u foi declarada função de x, t*.
+It is stronger than a convention, and that is why the site turns green and not amber:
+the reason is a declaration, not a rule applied without looking. The reading says
+where it came from — *u was declared a function of x, t*.
 
-Parêntese, como em livro: *seja u = u(t,x)* é como se declara em prosa. Escrito
-com o mesmo nome dos dois lados é tautologia — ninguém escreve isso como
-equação —, e é essa repetição que distingue declaração de matemática: `u(t,x)`
-sozinho continua sendo uma expressão, e engoli-la seria decidir por quem
-escreveu. O colchete fica reservado a n-tupla.
+Parentheses, as in a book: *let u = u(t,x)* is how one declares in prose. Written
+with the same name on both sides it is a tautology — nobody writes that as an
+equation —, and it is this repetition that distinguishes a declaration from mathematics:
+`u(t,x)` alone is still an expression, and swallowing it would be deciding for whoever
+wrote it. Square brackets stay reserved for n-tuples.
 
-Vale na célula (daqui para baixo) ou no campo **Funções** (documento inteiro).
+It applies in the cell (from there down) or in the **Functions** field (whole document).
 
-## Mais de uma variável independente
+## More than one independent variable
 
-Para a **linha** não: `f'` com duas variáveis não diria em relação a qual, e é
-justamente essa ambiguidade que o programa recusa. Uma variável independente
-por documento não é limitação — é o que a notação da linha comporta.
+Not for the **prime**: `f'` with two variables would not say with respect to which,
+and that is exactly the ambiguity the program refuses. One independent variable
+per document is not a limitation — it is what prime notation can carry.
 
-Para a **derivada parcial**, sim, e sem declarar nada: cada sítio traz a sua
-variável escrita.
+For the **partial derivative**, yes, and without declaring anything: each site
+carries its own variable, written out.
 
 ```python
 doc.read(r"\partial_t u = k \partial_x u")
@@ -139,459 +142,470 @@ doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}")
 # Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), (x, 2)))
 ```
 
-O `u` é **um só**, função das duas. Antes cada sítio promovia o símbolo à sua
-própria função e o mesmo `u` saía como `u(t)` de um lado e `u(x)` do outro —
-duas funções com o mesmo nome na mesma equação, em silêncio.
+The `u` is **a single one**, a function of both. Before, each site promoted the symbol
+to its own function, and the same `u` came out as `u(t)` on one side and `u(x)` on
+the other — two functions with the same name in the same equation, silently.
 
-## Quando a notação e a declaração se contradizem
+## When the notation and the declaration contradict each other
 
-Escrever `∂` **declara que existem outras variáveis** — é isso que distingue ∂
-de d. Se a função foi declarada de uma variável só, as duas afirmações estão em
-desacordo, e nenhuma está errada sozinha: ou a declaração está incompleta, ou o
-∂ era d.
+Writing `∂` **declares that there are other variables** — that is what distinguishes ∂
+from d. If the function was declared as a function of a single variable, the two
+statements disagree, and neither is wrong on its own: either the declaration is
+incomplete, or the ∂ was a d.
 
 ```
 u = u(x)
 \frac{\partial u}{\partial x} = A u
-   →  d/dx u(x) = A(t) u(x)      a leitura está certa
-   →  nota: u foi declarada função de x só, e para função de uma variável
-      ∂u/∂x é du/dx — o mesmo objeto.
+   →  d/dx u(x) = A(t) u(x)      the reading is correct
+   →  note: u was declared a function of x only, and for a function of one
+      variable ∂u/∂x is du/dx — the same object.
 ```
 
-Não bloqueia, porque não é erro. Mas ficar calado faz quem escreveu `∂/∂x` ver
-`d/dx` e concluir que o programa errou.
+It does not block, because it is not an error. But staying silent makes whoever wrote
+`∂/∂x` see `d/dx` and conclude the program got it wrong.
 
-## Notação tensorial
-
-```
-\mu, \nu, \lambda = índices
-
-g_{\mu\nu} A^\mu A^\nu      →  g(-L₀,-L₁)·A(L₀)·A(L₁)   todos contraídos
-\Gamma^\lambda_{\mu\nu}     →  índices livres: λ, -μ, -ν
-A^\mu B_\mu + C^\nu        →  os termos da soma têm índices livres diferentes
-```
-
-O tipo é declarável na notação do Schutz — `(M, N)` recebe M 1-formas e N
-vetores, o que em índices dá M em cima e N embaixo:
+## Tensor notation
 
 ```
-g = tensor(0,2)     g_{\mu\nu\lambda}  →  'g' foi declarado do tipo (0,2),
-                                          que tem 2 índices, e aqui aparece com 3
-                    g^{\mu\nu}         →  nota: levantar índice exige a métrica,
-                                          e o Sucuri não a aplica sozinho
+\mu, \nu, \lambda = indices
+
+g_{\mu\nu} A^\mu A^\nu      →  g(-L₀,-L₁)·A(L₀)·A(L₁)   all contracted
+\Gamma^\lambda_{\mu\nu}     →  free indices: λ, -μ, -ν
+A^\mu B_\mu + C^\nu        →  the terms of the sum have different free indices
 ```
 
-A nota some quando alguém diz **qual** é a métrica — e aí o índice desce de
-fato (abaixo).
-
-Sem isso o posto vem do uso — e vem tarde, na segunda linha em vez da primeira.
-
-Quem decide que `\mu` é índice, e não expoente, é a **declaração** — não há
-potência possível com um índice no expoente. É a mesma mecânica de
-`u = u(t,x)`: declarar dissolve a dúvida em vez de escolher entre as leituras.
-
-A contração é do SymPy (`sympy.tensor.tensor`), e vem de graça junto com a
-consistência: somar termos de valências diferentes levanta erro. É erro de
-relatividade, não de digitação, e a olho ninguém vê.
-
-Dois cuidados no caminho. `subs` **não** serve para trocar um símbolo por um
-tensor: devolve um `Mul` comum, os índices repetidos ficam parados e a
-expressão sai errada sem reclamar — a árvore é reconstruída multiplicando de
-verdade. E a valência aparece na tela, porque é a primeira coisa que se confere
-num tensor.
-
-### Baixar e levantar índice
+The type is declarable in Schutz's notation — `(M, N)` takes M 1-forms and N
+vectors, which in indices means M up and N down:
 
 ```
-\mu, \nu = índices
-g = métrica              →  g é a métrica do espaço — do tipo (0,2)
+g = tensor(0,2)     g_{\mu\nu\lambda}  →  'g' was declared of type (0,2),
+                                          which has 2 indices, and appears here with 3
+                    g^{\mu\nu}         →  note: raising an index requires the metric,
+                                          and Sucuri does not apply it on its own
+```
+
+The note goes away once someone says **which** one is the metric — and then the
+index actually comes down (below).
+
+Without it, the rank comes from usage — and it comes late, on the second line
+instead of the first.
+
+What decides that `\mu` is an index, and not an exponent, is the **declaration** —
+no power is possible with an index in the exponent. It is the same mechanism as
+`u = u(t,x)`: declaring dissolves the doubt instead of choosing between readings.
+
+The contraction is SymPy's (`sympy.tensor.tensor`), and consistency comes free
+with it: adding terms of different valences raises an error. It is a relativity
+error, not a typo, and nobody sees it by eye.
+
+Two pitfalls along the way. `subs` does **not** work to replace a symbol with a
+tensor: it returns a plain `Mul`, the repeated indices sit still, and the
+expression comes out wrong without complaint — the tree is rebuilt by actually
+multiplying. And the valence is shown on screen, because it is the first thing
+one checks in a tensor.
+
+### Lowering and raising an index
+
+```
+\mu, \nu = indices
+g = metric               →  g is the metric of the space — of type (0,2)
 A = tensor(1,0)
 g_{\mu\nu} A^{\nu}         →  g(-μ,-L₀)·A(L₀)
-contrair(eq1)            →  A(-μ)            baixou
+contract(eq1)            →  A(-μ)            lowered
 ```
 
-`A_\mu ≡ g_{\mu\nu}A^\nu` é uma **convenção**, e vale só para a métrica.
-Nenhuma inspeção da expressão distingue a métrica de um (0,2) com nome
-infeliz — aplicá-la a um tensor qualquer daria expressão bem formada e falsa.
-Por isso é declaração, e por isso `contrair` sem `g = métrica` recusa em vez de
-chutar. Na outra direção vale o mesmo: `g^{\mu\nu}A_\nu` → `A^\mu`.
+`A_\mu ≡ g_{\mu\nu}A^\nu` is a **convention**, and it holds only for the metric.
+No inspection of the expression tells the metric apart from a (0,2) with an
+unlucky name — applying it to an arbitrary tensor would give a well-formed, false
+expression. That is why it is a declaration, and why `contract` without
+`g = metric` refuses instead of guessing. The same holds in the other direction:
+`g^{\mu\nu}A_\nu` → `A^\mu`.
 
-### Derivada com índice
+### Derivative with an index
 
 ```
-\partial_\mu A^\mu                →  d_A(-L_0, L_0)                 a divergência
+\partial_\mu A^\mu                →  d_A(-L_0, L_0)                 the divergence
 \partial_\mu (A^\nu B_\nu)         →  (∂_μ A^ν) B_ν + A^ν ∂_μ B_ν     Leibniz
-\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi   simplificar →  0
-\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi       simplificar →  não zera
-\partial_\lambda g_{\mu\nu} - \partial_\lambda g_{\nu\mu}    simplificar →  0
-g^{\mu\nu} \partial_\nu \phi      contrair    →  ∂^μ φ
+\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi   simplify →  0
+\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi       simplify →  not zero
+\partial_\lambda g_{\mu\nu} - \partial_\lambda g_{\nu\mu}    simplify →  0
+g^{\mu\nu} \partial_\nu \phi      contract    →  ∂^μ φ
 ```
 
-O parser do SymPy lê `\partial_\mu A` como o símbolo `partial_{mu}` vezes A. A
-derivada com índice não é um fator multiplicando outro, é um objeto próprio, e
-por isso a ponte a recusava. Agora ela existe como uma cabeça com o índice da
-derivada no primeiro slot: ∂_μ A^ν é `d_A(-mu, nu)`, ∇_μ é `D_A`, ∂_μ∂_ν é
-`dd_…`. Com isso, entra na contração, na soma e na canonicalização como
-qualquer tensor, e o LaTeX sai com a derivada na frente: `\partial_{\mu} A^{\nu}`.
+SymPy's parser reads `\partial_\mu A` as the symbol `partial_{mu}` times A. A
+derivative with an index is not one factor multiplying another, it is an object
+of its own, and so the bridge used to refuse it. Now it exists as a head with the
+derivative's index in the first slot: ∂_μ A^ν is `d_A(-mu, nu)`, ∇_μ is `D_A`,
+∂_μ∂_ν is `dd_…`. With that, it enters contraction, sums and canonicalization
+like any tensor, and the LaTeX comes out with the derivative in front:
+`\partial_{\mu} A^{\nu}`.
 
-O que vale sem hipótese:
+What holds with no hypothesis:
 
-- ∂ e ∇ são lineares e seguem Leibniz, também em escalar;
-- derivadas **parciais** comutam, então ∂_μ∂_ν é simétrica nesses slots;
-- num escalar, ∇_μ φ = ∂_μ φ, por definição, em qualquer conexão;
-- a simetria do tensor derivado se mantém: ∂_λ g_{μν} é simétrica em μν.
+- ∂ and ∇ are linear and obey Leibniz, on scalars too;
+- **partial** derivatives commute, so ∂_μ∂_ν is symmetric in those slots;
+- on a scalar, ∇_μ φ = ∂_μ φ, by definition, for any connection;
+- the symmetry of the differentiated tensor is kept: ∂_λ g_{μν} is symmetric in μν.
 
-O que **não** se supõe: que ∇ comute (é curvatura e torção), e que ∇g = 0 (é
-Levi-Civita, não uma conexão qualquer).
+What is **not** assumed: that ∇ commutes (that is curvature and torsion), and
+that ∇g = 0 (that is Levi-Civita, not an arbitrary connection).
 
-A derivada age no fator imediatamente à direita: `\partial_\mu A^\nu B_\nu` é
-(∂_μ A^ν)B_ν, como em qualquer livro. Um produto pede parênteses. Há três
-recusas:
+The derivative acts on the factor immediately to its right:
+`\partial_\mu A^\nu B_\nu` is (∂_μ A^ν)B_ν, as in any book. A product needs
+parentheses. There are three refusals:
 
-- `\partial_{\mu\nu}` sem dizer a ordem;
-- derivada sem operando;
-- índice repetido na mesma posição, como `\partial_\mu A_\mu`.
+- `\partial_{\mu\nu}` without saying the order;
+- a derivative with no operand;
+- a repeated index in the same position, as in `\partial_\mu A_\mu`.
 
-Sem índice declarado, `\partial_p H` continua sendo a derivada parcial em
-relação a p, como sempre foi.
+With no index declared, `\partial_p H` is still the partial derivative with
+respect to p, as it always was.
 
-### A conexão com índice, e a identidade de Ricci
+### The connection with indices, and the Ricci identity
 
 ```
 \nabla = levi-civita
-\nabla_\lambda g_{\mu\nu}                          simplificar →  0
-\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi     simplificar →  0      sem torção
+\nabla_\lambda g_{\mu\nu}                          simplify →  0
+\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi     simplify →  0      torsion-free
 
 \nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma     eq1
 R = riemann(eq1)
 
-∇_μ∇_ν W_ρ − ∇_ν∇_μ W_ρ                 simplificar →  −R^σ{}_{ρμν} W_σ
-∇_μ∇_ν T^α{}_β − ∇_ν∇_μ T^α{}_β         simplificar →  R^α{}_{σμν}T^σ{}_β − R^σ{}_{βμν}T^α{}_σ
+∇_μ∇_ν W_ρ − ∇_ν∇_μ W_ρ                 simplify →  −R^σ{}_{ρμν} W_σ
+∇_μ∇_ν T^α{}_β − ∇_ν∇_μ T^α{}_β         simplify →  R^α{}_{σμν}T^σ{}_β − R^σ{}_{βμν}T^α{}_σ
 ```
 
-`\nabla = levi-civita` diz o que distingue Levi-Civita de uma conexão
-qualquer: ∇g = 0 e torção nula. Com ela, ∇ε = 0 quando ε é o tensor. Sem a
-declaração, nada disso se supõe. ∂δ = ∇δ = 0 vale sempre.
+`\nabla = levi-civita` states what sets Levi-Civita apart from an arbitrary
+connection: ∇g = 0 and zero torsion. With it, ∇ε = 0 when ε is the tensor.
+Without the declaration, none of this is assumed. ∂δ = ∇δ = 0 always holds.
 
-O Riemann vem **da definição que você escreve**. Sinal e ordem dos slots variam
-de livro para livro: Carroll e MTW escrevem R^ρ{}_{σμν}, o Wald escreve
-R_{μνσ}{}^ρ, e há quem troque o sinal. `R = riemann(eq1)` lê a identidade e
-extrai dela o sinal e onde fica cada slot. Daí em diante, `simplificar` troca
-todo comutador ∇∇ por curvatura, com um termo por índice: o índice de cima com
-um sinal, o de baixo com o outro. Um ∇∇T sozinho sai como entrou. Com a
-definição de sinal trocado, sai a curvatura de sinal trocado. A definição tem
-de ter a forma do comutador num vetor, e senão recusa, dizendo qual é a forma.
+The Riemann comes **from the definition you write**. Sign and slot order vary
+from book to book: Carroll and MTW write R^ρ{}_{σμν}, Wald writes
+R_{μνσ}{}^ρ, and some flip the sign. `R = riemann(eq1)` reads the identity and
+extracts from it the sign and where each slot goes. From then on, `simplify`
+replaces every ∇∇ commutator with curvature, one term per index: the upper index
+with one sign, the lower with the other. A lone ∇∇T comes out as it went in. With
+the opposite-sign definition, the opposite-sign curvature comes out. The
+definition must have the form of the commutator on a vector; otherwise it
+refuses, saying what the form is.
 
-No caminho, dois silêncios, agora com teste:
+Along the way, two silent errors, now with tests:
 
-- `R^\rho{}_{\sigma\mu\nu} V^\sigma` era lido como `R(rho)`. O `{}` que todo
-  livro usa acabava o fator, e três índices e o V sumiam;
-- `\nabla_\mu T^\alpha{}_\beta` com β não declarado derivava `T**alpha` como
-  escalar. Agora recusa.
+- `R^\rho{}_{\sigma\mu\nu} V^\sigma` was read as `R(rho)`. The `{}` every book
+  uses ended the factor, and three indices and the V vanished;
+- `\nabla_\mu T^\alpha{}_\beta` with β undeclared differentiated `T**alpha` as
+  a scalar. Now it refuses.
 
-### ∇ aberto em Γ, e Γ em ∂g
+### ∇ expanded into Γ, and Γ into ∂g
 
 ```
 \nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda     eq1
 \Gamma = christoffel(eq1)
 
-\nabla_\rho T^\mu{}_\nu = …                 expandir(eq2)     →  ∂T + Γ T − Γ T
-\partial_\lambda g_{\mu\nu} = g Γ + g Γ     expandir(eq2, g)  →  True
+\nabla_\rho T^\mu{}_\nu = …                 expand(eq2)     →  ∂T + Γ T − Γ T
+\partial_\lambda g_{\mu\nu} = g Γ + g Γ     expand(eq2, g)  →  True
 g_{\mu\kappa} \partial_\lambda g^{\kappa\nu} = -g^{\kappa\nu} \partial_\lambda g_{\mu\kappa}
-                                            simplificar       →  True
+                                            simplify        →  True
 ```
 
-A ordem dos slots de Γ varia como a do Riemann: Carroll e MTW põem o índice da
-derivada primeiro, Reall por último. Com torção a diferença importa, e por isso
-`\Gamma = christoffel(eq1)` a lê da definição escrita, que tem de ser ∇ num
-vetor. `expandir(eq)` troca cada ∇ — também ∇ dentro de ∇ — por ∂ mais um Γ
-por índice: + no de cima, − no de baixo. `expandir(eq, g)` escreve ainda cada Γ
-(e cada ∂Γ) por ½g(∂g + ∂g − ∂g), o que só vale para Levi-Civita e só se faz
-com `\nabla = levi-civita` declarada; com ela, Γ é simétrico nos slots de
-baixo. Numa equação, a resposta é `True` quando os lados coincidem.
+The slot order of Γ varies like that of the Riemann: Carroll and MTW put the
+derivative index first, Reall last. With torsion the difference matters, and so
+`\Gamma = christoffel(eq1)` reads it from the written definition, which must be
+∇ on a vector. `expand(eq)` replaces each ∇ — also ∇ inside ∇ — with ∂ plus one
+Γ per index: + on the upper, − on the lower. `expand(eq, g)` further writes each
+Γ (and each ∂Γ) as ½g(∂g + ∂g − ∂g), which holds only for Levi-Civita and is only
+done with `\nabla = levi-civita` declared; with it, Γ is symmetric in the lower
+slots. For an equation, the answer is `True` when both sides agree.
 
-∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ} não é hipótese: é o que "inversa" quer
-dizer, e o `simplificar` a aplica sempre que há métrica declarada; g^μ{}_ν é δ,
-e sua derivada é zero.
+∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ} is not a hypothesis: it is what "inverse"
+means, and `simplify` applies it whenever a metric is declared; g^μ{}_ν is δ,
+and its derivative is zero.
 
-Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
-`christoffel` das componentes numa carta continua o mesmo.
+With the name on the left, `christoffel(eq1)` is a declaration; the
+`christoffel` verb for components in a chart stays the same.
 
-### O Ricci e o escalar, e a dimensão como letra
+### The Ricci and the scalar, and the dimension as a letter
 
 ```
-\mu, \nu, \rho, \sigma = índices(d)
+\mu, \nu, \rho, \sigma = indices(d)
 R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}              eq2
 R = ricci(eq2)
 
-R^\rho{}_{\mu\nu\rho}              simplificar →  −Ric(−μ, −ν)
-g^{\mu\nu} R_{\mu\nu}               simplificar →  R
-R_{\mu\nu} - R_{\nu\mu}              simplificar →  0
+R^\rho{}_{\mu\nu\rho}              simplify →  −Ric(−μ, −ν)
+g^{\mu\nu} R_{\mu\nu}               simplify →  R
+R_{\mu\nu} - R_{\nu\mu}              simplify →  0
 ```
 
-A mesma letra para o Riemann, o Ricci e o escalar, como nos livros: o posto
-distingue. Qual par o Ricci contrai (e com que sinal) varia de livro para
-livro, e `R = ricci(eq)` lê da definição escrita; o escalar é g^{μν}R_{μν}.
-Por dentro, R com dois índices é outra cabeça, `Ric` — um tensor tem um posto
-só. Ao simplificar, os dois viram contrações do Riemann, a canonização as
-compara, e o que coincide com a definição volta a ser R_{μν} ou R.
+The same letter for the Riemann, the Ricci and the scalar, as in the books: the
+rank tells them apart. Which pair the Ricci contracts (and with what sign) varies
+from book to book, and `R = ricci(eq)` reads it from the written definition; the
+scalar is g^{μν}R_{μν}. Internally, R with two indices is another head, `Ric` —
+a tensor has only one rank. On simplifying, both become contractions of the
+Riemann, canonicalization compares them, and whatever matches the definition
+goes back to being R_{μν} or R.
 
-Com `\nabla = levi-civita` e a métrica declaradas, o Riemann ganha as
-simetrias que são teorema: antissimetria no primeiro par e troca de pares. Daí
-sai a simetria do Ricci. Sem a métrica, só a antissimetria que vem do
-comutador. E a saída é escrita na ordem da convenção — o índice de cima no
-slot de ρ —, e não na que a canonização prefere.
+With `\nabla = levi-civita` and the metric declared, the Riemann gains the
+symmetries that are theorems: antisymmetry in the first pair and pair exchange.
+The symmetry of the Ricci follows. Without the metric, only the antisymmetry that
+comes from the commutator. And the output is written in the convention's order —
+the upper index in ρ's slot — not in the one canonicalization prefers.
 
-`índices(d)` deixa a dimensão como letra: g^μ{}_μ = d, e as contas "em d
-dimensões" saem com os coeficientes simplificados. O que pede um número —
-ε, a assinatura — recusa.
+`indices(d)` leaves the dimension as a letter: g^μ{}_μ = d, and computations "in
+d dimensions" come out with simplified coefficients. What needs a number —
+ε, the signature — refuses.
 
-### provar com índice
+### prove with indices
 
 ```
 \nabla_a T^{ab} = 0                          eq1
 \nabla_a X_b + \nabla_b X_a = 0              eq2
 \nabla_a (T^{ab} X_b) = 0                    eq3
-provar(eq3, eq1, eq2)
+prove(eq3, eq1, eq2)
     eq1 [b→L_1] × X(-L_1)
     1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)
 ```
 
-O mesmo verbo, e a mesma ideia de sem índice: a prova é uma combinação linear
-de relações tiradas das hipóteses, conferida de novo antes do ∎. De H = 0
-valem também H com os índices livres trocados ou contraídos (pela métrica), H
-vezes qualquer tensor, ∇H e ∇∇H. A busca casa cada termo do objetivo com um
-termo dessas formas, módulo as simetrias declaradas, e disso tira a troca de
-índices e o fator; os termos novos viram alvos, algumas rodadas, aprofundando
-em ∇ só quando precisa.
+The same verb, and the same idea as without indices: the proof is a linear
+combination of relations drawn from the hypotheses, checked again before the ∎.
+From H = 0 also follow H with its free indices swapped or contracted (by the
+metric), H times any tensor, ∇H and ∇∇H. The search matches each term of the goal
+with a term of these forms, modulo the declared symmetries, and from that gets the
+index relabeling and the factor; the new terms become targets, for a few rounds,
+going deeper in ∇ only when needed.
 
-Com `\nabla = levi-civita` e o Riemann declarados, R^ρ{}_{[σμν]} = 0 — a
-primeira identidade de Bianchi, teorema da torção nula — entra sem ser
-hipótese, e o certificado diz quando a usou. Saem assim a conservação de
-T^{ab}X_b com X de Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, a Bianchi contraída a
-partir da segunda identidade de Bianchi, e |∇φ|² + R constante quando
-∇∇φ = Ric (com a Bianchi contraída como lema). Cada uma tem um par falso que
-não sai.
+With `\nabla = levi-civita` and the Riemann declared, R^ρ{}_{[σμν]} = 0 — the
+first Bianchi identity, a theorem of zero torsion — enters without being a
+hypothesis, and the certificate says when it was used. This way one gets the
+conservation of T^{ab}X_b with X Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, the
+contracted Bianchi from the second Bianchi identity, and |∇φ|² + R constant when
+∇∇φ = Ric (with the contracted Bianchi as a lemma). Each has a false twin that
+does not go through.
 
-### Contar, conferir em componentes, linearizar
-
-```
-\mu, \nu, \rho, \sigma = índices(4)
-independentes(R)                     20      o Riemann, com Bianchi
-independentes(C, eq1, eq2)           10      o Weyl: e cíclico e sem traço
-em_componentes(eq3)                  True    em índices(2): R_{μν} = ½ R g_{μν}
-linearizar(eq2, h)                   True    g = η + εh, até ordem ε
-x = coordenadas                              ∂_j x^i = δ^i_j
-```
-
-`independentes(T, eq…)` conta: cada componente é uma incógnita, as simetrias
-declaradas as identificam ou zeram, e cada equação dada — linear em T, com g,
-δ, ε — vira uma equação por valor dos índices. Zero quer dizer que só o tensor
-nulo tem aquelas propriedades naquela dimensão: é assim que o Weyl some em
-d = 2, 3. A métrica da contagem é a euclidiana; a dimensão do espaço de
-soluções não depende da assinatura.
-
-`em_componentes(eq)` confere uma identidade com o tensor mais geral que as
-declarações permitem (o Riemann com as suas simetrias e Bianchi) e uma
-métrica simétrica qualquer, componente por componente. Se vale para o mais
-geral, vale para todos.
-
-`linearizar(eq, h)` abre ∇ em Γ e Γ em ∂g, troca g_{ab} por η_{ab} + εh_{ab},
-a inversa por η^{ab} − εh^{ab}, ∂g por ε∂h, e corta em ordem ε. O η fica com o
-nome da métrica, e é ele que sobe e desce os índices de h.
-
-`x = coordenadas`, sem argumentos, são as coordenadas com índice: ∂_j x^i =
-δ^i_j, e ∇x é recusado — x^i não é campo vetorial.
-
-### O determinante, e a carta cartesiana
+### Counting, checking in components, linearizing
 
 ```
-g = métrica(-,+,+,+)
-g = det(g)                     g sem índice é det g_{μν}
-
-\nabla_\mu V^\mu = \frac{1}{\sqrt{-g}} \partial_\mu (\sqrt{-g} V^\mu)      expandir(eq, g) → True
-\Gamma^\beta{}_{\alpha\beta} = \partial_\alpha (\ln \sqrt{-g})              expandir(eq, g) → True
+\mu, \nu, \rho, \sigma = indices(4)
+independent(R)                       20      the Riemann, with Bianchi
+independent(C, eq1, eq2)             10      the Weyl: also cyclic and traceless
+in_components(eq3)                   True    in indices(2): R_{μν} = ½ R g_{μν}
+linearize(eq2, h)                    True    g = η + εh, to order ε
+x = coordinates                              ∂_j x^i = δ^i_j
 ```
 
-Os livros escrevem g, sem índice, para o determinante; o Sucuri só lê assim
-com `g = det(g)` declarado (o nome pode ser outro), e sem isso recusa: g sem
-índice, sendo g tensor, é ambíguo. Declarado, ∂_λ g = g g^{μν} ∂_λ g_{μν} — a
-fórmula de Jacobi — ao simplificar, e o sinal de g vem da assinatura: na
-lorentziana, g < 0 e |g| = −g.
+`independent(T, eq…)` counts: each component is an unknown, the declared
+symmetries identify or zero them, and each given equation — linear in T, with g,
+δ, ε — becomes one equation per index value. Zero means only the zero tensor has
+those properties in that dimension: that is how the Weyl vanishes in d = 2, 3.
+The metric of the count is Euclidean; the dimension of the solution space does
+not depend on the signature.
 
-∂ não comuta com levantar índice: ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ), com ∂g. O
-Sucuri deriva cada tensor na valência **declarada** — `tensor(1,0)` é de cima,
-o índice de uma derivada é de baixo — e põe g explícito no resto. Numa carta
-cartesiana ∂g = 0 e a diferença some, mas a carta é declaração:
-`g = métrica(cartesiana)`, ou `g = métrica(-,+,+,+, constante)` para uma carta
-inercial. `métrica(euclidiana)` diz só a assinatura.
+`in_components(eq)` checks an identity with the most general tensor the
+declarations allow (the Riemann with its symmetries and Bianchi) and an arbitrary
+symmetric metric, component by component. If it holds for the most general, it
+holds for all.
 
-A derivada **sem** índice, ∇_U X, é a seção seguinte.
+`linearize(eq, h)` expands ∇ into Γ and Γ into ∂g, replaces g_{ab} with
+η_{ab} + εh_{ab}, the inverse with η^{ab} − εh^{ab}, ∂g with ε∂h, and truncates
+at order ε. η keeps the metric's name, and it is η that raises and lowers the
+indices of h.
 
-### Simetria declarada
+`x = coordinates`, with no arguments, are the coordinates with an index:
+∂_j x^i = δ^i_j, and ∇x is refused — x^i is not a vector field.
+
+### The determinant, and the Cartesian chart
 
 ```
-F = tensor(0, 2, antissimétrico)
-h = tensor(2, 0, simétrico)
+g = metric(-,+,+,+)
+g = det(g)                     g without indices is det g_{μν}
 
-F_{\mu\nu} + F_{\nu\mu}     simplificar →  0
-F_{\mu\nu} h^{\mu\nu}        simplificar →  0      antissimétrico com simétrico
-F_{\mu\nu} g^{\mu\nu}        simplificar →  0      o traço de um antissimétrico
-g_{\mu\nu} - g_{\nu\mu}      simplificar →  0      a métrica, sem dizer nada
-F(X, X) = 0                  provar      →  ∎      sem índice, sem hipótese
+\nabla_\mu V^\mu = \frac{1}{\sqrt{-g}} \partial_\mu (\sqrt{-g} V^\mu)      expand(eq, g) → True
+\Gamma^\beta{}_{\alpha\beta} = \partial_\alpha (\ln \sqrt{-g})              expand(eq, g) → True
 ```
 
-A simetria é dos slots, e a mesma declaração serve às duas notações. Com
-índice, ela alimenta a canonicalização de Butler-Portugal do SymPy, porque o
-`simplify` sozinho não a usa. Sem índice, o motor põe os slots em ordem
-canônica, com o sinal da permutação, e slot repetido num antissimétrico dá
-zero.
+Books write g, without indices, for the determinant; Sucuri only reads it that
+way with `g = det(g)` declared (the name can be another), and without it refuses:
+g without indices, g being a tensor, is ambiguous. Once declared,
+∂_λ g = g g^{μν} ∂_λ g_{μν} — Jacobi's formula — on simplifying, and the sign of
+g comes from the signature: in Lorentzian, g < 0 and |g| = −g.
 
-A métrica é simétrica sem precisar dizer. Antes desta declaração existir, nem
-`g_{\mu\nu} - g_{\nu\mu}` zerava. Não era errado, mas era incompleto.
+∂ does not commute with raising an index: ∂_μ(∂^μ φ) is ∂_μ(g^{μν}∂_ν φ), with
+∂g. Sucuri differentiates each tensor in its **declared** valence —
+`tensor(1,0)` is up, the index of a derivative is down — and puts g explicitly in
+the rest. In a Cartesian chart ∂g = 0 and the difference vanishes, but the chart
+is a declaration: `g = metric(cartesian)`, or `g = metric(-,+,+,+, constant)` for
+an inertial chart. `metric(euclidean)` states only the signature.
 
-Ler não simplifica: `F_{\mu\nu} + F_{\nu\mu}` aparece como foi escrito, com a
-valência, e o zero é resposta do verbo. Há duas recusas:
+The derivative **without** indices, ∇_U X, is the next section.
 
-- simetria num (1,1): trocar um índice de cima com um de baixo exige baixar
-  um deles, e isso é a métrica, não o tensor;
-- simetria num (1,0) ou (0,1): um slot só não tem com quem trocar.
+### Declared symmetry
 
-O Riemann tem declaração própria, porque suas simetrias não são totais:
+```
+F = tensor(0, 2, antisymmetric)
+h = tensor(2, 0, symmetric)
+
+F_{\mu\nu} + F_{\nu\mu}     simplify →  0
+F_{\mu\nu} h^{\mu\nu}        simplify →  0      antisymmetric with symmetric
+F_{\mu\nu} g^{\mu\nu}        simplify →  0      the trace of an antisymmetric
+g_{\mu\nu} - g_{\nu\mu}      simplify →  0      the metric, without saying anything
+F(X, X) = 0                  prove    →  ∎      no indices, no hypothesis
+```
+
+Symmetry belongs to the slots, and the same declaration serves both notations.
+With indices, it feeds SymPy's Butler-Portugal canonicalization, because
+`simplify` alone does not use it. Without indices, the engine puts the slots in
+canonical order, with the sign of the permutation, and a repeated slot in an
+antisymmetric tensor gives zero.
+
+The metric is symmetric without having to say so. Before this declaration
+existed, not even `g_{\mu\nu} - g_{\nu\mu}` vanished. It was not wrong, but it
+was incomplete.
+
+Reading does not simplify: `F_{\mu\nu} + F_{\nu\mu}` shows up as written, with
+its valence, and the zero is the verb's answer. There are two refusals:
+
+- symmetry on a (1,1): swapping an upper index with a lower one requires lowering
+  one of them, and that is the metric, not the tensor;
+- symmetry on a (1,0) or (0,1): a single slot has nothing to swap with.
+
+The Riemann has its own declaration, because its symmetries are not total:
 
 ```
 R = tensor(0, 4, riemann)
 
-R_{abcd} + R_{bacd}      simplificar →  0      antissimétrico no primeiro par
-R_{abcd} + R_{abdc}      simplificar →  0      e no segundo
-R_{abcd} - R_{cdab}      simplificar →  0      simétrico na troca dos pares
-R_{abcd} g^{ab}          simplificar →  0
-R(X,X,Y,Z) = 0           provar      →  ∎
+R_{abcd} + R_{bacd}      simplify →  0      antisymmetric in the first pair
+R_{abcd} + R_{abdc}      simplify →  0      and in the second
+R_{abcd} - R_{cdab}      simplify →  0      symmetric under pair exchange
+R_{abcd} g^{ab}          simplify →  0
+R(X,X,Y,Z) = 0           prove    →  ∎
 ```
 
-Essas simetrias do (0,4) são as mesmas em todos os livros. O que muda entre
-convenções é o sinal geral e a ordem dos índices no (1,3), e nada disso toca
-as trocas de slots. O (1,3), R^a_{bcd}, mistura índices de cima e de baixo e é
-recusado pela regra acima. A identidade cíclica, R_{a[bcd]} = 0, **não** entra:
-não é troca de slots, é teorema, e pede torção nula. Ela vem como hipótese.
+These symmetries of the (0,4) are the same in every book. What changes between
+conventions is the overall sign and the index order in the (1,3), and none of
+that touches slot exchanges. The (1,3), R^a_{bcd}, mixes upper and lower indices
+and is refused by the rule above. The cyclic identity, R_{a[bcd]} = 0, does
+**not** enter: it is not a slot exchange, it is a theorem, and it needs zero
+torsion. It comes as a hypothesis.
 
-Nome de várias letras é recusado na declaração: `Rm_{abcd}` em LaTeX é R vezes
-`m_{abcd}`, e é assim que o parser lê. Sem a recusa, a declaração existiria e
-nunca seria usada, sem aviso. Use uma letra ou um comando (`\Rm`).
+A multi-letter name is refused in the declaration: `Rm_{abcd}` in LaTeX is R
+times `m_{abcd}`, and that is how the parser reads it. Without the refusal, the
+declaration would exist and never be used, with no warning. Use one letter or a
+command (`\Rm`).
 
-E a notação de simetrização:
+And the symmetrization notation:
 
 ```
 T_{(\mu\nu)}                    →  ½ T_{μν} + ½ T_{νμ}
 T_{[\mu\nu]}                    →  ½ T_{μν} − ½ T_{νμ}
-S_{(\mu|\rho|\nu)}              →  ½ S_{μρν} + ½ S_{νρμ}       ρ fica de fora
-S_{[\mu\nu\rho]}                →  seis termos, com 1/6
-T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}   simplificar →  0
-F_{(\mu\nu)}                    simplificar →  0            F antissimétrico
+S_{(\mu|\rho|\nu)}              →  ½ S_{μρν} + ½ S_{νρμ}       ρ is left out
+S_{[\mu\nu\rho]}                →  six terms, with 1/6
+T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}   simplify →  0
+F_{(\mu\nu)}                    simplify →  0            F antisymmetric
 ```
 
-Antes disto, com os índices declarados, `T_{(\mu\nu)}` era lido como
-`T_{\mu\nu}`: os parênteses sumiam, e `T_{(\mu\nu)} - T_{\mu\nu}` dava **zero**,
-o que é falso para T sem simetria. Sem índices declarados, o parser do SymPy
-faz o mesmo, e agora é recusado.
+Before this, with the indices declared, `T_{(\mu\nu)}` was read as
+`T_{\mu\nu}`: the parentheses vanished, and `T_{(\mu\nu)} - T_{\mu\nu}` gave
+**zero**, which is false for T with no symmetry. With no indices declared,
+SymPy's parser does the same, and it is now refused.
 
-O fator é 1/n!, o de Wald, MTW e Carroll, e a leitura diz isso numa nota. São
-recusados:
+The factor is 1/n!, that of Wald, MTW and Carroll, and the reading says so in a
+note. Refused:
 
-- colchete que não fecha ou aninhado;
-- simetrização de um índice só;
-- barra fora de um colchete;
-- simetrização que junta índice de cima com de baixo (trocá-los pede a métrica).
+- a bracket that does not close, or is nested;
+- symmetrization of a single index;
+- a bar outside a bracket;
+- symmetrization mixing an upper index with a lower one (swapping them needs the
+  metric).
 
-### Kronecker e Levi-Civita
+### Kronecker and Levi-Civita
 
 ```
 \delta = kronecker
-\delta^\mu_\nu A^\nu        simplificar →  A^μ
-\delta^\mu_\mu             simplificar →  4          a dimensão
-\delta_{\mu\nu}            recusa: com a métrica, isso é g_{μν}
+\delta^\mu_\nu A^\nu        simplify →  A^μ
+\delta^\mu_\mu             simplify →  4          the dimension
+\delta_{\mu\nu}            refused: with the metric, this is g_{μν}
 
-\epsilon = levi-civita(tensor)      ou  levi-civita(símbolo)
-\epsilon_{\mu\nu\rho\sigma} S^{\mu\nu}    simplificar →  0     S simétrico
-g_{\alpha\mu}\epsilon^{\mu\nu\rho\sigma}      contrair →  ε_α^{νρσ}      só o tensor
+\epsilon = levi-civita(tensor)      or  levi-civita(symbol)
+\epsilon_{\mu\nu\rho\sigma} S^{\mu\nu}    simplify →  0     S symmetric
+g_{\alpha\mu}\epsilon^{\mu\nu\rho\sigma}      contract →  ε_α^{νρσ}      only the tensor
 ```
 
-δ é declaração porque `\delta` também é variação, número pequeno e índice.
-Ela exige um índice em cima e um embaixo. δ_{μν} fora do espaço euclidiano não
-é tensor; com a métrica, é g_{μν}.
+δ is a declaration because `\delta` is also a variation, a small number and an
+index. It requires one index up and one down. δ_{μν} outside Euclidean space is
+not a tensor; with the metric, it is g_{μν}.
 
-Levi-Civita não se declara sem escolher, porque os livros não fazem igual:
+Levi-Civita cannot be declared without choosing, because books do not agree:
 
-- o **símbolo** vale ±1 em toda carta, é uma densidade, e g não o move:
-  `contrair` recusa baixar-lhe um índice;
-- o **tensor** é √|g| vezes o símbolo, e sobe e desce com g.
+- the **symbol** is ±1 in every chart, is a density, and g does not move it:
+  `contract` refuses to lower one of its indices;
+- the **tensor** is √|g| times the symbol, and is raised and lowered with g.
 
-Nos dois casos, ε tem tantos índices quanto a dimensão e é totalmente
-antissimétrico.
+In both cases, ε has as many indices as the dimension and is totally
+antisymmetric.
 
-A contração de dois ε pede a assinatura, e a assinatura se declara com os
-sinais:
+Contracting two ε needs the signature, and the signature is declared with the
+signs:
 
 ```
-g = métrica(-,+,+,+)
-\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}     simplificar →  −24
-\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}     simplificar →  −6 δ^σ_α
-\epsilon^{ijk} \epsilon_{imn}                  simplificar →  δ^j_m δ^k_n − δ^j_n δ^k_m   (euclidiana, 3D)
+g = metric(-,+,+,+)
+\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}     simplify →  −24
+\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}     simplify →  −6 δ^σ_α
+\epsilon^{ijk} \epsilon_{imn}                  simplify →  δ^j_m δ^k_n − δ^j_n δ^k_m   (Euclidean, 3D)
 ```
 
-Em geral, ε^{a₁…a_k b…}ε_{a₁…a_k c…} = σ k! δ^{[b…}_{c…]}, com o sinal da
-permutação que alinha os índices contraídos. Para o **tensor**, σ = (−1)^s,
-onde s é o número de sinais negativos. Para o **símbolo**, σ = 1, porque ele
-vale ±1 nas duas posições e a métrica não entra. O tensor sem assinatura
-declarada fica como está, porque o sinal é desconhecido.
+In general, ε^{a₁…a_k b…}ε_{a₁…a_k c…} = σ k! δ^{[b…}_{c…]}, with the sign of
+the permutation that aligns the contracted indices. For the **tensor**,
+σ = (−1)^s, where s is the number of minus signs. For the **symbol**, σ = 1,
+because it is ±1 in both positions and the metric does not enter. The tensor with
+no declared signature stays as it is, because the sign is unknown.
 
-`lorentziana` sozinha é recusada: (−,+,+,+) e (+,−,−,−) estão as duas em uso,
-e εε e g(U,U) mudam de sinal entre elas. `riemanniana` e `euclidiana` dizem
-todos +. A assinatura tem de bater com a dimensão dos índices, e declarada
-antes deles, a fixa.
+`lorentzian` alone is refused: (−,+,+,+) and (+,−,−,−) are both in use, and εε
+and g(U,U) change sign between them. `riemannian` and `euclidean` mean all +. The
+signature must match the dimension of the indices, and, declared before them,
+fixes it.
 
-### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
+### The connection without indices: ∇_U X, [U,X] and R(U,X)W
 
 ```
 U = tensor(1,0)
 X = tensor(1,0)
-R = curvatura
+R = curvature
 
 \nabla_U \nabla_X U - \nabla_X \nabla_U U   →  nabla_U(nabla_X(U)) - nabla_X(nabla_U(U))
 [U, X] = 0                                 →  Eq([U, X], 0)
 \nabla_U \nabla_U X = R(U,X)U              →  Eq(nabla_U(nabla_U(X)), R(U, X)(U))
 ```
 
-Sem isso o parser lia `\nabla_U X` como `X*nabla_{U}`: um símbolo de nome
-esquisito multiplicando X. O produto comuta, então ∇_U∇_X e ∇_X∇_U saíam
-iguais, e a curvatura, que é justamente a diferença entre os dois, sumia sem
-aviso. `[U,X]` ele recusava, e `R(U,X)U` virava a pergunta "R aplicada, ou R
-vezes o parêntese?".
+Without this the parser read `\nabla_U X` as `X*nabla_{U}`: an oddly named
+symbol multiplying X. The product commutes, so ∇_U∇_X and ∇_X∇_U came out equal,
+and the curvature, which is precisely the difference between the two, vanished
+without warning. `[U,X]` it refused, and `R(U,X)U` became the question "R
+applied, or R times the parenthesis?".
 
-A tipografia não resolve nenhum dos três. `\nabla_U` e `\nabla_\mu` se
-escrevem igual, e no Wald a letra latina do subscrito **é** índice. `[a,b]`
-pode ser colchete de Lie, comutador, intervalo ou par. Quem decide é a
-declaração:
+Typography resolves none of the three. `\nabla_U` and `\nabla_\mu` are written
+the same way, and in Wald the Latin letter in the subscript **is** an index.
+`[a,b]` can be a Lie bracket, a commutator, an interval or a pair. The
+declaration decides:
 
-- **∇_U**: um vetor escrito sem índice só pode ser o objeto abstrato. Aí ∇_U
-  vira aplicação, com a ordem guardada na estrutura. A direção pode ser
-  composta, como em `\nabla_{[U,X]}` ou `\nabla_{U+X}`.
-- **[U,X]**: entre dois vetores declarados, só pode ser o colchete de Lie.
-  Colchete sem vírgula continua sendo agrupamento, como em `[x+1]^2`.
-- **R(U,X)W**: com `R = curvatura`, R não multiplica o parêntese. Exige dois
-  vetores e o vetor sobre o qual age, e `R(U,X)` sozinho recusa.
+- **∇_U**: a vector written without an index can only be the abstract object.
+  Then ∇_U becomes an application, with the order kept in the structure. The
+  direction can be composite, as in `\nabla_{[U,X]}` or `\nabla_{U+X}`.
+- **[U,X]**: between two declared vectors, it can only be the Lie bracket. A
+  bracket with no comma is still grouping, as in `[x+1]^2`.
+- **R(U,X)W**: with `R = curvature`, R does not multiply the parenthesis. It
+  requires two vectors and the vector it acts on, and `R(U,X)` alone refuses.
 
-Quando o que foi declarado não licencia a leitura, recusa. Isso vale para
-subscrito sem declaração, colchete de coisas que não são vetores e curvatura
-agindo sobre uma 1-forma. Também recusa onde não fica claro até onde o operador
-alcança (`\nabla_U X^\mu`, `\nabla_U X_1`): nesse caso use parênteses.
+When what was declared does not license the reading, it refuses. That holds for a
+subscript with no declaration, a bracket of things that are not vectors, and
+curvature acting on a 1-form. It also refuses where it is unclear how far the
+operator reaches (`\nabla_U X^\mu`, `\nabla_U X_1`): in that case use
+parentheses.
 
-`R = curvatura` declara o **papel** de R, e não a convenção. O sinal e a ordem
-dos argumentos variam de livro para livro. Para *ler* `R(U,X)W` isso não
-importa, porque é o mesmo objeto escrito. Para *calcular* importa, e aí a
-definição terá de ser declarada, não suposta.
+`R = curvature` declares the **role** of R, not the convention. The sign and the
+argument order vary from book to book. For *reading* `R(U,X)W` that does not
+matter, because it is the same written object. For *computing* it matters, and
+then the definition will have to be declared, not assumed.
 
-### Provar
+### Proving
 
 ```
 [U,X] = 0                                                     eq1
@@ -600,50 +614,52 @@ definição terá de ser declarada, não suposta.
 R(U,X)U = \nabla_U\nabla_X U - \nabla_X\nabla_U U - \nabla_{[U,X]} U   eq4
 \nabla_U \nabla_U X = R(U,X)U                                 eq5
 
-provar(eq5, eq1, eq2, eq3, eq4)
+prove(eq5, eq1, eq2, eq3, eq4)
     − eq4            R(U, X)(U) - nabla_U(nabla_X(U)) + … = 0
     nabla_U(eq1)     nabla_U([U, X]) = 0
     nabla_{eq1}(U)   nabla_{[U, X]}(U) = 0
     nabla_X(eq2)     nabla_X(nabla_U(U)) = 0
     nabla_U(eq3)     -nabla_U([U, X]) + nabla_U(nabla_U(X)) - nabla_U(nabla_X(U)) = 0
-    somando          ∇_U∇_U X = R(U,X)U  ∎
+    summing          ∇_U∇_U X = R(U,X)U  ∎
 ```
 
-Essa é a equação do desvio geodésico, deduzida sem índices. `nabla_U(eq3)` é
-eq3 com ∇_U aplicado aos dois lados, e `nabla_{eq1}(U)` é eq1 posta na direção
-de ∇ agindo sobre U.
+That is the geodesic deviation equation, derived without indices.
+`nabla_U(eq3)` is eq3 with ∇_U applied to both sides, and `nabla_{eq1}(U)` is eq1
+put in the direction of ∇ acting on U.
 
-Só entram as hipóteses **nomeadas** na chamada. Escrever uma equação no caderno
-não é afirmá-la, e uma prova que usasse a conta de rascunho da linha de cima não
-provaria nada.
+Only the hypotheses **named** in the call enter. Writing an equation in the
+notebook is not asserting it, and a proof that used the scratch computation on
+the line above would prove nothing.
 
-O motor sabe sozinho só o que vale para **qualquer** conexão, em qualquer livro:
+On its own, the engine knows only what holds for **any** connection, in any
+book:
 
-- ∇_U X é linear em U sobre funções, e no operando segue Leibniz:
+- ∇_U X is linear in U over functions, and obeys Leibniz in the operand:
   ∇_U(fX) = U(f)X + f∇_U X;
-- o colchete é antissimétrico e segue Leibniz:
+- the bracket is antisymmetric and obeys Leibniz:
   [fA, gB] = fg[A,B] + f A(g) B − g B(f) A;
-- U(f) segue a regra da cadeia;
-- R é tensor.
+- U(f) obeys the chain rule;
+- R is a tensor.
 
-Tudo o mais tem de vir das hipóteses: torção nula, que a curva é geodésica e,
-principalmente, a **definição** de R. Esse é o jeito de declarar a convenção de
-sinal em vez de supor uma. Com a definição de sinal oposto, a mesma chamada
-recusa `R(U,X)U` e prova `-R(U,X)U`. Também não passam as coisas que parecem
-verdade e não são: `\nabla_U(fX) = f\nabla_U X` (falta U(f)X),
-`[fU, X] = f[U,X]` e `R(U,X) = -R(X,U)` sem a definição.
+Everything else must come from the hypotheses: zero torsion, that the curve is a
+geodesic and, above all, the **definition** of R. That is how the sign convention
+is declared instead of assumed. With the opposite-sign definition, the same call
+refuses `R(U,X)U` and proves `-R(U,X)U`. Things that look true and are not also
+fail: `\nabla_U(fX) = f\nabla_U X` (U(f)X is missing), `[fU, X] = f[U,X]` and
+`R(U,X) = -R(X,U)` without the definition.
 
-Por baixo, tudo vira combinação linear. Das hipóteses saem outras relações,
-aplicando os contextos que aparecem no problema (∇_U □, ∇_□ U, [□, X], …). A
-prova é uma combinação dessas relações que dá o objetivo, e a soma é conferida
-de novo, do zero, antes do ∎.
+Underneath, everything becomes a linear combination. Other relations are derived
+from the hypotheses by applying the contexts that appear in the problem
+(∇_U □, ∇_□ U, [□, X], …). The proof is a combination of these relations that
+gives the goal, and the sum is checked again, from scratch, before the ∎.
 
-Quando o motor não acha, diz o que costuma faltar ("nenhuma hipótese fala de
-R(U, X)(U)") e diz também que não achar não é prova de que é falso.
+When the engine does not find one, it says what is usually missing ("No
+hypothesis mentions R(U, X)(U)") and also says that not finding a proof is not a
+proof that it is false.
 
-### Para todo
+### For all
 
-Uma definição vale para qualquer vetor, e é assim que se escreve:
+A definition holds for any vector, and this is how it is written:
 
 ```
 \forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W   eq1
@@ -652,68 +668,72 @@ Uma definição vale para qualquer vetor, e é assim que se escreve:
 \nabla_U U = 0                                                                           eq4
 \nabla_U \nabla_U X = R(U,X)U                                                            eq5
 
-provar(eq5, eq1, eq2, eq3, eq4)
+prove(eq5, eq1, eq2, eq3, eq4)
     − eq1[A→U, B→X, W→U]
     nabla_U(eq2[A→U, B→X])
     nabla_U(eq3) · nabla_{eq3}(U) · nabla_X(eq4)
-    somando          ∇_U∇_U X = R(U,X)U  ∎
+    summing          ∇_U∇_U X = R(U,X)U  ∎
 ```
 
-A definição de R e a torção nula são ditas **uma vez**. A prova instancia cada
-uma onde o problema pede, e diz em qual instância: `eq1[A→U, B→X, W→U]`.
+The definition of R and zero torsion are stated **once**. The proof instantiates
+each where the problem calls for it, and says which instance:
+`eq1[A→U, B→X, W→U]`.
 
-O separador depois da lista é obrigatório: dois-pontos, `\colon`, `\quad`,
-`\;` ou `\,`. Sem ele não se sabe onde a lista acaba: em
-`\forall W, R(U,X)W = …`, a vírgula separa nomes ou encerra a lista? As
-variáveis ligadas são vetores só **dentro** da equação e não vazam para as
-linhas de baixo.
+The separator after the list is mandatory: a colon, `\colon`, `\quad`, `\;` or
+`\,`. Without it there is no telling where the list ends: in
+`\forall W, R(U,X)W = …`, does the comma separate names or close the list? The
+bound variables are vectors only **inside** the equation and do not leak into the
+lines below.
 
-A instanciação não tenta todos os vetores. Ela casa cada termo da hipótese com
-os termos do problema: `R(A,B)W` com `R(U,X)U` dá A=U, B=X, W=U. É o que se faz
-ao ler uma definição, aplicá-la ao caso que se tem na mão. Com a definição
-geral saem coisas que antes não saíam: a antissimetria `R(A,B)W = -R(B,A)W` e,
-com a identidade de Jacobi como hipótese, a identidade de Bianchi algébrica.
+Instantiation does not try every vector. It matches each term of the hypothesis
+with the terms of the problem: `R(A,B)W` with `R(U,X)U` gives A=U, B=X, W=U. It is
+what one does when reading a definition: apply it to the case at hand. With the
+general definition, things come out that did not before: the antisymmetry
+`R(A,B)W = -R(B,A)W` and, with the Jacobi identity as a hypothesis, the algebraic
+Bianchi identity.
 
-### Funções escalares
+### Scalar functions
 
-Escalar é tudo o que não foi declarado tensor, e `\nabla_U f` com f escalar é
-a derivada direcional U(f):
+A scalar is anything not declared a tensor, and `\nabla_U f` with f a scalar is
+the directional derivative U(f):
 
 ```
-\nabla_U (f X) = \nabla_U f \, X + f \nabla_U X        provar: ∎, sem hipótese
-[f U, X] = f [U, X] - \nabla_X f \, U                 provar: ∎, sem hipótese
-\nabla_U (f X) = f \nabla_U X                         não passa: falta U(f)X
+\nabla_U (f X) = \nabla_U f \, X + f \nabla_U X        prove: ∎, no hypothesis
+[f U, X] = f [U, X] - \nabla_X f \, U                 prove: ∎, no hypothesis
+\nabla_U (f X) = f \nabla_U X                         fails: U(f)X is missing
 \nabla_U f = 0                                        eq1
-provar(eq_acima, eq1)                                 ∎ — o passo é "eq1·X"
+prove(eq_above, eq1)                                  ∎ — the step is "eq1·X"
 ```
 
-Todo símbolo que não é número é tratado como **função**, e não como constante.
-É o lado seguro: se c for constante, U(c) = 0 é só um caso particular, e a
-prova que precisar disso pede a hipótese. Nunca sai uma prova errada por tratar
-como constante o que variava.
+Every symbol that is not a number is treated as a **function**, not as a
+constant. That is the safe side: if c is constant, U(c) = 0 is just a special
+case, and a proof that needs it asks for the hypothesis. A wrong proof never
+comes out of treating as constant something that varied.
 
-Hipótese escalar, como `\nabla_U f = 0`, é relação como as outras: multiplicada
-por um vetor do problema (`eq1·X`), derivada numa direção (`U(eq1)`), ou por
-uma função (`f·eq1`). Cada uma dessas operações aparece como passo na tabela.
+A scalar hypothesis, like `\nabla_U f = 0`, is a relation like the others:
+multiplied by a vector of the problem (`eq1·X`), differentiated in a direction
+(`U(eq1)`), or by a function (`f·eq1`). Each of these operations shows up as a
+step in the table.
 
-**Não se divide por função.** A combinação que fecha a prova é só com números.
-Dividir por f seria concluir X = U de fX = fU, o que é falso onde f se anula. A
-eliminação é feita em coordenadas numéricas, uma por monômio, e multiplicar por
-função é contexto explícito (`f·eq1`). Uma versão anterior do motor dividia, e
-de fX = fU concluía X = U. Hoje há teste para isso.
+**No division by a function.** The combination that closes the proof uses
+numbers only. Dividing by f would conclude X = U from fX = fU, which is false
+where f vanishes. Elimination is done in numeric coordinates, one per monomial,
+and multiplying by a function is an explicit context (`f·eq1`). An earlier
+version of the engine did divide, and concluded X = U from fX = fU. Today there
+is a test for that.
 
-`U(f)` também se lê como derivada direcional, mas continua sendo pergunta: U
-aplicado a f, ou U vezes f? As duas leituras são bem tipadas, porque (a+b)U
-também é vetor. Escolhida a aplicação, o que sai é U(f), e não uma função
-chamada U. `\nabla_U f` não tem dúvida.
+`U(f)` is also read as a directional derivative, but it is still a question: U
+applied to f, or U times f? Both readings are well typed, because (a+b)U is also
+a vector. Once application is chosen, what comes out is U(f), not a function
+called U. `\nabla_U f` leaves no doubt.
 
-### A métrica
+### The metric
 
-Com `g = métrica`, `g(X,Y)` é o produto escalar. Com `\omega = tensor(0,1)`,
-`\omega(U)` é ω aplicado a U. Em geral, um (0,n) aplicado a n vetores é
-escalar: é a notação de slots do Schutz, a mesma das declarações. Não sobra
-dúvida: com vírgula, `g(X,Y)` não pode ser produto, e com o tipo declarado os
-slots são vetores.
+With `g = metric`, `g(X,Y)` is the inner product. With `\omega = tensor(0,1)`,
+`\omega(U)` is ω applied to U. In general, a (0,n) applied to n vectors is a
+scalar: it is Schutz's slot notation, the same as in the declarations. No doubt
+is left: with a comma, `g(X,Y)` cannot be a product, and with the type declared
+the slots are vectors.
 
 ```
 \forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C) + g(B, \nabla_A C)    eq1
@@ -721,280 +741,285 @@ slots são vetores.
 2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(X,Z) - \nabla_Z g(X,Y)
                     + g([X,Y],Z) - g([X,Z],Y) - g([Y,Z],X)                   eq3
 
-provar(eq3, eq1, eq2)
+prove(eq3, eq1, eq2)
     − eq1[A→X, B→Y, C→Z] · − eq1[A→Y, B→X, C→Z] · eq1[A→Z, B→X, C→Y]
     g(eq2[A→X, B→Y], Z) · − g(eq2[A→X, B→Z], Y) · − g(X, eq2[A→Y, B→Z])
-    somando   a fórmula de Koszul  ∎
+    summing   the Koszul formula  ∎
 ```
 
-A fórmula de Koszul sai das duas condições que fazem de ∇ a conexão de
-Levi-Civita: compatibilidade com a métrica e torção nula. Sem a torção nula,
-não sai. `g(eq2[…], Z)` é a torção nula posta no primeiro slot de g: uma
-relação entre vetores levada a uma relação entre escalares.
+The Koszul formula follows from the two conditions that make ∇ the Levi-Civita
+connection: compatibility with the metric and zero torsion. Without zero torsion,
+it does not follow. `g(eq2[…], Z)` is zero torsion put in the first slot of g: a
+relation between vectors carried into a relation between scalars.
 
-O motor sabe sozinho que g é linear sobre funções em cada slot e simétrica.
-Simetria não é convenção de livro, é o que se chama de métrica. Também sabe que
-o colchete age numa função como [A,B](f) = A(B(f)) − B(A(f)), porque essa é a
-definição do colchete. A compatibilidade não entra sozinha: ela é o que
-distingue Levi-Civita de uma conexão qualquer, e vem como hipótese, com ∀ ou
-sem.
+On its own, the engine knows that g is linear over functions in each slot and
+symmetric. Symmetry is not a book convention, it is what is meant by a metric. It
+also knows that the bracket acts on a function as [A,B](f) = A(B(f)) − B(A(f)),
+because that is the definition of the bracket. Compatibility does not enter on
+its own: it is what sets Levi-Civita apart from an arbitrary connection, and it
+comes as a hypothesis, with ∀ or without.
 
-Limites: só igualdades lineares, com coeficientes escalares. Provas que pedem
-uma ideia, e não só encadear hipóteses, não saem. Um exemplo é
-g(R(U,X)Y, W) = −g(Y, R(U,X)W): essa prova precisa introduzir h = g(Y,W) e
-comparar [U,X](h) com U(X(h)) − X(U(h)). Nada disso aparece no enunciado, e a
-busca só instancia o que aparece.
+Limits: only linear equalities, with scalar coefficients. Proofs that need an
+idea, and not just chaining hypotheses, do not come out. One example is
+g(R(U,X)Y, W) = −g(Y, R(U,X)W): that proof needs to introduce h = g(Y,W) and
+compare [U,X](h) with U(X(h)) − X(U(h)). None of that appears in the statement,
+and the search only instantiates what appears.
 
-### De uma notação à outra
+### From one notation to the other
 
 ```
 \nabla = levi-civita
 \nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma      eq1
 R = riemann(eq1)
-R = curvatura
+R = curvature
 \nabla_U \nabla_U X = R(U,X)U                                                    eq2
 indices(eq2)
     U^α(U^β ∇_α∇_β X^μ + ∇_α U^β ∇_β X^μ) = R^μ{}_{αβσ} U^α U^β X^σ
 ```
 
-A prova sem índice é mais curta e não depende de carta, e o livro de física
-escreve com índice. `indices(eq)` traduz com as regras que as declarações já
-fixaram:
+The index-free proof is shorter and chart-independent, and physics books write
+with indices. `indices(eq)` translates with the rules the declarations have
+already fixed:
 
-- X vira X^μ;
-- g(X,Y) vira g_{αβ}X^αY^β, e ω(X) vira ω_αX^α;
-- ∇_X Y vira X^α∇_αY^μ, com Leibniz nos produtos;
-- X(f) vira X^α∇_α f;
-- [X,Y] vira X^α∇_αY^μ − Y^α∇_αX^μ com Levi-Civita, e com ∂ sem ela;
-- R(U,X)W segue a convenção de `riemann(eq)`.
+- X becomes X^μ;
+- g(X,Y) becomes g_{αβ}X^αY^β, and ω(X) becomes ω_αX^α;
+- ∇_X Y becomes X^α∇_αY^μ, with Leibniz on products;
+- X(f) becomes X^α∇_α f;
+- [X,Y] becomes X^α∇_αY^μ − Y^α∇_αX^μ with Levi-Civita, and with ∂ without it;
+- R(U,X)W follows the convention of `riemann(eq)`.
 
-Para traduzir R(U,X)W, a mesma letra tem de estar declarada `curvatura` e
-`riemann(eq)`. A tradução supõe então R(U,X) = ∇_U∇_X − ∇_X∇_U − ∇_{[U,X]}, que
-é como a definição com índice a lê, e diz isso numa nota.
+To translate R(U,X)W, the same letter must be declared `curvature` and
+`riemann(eq)`. The translation then assumes R(U,X) = ∇_U∇_X − ∇_X∇_U − ∇_{[U,X]},
+which is how the index definition reads it, and says so in a note.
 
-As duas notações falam da mesma coisa, e isso se confere. A compatibilidade
-com a métrica, escrita sem índice e traduzida, dá `True` em `simplificar` com
-Levi-Civita, porque ∇g = 0. Uma versão errada mostra a diferença que sobra.
+Both notations talk about the same thing, and that can be checked. Compatibility
+with the metric, written without indices and translated, gives `True` in
+`simplify` with Levi-Civita, because ∇g = 0. A wrong version shows the leftover
+difference.
 
-A saída não é canonicalizada. Com a métrica, a forma canônica sobe e desce os
-mudos, e R^μ{}_{σαβ}U^σ sairia R^{μαβσ}U_σ, que é igual e ilegível. Ainda não:
-a volta, de índice para sem índice; e ∀ e formas não se traduzem.
+The output is not canonicalized. With the metric, the canonical form raises and
+lowers the dummies, and R^μ{}_{σαβ}U^σ would come out as R^{μαβσ}U_σ, which is
+equal and unreadable. Not yet: the way back, from indices to index-free; and ∀
+and forms are not translated.
 
-### Formas diferenciais
+### Differential forms
 
 ```
-\omega = forma(1)
-\eta = forma(2)                       uma 2-forma: um (0,2) antissimétrico
+\omega = form(1)
+\eta = form(2)                        a 2-form: an antisymmetric (0,2)
 
-\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta   provar → ∎
-\mathcal{L}_X \mathrm{d}\omega = \mathrm{d} \mathcal{L}_X \omega                          provar → ∎
-\iota_Y \iota_X \eta = \eta(X, Y)                                                 provar → ∎
-\eta \wedge \eta = 0                                        não passa: grau par
-\mathrm{d}(f \omega) = \mathrm{d} f \wedge \omega              só com \mathrm{d}\omega = 0
+\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta   prove → ∎
+\mathcal{L}_X \mathrm{d}\omega = \mathrm{d} \mathcal{L}_X \omega                          prove → ∎
+\iota_Y \iota_X \eta = \eta(X, Y)                                                 prove → ∎
+\eta \wedge \eta = 0                                        fails: even degree
+\mathrm{d}(f \omega) = \mathrm{d} f \wedge \omega              only with \mathrm{d}\omega = 0
 ```
 
-d, ∧, ι_X e ℒ_X sem índice. Na leitura decide a declaração, como no resto:
+d, ∧, ι_X and ℒ_X without indices. In reading, the declaration decides, as
+everywhere else:
 
-- `\mathrm{d}` é sempre o operador;
-- `d` sozinho só é operador quando age numa forma declarada, e `df` com f
-  função continua d vezes f;
-- `\wedge` (ou `\land`) só vale entre formas;
-- `\iota_X` e `\mathcal{L}_X` pedem X declarado vetor.
+- `\mathrm{d}` is always the operator;
+- a bare `d` is an operator only when it acts on a declared form, and `df` with f
+  a function is still d times f;
+- `\wedge` (or `\land`) is only valid between forms;
+- `\iota_X` and `\mathcal{L}_X` require X declared a vector.
 
-Uma p-forma é um (0,p) antissimétrico, e por isso ω(X,Y) se lê com o que já
-existia.
+A p-form is an antisymmetric (0,p), and so ω(X,Y) is read with what already
+existed.
 
-O motor sabe sem hipótese o que vale em qualquer livro: d² = 0, o Leibniz
-graduado, α∧β = (−1)^{pq}β∧α, ι_X como antiderivação (com ι_X df = X(f) e
-ι_Xι_X = 0), e a fórmula de Cartan, ℒ_X = ι_X d + d ι_X, que é teorema e não
-convenção.
+With no hypothesis, the engine knows what holds in any book: d² = 0, graded
+Leibniz, α∧β = (−1)^{pq}β∧α, ι_X as an antiderivation (with ι_X df = X(f) and
+ι_Xι_X = 0), and Cartan's formula, ℒ_X = ι_X d + d ι_X, which is a theorem and
+not a convention.
 
-A convenção que entra é ι_Y ι_X ω = ω(X,Y), a do determinante (Lee, Spivak).
-A fórmula dω(X,Y) = X(ω(Y)) − Y(ω(X)) − ω([X,Y]) muda de fator com a
-normalização, e por isso vem como hipótese, com ∀:
+The convention that enters is ι_Y ι_X ω = ω(X,Y), the determinant one (Lee,
+Spivak). The formula dω(X,Y) = X(ω(Y)) − Y(ω(X)) − ω([X,Y]) changes by a factor
+with the normalization, and so it comes as a hypothesis, with ∀:
 
 ```
 \forall A, B: \iota_B \iota_A \mathrm{d}\omega = \nabla_A (\omega(B)) - \nabla_B (\omega(A)) - \omega([A,B])   eq1
 \mathrm{d}\omega = 0                                                                              eq2
 \nabla_X (\omega(Y)) - \nabla_Y (\omega(X)) = \omega([X,Y])                                         eq3
-provar(eq3, eq1, eq2)      − eq1[A→X, B→Y] · iota_Y(iota_X(eq2))   ∎
+prove(eq3, eq1, eq2)       − eq1[A→X, B→Y] · iota_Y(iota_X(eq2))   ∎
 ```
 
-As relações entre formas entram no mesmo motor das outras. Os termos são
-monômios exteriores, o escalar é o monômio vazio, e os contextos são d □,
-ι_X □, α ∧ □ e f·□.
+Relations between forms enter the same engine as the others. The terms are
+exterior monomials, the scalar is the empty monomial, and the contexts are d □,
+ι_X □, α ∧ □ and f·□.
 
-O dual de Hodge se declara depois da assinatura, que é de onde saem a
-dimensão n e os sinais negativos s:
+The Hodge dual is declared after the signature, which is where the dimension n
+and the number of minus signs s come from:
 
 ```
-g = métrica(-,+,+,+)
+g = metric(-,+,+,+)
 \star = hodge
-\star \star F = -F                                    provar → ∎      2-forma, Lorentz
-\star \star \omega = \omega                              provar → ∎      1-forma, Lorentz
-\omega \wedge \star \alpha = \alpha \wedge \star \omega          provar → ∎
-\omega \wedge \star \omega \wedge \alpha = 0                  provar → ∎      grau 5 > 4
+\star \star F = -F                                    prove → ∎      2-form, Lorentz
+\star \star \omega = \omega                              prove → ∎      1-form, Lorentz
+\omega \wedge \star \alpha = \alpha \wedge \star \omega          prove → ∎
+\omega \wedge \star \omega \wedge \alpha = 0                  prove → ∎      degree 5 > 4
 ```
 
-⋆ é linear sobre funções, ⋆⋆ = (−1)^{p(n−p)+s} numa p-forma, α∧⋆β = β∧⋆α,
-e todo produto de grau maior que n é zero. A orientação não precisa ser dita:
-trocá-la troca o sinal de ⋆, mas não o de ⋆⋆ nem a simetria de α∧⋆β. O
-codiferencial δ = ±⋆d⋆ tem sinal de convenção, e por isso não entra pronto;
-escreve-se ⋆d⋆. Sem `\star = hodge`, `\star` não é operador.
+⋆ is linear over functions, ⋆⋆ = (−1)^{p(n−p)+s} on a p-form, α∧⋆β = β∧⋆α, and
+every product of degree greater than n is zero. The orientation need not be
+stated: flipping it flips the sign of ⋆, but not that of ⋆⋆ nor the symmetry of
+α∧⋆β. The codifferential δ = ±⋆d⋆ has a convention-dependent sign, and so it is
+not built in; write ⋆d⋆. Without `\star = hodge`, `\star` is not an operator.
 
-### Sem declarar, a recusa continua
+### Without declaring, the refusal stays
 
-Índice não é expoente, e o parser do SymPy não sabe a diferença. Medido:
+An index is not an exponent, and SymPy's parser does not know the difference.
+Measured:
 
 ```python
->>> parse_latex(r"A^\mu")                    A**mu          # A elevado a μ
->>> parse_latex(r"x^2_i")                    x**2           # o índice some
+>>> parse_latex(r"A^\mu")                    A**mu          # A raised to μ
+>>> parse_latex(r"x^2_i")                    x**2           # the index vanishes
 >>> parse_latex(r"\Gamma^\lambda_{\mu\nu}")  Gamma**lambda_{mu*nu}
 >>> parse_latex(r"g_{\mu\nu}")               Symbol('g_{mu*nu}')
 ```
 
-Nada disso levanta erro e nada disso tem símbolo estranho na saída: são
-expressões **bem formadas e falsas**, a pior classe de erro que este programa
-conhece. Quem escrevesse relatividade receberia contas silenciosamente erradas.
+None of this raises an error and none of it has a strange symbol in the output:
+they are **well-formed, false** expressions, the worst class of error this
+program knows. Anyone writing relativity would get silently wrong computations.
 
-Sem índice declarado, o Sucuri recusa onde o parser **comprovadamente perde** — sobrescrito antes de
-subscrito, e o mesmo índice grego em cima e embaixo (soma de Einstein) — e
-**avisa** onde há só suspeita, porque `A^\mu` é mesmo "A elevado a μ" em algum
-texto, e distinguir índice de expoente pela tipografia é impossível.
+With no index declared, Sucuri refuses where the parser **demonstrably loses** — superscript before
+subscript, and the same Greek index up and down (Einstein summation) — and
+**warns** where there is only suspicion, because `A^\mu` really is "A raised to
+μ" in some text, and telling an index from an exponent by typography is
+impossible.
 
-Declarar o índice é o que abre a ponte, e aí nada disso acontece.
+Declaring the index is what opens the bridge, and then none of this happens.
 
-## Métrica e curvatura
+## Metric and curvature
 
-A notação de índice diz a **estrutura** — que `g` tem dois índices embaixo, que
-`A^\mu B_\mu` está contraído. Não diz o que `g` **vale**. Christoffel, Ricci e
-Riemann precisam do outro lado: componentes numa carta.
-
-```
-x = coordenadas(t, r, \theta, \phi)
-g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)
-
-christoffel(g)  →  13 componentes não nulas, Γ^t_{tr} = M/((-2M + r)r), …
-ricci(g)        →  0 componentes não nulas
-escalar(g)      →  0
-```
-
-Schwarzschild inteiro, e o Ricci nulo que é o teste de sanidade de toda
-relatividade. O cálculo é do `sympy.diffgeom`; o que faltava era **dizer a
-métrica em LaTeX**.
-
-Ela vai pela **diagonal** porque o parser não lê matriz — `\begin{pmatrix}`
-levanta `LaTeXParsingError` — e porque é assim que os livros dão quase todas as
-métricas que importam. Kerr, com o seu termo cruzado *dt dφ*, ainda não entra.
-
-Com componentes declaradas, `avaliar` leva a notação até os números:
+Index notation states the **structure**: that `g` has two lower indices, that
+`A^\mu B_\mu` is contracted. It does not state what `g` **is**. Christoffel, Ricci and
+Riemann need the other side: components in a chart.
 
 ```
-\mu, \nu = índices
+x = coordinates(t, r, \theta, \phi)
+g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)
+
+christoffel(g)  →  13 nonzero components, Γ^t_{tr} = M/((-2M + r)r), …
+ricci(g)        →  0 nonzero components
+scalar(g)       →  0
+```
+
+All of Schwarzschild, and the vanishing Ricci that is the sanity check of all
+relativity. The computation is `sympy.diffgeom`'s; what was missing was **stating the
+metric in LaTeX**.
+
+It goes in as a **diagonal** because the parser does not read matrices (`\begin{pmatrix}`
+raises `LaTeXParsingError`) and because that is how textbooks give almost every
+metric that matters. Kerr, with its cross term *dt dφ*, does not fit yet.
+
+With declared components, `evaluate` carries the notation all the way to numbers:
+
+```
+\mu, \nu = indices
 A = tensor(1,0)
 g_{\mu\nu} A^{\nu}
-avaliar(eq1)   →  A_{t} = A__t·(2M − r)/r        A_{\theta} = A__theta·r²
+evaluate(eq1)  →  A_{t} = A__t·(2M − r)/r        A_{\theta} = A__theta·r²
                   A_{r} = A__r·r/(r − 2M)        A_{\phi}   = A__phi·r²sin²θ
 ```
 
-As componentes de A ninguém declarou, então entram como nomes — na convenção
-do SymPy (`A__t` é A^t), que reentra no programa sem virar potência. O que sai
-da tela tem de poder voltar para dentro sem mudar de sentido.
+Nobody declared the components of A, so they come in as names, in SymPy's
+convention (`A__t` is A^t), which goes back into the program without turning into a power.
+What comes off the screen must be able to go back in without changing meaning.
 
-`contrair` dá a **estrutura**; `avaliar` dá o **valor**. São dois pedidos
-diferentes, e o programa os mantém separados.
+`contract` gives the **structure**; `evaluate` gives the **value**. They are two different
+requests, and the program keeps them apart.
 
-O rótulo impresso é um alvo de verbo — `avaliar(A_{t})`, `latex(\Gamma^{r}_{tt})` —
-sem exigir as chaves duplas que a tela usa, porque chave é tipografia do TeX e
-não identidade do objeto. A componente **nula** não entra na tabela, e mesmo
-assim responde quando perguntada: esconder os 55 zeros é mostrar as nove que
-importam, mas dizer "não conheço" a quem pede um deles seria mentir.
+The printed label is a valid verb target (`evaluate(A_{t})`, `latex(\Gamma^{r}_{tt})`)
+without requiring the double braces the screen uses, because braces are TeX typography,
+not the object's identity. A **zero** component is left out of the table, and still
+answers when asked: hiding the 55 zeros is showing the nine that
+matter, but saying "I don't know it" to someone who asks for one of them would be lying.
 
-O que volta são **componentes**, e não o tensor: trocar de carta troca todas
-elas. Por isso a resposta diz sempre em que coordenadas está. O que não muda
-são as afirmações invariantes — Ricci nulo é Ricci nulo em qualquer carta.
+What comes back are **components**, not the tensor: changing chart changes all of
+them. That is why the answer always says which coordinates it is in. What does not change
+are the invariant statements: vanishing Ricci is vanishing Ricci in any chart.
 
-## O que NÃO é ambiguidade
+## What is NOT ambiguity
 
-`∂` está reservado à derivada parcial. Ninguém nunca escreveu
-`\frac{\partial u}{\partial t}` querendo uma fração dos símbolos ∂, u e ∂t —
-e com `d` a dúvida é real, porque `d` é uma letra que as pessoas usam para
-distância, diâmetro, o que for.
+`∂` is reserved for the partial derivative. Nobody has ever written
+`\frac{\partial u}{\partial t}` meaning a fraction of the symbols ∂, u and ∂t;
+with `d` the doubt is real, because `d` is a letter people use for
+distance, diameter, whatever.
 
-O sítio continua sendo **localizado**, porque o parser do SymPy degrada
-`\frac{\partial^2 u}{\partial x^2}` em `(partial**2*u)/(partial*x**2)` e
-alguém tem de reescrever. O que muda é que ninguém precisa ser consultado.
+The site is still **located**, because SymPy's parser degrades
+`\frac{\partial^2 u}{\partial x^2}` into `(partial**2*u)/(partial*x**2)` and
+someone has to rewrite it. What changes is that nobody needs to be asked.
 
-Pergunta que não é pergunta gasta a credibilidade das que são — o mesmo motivo
-pelo qual `\arctan(` não abre um sítio de justaposição.
+A question that is not a question spends the credibility of the ones that are; the same reason
+`\arctan(` does not open a juxtaposition site.
 
-## Ambiguidades reconhecidas
+## Recognized ambiguities
 
-| Tipo | Exemplo | Leituras |
+| Kind | Example | Readings |
 |---|---|---|
-| linha | `y''` | derivada / símbolo |
-| Leibniz | `\frac{d^2y}{dx^2}` | derivada / fração de símbolos |
-| justaposição | `f(x+1)` | aplicação / produto |
-| **Newton** | `\ddot{q}` | derivada temporal / decoração |
-| **parcial** | `\partial_p H` | derivada parcial / produto |
+| prime | `y''` | derivative / symbol |
+| Leibniz | `\frac{d^2y}{dx^2}` | derivative / fraction of symbols |
+| juxtaposition | `f(x+1)` | application / product |
+| **Newton** | `\ddot{q}` | time derivative / decoration |
+| **partial** | `\partial_p H` | partial derivative / product |
 
-Tempo e variável independente são declarados **em separado**: em mecânica a
-variável da linha raramente é a do ponto, e tratá-las como uma só produziria
-equação errada em silêncio.
+Time and the independent variable are declared **separately**: in mechanics the
+prime's variable is rarely the dot's, and treating them as one would silently produce
+a wrong equation.
 
 ```python
 doc = (sucuri.Document(independent_variable='x', time_variable='t')
        .primes_are_derivatives().dots_are_time_derivatives())
-doc.read(r"\dot{q} = \partial_p H")     # d/dt de um lado, d/dp do outro
+doc.read(r"\dot{q} = \partial_p H")     # d/dt on one side, d/dp on the other
 ```
 
-## A árvore reconhecida
+## The recognized tree
 
-`Expression.tree()` devolve o que o programa entendeu, nó a nó — e cada nó
-nascido de um sítio ambíguo carrega **como** aquele sítio foi resolvido. É isso
-que permite à interface pintar de âmbar o que veio de convenção:
+`Expression.tree()` returns what the program understood, node by node, and every node
+born from an ambiguous site carries **how** that site was resolved. That is
+what lets the interface paint in amber whatever came from a convention:
 
 ```
-igualdade
-  soma
-    potência
-      função varphi aplicada a (x)
-    produto
-      número 3
-      derivada de ordem 1 de varphi em x  [inferida]  <- conferir
-      função varphi aplicada a (x)
-    derivada de ordem 2 de varphi em x    [inferida]  <- conferir
-  soma
-    produto
-      número 2
-      derivada de ordem 1 de r em x       [explícita]
+equality
+  sum
+    power
+      function varphi applied to (x)
+    product
+      number 3
+      derivative of order 1 of varphi with respect to x  [inferred]  <- check
+      function varphi applied to (x)
+    derivative of order 2 of varphi with respect to x    [inferred]  <- check
+  sum
+    product
+      number 2
+      derivative of order 1 of r with respect to x       [explicit]
     ...
 ```
 
-Derivadas são folhas na leitura do usuário: quem lê quer ver "derivada segunda
-de φ", não a árvore interna dela. `to_dict()` serializa para a interface web.
+Derivatives are leaves in the user's reading: the reader wants to see "second derivative
+of φ", not its internal tree. `to_dict()` serializes for the web interface.
 
-## Uso
+## Usage
 
 ```python
 import sucuri
 
-# caso avulso — sem convenção, RECUSA, que é o padrão
+# one-off case: no convention, it REFUSES, which is the default
 e = sucuri.parse(r"\varphi'' + \varphi' = r")
-e.questions()                      # as perguntas, em vez de um palpite
+e.questions()                      # the questions, instead of a guess
 
-# com a convenção declarada
+# with the convention declared
 e = sucuri.parse(r"\varphi'' + \varphi' = r",
                  independent_variable='x', primes='derivative')
 e.to_sympy()
-e.inferred                         # o que veio de convenção e pede conferência
+e.inferred                         # what came from a convention and asks to be checked
 
-# trabalho continuado: o documento guarda convenções e anotações
+# ongoing work: the document keeps conventions and annotations
 doc = sucuri.Document(independent_variable='x').primes_are_derivatives()
 doc.annotate("prime", "r", "derivative", order=1)
 doc.read(...).tree()
 
-# a conexão sem índice, e uma prova
+# the index-free connection, and a proof
 from sucuri.prova import provar, linhas
 doc = sucuri.Document()
 doc.tensor("U", 1, 0); doc.tensor("X", 1, 0); doc.curvature("R")
@@ -1005,218 +1030,218 @@ p = provar(eq(r"\nabla_U \nabla_U X = R(U,X)U"),
             "tor": eq(r"\forall A, B: \nabla_A B - \nabla_B A = [A,B]"),
             "fam": eq(r"[U,X] = 0"), "geo": eq(r"\nabla_U U = 0")},
            {"U": (1, 0), "X": (1, 0)})
-linhas(p)                          # os passos: rótulo, texto, LaTeX
+linhas(p)                          # the steps: label, text, LaTeX
 ```
 
-O exemplo inteiro, com as recusas e a troca de sinal, está em
-`exemplos/desvio_geodesico.py` — e a suíte o executa.
+The full example, with the refusals and the sign flip, is in
+`exemplos/desvio_geodesico.py`, and the suite runs it.
 
 ## Manual
 
-`sucuri/interface/estatico/manual.html` — servido em `/manual.html` nas duas
-versões. Escrever, declarar, os verbos, o que cada resposta quer dizer, e o que
-o programa ainda não faz.
+`sucuri/interface/estatico/manual-en.html`, served at `/manual-en.html` in both
+versions. Writing, declaring, the verbs, what each answer means, and what
+the program does not do yet.
 
-**Os exemplos do manual são executados pela suíte a cada mudança.** Manual cujos
-exemplos ninguém roda apodrece, e apodrece em silêncio — que é a forma que este
-projeto persegue. Quando um exemplo quebra, ou o programa mudou e o manual
-mente, ou o manual está certo e o programa regrediu; os dois merecem parar a
-suíte.
+**The manual's examples are run by the suite on every change.** A manual whose
+examples nobody runs rots, and rots silently, which is the failure mode this
+project hunts. When an example breaks, either the program changed and the manual
+lies, or the manual is right and the program regressed; both deserve to stop the
+suite.
 
-## A interface
-
-```bash
-python -m sucuri.interface        # abre em http://127.0.0.1:8765/
-```
-
-E **online**, sem instalar nada: `web/` é a mesma interface com o motor rodando
-dentro do navegador — Python e SymPy compilados para WebAssembly pelo Pyodide,
-o pacote `sucuri` num zip que a página desempacota. Não é uma segunda
-implementação: são os mesmos arquivos, e há teste que falha se o publicado
-divergir do repositório. Nada do que o usuário escreve sai da máquina dele,
-porque não há para onde ir. Ver `web/LEIAME.md`.
-
-Servidor local e página no navegador. A escolha é deliberada: o programa é de
-Linux hoje e fica online amanhã sem reescrita — o mesmo motor, a mesma página,
-outro endereço. Só biblioteca padrão do lado do Python; o KaTeX vem
-empacotado, e a interface funciona sem rede.
-
-O que a página mostra, da esquerda para a direita:
-
-- **a entrada em LaTeX**, relida a cada tecla (janela de 220 ms);
-- **os sítios ambíguos**, um a um, com as leituras possíveis em botões — clicar
-  é anotar, e a anotação vence a convenção;
-- **as convenções do documento**, que valem para tudo e aparecem em âmbar;
-- **a árvore reconhecida**, com a proveniência de cada nó;
-- **a leitura**, tipografada — o que o programa entendeu, em matemática de
-  livro, e não o que você escreveu;
-- **a saída em SymPy**, colável num script;
-- **os módulos**, com a barreira de proveniência intacta: conclusão sem fonte
-  chega à página marcada como não apresentável.
-
-A interface não decide nada de matemática. Entre ela e o motor passa JSON
-(`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
-decisões que ela transporta são as do usuário: convenção e anotação.
-
-## O caderno
+## The interface
 
 ```bash
-python -m sucuri.interface        # e clique em "caderno" no cabeçalho
+python -m sucuri.interface        # opens at http://127.0.0.1:8765/
 ```
 
-Uma equação por página serve para inspecionar notação; trabalho é escrever uma
-coisa, olhar, escrever outra que usa a primeira.
+And **online**, with nothing to install: `web/` is the same interface with the engine running
+inside the browser: Python and SymPy compiled to WebAssembly by Pyodide,
+the `sucuri` package in a zip the page unpacks. It is not a second
+implementation: they are the same files, and a test fails if the published copy
+diverges from the repository. Nothing the user writes leaves their machine,
+because there is nowhere for it to go. See `web/README.md`.
+
+Local server and a page in the browser. The choice is deliberate: the program is
+Linux today and goes online tomorrow without a rewrite: the same engine, the same page,
+another address. Only the standard library on the Python side; KaTeX comes
+bundled, and the interface works offline.
+
+What the page shows, left to right:
+
+- **the LaTeX input**, re-read on every keystroke (220 ms window);
+- **the ambiguous sites**, one by one, with the possible readings as buttons: clicking
+  is annotating, and the annotation beats the convention;
+- **the document's conventions**, which apply to everything and show in amber;
+- **the recognized tree**, with each node's provenance;
+- **the reading**, typeset: what the program understood, in textbook
+  math, not what you wrote;
+- **the SymPy output**, pasteable into a script;
+- **the modules**, with the provenance barrier intact: a conclusion without a source
+  reaches the page marked as not presentable.
+
+The interface decides nothing mathematical. Between it and the engine passes JSON
+(`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), and the only two
+decisions it carries are the user's: convention and annotation.
+
+## The notebook
+
+```bash
+python -m sucuri.interface        # and click "notebook" in the header
+```
+
+One equation per page is enough to inspect notation; work is writing one
+thing, looking at it, writing another that uses the first.
 
 ```
         f^{\prime} = x^2          Shift+Enter   →  eq1,  df/dx = x²
-        resolver(eq1)                          →  f(x) = C₁ + x³/3
-                                                  conferência: resto 0
-        exportar(eq1)                          →  o script que roda sem o Sucuri
+        solve(eq1)                             →  f(x) = C₁ + x³/3
+                                                  check: remainder 0
+        export(eq1)                            →  the script that runs without Sucuri
 ```
 
-Cinco ações, e cada uma mexe numa camada diferente do estado — a distinção
-entre elas é a razão de existirem cinco e não duas:
+Five actions, and each touches a different layer of state; the distinction
+between them is why there are five and not two:
 
 | | |
 |---|---|
-| **Novo** | apaga o escrito **e** o acumulado |
-| **Abrir** | troca o escrito, refaz o acumulado |
-| **Salvar** | leva o escrito e as decisões para um arquivo |
-| **Rodar tudo** | refaz o acumulado a partir do escrito, na ordem |
-| **Reiniciar** | joga fora só o acumulado: o que está escrito fica |
+| **New** | erases what is written **and** what is accumulated |
+| **Open** | replaces what is written, rebuilds what is accumulated |
+| **Save** | takes what is written and the decisions to a file |
+| **Run all** | rebuilds the accumulated state from what is written, in order |
+| **Restart** | throws away only the accumulated state: what is written stays |
 
-"Reiniciar" apaga `eq1`, `eq2` e as declarações sem tocar numa linha do que
-você escreveu — depois dele, `resolver(eq1)` deixa de achar `eq1`, que é
-exatamente o ponto.
+"Restart" erases `eq1`, `eq2` and the declarations without touching a line of what
+you wrote; after it, `solve(eq1)` no longer finds `eq1`, which is
+exactly the point.
 
-O arquivo salvo é texto, legível, com as células separadas por `%%` — `%` é
-comentário em LaTeX, então ele abre em qualquer editor. As decisões de sítio
-vão numa linha de comentário no alto: são do usuário, não do motor, e sem elas
-o caderno reaberto voltaria a perguntar o que já foi respondido.
+The saved file is text, readable, with cells separated by `%%`; `%` is a
+comment in LaTeX, so it opens in any editor. The site decisions
+go in a comment line at the top: they belong to the user, not the engine, and without them
+the reopened notebook would ask again what was already answered.
 
-**O caderno não tem convenções** — tem declarações, que são células como as
-outras. Seis campos de formulário diziam o que três linhas na folha dizem
-melhor, e dizem de um jeito mais forte: a convenção *escolhe* uma leitura, a
-declaração *dissolve* a dúvida.
+**The notebook has no conventions**: it has declarations, which are cells like the
+others. Six form fields said what three lines on the sheet say
+better, and say it more strongly: a convention *chooses* a reading, a
+declaration *dissolves* the doubt.
 
 ```
-u = u(t,x)        u é função de t e x
-e = euler         e é o número de Euler
-c = símbolo       c é símbolo, não função: c(…) é produto
+u = u(t,x)        u is a function of t and x
+e = euler         e is Euler's number
+c = symbol        c is a symbol, not a function: c(…) is a product
 ```
 
-Só isso decide `'`, `\dot`, `∂`, Leibniz e justaposição para os nomes
-declarados. E o que a notação não diz continua sendo pergunta: `u'` com `u`
-função de duas variáveis não diz em relação a qual, e declarar não inventa.
+That alone decides `'`, `\dot`, `∂`, Leibniz and juxtaposition for the declared
+names. And what the notation does not say is still a question: `u'` with `u` a
+function of two variables does not say with respect to which, and declaring does not invent.
 
-### A equação da onda, e o que "o SymPy não resolve" quer dizer
+### The wave equation, and what "SymPy doesn't solve it" means
 
 ```
 u = u(t,x)
-c = símbolo
+c = symbol
 \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
 
-resolver(eq1)      →  sem solução encontrada: o pdsolve não resolve
-separar(eq1)       →  T''/T = k  e  c²X''/X = k, com as duas resolvidas
-conferir(eq1, eq2) →  u = F(x−ct) + G(x+ct): resto 0
+solve(eq1)         →  no solution found: pdsolve does not solve it
+separate(eq1)      →  T''/T = k  and  c²X''/X = k, both solved
+check(eq1, eq2)    →  u = F(x−ct) + G(x+ct): remainder 0
 ```
 
-O `pdsolve` não resolve a onda — e ele é só um dos caminhos do SymPy. O
-`pde_separate_mul` separa, o `dsolve` resolve cada pedaço, e o `checkpdesol`
-confere d'Alembert.
+`pdsolve` does not solve the wave equation, and it is only one of SymPy's paths.
+`pde_separate_mul` separates, `dsolve` solves each piece, and `checkpdesol`
+checks d'Alembert.
 
-O que uma conta **produz** ganha nome, e é isso que faz o caderno compor:
+What a computation **produces** gets a name, and that is what makes the notebook compose:
 
 ```
-separar(eq1)     →  eq2   T″(t) = k T(t)
+separate(eq1)    →  eq2   T″(t) = k T(t)
                     eq3   c² X″(x) = k X(x)
-resolver(eq2)    →  eq4   T(t) = C₁e^(−√k t) + C₂e^(√k t)
+solve(eq2)       →  eq4   T(t) = C₁e^(−√k t) + C₂e^(√k t)
 ```
 
-Operação que devolve equações sem nome devolve becos: quem lê duas EDOs numa
-tabela não tem como pedir a próxima conta sobre elas senão redigitando.
+An operation that returns unnamed equations returns dead ends: whoever reads two ODEs in a
+table has no way to ask for the next computation on them except by retyping.
 
-`separar` **não se apresenta como solução**: separar SUPÕE que a solução é um
-produto, e a suposição é uma restrição. O que sai são os modos; a solução geral
-é a superposição deles, e a separação não prova que ela seja completa.
+`separate` **does not present itself as a solution**: separating ASSUMES the solution is a
+product, and the assumption is a restriction. What comes out are the modes; the general solution
+is their superposition, and separation does not prove it is complete.
 
-Os verbos são poucos e fechados **de propósito**: `resolver`/`solve`,
+The verbs are few and closed **on purpose**: `resolver`/`solve`,
 `avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
-Se aqui se pudesse escrever Python, a ponte que este programa é deixaria de ser
-obrigatória — quem escreve `sympy.solve(...)` fala direto com o SymPy, sem
-sítios, sem convenção declarada, sem proveniência, e sobra um Jupyter com
-passos a mais.
+If Python could be written here, the bridge this program is would stop being
+mandatory: whoever writes `sympy.solve(...)` talks straight to SymPy, with no
+sites, no declared convention, no provenance, and what is left is a Jupyter with
+extra steps.
 
-`resolver` é um verbo só, e o objeto decide a conta — **três** contas agora:
+`solve` is a single verb, and the object decides the computation; **three** computations now:
 
-| a incógnita | o solver |
+| the unknown | the solver |
 |---|---|
-| `y(x)` | `dsolve`, conferido com `checkodesol` |
-| `u(t,x)` | `pdsolve`, conferido com `checkpdesol` |
-| sem derivada | `solve` |
+| `y(x)` | `dsolve`, checked with `checkodesol` |
+| `u(t,x)` | `pdsolve`, checked with `checkpdesol` |
+| no derivative | `solve` |
 
-`∂u/∂t = A(t)u` sai como `F(x)·exp(∫A dt)`: numa EDP, a "constante" de
-integração é uma função arbitrária da outra variável. O `pdsolve` resolve bem
-menos do que o `dsolve` — a equação da onda ele não resolve —, mas resolver
-pouco não é resolver nada, e quem decide se o pouco serve é quem escreveu a
-equação.
+`∂u/∂t = A(t)u` comes out as `F(x)·exp(∫A dt)`: in a PDE, the "constant" of
+integration is an arbitrary function of the other variable. `pdsolve` solves far
+less than `dsolve` (it does not solve the wave equation), but solving
+little is not solving nothing, and whoever wrote the equation decides whether the little
+is enough.
 
-Antes: equação diferencial vai
-para o módulo que confere a solução por substituição, algébrica vai para o
-`solve`. Obrigar o usuário a escolher entre `solve` e `dsolve` é pedir que ele
-classifique a própria equação para o programa — ao contrário.
+Before: a differential equation goes
+to the module that checks the solution by substitution, an algebraic one goes to
+`solve`. Forcing the user to choose between `solve` and `dsolve` is asking them to
+classify their own equation for the program; backwards.
 
-As convenções valem para o caderno inteiro, e mudar uma **refaz tudo**: o que
-já estava escrito passa a significar outra coisa, e mostrar as duas leituras ao
-mesmo tempo seria mostrar duas matemáticas.
+Conventions apply to the whole notebook, and changing one **redoes everything**: what
+was already written comes to mean something else, and showing both readings at
+once would be showing two mathematics.
 
-### Mais de uma instrução por célula
+### More than one instruction per cell
 
-`Enter` quebra linha, `Shift+Enter` roda. Uma célula aceita várias instruções,
-uma por linha:
+`Enter` breaks the line, `Shift+Enter` runs. A cell accepts several instructions,
+one per line:
 
 ```
-contrair(eq1)
-avaliar(eq1)
+contract(eq1)
+evaluate(eq1)
 ```
 
-Só encadeia quando **todas** as linhas são instrução reconhecida — comando ou
-declaração. Uma equação em LaTeX pode legitimamente ocupar duas linhas, e
-parti-la daria duas metades sem sentido no lugar de um erro, que é o tipo de
-silêncio que este programa existe para não produzir.
+It only chains when **every** line is a recognized instruction: a command or a
+declaration. A LaTeX equation can legitimately span two lines, and
+splitting it would give two meaningless halves instead of an error, which is the kind of
+silence this program exists not to produce.
 
-## O verbo segue o objeto
+## The verb follows the object
 
-Equação diferencial se **resolve**; expressão se **avalia**. São contas
-diferentes, e o botão principal da página muda de nome conforme o que está
-escrito — oferecer o verbo errado faz o usuário concluir que o programa não
-sabe fazer o que ele sabe fazer.
+A differential equation is **solved**; an expression is **evaluated**. They are different
+computations, and the page's main button changes its name according to what is
+written; offering the wrong verb makes the user conclude the program cannot
+do what it can.
 
-## Ler e avaliar são atos diferentes
+## Reading and evaluating are different acts
 
-`\int_0^1 x^2` é lido como `Integral(x**2, (x, 0, 1))` e fica assim: parada. O
-Sucuri lê; a conta é outro ato, e por isso é um botão — **Avaliar** — e não um
-efeito de digitar.
+`\int_0^1 x^2` is read as `Integral(x**2, (x, 0, 1))` and stays that way: at rest.
+Sucuri reads; computing is another act, and so it is a button (**Evaluate**), not a
+side effect of typing.
 
-A resposta vem com o nome do que ela é:
+The answer comes with the name of what it is:
 
 | | |
 |---|---|
-| fechou | `1/3`, e a aproximação `≈ 0,333…` **ao lado**, nunca no lugar |
-| indefinida | `-\cos(x) + C` — a resposta é a família, não um representante dela |
-| não fechou | o SymPy devolveu a conta por fazer, e o rótulo diz isso |
-| não terminou | estourou o prazo |
+| closed | `1/3`, with the approximation `≈ 0.333…` **beside** it, never in its place |
+| indefinite | `-\cos(x) + C`: the answer is the family, not one representative of it |
+| did not close | SymPy returned the computation undone, and the label says so |
+| did not finish | the time limit ran out |
 
-Tratar as três como a mesma coisa é o erro de sempre. E sítio pendente bloqueia
-a avaliação como bloqueia a leitura: nada se calcula sobre o que ninguém leu.
+Treating these as the same thing is the usual mistake. And a pending site blocks
+evaluation just as it blocks reading: nothing is computed on what nobody has read.
 
-## Módulos de domínio
+## Domain modules
 
-O Sucuri lê e desambigua; ele não sabe teoria de Galois nem geometria
-diferencial. O que dá utilidade a uma expressão vem de módulos, que oferecem
-operações e devolvem **resultados que não são expressões** — tabelas, vereditos,
-certificados. É a diferença entre hospedar calculadoras e hospedar áreas da
-matemática.
+Sucuri reads and disambiguates; it knows neither Galois theory nor differential
+geometry. What makes an expression useful comes from modules, which offer
+operations and return **results that are not expressions**: tables, verdicts,
+certificates. It is the difference between hosting calculators and hosting areas of
+mathematics.
 
 ```python
 e = doc.read(r"y'' = x y")            # Airy
@@ -1224,57 +1249,57 @@ korvin = sucuri.modules.load("korvin")
 korvin.operations["não-integrabilidade"].run(e)
 ```
 
-Dois módulos acompanham o Sucuri, e respondem a perguntas diferentes:
+Two modules ship with Sucuri, and they answer different questions:
 
-| | pergunta |
+| | question |
 |---|---|
-| `resolver` | consigo achar uma solução? |
-| `korvin` | existe uma? |
+| `resolver` | can I find a solution? |
+| `korvin` | does one exist? |
 
-O `resolver` embrulha o `dsolve` para dizer o que ele não diz: **que tipo de
-resposta é**. Forma fechada conferida por substituição, série truncada (que não
-é solução, é aproximação até uma ordem), relação implícita, ou nada — e quando
-é nada, que não achar não prova que não há.
-
-```
-y'' + y = 0          solução                        [estabelecida]
-y'' = x y            solução                        [estabelecida]
-y'' + x y' + y = 0   série (não é solução fechada)   [não aplicável]
-y'' = 6 y^2          sem solução encontrada          [não aplicável]
-y' = 1/(x + y^2)     solução não confirmada          [sem fonte]
-```
-
-A terceira linha é o motivo de o módulo existir: essa equação é `(y' + xy)' = 0`
-e **tem** forma fechada, com `erfi` — o `dsolve` devolve uma série até ordem 5 e
-não avisa que mudou de tipo de resposta.
-
-### A ponte de proveniência
-
-Toda conclusão de módulo carrega a origem do critério que a produziu, e o
-hospedeiro **recusa-se a apresentar como conclusão** o que vier de critério sem
-autoridade:
+`resolver` wraps `dsolve` to say what it does not say: **what kind of
+answer it is**. A closed form checked by substitution, a truncated series (which is not
+a solution, it is an approximation up to some order), an implicit relation, or nothing; and when
+it is nothing, that not finding does not prove there is none.
 
 ```
-esquema de Riemann              [não aplicável]     → é dado, não afirma nada
-condições necessárias           [estabelecida]      → fonte primária (Kovacic §2)
-não-integrabilidade             [sem fonte]         → NÃO APRESENTÁVEL
-  bloqueio: o critério 'potência simétrica com solução racional' não tem
-            proveniência declarada e por isso não emite veredito
+y'' + y = 0          solution                              [established]
+y'' = x y            solution                              [established]
+y'' + x y' + y = 0   series (not a closed-form solution)   [not applicable]
+y'' = 6 y^2          no solution found                     [not applicable]
+y' = 1/(x + y^2)     solution not confirmed                [no source]
 ```
 
-O Sucuri não entende uma linha de teoria de Galois. Não precisa: basta o módulo
-declarar de onde vem o que afirma. É a mesma regra que o Sucuri já aplica à
-leitura — nada se apresenta com mais confiança do que a sua origem sustenta.
+The third line is why the module exists: that equation is `(y' + xy)' = 0`
+and **has** a closed form, with `erfi`; `dsolve` returns a series up to order 5 and
+does not warn that it changed the kind of answer.
 
-## Identidade visual
+### The provenance bridge
 
-Em `identidade/`: marca e variantes, ícones de 48 a 1024 px, tokens em CSS e o
-mockup de referência. Ver `identidade/IDENTIDADE.md`.
+Every module conclusion carries the origin of the criterion that produced it, and the
+host **refuses to present as a conclusion** anything that comes from a criterion without
+authority:
 
-A marca é a sucuri enrolada formando a letra S — entra notação pela cabeça, sai
-código pelo bloco da cauda.
+```
+Riemann scheme                  [not applicable]    → it is data, it asserts nothing
+necessary conditions            [established]       → primary source (Kovacic §2)
+non-integrability               [no source]         → NOT PRESENTABLE
+  blocked: the criterion 'symmetric power with a rational solution' has no
+           declared provenance and therefore issues no verdict
+```
 
-## Estado
+Sucuri does not understand a line of Galois theory. It does not need to: it is enough for the module
+to declare where what it asserts comes from. It is the same rule Sucuri already applies to
+reading: nothing is presented with more confidence than its origin supports.
 
-Motor e interface em construção. Ver `sucuri/`, `sucuri/interface/` e a suíte
-em `tests/`.
+## Visual identity
+
+In `identidade/`: logo and variants, icons from 48 to 1024 px, CSS tokens and the
+reference mockup. See `identidade/IDENTITY.md`.
+
+The logo is the anaconda (sucuri) coiled into the letter S: notation goes in at the head,
+code comes out through the tail block.
+
+## Status
+
+Engine and interface under construction. See `sucuri/`, `sucuri/interface/` and the suite
+in `tests/`.

@@ -1,3 +1,5 @@
+*[English version](AUDIT-DERIVATIVES.md)*
+
 # Uma tabela de derivadas contra o Sucuri
 
 **Fonte.** `en.wikipedia.org/wiki/Differentiation_rules`, via a API de

@@ -1,3 +1,5 @@
+*[English version](README.md)*
+
 # A versão online
 
 Esta pasta é o Sucuri inteiro rodando **dentro do navegador**. Não há servidor:

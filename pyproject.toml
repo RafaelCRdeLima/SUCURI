@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sucuri"
 version = "0.1.0"
-description = "Converting Annotated Differential Mathematics Using SymPy"
+description = "SymPy Unified Compiler for Unambiguous Rendered Input: LaTeX read into SymPy, with no ambiguity guessed"
 requires-python = ">=3.10"
 dependencies = ["sympy==1.12", "antlr4-python3-runtime==4.11"]
 
