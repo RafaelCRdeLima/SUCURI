@@ -51,19 +51,32 @@ def _isolado(calculo):
 
 
 class Metrica:
-    """Uma métrica diagonal, com as suas coordenadas."""
+    """Uma métrica com as suas coordenadas — pela diagonal ou pela matriz."""
 
     def __init__(self, nome, coordenadas, componentes, escrita=None):
-        if len(coordenadas) != len(componentes):
-            raise ValueError(
-                f"{len(coordenadas)} coordenada(s) e {len(componentes)} "
-                f"componente(s): a diagonal tem de ter uma entrada por "
-                f"coordenada")
+        # Com o cache cheio, uma derivada f′(ϖ) das componentes voltava com o
+        # ponto de Subs no campo de outra carta — a métrica de onde esta foi
+        # induzida, com o mesmo ϖ —, e o diffgeom recusava a mistura.
+        from sympy.core.cache import clear_cache
+        clear_cache()
+        if isinstance(componentes, sp.MatrixBase):
+            G = sp.Matrix(componentes)
+            if G.shape != (len(coordenadas),) * 2 or G != G.T:
+                raise ValueError("a matriz da métrica tem de ser quadrada, "
+                                 "simétrica, uma linha por coordenada")
+        else:
+            if len(coordenadas) != len(componentes):
+                raise ValueError(
+                    f"{len(coordenadas)} coordenada(s) e {len(componentes)} "
+                    f"componente(s): a diagonal tem de ter uma entrada por "
+                    f"coordenada")
+            G = sp.diag(*componentes)
+        self.G = G
         self.nome = nome
         self.escrito = nome             # com a barra, se foi escrito `\\eta`
         self.escrita = escrita or {}    # 'theta' -> '\\theta', como foi escrito
         self.simbolos = list(coordenadas)
-        self.componentes = list(componentes)
+        self.componentes = [G[i, i] for i in range(G.shape[0])]
 
         # Um sistema de coordenadas por métrica, com nome único. O SymPy
         # compara sistemas pelo nome, e não pelos símbolos: duas métricas
@@ -87,9 +100,10 @@ class Metrica:
         # componente quer o r que escreveu.
         self.de_volta = {f: x for x, f in troca.items()}
         formas = self.sistema.base_oneforms()
+        n = len(formas)
         self.tensor = sum(
-            (c.subs(troca, simultaneous=True) * TensorProduct(f, f)
-             for c, f in zip(self.componentes, formas)),
+            (G[i, j].subs(troca, simultaneous=True) * TensorProduct(formas[i], formas[j])
+             for i in range(n) for j in range(n) if G[i, j] != 0),
             sp.S.Zero)
 
     @property
@@ -99,7 +113,11 @@ class Metrica:
                          for s in self.simbolos)
 
     def matriz(self):
-        return sp.diag(*self.componentes)
+        return self.G
+
+    @property
+    def diagonal(self):
+        return self.G.is_diagonal()
 
 
 def _rotulo(simbolos, indices, cima=1, escrita=None):
@@ -182,9 +200,12 @@ def escalar(metrica):
     inversa = metrica.matriz().inv()
     n = len(metrica.simbolos)
     bruto = sum(inversa[i, j] * R[i, j] for i in range(n) for j in range(n))
-    return _sem_subs(sp.simplify(sp.sympify(bruto).subs(metrica.de_volta,
-                                                        simultaneous=True)),
-                     metrica.de_volta)
+    valor = _sem_subs(sp.simplify(sp.sympify(bruto).subs(metrica.de_volta,
+                                                         simultaneous=True)),
+                      metrica.de_volta)
+    # Fatorado: (2f′² + 2)f′f″/(ϖ(f′² + 1)³) é 2f′f″/(ϖ(1 + f′²)²).
+    fatorado = sp.factor(sp.cancel(valor))
+    return fatorado if sp.count_ops(fatorado) <= sp.count_ops(valor) else valor
 
 
 def _sem_subs(valor, de_volta=None):
@@ -307,3 +328,174 @@ def _base_de(expr, espaco):
         if isinstance(arg, Tensor) and arg.head.name != espaco.metrica:
             return arg.head.name
     return "T"
+
+
+# ------------------------------------------------ Γ direto da matriz
+
+def gamma(metrica):
+    """Γ^a_{bc} = ½ g^{ad}(∂_b g_{dc} + ∂_c g_{db} − ∂_d g_{bc}), das componentes.
+
+    Direto da matriz, sem o diffgeom: para geodésicas e transporte, onde as
+    componentes entram numa equação e não numa tabela."""
+    G, x = metrica.matriz(), metrica.simbolos
+    n = len(x)
+    inv = G.inv()
+    return [[[sp.simplify(sum(inv[a, d] * (sp.diff(G[d, c], x[b]) + sp.diff(G[d, b], x[c])
+                                           - sp.diff(G[b, c], x[d])) for d in range(n)) / 2)
+              for c in range(n)] for b in range(n)] for a in range(n)]
+
+
+def geodesicas(metrica, parametro=None):
+    """As equações das geodésicas, e o que se conserva ao longo delas.
+
+    ẍ^a + Γ^a_{bc} ẋ^b ẋ^c = 0, com x^a(λ). Conserva-se g_{ab}ẋ^a ẋ^b sempre
+    (λ afim), e g_{kb}ẋ^b para cada coordenada x^k de que a métrica não
+    depende — o vetor ∂_k é de Killing.
+    """
+    lam = parametro or sp.Symbol("lambda")
+    x = metrica.simbolos
+    n = len(x)
+    curva = [sp.Function(str(c))(lam) for c in x]
+    na_curva = dict(zip(x, curva))
+    v = [sp.diff(c, lam) for c in curva]
+    G = metrica.matriz().subs(na_curva, simultaneous=True)
+    Gam = gamma(metrica)
+    equacoes = []
+    for a in range(n):
+        termo = sum(Gam[a][b][c].subs(na_curva, simultaneous=True) * v[b] * v[c]
+                    for b in range(n) for c in range(n))
+        equacoes.append(sp.Eq(sp.diff(curva[a], lam, 2) + sp.simplify(termo), 0))
+    conservadas = [("normalização", sp.simplify(sum(G[a, b] * v[a] * v[b]
+                                                    for a in range(n) for b in range(n))))]
+    for k in range(n):
+        if all(sp.diff(metrica.matriz()[i, j], x[k]) == 0 for i in range(n) for j in range(n)):
+            conservadas.append((f"∂/∂{metrica.escrita.get(str(x[k]), str(x[k]))} é de Killing",
+                                sp.simplify(sum(G[k, b] * v[b] for b in range(n)))))
+    return equacoes, conservadas, curva, lam
+
+
+def elemento_de_volume(metrica):
+    """√|det g| sem o módulo: |sin²ψ sin θ| escrito sin²ψ sin θ. Quem integra
+    confere o sinal no domínio (volume); aqui é a forma que o livro escreve."""
+    det = sp.factor(sp.simplify(metrica.matriz().det()))
+    raiz = sp.powdenest(sp.sqrt(sp.Abs(det)), force=True)
+    raiz = raiz.replace(lambda e: isinstance(e, sp.Abs), lambda e: e.args[0])
+    return det, sp.simplify(raiz)
+
+
+def volume(metrica, limites):
+    """∫ √|det g| dⁿx nos limites dados, [(símbolo, a, b)] na ordem de fora
+    para dentro. Confere, em pontos do domínio, que o integrando escrito sem
+    módulo é positivo — senão recusa, em vez de devolver um volume com sinal."""
+    import random
+    _, raiz = elemento_de_volume(metrica)
+    usados = {s for s, _, _ in limites}
+    livres = [x for x in metrica.simbolos if x not in usados]
+    if livres:
+        raise ValueError("faltam os limites de " + ", ".join(map(str, livres)))
+    rnd = random.Random(0)
+    for _ in range(12):
+        ponto = {}
+        for s_, a, b in limites:
+            ponto[s_] = a + (b - a) * sp.Rational(rnd.randint(1, 99), 100)
+        valor = raiz.subs(ponto)
+        outros = valor.free_symbols
+        valor = valor.subs({f: sp.Rational(7, 10) for f in outros})
+        try:
+            if float(sp.N(valor)) < 0:
+                raise ValueError("o integrando √|det g| sem módulo fica negativo "
+                                 "em parte do domínio: divida o domínio")
+        except TypeError:
+            pass
+    integral = raiz
+    for s_, a, b in reversed(limites):
+        integral = sp.integrate(integral, (s_, a, b))
+    return raiz, sp.simplify(integral)
+
+
+def induzida(ambiente, coordenadas, imagens, escrita=None, nome="h"):
+    """O pull-back de uma métrica: h_{ij} = ∂_i X^a ∂_j X^b g_{ab}(X(u)).
+
+    Serve ao mergulho — a superfície x² + y² + z² + w² = 1 parametrizada — e à
+    mudança de coordenadas, que é o mesmo cálculo com tantas coordenadas novas
+    quanto antigas."""
+    if len(imagens) != len(ambiente.simbolos):
+        raise ValueError(
+            f"a métrica {ambiente.nome} tem {len(ambiente.simbolos)} coordenadas "
+            f"({ambiente.coordenadas}), e foram dadas {len(imagens)} expressões")
+    X = sp.Matrix(imagens)
+    J = X.jacobian(sp.Matrix(coordenadas))
+    G = ambiente.matriz().subs(dict(zip(ambiente.simbolos, imagens)), simultaneous=True)
+    H = (J.T * G * J).applyfunc(lambda e: sp.trigsimp(sp.simplify(e)))
+    return Metrica(nome, coordenadas, H, escrita)
+
+
+def orbitas(metrica):
+    """As geodésicas de uma métrica 2D diagonal com uma coordenada cíclica,
+    por quadratura — o método dos livros.
+
+    Com φ cíclica, L = g_φφ φ̇ e κ = g_rr ṙ² + g_φφ φ̇² se conservam (κ = ±1 ou
+    0, conforme a geodésica). Daí dφ/dr, e com v tal que dv = √|g_rr|/g_φφ dr
+    a integral vira ∫ L dv/√(±(κ − L²/g_φφ)): a substituição de Binet, que na
+    esfera é v = −cot θ e em de Sitter 2D é v = tanh u. Quando o radicando sai
+    A + Bv² com B < 0, a órbita é v = √(A/−B) sen(√−B (φ − φ₀)/L).
+    """
+    x = metrica.simbolos
+    G = metrica.matriz()
+    if len(x) != 2 or not metrica.diagonal:
+        raise ValueError("órbitas pede uma métrica 2D diagonal")
+    ciclicas = [k for k in range(2) if all(sp.diff(G[i, i], x[k]) == 0 for i in range(2))]
+    if not ciclicas:
+        raise ValueError("nenhuma coordenada cíclica: a métrica depende das duas, "
+                         "e a quadratura pede uma de que ela não dependa")
+    kf = ciclicas[-1]
+    kr = 1 - kf
+    r, phi = x[kr], x[kf]
+    rp = sp.Dummy("r", positive=True)
+    grr, gff = G[kr, kr].subs(r, rp), G[kf, kf].subs(r, rp)
+    L = sp.Symbol("L", positive=True)
+    kappa, v = sp.symbols("kappa v")
+    phi0 = sp.Symbol(f"{phi}_0")
+    sinal = -1 if (grr.is_number and grr < 0) else 1
+    dphi_dr = sp.simplify(L / gff / sp.sqrt((kappa - L**2 / gff) / grr)).subs(rp, r)
+    v_de_r = sp.simplify(sp.integrate(sp.sqrt(sinal * grr) / gff, rp))
+    saida = {"r": r, "phi": phi, "dphi_dr": dphi_dr, "v": v_de_r.subs(rp, r)}
+    # O ramo da inversa que é real: v = tanh u tem duas, e uma é log de negativo.
+    def _real(q):
+        teste = q.subs(v, sp.Rational(3, 10))
+        teste = teste.subs({f: sp.Rational(7, 10) for f in teste.free_symbols})
+        return sp.N(teste).is_real
+    reais = [q for q in sp.solve(sp.Eq(v, v_de_r), rp) if _real(q)]
+    if not reais:
+        return saida
+    w = sp.simplify((1 / gff).subs(rp, reais[0]))
+    if not w.is_polynomial(v):
+        # 1/cosh²(log …) só vira 1 − v² escrito em exponenciais.
+        w = sp.cancel(sp.expand(w.rewrite(sp.exp)))
+    radicando = sp.expand(sinal * (kappa - L**2 * w))
+    A, B, C = radicando.coeff(v, 0), radicando.coeff(v, 2), radicando.coeff(v, 1)
+    if B == 0 and C != 0 and sp.expand(radicando - A - C * v) == 0:
+        # Linear em v — o plano hiperbólico: ∫ L dv/√(A + Cv) = 2L√(A + Cv)/C.
+        F = sp.simplify(2 * L * sp.sqrt(A + C * v) / C)
+        saida.update({"radicando": radicando, "condicao": sp.simplify(radicando.subs(v, saida["v"])) > 0,
+                      "integral": F,
+                      "orbita": [sp.Eq(phi - phi0, sp.simplify(F.subs(v, saida["v"])))]})
+        return saida
+    if sp.expand(radicando - A - B * v**2) != 0 or not (B.subs(L, 1).is_negative):
+        return saida
+    # ∫ L dv/√(A + Bv²) = L/√−B · asen(v √(−B/A)), com A > 0.
+    F = sp.simplify(L / sp.sqrt(-B) * sp.asin(v * sp.sqrt(-B / A)))
+    orbita = sp.simplify(sp.sqrt(A / -B) * sp.sin(sp.sqrt(-B) * (phi - phi0) / L))
+    saida.update({"radicando": radicando, "condicao": sp.simplify(A) > 0,
+                  "integral": F, "orbita": [sp.Eq(saida["v"], orbita)]})
+    return saida
+
+
+def elemento_de_linha(metrica):
+    """ds² = g_{ij} dx^i dx^j, com dx^i escritos como símbolos d<coordenada>."""
+    x = metrica.simbolos
+    d = [sp.Symbol("d" + metrica.escrita.get(str(c), str(c)).lstrip("\\")) for c in x]
+    G = metrica.matriz()
+    n = len(x)
+    return sp.Add(*[sp.factor(G[i, j] if i == j else 2 * G[i, j]) * d[i] * d[j]
+                    for i in range(n) for j in range(i, n) if G[i, j] != 0])

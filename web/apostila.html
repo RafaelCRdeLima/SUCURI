@@ -140,14 +140,16 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 ele tem no centro. A contagem foi refeita assim quando os enunciados inteiros
 entraram na apostila, antes de cada resolução: 23 exercícios que saíam no cálculo central
 pedem também um mergulho, geodésicas, um volume, transporte paralelo, ou uma
-prova na direção contrária — e passaram a “em parte”.</p>
+prova na direção contrária — e passaram a “em parte”. O que um sistema
+simbólico não faz por natureza — traçar um gráfico, esboçar, dar uma
+interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>18</td><td>11</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>7</td><td>15</td><td>3</td></tr>
+  <tr><td>componentes (25)</td><td>14</td><td>8</td><td>3</td></tr>
   <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>34</strong></td><td><strong>36</strong></td><td><strong>15</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>41</strong></td><td><strong>29</strong></td><td><strong>15</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -165,10 +167,11 @@ para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64
 hipóteses escritas com índice (10, 14, 15, 68, 69), contar componentes
 independentes (12, 13, 61), as coordenadas com índice (62) e a teoria
 linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri
-calcula tudo o que é métrica diagonal — Christoffel, Riemann, Ricci, escalar —,
-mas os exercícios quase sempre pedem mais: geodésicas, transporte paralelo, o
-mergulho que dá a métrica, uma base ortonormal. Por isso a maioria sai em
-parte.</p>
+calcula Christoffel, Riemann, Ricci e escalar de qualquer métrica — dada pela
+diagonal, pelo elemento de linha, ou induzida por um mergulho ou mudança de
+coordenadas —, e as geodésicas: as equações, o que se conserva, e as órbitas
+por quadratura. O que falta pede transporte paralelo, base ortonormal, ou
+achar uma transformação.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -1535,7 +1538,7 @@ o Riemann e o escalar de curvatura.</p>
   <code class="entrada">\psi = \psi(x)</code>
   <code class="entrada">g = métrica(-e^{2\phi}, e^{-2\psi})</code>
   <code class="entrada">escalar(g)</code>
-  <samp class="saida">2*(-Derivative(phi(x), x)**2 - Derivative(phi(x), x)*Derivative(psi(x), x) - Derivative(phi(x), (x, 2)))*exp(2*psi(x))</samp>
+  <samp class="saida">-2*(Derivative(phi(x), x)**2 + Derivative(phi(x), x)*Derivative(psi(x), x) + Derivative(phi(x), (x, 2)))*exp(2*psi(x))</samp>
   <p class="explica">R = −2e<sup>2ψ</sup>(φ″ + φ′² + φ′ψ′). Com φ = ψ = ½ ln|g(x−x₀)|
     o parêntese se anula e o espaço é plano, como pede o item (b). Este
     exercício achou dois defeitos (seção VI): a declaração
@@ -1597,7 +1600,7 @@ não tem; o Ricci nulo, que é a conclusão, sai em coordenadas.</p>
   <samp class="saida">todas as componentes são nulas</samp>
 </div>
 
-<h3>42. O plano hiperbólico <span class="pill aviso">em parte</span></h3>
+<h3>42. O plano hiperbólico <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-42">
   <p class="titulo-enunciado">Enunciado 42 · Símbolos de Christoffel e geodésicas do plano hiperbólico</p>
@@ -1612,24 +1615,39 @@ não tem; o Ricci nulo, que é a conclusão, sai em coordenadas.</p>
     <p>u″v = 2u′v′ &nbsp;e&nbsp; v″v = v′<sup>2</sup> − u′<sup>2</sup>,</p>
     <p>e use isso para encontrar as geodésicas.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel e a curvatura; as equações das geodésicas, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> g é riemanniana (a diagonal é positiva em y &gt; 0), os Christoffel, as equações das geodésicas e as geodésicas: semicírculos (x − x₀)² + y² = κ/L² e, com L = 0, retas verticais.</p>
 </div>
 
-<p>Cambridge, Part III Differential Geometry, folha 4, Q9: Christoffel de
-g = (dx² + dy²)/y², e as equações das geodésicas. Os Christoffel e a curvatura
-saem; as equações das geodésicas, não.</p>
+<p>Os Christoffel e a curvatura saem da métrica; as geodésicas, de
+<code>geodésicas(g)</code> — ẍ<sup>a</sup> + Γ<sup>a</sup><sub>bc</sub>ẋ<sup>b</sup>ẋ<sup>c</sup> = 0,
+com o que se conserva — e de <code>órbitas(g)</code>, que as integra por
+quadratura quando uma coordenada é cíclica.</p>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(x, y)</code>
   <code class="entrada">g = métrica(\frac{1}{y^2}, \frac{1}{y^2})</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-2</samp>
-  <p class="explica">R = 2K, logo curvatura de Gauss K = −1. E
-    Γ<sup>x</sup><sub>xy</sub> = −1/y, Γ<sup>y</sup><sub>xx</sub> = 1/y,
-    Γ<sup>y</sup><sub>yy</sub> = −1/y.</p>
+  <p class="explica">R = 2K, logo curvatura de Gauss K = −1. E Γ<sup>x</sup><sub>xy</sub> = −1/y, Γ<sup>y</sup><sub>xx</sub> = 1/y, Γ<sup>y</sup><sub>yy</sub> = −1/y.</p>
 </div>
 
-<h3>43. A 3-esfera <span class="pill aviso">em parte</span></h3>
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y)</code>
+  <code class="entrada">g = métrica(\frac{1}{y^2}, \frac{1}{y^2})</code>
+  <code class="entrada">geodésicas(g)</code>
+  <samp class="saida">Derivative(x(lambda), (lambda, 2)) - 2*Derivative(x(lambda), lambda)*Derivative(y(lambda), lambda)/y(lambda)</samp>
+  <p class="explica">vezes y, as duas equações são u″v = 2u′v′ e v″v = v′² − u′², com γ = (u, v): as do enunciado.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y)</code>
+  <code class="entrada">g = métrica(\frac{1}{y^2}, \frac{1}{y^2})</code>
+  <code class="entrada">órbitas(g)</code>
+  <samp class="saida">Eq(x - x_0, -sqrt(-L**2*y**2 + kappa)/L)</samp>
+  <p class="explica">com L = g<sub>xx</sub>ẋ e κ = g(ẋ, ẋ): (x − x₀)² + y² = κ/L², semicírculos centrados no eixo x. O caso L = 0, que a quadratura exclui, é ẋ = 0: as retas verticais.</p>
+</div>
+
+<h3>43. A 3-esfera <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-43">
   <p class="titulo-enunciado">Enunciado 43 · A 3-esfera unitária</p>
@@ -1644,18 +1662,44 @@ saem; as equações das geodésicas, não.</p>
     <p>(c) Insira a métrica num pacote de manipulação simbólica e mostre que a curvatura de Ricci é R = 6. Encontre também R<sub>ij</sub>.</p>
     <p>(d) Calcule o volume V de uma pequena região ψ &lt; ϵ até O(ϵ<sup>5</sup>) e compare-o com o volume correspondente V<sub>E</sub> de uma esfera de raio ϵ no espaço plano (euclidiano). Verifique assim a Eq. (7.20), V/V<sub>E</sub> = 1 − r²R/[6(d + 2)] + O(r<sup>4</sup>), para a 3-esfera.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (c); o mergulho, o volume e (d), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) o vínculo, (b) a métrica induzida, o elemento e o volume 2π², (c) R = 6 e R<sub>ij</sub> = 2g<sub>ij</sub>, (d) V até O(ϵ⁵) e a razão V/V<sub>E</sub> = 1 − ϵ²/5, que é a (7.20) com R = 6 e d = 3.</p>
 </div>
 
-<p>Cline, problema 7.10: R = 6 e R<sub>ij</sub> = 2g<sub>ij</sub> para a
-3-esfera unitária. (O volume, 2π², é integral — não é do Sucuri.)</p>
+<p>A métrica induzida é um pull-back: <code>h = induzida(E, X^1, …, X^n)</code>
+puxa a métrica E pela parametrização, com as coordenadas novas declaradas por
+último. <code>volume(h, …)</code> integra √|det h| nos limites dados, e
+<code>série</code> expande.</p>
+
+<div class="exemplo">
+  <code class="entrada">\cos^2\psi + \sin^2\psi \sin^2\theta \cos^2\phi + \sin^2\psi \sin^2\theta \sin^2\phi + \sin^2\psi \cos^2\theta</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">1</samp>
+  <p class="explica">(a): a parametrização (7.46) satisfaz o vínculo.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(w, x, y, z)</code>
+  <code class="entrada">E = métrica(1, 1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(\psi, \theta, \phi)</code>
+  <code class="entrada">h = induzida(E, \cos\psi, \sin\psi \sin\theta \cos\phi, \sin\psi \sin\theta \sin\phi, \sin\psi \cos\theta)</code>
+  <code class="entrada">volume(h, \psi = 0 .. \pi, \theta = 0 .. \pi, \phi = 0 .. 2\pi)</code>
+  <samp class="saida">2*pi**2</samp>
+  <p class="explica">(b): a métrica induzida é diag(1, sin²ψ, sin²ψ sin²θ) — <code>elemento(h)</code> a escreve —, o elemento de volume sin²ψ sin θ, e o volume 2π².</p>
+</div>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(\psi, \theta, \phi)</code>
   <code class="entrada">g = métrica(1, \sin^2\psi, \sin^2\psi \sin^2\theta)</code>
   <code class="entrada">ricci(g)</code>
   <samp class="saida">R_{{\phi}{\phi}}=2*sin(psi)**2*sin(theta)**2</samp>
-  <p class="explica">que é 2g<sub>φφ</sub>; e <code>escalar(g)</code> dá 6.</p>
+  <p class="explica">(c): que é 2g<sub>φφ</sub>; e <code>escalar(g)</code> dá 6.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\frac{2 \pi \cdot (\epsilon - \sin\epsilon \cos\epsilon)}{\frac{4}{3} \pi \epsilon^3}</code>
+  <code class="entrada">série(eq1, \epsilon, 4)</code>
+  <samp class="saida">1 - epsilon**2/5 + O(epsilon**4)</samp>
+  <p class="explica">(d): o numerador é o volume de ψ &lt; ϵ, que <code>volume(h, \psi = 0 .. \epsilon, …)</code> dá; o denominador, V<sub>E</sub> = 4πϵ³/3. A (7.20), 1 − ϵ²R/(6(d + 2)) com R = 6 e d = 3, é 1 − ϵ²/5.</p>
 </div>
 
 <h3>45. Robertson–Walker <span class="pill ok">resolve</span></h3>
@@ -1715,7 +1759,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">-6/a</samp>
 </div>
 
-<h3>73. Superfície de revolução <span class="pill aviso">em parte</span></h3>
+<h3>73. Superfície de revolução <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-73">
   <p class="titulo-enunciado">Enunciado 73 · Superfícies de revolução</p>
@@ -1732,21 +1776,40 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>(e) Prove que uma superfície bidimensional tem tensor de Riemann nulo se e somente se seu escalar de Ricci se anula.</p>
     <p>(f) Use (e) para classificar completamente as superfícies de revolução com tensor de Riemann nulo.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b), (c) e (d); o mergulho (a) e (e)–(f), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) a métrica induzida, (b)–(c) Christoffel e Riemann, (d) o escalar, (e) pela identidade de dimensão 2 do enunciado 12, (f) resolvendo F′ = 0: z = C₁ + C₂ϖ, planos e cones.</p>
 </div>
-
-<p>Hirata, Caltech Ph236, HW4 #1: ds² = F(ϖ)dϖ² + ϖ²dφ², com R = F′/(ϖF²).</p>
 
 <div class="exemplo">
-  <code class="entrada">x = coordenadas(\varpi, \phi)</code>
-  <code class="entrada">F = F(\varpi)</code>
-  <code class="entrada">g = métrica(F, \varpi^2)</code>
-  <code class="entrada">escalar(g)</code>
-  <samp class="saida">Derivative(F(varpi), varpi)/(varpi*F(varpi)**2)</samp>
-  <p class="explica">este achou um erro silencioso: a variável <code>\varpi</code> ficava com a barra, F saía constante e a superfície, plana (seção VI).</p>
+  <code class="entrada">X = coordenadas(z, \varpi, \phi)</code>
+  <code class="entrada">E = métrica(1, 1, \varpi^2)</code>
+  <code class="entrada">f = f(\varpi)</code>
+  <code class="entrada">u = coordenadas(\varpi, \phi)</code>
+  <code class="entrada">h = induzida(E, f(\varpi), \varpi, \phi)</code>
+  <code class="entrada">elemento(h)</code>
+  <samp class="saida">dphi**2*varpi**2 + dvarpi**2*(Derivative(f(varpi), varpi)**2 + 1)</samp>
+  <p class="explica">(a): ds² = F dϖ² + ϖ²dφ² com F = 1 + f′². <code>christoffel(h)</code> e <code>riemann(h)</code> dão (b) e (c).</p>
 </div>
 
-<h3>74. O cone <span class="pill aviso">em parte</span></h3>
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(z, \varpi, \phi)</code>
+  <code class="entrada">E = métrica(1, 1, \varpi^2)</code>
+  <code class="entrada">f = f(\varpi)</code>
+  <code class="entrada">u = coordenadas(\varpi, \phi)</code>
+  <code class="entrada">h = induzida(E, f(\varpi), \varpi, \phi)</code>
+  <code class="entrada">escalar(h)</code>
+  <samp class="saida">2*Derivative(f(varpi), varpi)*Derivative(f(varpi), (varpi, 2))/(varpi*(Derivative(f(varpi), varpi)**2 + 1)**2)</samp>
+  <p class="explica">(d): F′/(ϖF²), com F′ = 2f′f″. Este exercício achou um erro silencioso: a variável <code>\varpi</code> ficava com a barra, e F saía constante (seção VI). (e) é a identidade R<sub>μνρσ</sub> = ½R(gg − gg) em 2D, do enunciado 12: o Riemann se anula se e só se R se anula.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">f = f(\varpi)</code>
+  <code class="entrada">f' f'' = 0</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">C1 + C2*varpi</samp>
+  <p class="explica">(f): como F ≥ 1, R = 0 é F′ = 2f′f″ = 0, e z = f(ϖ) é linear: planos e cones.</p>
+</div>
+
+<h3>74. O cone <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-74">
   <p class="titulo-enunciado">Enunciado 74 · Geodésicas, conexão e curvatura na esfera e no cone</p>
@@ -1761,16 +1824,47 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>c) Calcule o tensor de curvatura R<sup>a</sup><sub>bcd</sub> ≡ ∂<sub>c</sub>Γ<sup>a</sup><sub>bd</sub> − ∂<sub>d</sub>Γ<sup>a</sup><sub>bc</sub> + Γ<sup>e</sup><sub>bd</sub>Γ<sup>a</sup><sub>ec</sub> − Γ<sup>e</sup><sub>bc</sub>Γ<sup>a</sup><sub>ed</sub>. Calcule também R<sub>bd</sub> ≡ R<sup>a</sup><sub>bad</sub> e R ≡ R<sup>a</sup><sub>a</sub>. Dê uma interpretação dos resultados.</p>
     <p>d) Quais são as equações das geodésicas? Determine as soluções mais gerais. Dica para a esfera: mostre que o momento angular se conserva e use isso para determinar as geodésicas. Dica para o cone: se você cortar e abrir o cone, quais são as geodésicas? Isso concorda com o que você encontrou para a curvatura?</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o cone: métrica, Christoffel e curvatura; as geodésicas, não (a esfera: enunciados 35 e 36).</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> para a esfera e o cone: a métrica induzida, Christoffel, Riemann, Ricci e R, as equações das geodésicas e as soluções — grandes círculos, cot θ = M sen(φ − φ₀); e, no cone, retas do cone aberto. A interpretação fica com o leitor.</p>
 </div>
 
-<p>van Baal (Leiden), ex. 5: o cone z = r mergulhado em ℝ³ tem ds² = 2dr² + r²dφ², com Γ<sup>r</sup><sub>φφ</sub> = −r/2 e curvatura nula.</p>
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(x, y, z)</code>
+  <code class="entrada">E = métrica(1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(\theta, \phi)</code>
+  <code class="entrada">h = induzida(E, a \sin\theta \cos\phi, a \sin\theta \sin\phi, a \cos\theta)</code>
+  <code class="entrada">escalar(h)</code>
+  <samp class="saida">2/a**2</samp>
+  <p class="explica">a esfera de raio a: <code>elemento(h)</code> dá a²dθ² + a²sin²θ dφ², e R = 2/a².</p>
+</div>
 
 <div class="exemplo">
-  <code class="entrada">x = coordenadas(r, \phi)</code>
-  <code class="entrada">g = métrica(2, r^2)</code>
-  <code class="entrada">escalar(g)</code>
+  <code class="entrada">X = coordenadas(x, y, z)</code>
+  <code class="entrada">E = métrica(1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(\theta, \phi)</code>
+  <code class="entrada">h = induzida(E, a \sin\theta \cos\phi, a \sin\theta \sin\phi, a \cos\theta)</code>
+  <code class="entrada">órbitas(h)</code>
+  <samp class="saida">sin(phi - phi_0)</samp>
+  <p class="explica">cot θ proporcional a sin(φ − φ₀): os grandes círculos, com L o momento angular que a dica manda usar.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(x, y, z)</code>
+  <code class="entrada">E = métrica(1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(r, \phi)</code>
+  <code class="entrada">h = induzida(E, r \cos\phi, r \sin\phi, r)</code>
+  <code class="entrada">escalar(h)</code>
   <samp class="saida">0</samp>
+  <p class="explica">o cone: ds² = 2dr² + r²dφ², e todo o Riemann é nulo.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(x, y, z)</code>
+  <code class="entrada">E = métrica(1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(r, \phi)</code>
+  <code class="entrada">h = induzida(E, r \cos\phi, r \sin\phi, r)</code>
+  <code class="entrada">órbitas(h)</code>
+  <samp class="saida">Eq(-sqrt(2)/r, sqrt(2)*sqrt(kappa)*sin(sqrt(2)*(phi - phi_0)/2)/L)</samp>
+  <p class="explica">1/r = c · sin((φ − φ₀)/√2): com o ângulo do cone aberto, ϑ = φ/√2, e ρ = √2 r, é ρ sen(ϑ − ϑ₀) = constante — retas, como diz a dica.</p>
 </div>
 
 <h3>75. Um campo gravitacional uniforme <span class="pill ok">resolve</span></h3>
@@ -1798,7 +1892,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">e Γ<sup>t</sup><sub>tz</sub> = a/(2(1 + az)), Γ<sup>z</sup><sub>tt</sub> = a/2.</p>
 </div>
 
-<h3>76. de Sitter em fatias planas <span class="pill aviso">em parte</span></h3>
+<h3>76. de Sitter em fatias planas <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-76">
   <p class="titulo-enunciado">Enunciado 76 · Espaço-tempo de de Sitter em coordenadas planas</p>
@@ -1812,17 +1906,30 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>(b) Prove que o espaço-tempo de de Sitter é uma solução de vácuo das equações de Einstein na presença de uma constante cosmológica positiva, para uma escolha particular de H. Qual é a relação entre H e Λ?</p>
     <p>(c) Considere um observador cuja linha de universo é dada por coordenadas espaciais (x, y, z) fixas. Explique por que essa trajetória é uma geodésica e mostre que decorre um tempo próprio infinito antes que o observador alcance η = 0.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a) e (b); (c), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) e (b), pelo Ricci e o escalar; (c) as equações das geodésicas, que x, y, z constantes resolvem, e o tempo próprio, que diverge.</p>
 </div>
-
-<p>Hirata, Ph236, HW5 #1: ds² = (−dη² + dx² + dy² + dz²)/(H²η²). R<sub>μν</sub> = 3H²g<sub>μν</sub> — logo G<sub>μν</sub> = −3H²g<sub>μν</sub> e Λ = 3H².</p>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(\eta, x, y, z)</code>
   <code class="entrada">g = métrica(-\frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2})</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">12*H**2</samp>
-  <p class="explica">e <code>ricci(g)</code> dá R<sub>ηη</sub> = −3/η², R<sub>ii</sub> = 3/η².</p>
+  <p class="explica">e <code>ricci(g)</code> dá R<sub>μν</sub> = 3H²g<sub>μν</sub>: G<sub>μν</sub> = −3H²g<sub>μν</sub>, e a equação de vácuo com Λ pede Λ = 3H².</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\eta, x, y, z)</code>
+  <code class="entrada">g = métrica(-\frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2})</code>
+  <code class="entrada">geodésicas(g)</code>
+  <samp class="saida">Derivative(x(lambda), (lambda, 2)) - 2*Derivative(eta(lambda), lambda)*Derivative(x(lambda), lambda)/eta(lambda)</samp>
+  <p class="explica">(c): as equações de x, y e z só têm termos com ẋ, ẏ, ż — x, y, z constantes as resolvem, e a de η fica com uma função só.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\int_{0}^{1} \frac{1}{\sigma} d\sigma</code>
+  <code class="entrada">avaliar(eq1)</code>
+  <samp class="saida">oo</samp>
+  <p class="explica">o tempo próprio até η = 0 é (1/H)∫dη/|η|; com σ = −η/η₀, é o que diverge.</p>
 </div>
 
 <h3>77. de Sitter em 2D <span class="pill aviso">em parte</span></h3>
@@ -1846,17 +1953,22 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>onde φ<sub>0</sub> é uma constante. Mostre também que M<sup>2</sup> &gt; 1 para geodésicas tipo tempo, M<sup>2</sup> = 1 para geodésicas nulas e M<sup>2</sup> &lt; 1 para geodésicas tipo espaço. Tratando u e φ como coordenadas cartesianas, esboce o conjunto das geodésicas que partem de (0, 0).</p>
     <p>Mostre, a partir do seu diagrama, que duas dessas geodésicas tipo tempo nunca voltam a se encontrar, mas que geodésicas tipo espaço podem voltar a se cruzar. Demonstre também que há pares de pontos que não podem ser ligados por uma geodésica. Quais dessas afirmações, se alguma, seriam válidas no espaço-tempo de Minkowski?</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel (e R = 2, que é da folha 3, Q3); as geodésicas, não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel, as equações das geodésicas, as duas integrais primeiras, e as geodésicas tanh u = M sen(φ − φ₀) com M² = 1 − κ/L² — M² &gt; 1, = 1, &lt; 1 para tipo tempo, nula, tipo espaço; e R = 2. O princípio variacional, o esboço e os argumentos tirados do diagrama, não.</p>
 </div>
 
-<p>Evans, folha 1, Q9: ds² = −du² + cosh²u dφ², Γ<sup>u</sup><sub>φφ</sub> = senh u cosh u, Γ<sup>φ</sup><sub>uφ</sub> = tgh u, e R = 2.</p>
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(u, \phi)</code>
+  <code class="entrada">g = métrica(-1, \cosh^2 u)</code>
+  <code class="entrada">órbitas(g)</code>
+  <samp class="saida">Eq(tanh(u), sqrt(L**2 - kappa)*sin(phi - phi_0)/L)</samp>
+  <p class="explica">com a substituição v = tanh u, que é a de Evans: v = M sen(φ − φ₀), M² = (L² − κ)/L². <code>geodésicas(g)</code> dá as equações e as integrais primeiras cosh²u φ̇ = K e g(ẋ, ẋ) = κ.</p>
+</div>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(u, \phi)</code>
   <code class="entrada">g = métrica(-1, \cosh^2 u)</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">2</samp>
-  <p class="explica">e <code>riemann(g)</code> dá R<sup>u</sup><sub>φuφ</sub> = cosh²u, isto é, R<sub>uφuφ</sub> = −cosh²u = ½R(g<sub>uu</sub>g<sub>φφ</sub> − 0), a fórmula de 2D.</p>
 </div>
 
 <h3>78. A família −f dt² + dr²/f <span class="pill aviso">em parte</span></h3>
@@ -1925,7 +2037,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">R_{{\theta}{\theta}}=q**2/r**2</samp>
 </div>
 
-<h3>80. AdS₃ global <span class="pill aviso">em parte</span></h3>
+<h3>80. AdS₃ global <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-80">
   <p class="titulo-enunciado">Enunciado 80 · Métrica de AdS<sub>3</sub></p>
@@ -1943,16 +2055,32 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>Estas são as coordenadas globais do AdS<sub>3</sub>. Embora no hiperboloide (9.1) se veja por (9.3) que t é uma coordenada periódica, quando dissermos “AdS<sub>3</sub>” sempre entenderemos o espaço em que t é “desenrolado”, t ∈ (−∞, ∞) (o recobrimento universal do hiperboloide).</p>
     <p>(b) Encontre a constante cosmológica em termos do raio ℓ do AdS.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b): Λ = −1/ℓ², pelo Ricci; o mergulho (a), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) o hiperboloide e a métrica induzida (9.4); (b) Λ = −1/ℓ², pelo Ricci.</p>
 </div>
 
-<p>Hartman (Cornell), §9.1: ds² = ℓ²(−cosh²ρ dt² + dρ² + senh²ρ dφ²), com R<sub>μν</sub> = −(2/ℓ²)g<sub>μν</sub>, R = −6/ℓ² e Λ = −1/ℓ².</p>
+<div class="exemplo">
+  <code class="entrada">-(\ell \cosh\rho \cos t)^2 + (\ell \sinh\rho \sin\phi)^2 + (\ell \sinh\rho \cos\phi)^2 - (\ell \cosh\rho \sin t)^2</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">-ell**2</samp>
+  <p class="explica">(a): a parametrização (9.3) está no hiperboloide (9.1).</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(X_0, X_1, X_2, X_3)</code>
+  <code class="entrada">H = métrica(-1, 1, 1, -1)</code>
+  <code class="entrada">u = coordenadas(t, \rho, \phi)</code>
+  <code class="entrada">g = induzida(H, \ell \cosh\rho \cos t, \ell \sinh\rho \sin\phi, \ell \sinh\rho \cos\phi, \ell \cosh\rho \sin t)</code>
+  <code class="entrada">elemento(g)</code>
+  <samp class="saida">dphi**2*ell**2*sinh(rho)**2 + drho**2*ell**2 - dt**2*ell**2*cosh(rho)**2</samp>
+  <p class="explica">a métrica induzida é a (9.4).</p>
+</div>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(t, \rho, \phi)</code>
   <code class="entrada">g = métrica(-\ell^2 \cosh^2\rho, \ell^2, \ell^2 \sinh^2\rho)</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-6/ell**2</samp>
+  <p class="explica">(b): com R<sub>μν</sub> = −(2/ℓ²)g<sub>μν</sub>, G<sub>μν</sub> = g<sub>μν</sub>/ℓ², e G<sub>μν</sub> + Λg<sub>μν</sub> = 0 dá Λ = −1/ℓ².</p>
 </div>
 
 <h3>81. O espaço hiperbólico H³ <span class="pill aviso">em parte</span></h3>
@@ -1971,16 +2099,25 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>(e) Expanda em série de Taylor o resultado de (d) e mostre que, se a, b e c são ≪ 1, recupera-se a lei dos cossenos usual.</p>
     <p><small>¹ No espaço hiperbólico, a menção à geodésica mais curta é redundante: há exatamente uma geodésica ligando dois pontos quaisquer. Isso vale, na verdade, para qualquer espaço simplesmente conexo de assinatura euclidiana (+ + +) e curvatura negativa semidefinida, isto é, em que R<sub>αβγδ</sub>ξ<sup>α</sup>η<sup>β</sup>ξ<sup>γ</sup>η<sup>δ</sup> ≤ 0 para quaisquer vetores ξ e η.</small></p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> só a premissa, a curvatura −1 (R<sub>ij</sub> = −2g<sub>ij</sub>); o que o exercício pede, (a)–(e), não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a): a métrica induzida no hiperboloide, e a curvatura −1; (b) os campos de Killing, (c) a distância geodésica, (d) a lei dos cossenos e (e), não.</p>
 </div>
 
-<p>Hirata, Ph236, HW16: ds² = dχ² + senh²χ dΩ², curvatura −1: R<sub>ij</sub> = −2g<sub>ij</sub>, R = −6.</p>
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(t, x, y, z)</code>
+  <code class="entrada">M = métrica(-1, 1, 1, 1)</code>
+  <code class="entrada">u = coordenadas(\chi, \theta, \phi)</code>
+  <code class="entrada">h = induzida(M, \cosh\chi, \sinh\chi \sin\theta \cos\phi, \sinh\chi \sin\theta \sin\phi, \sinh\chi \cos\theta)</code>
+  <code class="entrada">elemento(h)</code>
+  <samp class="saida">dchi**2 + dphi**2*sin(theta)**2*sinh(chi)**2 + dtheta**2*sinh(chi)**2</samp>
+  <p class="explica">(a): Φ(χ, θ, φ) = (cosh χ, sinh χ sin θ cos φ, sinh χ sin θ sin φ, sinh χ cos θ), que está em −t² + x² + y² + z² = −1.</p>
+</div>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(\chi, \theta, \phi)</code>
   <code class="entrada">g = métrica(1, \sinh^2\chi, \sinh^2\chi \sin^2\theta)</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-6</samp>
+  <p class="explica">curvatura −1: R<sub>ij</sub> = −2g<sub>ij</sub>, R = −6.</p>
 </div>
 
 <h3>82. A 4-esfera <span class="pill ok">resolve</span></h3>
@@ -1994,19 +2131,28 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p><em>Exercício:</em> mostre que, com ϱ = √(2/λ) sen ψ, isso dá a métrica da 3-esfera em termos de suas três coordenadas angulares ψ, θ, ϕ. De fato, a métrica de uma N-esfera pode ser escrita como</p>
     <p>dω<sub>N</sub><sup>2</sup> = dψ<sub>N</sub><sup>2</sup> + sen<sup>2</sup>ψ<sub>N</sub> dω<sub>N−1</sub><sup>2</sup>,&nbsp;&nbsp;&nbsp;R<sub>ij</sub><sup>(N)</sup> = λ<sub>N</sub>g<sub>ij</sub>;&nbsp;&nbsp;λ<sub>N</sub> = N − 1.&nbsp;&nbsp;&nbsp;(14.9)</p>
   </blockquote>
-  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> R<sub>ij</sub> = (N − 1)g<sub>ij</sub> para N = 4 (e a 3-esfera no enunciado 43).</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a métrica da 3-esfera por ϱ = √(2/λ) sen ψ, e R<sub>ij</sub> = (N − 1)g<sub>ij</sub>.</p>
 </div>
-
-<p>'t Hooft, notas de Utrecht, após a eq. (14.9): a N-esfera unitária tem R<sub>ij</sub> = (N−1)g<sub>ij</sub>; com N = 4, R = 12.</p>
 
 <div class="exemplo">
-  <code class="entrada">x = coordenadas(\alpha, \psi, \theta, \phi)</code>
-  <code class="entrada">g = métrica(1, \sin^2\alpha, \sin^2\alpha \sin^2\psi, \sin^2\alpha \sin^2\psi \sin^2\theta)</code>
-  <code class="entrada">escalar(g)</code>
-  <samp class="saida">12</samp>
+  <code class="entrada">X = coordenadas(\varrho, \theta, \phi)</code>
+  <code class="entrada">g = métrica(\frac{1}{1 - \frac{1}{2} \lambda \varrho^2}, \varrho^2, \varrho^2 \sin^2\theta)</code>
+  <code class="entrada">u = coordenadas(\psi, \theta, \phi)</code>
+  <code class="entrada">h = induzida(g, \sqrt{\frac{2}{\lambda}} \sin\psi, \theta, \phi)</code>
+  <code class="entrada">elemento(h)</code>
+  <samp class="saida">2*dphi**2*sin(psi)**2*sin(theta)**2/lambda + 2*dpsi**2/lambda + 2*dtheta**2*sin(psi)**2/lambda</samp>
+  <p class="explica">o exercício: com ϱ = √(2/λ) sen ψ, (14.2) com (14.8) é (2/λ)(dψ² + sin²ψ dΩ²), a 3-esfera. Uma mudança de coordenadas é o mesmo pull-back de um mergulho.</p>
 </div>
 
-<h3>85. O paraboloide de Flamm <span class="pill aviso">em parte</span></h3>
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\chi, \psi, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\chi, \sin^2\chi \sin^2\psi, \sin^2\chi \sin^2\psi \sin^2\theta)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">12</samp>
+  <p class="explica">e (14.9) para N = 4: R<sub>ij</sub> = 3g<sub>ij</sub>, R = 12.</p>
+</div>
+
+<h3>85. O paraboloide de Flamm <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-85">
   <p class="titulo-enunciado">Enunciado 85 · A forma da geometria de Schwarzschild (paraboloide de Flamm)</p>
@@ -2018,16 +2164,34 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>(c) Considere a superfície de revolução obtida girando sua curva em torno do eixo h. Qual é o elemento de linha dessa superfície? Compare sua resposta com a geometria de Schwarzschild.</p>
     <p>(d) Encontre a curvatura gaussiana dessa superfície. Ela é positiva ou negativa?</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (c) e (d) na fatia equatorial de Schwarzschild; o gráfico e o comprimento de arco, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) h(r), (b) o comprimento de arco, (c) a superfície de revolução, que é a fatia equatorial de Schwarzschild, e (d) K = −m/r³ &lt; 0. O gráfico fica com o leitor.</p>
 </div>
 
-<p>Dray, MTH 437, HW5: a fatia equatorial de Schwarzschild, ds² = dr²/(1 − 2m/r) + r²dφ², tem curvatura de Gauss K = −m/r³, isto é, R = 2K.</p>
+<div class="exemplo">
+  <code class="entrada">8 m r = h^2 + 16 m^2</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">2*sqrt(2)*sqrt(m*(-2*m + r))</samp>
+  <p class="explica">(a): h = ±√(8m(r − 2m)).</p>
+</div>
 
 <div class="exemplo">
-  <code class="entrada">x = coordenadas(r, \phi)</code>
-  <code class="entrada">g = métrica(\frac{1}{1 - \frac{2m}{r}}, r^2)</code>
+  <code class="entrada">X = coordenadas(r, h)</code>
+  <code class="entrada">E = métrica(1, 1)</code>
+  <code class="entrada">u = coordenadas(r)</code>
+  <code class="entrada">c = induzida(E, r, \sqrt{8 m r - 16 m^2})</code>
+  <code class="entrada">elemento(c)</code>
+  <samp class="saida">dr**2*r/(-2*m + r)</samp>
+  <p class="explica">(b): ds² = dr²/(1 − 2m/r) ao longo do gráfico.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(r, \phi, h)</code>
+  <code class="entrada">E = métrica(1, r^2, 1)</code>
+  <code class="entrada">u = coordenadas(r, \phi)</code>
+  <code class="entrada">g = induzida(E, r, \phi, \sqrt{8 m r - 16 m^2})</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-2*m/r**3</samp>
+  <p class="explica">(c): a superfície tem ds² = dr²/(1 − 2m/r) + r²dφ², a fatia equatorial de Schwarzschild; (d): K = R/2 = −m/r³, negativa.</p>
 </div>
 
 <h2 id="tensorial">III. Notação tensorial</h2>

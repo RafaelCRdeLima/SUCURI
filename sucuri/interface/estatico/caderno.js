@@ -139,6 +139,7 @@ var VERBOS = [
   'expandir', 'expand',
   'independentes', 'independent', 'em_componentes',
   'linearizar', 'linearize',
+  'geodesicas', 'geodésicas', 'geodesics', 'volume', 'serie', 'série', 'orbitas', 'órbitas', 'elemento',
   'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
 ];
 

@@ -43,13 +43,20 @@ from .interface.sessao import Sessao, codigo_python
 # `r` de "contrair". Bem formada e absurda.
 _GRUPO_CHAVES = r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}"
 _ROTULO = (r"\\?[A-Za-z_]\w*(?:[_^](?:" + _GRUPO_CHAVES + r"|\\[A-Za-z]+|\w))*")
-_RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
+_RE_COMANDO = re.compile(r"^\s*([^\W\d]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
                          r"(?:,\s*(" + _ROTULO + r")\s*)?\)\s*$")
 # `provar(eq5, eq1, eq2)`: o objetivo e as hipóteses, quantas forem. Forma
 # própria porque os outros verbos recebem um ou dois rótulos, e a lista de
 # hipóteses é justamente o que não pode ficar implícito.
 _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
                         r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
+# `h = induzida(g, X^1(u), …)`: o pull-back de g pela parametrização — um
+# mergulho, ou uma mudança de coordenadas.
+_RE_INDUZIDA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*induzida\s*\((.*)\)\s*$", re.I | re.S)
+# `volume(g, \psi = 0 .. \pi, …)` e `série(eq3, \epsilon, 5)`: argumentos que
+# não são só rótulos.
+_RE_VOLUME = re.compile(r"^\s*volume\s*\((.*)\)\s*$", re.I | re.S)
+_RE_SERIE = re.compile(r"^\s*(?:s[ée]rie|series)\s*\((.*)\)\s*$", re.I | re.S)
 # `independentes(C, eq3, eq4)`: um tensor e as equações que ele satisfaz.
 _RE_INDEPENDENTES = re.compile(r"^\s*(?:independentes|independent)\s*\(\s*(" +
                                _ROTULO + r"(?:\s*,\s*" + _ROTULO +
@@ -118,6 +125,10 @@ VERBOS = {
     "independentes": "independentes", "independent": "independentes",
     "em_componentes": "em_componentes",
     "linearizar": "linearizar", "linearize": "linearizar",
+    "geodesicas": "geodesicas", "geodésicas": "geodesicas", "geodesics": "geodesicas",
+    "volume": "volume", "serie": "serie", "série": "serie",
+    "orbitas": "orbitas", "órbitas": "orbitas",
+    "elemento": "elemento",
     **VERBOS_GEOMETRIA,
 }
 
@@ -210,7 +221,7 @@ def _e_instrucao(linha):
     if comando and comando.group(1).lower() in VERBOS:
         return True
     return any(regra.match(texto) for regra in
-               (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE,
+               (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE, _RE_INDUZIDA,
                 _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR, _RE_RIEMANN, _RE_FORMA))
 
 
@@ -302,6 +313,10 @@ class Caderno:
         if metrica:
             return self._metrica(metrica.group(1), metrica.group(2))
 
+        induz = _RE_INDUZIDA.match(fonte or "")
+        if induz:
+            return self._induzida(induz.group(1), induz.group(2))
+
         tensorial = _RE_TENSOR.match(fonte or "")
         if tensorial:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
@@ -349,6 +364,13 @@ class Caderno:
                 "erro": f"a declaração agora se escreve com parênteses: "
                         f"{nome} = {nome}({dentro}). O colchete ficou reservado "
                         f"a n-tupla."})
+
+        vol = _RE_VOLUME.match(fonte or "")
+        if vol:
+            return Celula(None, fonte, "comando", self._volume(vol.group(1)))
+        serie = _RE_SERIE.match(fonte or "")
+        if serie:
+            return Celula(None, fonte, "comando", self._serie(serie.group(1)))
 
         contagem = _RE_INDEPENDENTES.match(fonte or "")
         if contagem:
@@ -422,6 +444,8 @@ class Caderno:
                           {"erro": "declare as coordenadas antes da métrica: "
                                    "componente sem coordenada não diz de quê "
                                    "é componente"})
+        if re.match(r"^\s*ds\s*\^\s*\{?2\}?\s*=", texto):
+            return self._elemento_de_linha(nome, texto)
         componentes = []
         for escrito in self._argumentos(texto):
             expressao = self.sessao.expressao_de(escrito)
@@ -449,6 +473,208 @@ class Caderno:
                        "texto": f"{nome} é a métrica em ({metrica.coordenadas}), "
                                 f"diagonal, com {len(componentes)} componentes",
                        "latex_exato": sp.latex(metrica.matriz())})
+
+    def _registrar_metrica(self, nome, fonte, metrica, como):
+        metrica.escrito = nome
+        limpo = _sem_barra(nome)
+        self.metricas[limpo] = metrica
+        self.sessao.metrica_abstrata = limpo
+        self.sessao.tensores.pop(limpo, None)
+        return Celula(None, fonte, "declaracao",
+                      {"declarado": [{"nome": limpo, "metrica": True}],
+                       "texto": f"{nome} é a métrica em ({metrica.coordenadas}), "
+                                + como,
+                       "latex_exato": sp.latex(metrica.matriz())})
+
+    def _elemento_de_linha(self, nome, texto):
+        r"""`g = métrica(ds^2 = -dt^2 + 2a\,dt\,d\phi + …)`: com termos cruzados.
+
+        Cada d<coordenada> vira uma incógnita; o que se lê tem de ser uma forma
+        quadrática nelas, e os coeficientes são a matriz — o termo cruzado
+        dividido por dois, que é como ds² o escreve."""
+        from .geometria import Metrica
+        fonte = fonte_metrica(nome, texto)
+        corpo = texto.split("=", 1)[1]
+        corpo = re.sub(r"\\mathrm\{d\}", "d", corpo)
+        marcas = []
+        for k, s_ in enumerate(self.sessao.coordenadas):
+            escrito = self.sessao.escrita_coord.get(str(s_), str(s_))
+            marca = f"Q_{{{k}}}"
+            padrao = r"(?<![A-Za-z\\])d\s*" + re.escape(escrito) + r"(?![A-Za-z])"
+            corpo, n = re.subn(padrao, " " + marca + " ", corpo)
+            marcas.append(sp.Symbol(f"Q_{{{k}}}"))
+        expressao = self.sessao.expressao_de(corpo)
+        if expressao.pending:
+            return Celula(None, fonte, "declaracao",
+                          {"erro": "; ".join(expressao.questions())})
+        forma = sp.expand(expressao.to_sympy())
+        n = len(marcas)
+        G = sp.zeros(n, n)
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    G[i, i] = forma.coeff(marcas[i], 2)
+                else:
+                    G[i, j] = forma.coeff(marcas[i], 1).coeff(marcas[j], 1) / 2
+        resto = sp.expand(forma - sum(G[i, j] * marcas[i] * marcas[j]
+                                      for i in range(n) for j in range(n)))
+        if resto != 0 or any(G[i, j].has(*marcas) for i in range(n) for j in range(n)):
+            return Celula(None, fonte, "declaracao", {"erro": (
+                "o elemento de linha tem de ser quadrático nos d das coordenadas "
+                f"({', '.join('d' + self.sessao.escrita_coord.get(str(c), str(c)) for c in self.sessao.coordenadas)}); "
+                f"sobrou {sp.sstr(resto)}")})
+        G = G.applyfunc(sp.simplify)
+        try:
+            metrica = Metrica(_sem_barra(nome), self.sessao.coordenadas, G,
+                              self.sessao.escrita_coord)
+        except ValueError as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        return self._registrar_metrica(nome, fonte, metrica,
+                                       "dada pelo elemento de linha")
+
+    def _induzida(self, nome, texto):
+        r"""`h = induzida(g, X^1, …, X^n)`: o pull-back de g pela parametrização
+        X^a(u), com u as coordenadas declaradas por último."""
+        from .geometria import induzida
+        fonte = f"{nome} = induzida({texto.strip()})"
+        partes = self._argumentos(texto)
+        amb = _sem_barra(partes[0]) if partes else ""
+        if amb not in self.metricas:
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"induzida(g, …) começa pela métrica de onde se puxa — "
+                f"'{partes[0] if partes else ''}' não é métrica com componentes")})
+        ambiente = self.metricas[amb]
+        if list(self.sessao.coordenadas) == list(ambiente.simbolos):
+            return Celula(None, fonte, "declaracao", {"erro": (
+                "declare as coordenadas novas antes — x = coordenadas(u, v): "
+                "a métrica induzida vive nelas")})
+        imagens = []
+        for escrito in partes[1:]:
+            e = self.sessao.expressao_de(escrito)
+            if e.pending:
+                return Celula(None, fonte, "declaracao",
+                              {"erro": f"'{escrito}': " + "; ".join(e.questions())})
+            imagens.append(e.to_sympy())
+        try:
+            metrica = induzida(ambiente, list(self.sessao.coordenadas), imagens,
+                               self.sessao.escrita_coord, _sem_barra(nome))
+        except ValueError as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        return self._registrar_metrica(
+            nome, fonte, metrica,
+            f"o pull-back de {partes[0]} por "
+            f"({', '.join(partes[1:])})")
+
+    def _metrica_de(self, alvo):
+        if _sem_barra(alvo) not in self.metricas:
+            conhecidas = ", ".join(self.metricas) or "nenhuma ainda"
+            raise KeyError(f"não conheço a métrica '{alvo}' (tenho: {conhecidas})")
+        return self.metricas[_sem_barra(alvo)]
+
+    def _geodesicas(self, alvo):
+        """`geodesicas(g)`: ẍ^a + Γ^a_{bc}ẋ^bẋ^c = 0, e o que se conserva."""
+        from . import geometria
+        try:
+            metrica = self._metrica_de(alvo)
+        except KeyError as e:
+            return {"erro": str(e.args[0]), "alvo": alvo}
+        equacoes, conservadas, _, lam = geometria.geodesicas(metrica)
+        linhas = [["coordenadas", metrica.coordenadas, metrica.coordenadas]]
+        nomeados = []
+        for eq in equacoes:
+            nome = self._registrar(eq)
+            nomeados.append({"nome": nome, "sympy": sp.sstr(eq), "latex": sp.latex(eq)})
+            linhas.append([nome, sp.sstr(eq), sp.latex(eq)])
+        for rotulo, q in conservadas:
+            linhas.append([f"conserva-se ({rotulo})", sp.sstr(q), sp.latex(q)])
+        return {"alvo": alvo, "rotulo": f"geodésicas de {alvo}, com parâmetro afim λ",
+                "linhas": linhas, "nomeados": nomeados,
+                "exato": "; ".join(sp.sstr(e) for e in equacoes),
+                "texto": ("as equações das geodésicas, uma por coordenada, e o "
+                          "que se conserva ao longo delas: g(ẋ, ẋ), pelo "
+                          "parâmetro ser afim, e g(∂_k, ẋ) para cada coordenada "
+                          "de que a métrica não depende")}
+
+    def _orbitas(self, alvo):
+        """`órbitas(g)`: as geodésicas de uma métrica 2D por quadratura."""
+        from . import geometria
+        try:
+            metrica = self._metrica_de(alvo)
+            o = geometria.orbitas(metrica)
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e.args[0]), "alvo": alvo}
+        esc = lambda s_: metrica.escrita.get(str(s_), str(s_))
+        linhas = [["conservadas", f"L = g_φφ φ̇ e κ = g(ẋ,ẋ): κ = −1, 0, 1 para tipo tempo, nula, tipo espaço (na assinatura da métrica)"],
+                  [f"d{esc(o['phi'])}/d{esc(o['r'])}", sp.sstr(o["dphi_dr"]), sp.latex(o["dphi_dr"])]]
+        nomeados = []
+        if "v" in o:
+            linhas.append(["substituição", f"v = {sp.sstr(o['v'])}", "v = " + sp.latex(o["v"])])
+        if "integral" in o:
+            linhas.append([f"{esc(o['phi'])} − φ₀", sp.sstr(o["integral"]), sp.latex(o["integral"])])
+            linhas.append(["vale se", sp.sstr(o["condicao"]), sp.latex(o["condicao"])])
+            for eq in o["orbita"]:
+                nome = self._registrar(eq)
+                nomeados.append({"nome": nome, "sympy": sp.sstr(eq), "latex": sp.latex(eq)})
+                linhas.append([nome, sp.sstr(eq), sp.latex(eq)])
+        exato = "; ".join(sp.sstr(e) for e in o.get("orbita", [])) or sp.sstr(o["dphi_dr"])
+        return {"alvo": alvo, "exato": exato, "linhas": linhas, "nomeados": nomeados,
+                "rotulo": f"órbitas geodésicas de {alvo}",
+                "texto": ("por quadratura: as duas quantidades conservadas dão "
+                          "dφ/dr, e a substituição dv = √|g_rr|/g_φφ dr reduz a "
+                          "integral a uma forma elementar")}
+
+    def _volume(self, texto):
+        r"""`volume(g, \psi = 0 .. \pi, …)`: ∫√|det g|, com o elemento escrito."""
+        from . import geometria
+        partes = self._argumentos(texto)
+        try:
+            metrica = self._metrica_de(partes[0])
+        except KeyError as e:
+            return {"erro": str(e.args[0])}
+        limites = []
+        for p in partes[1:]:
+            m = re.match(r"^(.*?)=(.*?)\.\.(.*)$", p)
+            if not m:
+                return {"erro": f"'{p}': escreva o limite como x = a .. b"}
+            lidos = []
+            for pedaco in m.groups():
+                e = self.sessao.expressao_de(pedaco.strip())
+                if e.pending:
+                    return {"erro": f"'{pedaco}': " + "; ".join(e.questions())}
+                lidos.append(e.to_sympy().subs(sp.Symbol("pi"), sp.pi))
+            limites.append(tuple(lidos))
+        try:
+            raiz, valor = geometria.volume(metrica, limites)
+        except ValueError as e:
+            return {"erro": str(e)}
+        nome = self._registrar(valor)
+        return {"alvo": partes[0], "exato": sp.sstr(valor), "latex_exato": sp.latex(valor),
+                "linhas": [["elemento de volume", sp.sstr(raiz), sp.latex(raiz)],
+                           [nome, sp.sstr(valor), sp.latex(valor)]],
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(valor), "latex": sp.latex(valor)}],
+                "texto": "∫ √|det g| nos limites dados; o elemento sem módulo foi "
+                         "conferido positivo no domínio"}
+
+    def _serie(self, texto):
+        r"""`série(eq3, \epsilon, 5)`: a série até a ordem dada, com o O(·)."""
+        partes = self._argumentos(texto)
+        if len(partes) != 3:
+            return {"erro": "série(eq, variável, ordem)"}
+        try:
+            obj = self._objeto(_sem_barra(partes[0])).to_sympy()
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e)}
+        var = self.sessao.expressao_de(partes[1]).to_sympy()
+        try:
+            ordem = int(partes[2])
+        except ValueError:
+            return {"erro": "a ordem é um número inteiro"}
+        alvo = obj.lhs - obj.rhs if isinstance(obj, sp.Equality) else obj
+        valor = sp.series(alvo, var, 0, ordem)
+        nome = self._registrar(valor.removeO())
+        return {"alvo": partes[0], "exato": sp.sstr(valor), "latex_exato": sp.latex(valor),
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(valor.removeO()),
+                              "latex": sp.latex(valor.removeO())}]}
 
     def _assinatura(self, nome, texto):
         """`g = métrica(-,+,+,+)` — a assinatura, e não as componentes.
@@ -864,6 +1090,21 @@ class Caderno:
             return self._independentes(alvo, [segundo] if segundo else [])
         if verbo == "em_componentes":
             return self._em_componentes(alvo)
+        if verbo == "geodesicas":
+            return self._geodesicas(alvo)
+        if verbo == "orbitas":
+            return self._orbitas(alvo)
+        if verbo == "elemento":
+            from .geometria import elemento_de_linha
+            try:
+                metrica = self._metrica_de(alvo)
+            except KeyError as e:
+                return {"erro": str(e.args[0]), "alvo": alvo}
+            ds2 = elemento_de_linha(metrica)
+            return {"alvo": alvo, "exato": sp.sstr(ds2),
+                    "latex_exato": "ds^2 = " + sp.latex(ds2),
+                    "linhas": [["coordenadas", metrica.coordenadas, metrica.coordenadas],
+                               ["ds²", sp.sstr(ds2), sp.latex(ds2)]]}
         if verbo == "linearizar":
             return self._expandir(alvo, None, linear=segundo)
         try:
