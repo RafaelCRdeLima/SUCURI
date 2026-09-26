@@ -147,9 +147,9 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>20</td><td>5</td><td>0</td></tr>
+  <tr><td>componentes (25)</td><td>21</td><td>4</td><td>0</td></tr>
   <tr><td>tensorial (30)</td><td>20</td><td>8</td><td>2</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>63</strong></td><td><strong>19</strong></td><td><strong>3</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>64</strong></td><td><strong>18</strong></td><td><strong>3</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -1522,7 +1522,7 @@ declaradas, <code>christoffel</code>, <code>riemann</code>,
     <p>(b) Considere o transporte paralelo de um vetor tangente <b>A</b> = A<sup>θ</sup> <b>e</b><sub>θ</sub> + A<sup>φ</sup> <b>e</b><sub>φ</sub> sobre a esfera ao longo de um paralelogramo infinitesimal de lados <b>e</b><sub>θ</sub> dθ e <b>e</b><sub>φ</sub> dφ. Usando os resultados do item (a), mostre que, em primeira ordem em dΩ ≡ sen θ dθ dφ, o comprimento de <b>A</b> não se altera, mas sua direção gira de um ângulo igual a dΩ.</p>
     <p>(c) Mostre que, se <b>A</b> for transportado paralelamente ao longo da fronteira de qualquer ângulo sólido Ω simplesmente conexo, sua direção gira de um ângulo Ω. (“Simplesmente conexo” é um termo topológico que significa que a fronteira da região pode ser encolhida até um ponto; ele garante que não há buracos na variedade nem outras patologias.) Compare com o resultado do Problema 3 (transporte paralelo ao longo do paralelo θ = θ<sub>0</sub> na 2-esfera de raio a, ds² = a²(dθ² + sen²θ dφ²)).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (a); o transporte paralelo, (b) e (c), não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a) o Riemann, e (b): δA = R(·)A dθ dφ é ortogonal a A e tem |δA| = sen θ |A| dθ dφ — uma rotação de dΩ; (c), para qualquer região, é somar as rotações infinitesimais, um argumento, e não conta.</p>
 </div>
 
 <p>Cline, problema 7.2 (esfera unitária: Christoffel, Ricci, R = 2); MIT 8.962,
@@ -1542,6 +1542,51 @@ PS5 #4, com o exemplo resolvido de Carroll, eq. (3.105) (raio a: R = 2/a²).</p>
   <code class="entrada">g = métrica(a^2, a^2 \sin^2\theta)</code>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">2/a**2</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d, e, f, h, k = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">\nabla_a \nabla_b V^c - \nabla_b \nabla_a V^c = R^c{}_{dab} V^d</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">A = campo()</code>
+  <code class="entrada">R^a{}_{bcd} A^b</code>
+  <code class="entrada">em_carta(eq2)</code>
+  <samp class="saida">^{\theta}_{\theta}_{\phi}: A^phi(theta, phi)*sin(theta)**2</samp>
+  <p class="explica">36(b): em volta do paralelogramo, δA<sup>a</sup> = R<sup>a</sup><sub>bθφ</sub>A<sup>b</sup>dθdφ: δA<sup>θ</sup> = sen²θ A<sup>φ</sup>, δA<sup>φ</sup> = −A<sup>θ</sup>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d, e, f, h, k = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">\nabla_a \nabla_b V^c - \nabla_b \nabla_a V^c = R^c{}_{dab} V^d</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">A = campo()</code>
+  <code class="entrada">g_{ab} A^a R^b{}_{cef} A^c</code>
+  <code class="entrada">em_carta(eq2)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">δA ⟂ A: o comprimento não muda em primeira ordem.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d, e, f, h, k = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">\nabla_a \nabla_b V^c - \nabla_b \nabla_a V^c = R^c{}_{dab} V^d</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">A = campo()</code>
+  <code class="entrada">g_{ab} R^a{}_{cef} A^c R^b{}_{dhk} A^d - (g_{eh} g_{fk} - g_{ek} g_{fh}) g_{cd} A^c A^d</code>
+  <code class="entrada">em_carta(eq2)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">na componente θφθφ, |δA|² = sen²θ|A|² dθ²dφ²: a rotação é sen θ dθ dφ = dΩ.</p>
 </div>
 
 <h3>37. O plano em coordenadas polares <span class="pill ok">resolve</span></h3>
@@ -2150,7 +2195,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">2</samp>
 </div>
 
-<h3>78. A família −f dt² + dr²/f <span class="pill aviso">em parte</span></h3>
+<h3>78. A família −f dt² + dr²/f <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-78">
   <p class="titulo-enunciado">Enunciado 78 · Einstein–Maxwell esfericamente simétrico: Reissner–Nordström e Λ</p>
@@ -2177,17 +2222,96 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>mostre que se pode encontrar uma solução que se reduz à solução de Schwarzschild quando Q = 0.</p>
     <p>Encontre uma solução análoga no caso R<sub>αβ</sub> = Λg<sub>αβ</sub>.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> confere as componentes do Ricci que o enunciado dá; as equações de Einstein–Maxwell e resolver para f, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a forma R<sub>αβ</sub> = κ(…), pelo traço em 4D; as componentes do Ricci que o enunciado dá, conferidas; f para Einstein–Maxwell, que com Q = 0 é Schwarzschild; e f para R<sub>αβ</sub> = Λg<sub>αβ</sub>. (Com c = 1.)</p>
 </div>
 
-<p>Evans, folha 4, Q6: os Ricci de ds² = −f dt² + f<sup>−1</sup>dr² + r²dΩ², e depois f para Reissner–Nordström e para R<sub>μν</sub> = Λg<sub>μν</sub>. Os Ricci saem; resolver para f, não.</p>
+<p><code>em_carta(eq)</code> avalia uma expressão com índice componente por
+componente, na carta da métrica declarada: a métrica, as formas numa carta, os
+campos, e o Riemann, o Ricci e o escalar pelos Christoffel — na convenção que
+<code>riemann(eq)</code> e <code>ricci(eq)</code> leram.</p>
 
 <div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices(4)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">\kappa = constante</code>
+  <code class="entrada">R_{\alpha\beta} - \frac{1}{2} g_{\alpha\beta} R = \kappa \cdot (F_{\alpha\gamma} F_\beta{}^\gamma - \frac{1}{4} g_{\alpha\beta} F_{\gamma\delta} F^{\gamma\delta})</code>
+  <code class="entrada">R_{\alpha\beta} = \kappa \cdot (F_{\alpha\gamma} F_\beta{}^\gamma - \frac{1}{4} g_{\alpha\beta} F_{\gamma\delta} F^{\gamma\delta})</code>
+  <code class="entrada">provar(eq4, eq3)</code>
+  <samp class="saida">provado a partir de eq3</samp>
+  <p class="explica">o traço, em 4D, dá −R = 0 — T não tem traço —, e daí R<sub>αβ</sub> = κT<sub>αβ</sub>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
   <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
   <code class="entrada">f = f(r)</code>
   <code class="entrada">g = métrica(-f, \frac{1}{f}, r^2, r^2 \sin^2\theta)</code>
-  <code class="entrada">ricci(g)</code>
-  <samp class="saida">R_{{\theta}{\theta}}=-r*Derivative(f(r), r) - f(r) + 1</samp>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\mu\nu}</code>
+  <code class="entrada">em_carta(eq3)</code>
+  <samp class="saida">-r*Derivative(f(r), r) - f(r) + 1</samp>
+  <p class="explica">as componentes do enunciado: R<sub>tt</sub>/f = −fR<sub>rr</sub> = ½f″ + f′/r, R<sub>θθ</sub> = R<sub>φφ</sub>/sen²θ = 1 − rf′ − f.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">f = f(r)</code>
+  <code class="entrada">1 - r f'(r) - f(r) = \frac{\kappa Q^2}{2 r^2}</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">Eq(f(r), C1/r + Q**2*kappa/(2*r**2) + 1)</samp>
+  <p class="explica">a componente θθ, com T<sub>θθ</sub> = Q²/(2r²) (de <code>em_carta</code>, com F = forma(Q/r² dt∧dr)). Com C<sub>1</sub> = −2m, Q = 0 dá Schwarzschild.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2m}{r} + \frac{\kappa Q^2}{2 r^2}), \frac{1}{1 - \frac{2m}{r} + \frac{\kappa Q^2}{2 r^2}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">F = forma(\frac{Q}{r^2} dt \wedge dr)</code>
+  <code class="entrada">\kappa = constante</code>
+  <code class="entrada">R_{\alpha\beta} = \kappa \cdot (F_{\alpha\gamma} F_\beta{}^\gamma - \frac{1}{4} g_{\alpha\beta} F_{\gamma\delta} F^{\gamma\delta})</code>
+  <code class="entrada">em_carta(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">a solução confere nas quatro componentes, e não só na θθ.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">f = f(r)</code>
+  <code class="entrada">1 - r f'(r) - f(r) = \Lambda r^2</code>
+  <code class="entrada">resolver(eq1)</code>
+  <samp class="saida">Eq(f(r), C1/r - Lambda*r**2/3 + 1)</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2m}{r} - \frac{\Lambda r^2}{3}), \frac{1}{1 - \frac{2m}{r} - \frac{\Lambda r^2}{3}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\alpha\beta} = \Lambda g_{\alpha\beta}</code>
+  <code class="entrada">em_carta(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">Schwarzschild–de Sitter.</p>
 </div>
 
 <h3>79. Reissner–Nordström <span class="pill ok">resolve</span></h3>
@@ -3641,9 +3765,8 @@ um a um: a nota sob cada enunciado diz o que fica de fora.</p>
 
 <h3>Componentes</h3>
 
-<ul class="limites">
-  <li><strong>78 (em parte).</strong> Resolver a equação de Ricci para f.</li>
-</ul>
+<p>Nenhum que não saia: os parciais que restam pedem um argumento ou um
+desenho além do cálculo.</p>
 
 <h3>Notação tensorial</h3>
 

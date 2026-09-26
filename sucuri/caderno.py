@@ -138,7 +138,7 @@ VERBOS = {
     "geodesicas": "geodesicas", "geodésicas": "geodesicas", "geodesics": "geodesicas",
     "volume": "volume", "serie": "serie", "série": "serie",
     "orbitas": "orbitas", "órbitas": "orbitas",
-    "elemento": "elemento",
+    "elemento": "elemento", "em_carta": "em_carta",
     "cartan": "cartan", "tetrada": "cartan", "tétrada": "cartan",
     "killing": "killing", "colchete": "colchete", "nabla": "nabla",
     "cunha": "cunha", "exterior": "exterior", "estrela": "estrela",
@@ -1294,6 +1294,27 @@ class Caderno:
             return self._geodesicas(alvo)
         if verbo == "orbitas":
             return self._orbitas(alvo)
+        if verbo == "em_carta":
+            from .em_carta import SemComponentes, avaliar
+            try:
+                objeto = self._objeto(alvo).to_sympy()
+                expr = objeto.lhs - objeto.rhs if isinstance(objeto, sp.Equality) else objeto
+                nome = self.sessao.metrica_abstrata
+                metrica = self._metrica_de(nome or "")
+                espaco = self.sessao.documento()[0].espaco
+                comps = avaliar(expr, espaco, metrica, self.campos, self.formas_c)
+            except (KeyError, SemComponentes, ValueError) as e:
+                return {"erro": str(e.args[0]) if e.args else str(e), "alvo": alvo}
+            eq = isinstance(objeto, sp.Equality)
+            if not comps or (len(comps) == 1 and comps[0][0] == "" and comps[0][1] == 0):
+                return {"alvo": alvo, "exato": "True" if eq else "0",
+                        "texto": ("os dois lados coincidem, componente por componente" if eq
+                                  else "todas as componentes são nulas") + f", na carta ({metrica.coordenadas})"}
+            linhas = [[r or "valor", sp.sstr(v), sp.latex(v)] for r, v in comps]
+            return {"alvo": alvo, "linhas": [["coordenadas", metrica.coordenadas, metrica.coordenadas]] + linhas,
+                    "exato": "; ".join(f"{r}: {sp.sstr(v)}" if r else sp.sstr(v) for r, v in comps),
+                    "texto": ("componentes da diferença dos lados, não nulas" if eq else
+                              "componentes não nulas") + f", na carta ({metrica.coordenadas})"}
         if verbo == "cartan":
             from .cartan import SemBase, cartan, em_formas
             try:
