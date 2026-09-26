@@ -37,7 +37,23 @@ adivinhar.</strong> É essa a única regra, e tudo aqui sai dela.</p>
 <p class="nota-manual">Todos os exemplos deste manual são executados pela suíte
 de testes a cada mudança. O que está escrito aqui como saída é a saída.</p>
 
-<h2>1. Escrever e executar</h2>
+<nav class="sumario">
+  <a href="#escrever">1. Escrever</a> ·
+  <a href="#pergunta">2. Quando ele pergunta</a> ·
+  <a href="#declarar">3. Declarar</a> ·
+  <a href="#verbos">4. Os verbos</a> ·
+  <a href="#respostas">5. As respostas</a> ·
+  <a href="#nao-acha">6. Quando não acha</a> ·
+  <a href="#indices">7. Tensores com índice</a> ·
+  <a href="#componentes">8. Componentes</a> ·
+  <a href="#sem-indice">9. Sem índice</a> ·
+  <a href="#formas">10. Formas</a> ·
+  <a href="#traducao">11. De uma notação à outra</a> ·
+  <a href="#caderno">12. O caderno</a> ·
+  <a href="#limites">13. O que ainda não faz</a>
+</nav>
+
+<h2 id="escrever">1. Escrever e executar</h2>
 
 <p>No <a href="caderno.html">caderno</a>, escreva na célula e tecle
 <kbd>Shift</kbd>+<kbd>Enter</kbd>. Cada célula que vira matemática ganha um
@@ -49,7 +65,7 @@ depois.</p>
   <samp class="saida">x**2 + 1</samp>
 </div>
 
-<h2>2. Quando ele pergunta</h2>
+<h2 id="pergunta">2. Quando ele pergunta</h2>
 
 <p>Nem toda notação diz o que significa. <code>y''</code> pode ser a derivada
 segunda de <em>y</em>, ou um símbolo chamado “y duas linhas” — as duas se
@@ -63,7 +79,7 @@ escrevem igual, e o Sucuri não escolhe por você:</p>
 <p>Você responde clicando na leitura certa — ou, melhor, <strong>declarando</strong>,
 que responde de uma vez para o caderno inteiro.</p>
 
-<h2>3. Declarar</h2>
+<h2 id="declarar">3. Declarar</h2>
 
 <p>Declarar não escolhe entre as leituras: <strong>dissolve a dúvida</strong>. Se
 <em>y</em> é função de <em>x</em>, então <code>y'</code> só pode ser
@@ -79,8 +95,19 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>u = u(t,x)</code></td><td>u é função de t e x</td></tr>
   <tr><td><code>e = euler</code></td><td>e é o número de Euler, não um símbolo</td></tr>
   <tr><td><code>a = símbolo</code></td><td>a não é função: <code>a(x+1)</code> é produto</td></tr>
-  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais</td></tr>
-  <tr><td><code>g = tensor(0,2)</code></td><td>o tipo do Schutz: 0 formas, 2 vetores</td></tr>
+  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais — <code>índices(3)</code> dá a dimensão</td></tr>
+  <tr><td><code>T = tensor(0,2)</code></td><td>o tipo do Schutz: 0 formas, 2 vetores</td></tr>
+  <tr><td><code>F = tensor(0,2, antissimétrico)</code></td><td>e a simetria dos slots: <code>simétrico</code>, <code>antissimétrico</code>, <code>riemann</code></td></tr>
+  <tr><td><code>\omega = forma(2)</code></td><td>uma 2-forma — um (0,2) antissimétrico</td></tr>
+  <tr><td><code>g = métrica</code></td><td>a métrica: baixa e levanta índice, e é simétrica</td></tr>
+  <tr><td><code>g = métrica(-,+,+,+)</code></td><td>com a assinatura, escrita em sinais</td></tr>
+  <tr><td><code>g = métrica(…componentes…)</code></td><td>com as componentes da diagonal (seção 8)</td></tr>
+  <tr><td><code>\delta = kronecker</code></td><td>a delta: δ<sup>μ</sup><sub>ν</sub></td></tr>
+  <tr><td><code>\epsilon = levi-civita(tensor)</code></td><td>ou <code>(símbolo)</code> — os livros não fazem igual</td></tr>
+  <tr><td><code>\nabla = levi-civita</code></td><td>a conexão: ∇g = 0, sem torção</td></tr>
+  <tr><td><code>R = riemann(eq1)</code></td><td>o Riemann, na convenção que eq1 escreve</td></tr>
+  <tr><td><code>R = curvatura</code></td><td>R(U,X)W é o operador de curvatura, sem índice</td></tr>
+  <tr><td><code>\star = hodge</code></td><td>o dual de Hodge (pede a assinatura)</td></tr>
 </table>
 
 <p>Parêntese, como em livro. Escrito com o mesmo nome dos dois lados é
@@ -88,7 +115,7 @@ tautologia — ninguém escreve <code>u = u(t,x)</code> como equação —, e é
 repetição que separa declaração de matemática: <code>u(t,x)</code> sozinho
 continua sendo uma expressão.</p>
 
-<h2>4. Os verbos</h2>
+<h2 id="verbos">4. Os verbos</h2>
 
 <p>São poucos e fechados de propósito. Se aqui se pudesse escrever Python, a
 ponte que este programa é deixaria de ser obrigatória — e sobraria um Jupyter
@@ -205,12 +232,19 @@ rascunho da linha de cima não provaria nada.</p>
   <samp class="saida">nabla_Y(eq1)</samp>
   <p class="explica">cada linha da resposta diz de que hipótese veio e o que
     se fez com ela — aqui, ∇<sub>Y</sub> aplicado aos dois lados de eq1 —, e a
-    soma é conferida de novo antes do ∎. Por ora o verbo trabalha com a
-    conexão sem índice (seção 7); quando não acha, diz que não achar não é
-    prova de que é falso.</p>
+    soma é conferida de novo antes do ∎. O verbo trabalha sem índice — com a
+    conexão e com formas (seções 9 e 10); quando não acha, diz que não achar
+    não é prova de que é falso.</p>
 </div>
 
-<h2>5. O que cada resposta quer dizer</h2>
+<h3>contrair, indices</h3>
+
+<p><code>contrair</code> baixa e levanta índice com a métrica (seção 7);
+<code>indices</code> escreve com índice o que foi escrito sem (seção 11). Os
+verbos de componentes — <code>christoffel</code>, <code>riemann</code>,
+<code>ricci</code>, <code>escalar</code> — estão na seção 8.</p>
+
+<h2 id="respostas">5. O que cada resposta quer dizer</h2>
 
 <table class="tabela">
   <tr><td class="prov est">estabelecida</td>
@@ -228,7 +262,7 @@ aquele caso; <span class="pill erro">vermelho</span> impede de seguir. Nota de
 alcance — “isto não resolve a equação” — é verde: a conta está certa, o que ela
 não faz é que precisava ser dito.</p>
 
-<h2>6. Quando ele não acha</h2>
+<h2 id="nao-acha">6. Quando ele não acha</h2>
 
 <div class="exemplo">
   <code class="entrada">y = y(x)</code>
@@ -242,7 +276,7 @@ não faz é que precisava ser dito.</p>
     online.</p>
 </div>
 
-<h2>7. Tensores</h2>
+<h2 id="indices">7. Tensores com índice</h2>
 
 <p>Índice não é expoente, e o parser de LaTeX do SymPy não sabe a diferença:
 sem declaração, <code>A^\mu</code> viraria <em>A elevado a μ</em>. Quem decide
@@ -266,6 +300,194 @@ digitação, e a olho ninguém vê:</p>
   <samp class="erro-esperado">os termos da soma têm índices livres diferentes</samp>
 </div>
 
+<p>Declarada a métrica, o índice desce e sobe — <code>contrair</code> aplica a
+convenção <em>A<sub>μ</sub> ≡ g<sub>μν</sub>A<sup>ν</sup></em>:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">contrair(eq1)</code>
+  <samp class="saida">A(-mu)</samp>
+  <p class="explica">Ele exige o <code>g = métrica</code> porque baixar índice é
+    convenção <em>da métrica</em>, e não de um (0,2) qualquer — e nada na
+    expressão distingue os dois casos. Sem a declaração, recusa.</p>
+</div>
+
+<h3>Simetria</h3>
+
+<p>E a simetria dos slots se declara junto com o tipo. Serve às duas notações:
+com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">h = tensor(2, 0, simétrico)</code>
+  <code class="entrada">F_{\mu\nu} h^{\mu\nu}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">antissimétrico contraído com simétrico. A métrica é
+    simétrica sem precisar dizer; e simetria num (1,1) é recusada — trocar
+    índice de cima com de baixo pede a métrica, e aí é outro tensor.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d = índices</code>
+  <code class="entrada">R = tensor(0, 4, riemann)</code>
+  <code class="entrada">R_{abcd} - R_{cdab}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">as simetrias do Riemann (0,4): antissimétrico em cada par,
+    simétrico na troca dos pares — iguais em todo livro. A identidade cíclica
+    não entra: é teorema, e pede torção nula.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">T = tensor(0, 2)</code>
+  <code class="entrada">T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">(…) simetriza, […] antissimetriza, com o fator 1/n! de
+    Wald, MTW e Carroll; o que está entre barras, <code>S_{(\mu|\rho|\nu)}</code>,
+    fica de fora. Sem os índices declarados, recusa: o parser do SymPy
+    descarta os parênteses e leria T<sub>(μν)</sub> como T<sub>μν</sub>.</p>
+</div>
+
+<h3>Kronecker e Levi-Civita</h3>
+
+<p>A delta de Kronecker e o Levi-Civita também se declaram — δ porque
+<code>\delta</code> é também variação, e ε porque há duas leituras:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">A = tensor(1, 0)</code>
+  <code class="entrada">\delta^\mu_\nu A^\nu</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">A(mu)</samp>
+  <p class="explica">e <code>\delta^\mu_\mu</code> vira a dimensão.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\epsilon = levi-civita</code>
+  <samp class="erro-esperado">levi-civita(símbolo) ou levi-civita(tensor)?</samp>
+  <p class="explica">o símbolo vale ±1 em toda carta e não sobe nem desce com
+    g; o tensor é √|g| vezes o símbolo, e sobe e desce. As duas leituras dão
+    contas diferentes em <code>contrair</code>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(-,+,+,+)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">-24</samp>
+  <p class="explica">o sinal é (−1)<sup>s</sup>, com s os sinais negativos da
+    assinatura — por isso ela se declara com os sinais, e
+    <code>métrica(lorentziana)</code> sozinha é recusada. Com o símbolo, é +24
+    em qualquer assinatura.</p>
+</div>
+
+<h3>Derivada com índice</h3>
+
+<p>E a derivada com índice é um objeto próprio, e não um fator — ∂ comuta,
+∇ não, e as duas seguem Leibniz:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">com ∇ no lugar de ∂, não zera: ∇<sub>μ</sub>∇<sub>ν</sub>
+    − ∇<sub>ν</sub>∇<sub>μ</sub> é torção e curvatura, e nada se supõe.</p>
+</div>
+
+<p>Com a conexão declarada, o comutador vira curvatura — na convenção da
+definição que você escreveu:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu W_\rho - \nabla_\nu \nabla_\mu W_\rho</code>
+  <code class="entrada">simplificar(eq2)</code>
+  <samp class="saida">-R(L_0, -rho, -mu, -nu)*W(-L_0)</samp>
+  <p class="explica">o sinal e a ordem dos slots do Riemann variam de livro
+    para livro; <code>riemann(eq1)</code> os lê da identidade escrita. E
+    <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
+</div>
+
+<h2 id="componentes">8. Componentes numa carta</h2>
+
+<p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
+índices embaixo. Não diz o que <code>g</code> <em>vale</em>. Para Christoffel,
+Ricci e Riemann é preciso o outro lado: componentes, numa carta. Declare as
+coordenadas e depois a métrica, pela diagonal:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <samp class="saida">g é a métrica em (t, r, \theta, \phi), diagonal, com 4 componentes</samp>
+  <p class="explica">Schwarzschild. A diagonal, e não <code>\begin{pmatrix}</code>,
+    porque o parser de LaTeX do SymPy não lê matriz — e porque é assim que os
+    livros dão quase todas as métricas que importam.</p>
+</div>
+
+<p>Daí saem <code>christoffel</code>, <code>riemann</code>, <code>ricci</code>
+e <code>escalar</code>. O que volta são <em>componentes</em>, e por isso a
+resposta diz sempre em que coordenadas está: trocar de carta troca todas
+elas.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">0 componente(s) não nula(s)</samp>
+  <p class="explica">Ricci nulo — Schwarzschild é solução do vácuo. Este é o
+    teste de sanidade de toda relatividade, e o programa o faz em segundos.
+    Ao contrário de uma componente, «Ricci é nulo» não depende da carta.</p>
+</div>
+
+<p>E se a métrica tiver componentes, <code>avaliar</code> dá o outro lado: não a
+estrutura, o valor.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">avaliar(eq1)</code>
+  <samp class="saida">A_{t}</samp>
+  <p class="explica">as quatro componentes de A<sub>μ</sub>, cada uma em função
+    das de A<sup>μ</sup> — que ninguém declarou, e por isso entram como nomes
+    (<code>A__t</code> é A<sup>t</sup> na convenção do SymPy, que reentra sem
+    virar potência).</p>
+</div>
+
+<p>O que a tabela imprime tem nome, e nome é alvo de verbo:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">christoffel(g)</code>
+  <code class="entrada">avaliar(\Gamma^{r}_{tt})</code>
+  <samp class="saida">M*(-2*M + r)/r**3</samp>
+  <p class="explica">sem as chaves duplas que a tabela usa — chave é tipografia
+    do TeX, não identidade. E a componente que vale zero <em>não</em> entra na
+    tabela (55 zeros escondem as nove que importam) mas responde quando
+    perguntada: <code>avaliar(\Gamma^{t}_{rr})</code> dá <code>0</code>.</p>
+</div>
+
+<h2 id="sem-indice">9. Sem índice: a conexão</h2>
+
 <p>Sem índice, o vetor é o objeto abstrato, e a mesma declaração diz o que
 <code>\nabla_U</code> quer dizer: a derivada na direção de U.</p>
 
@@ -277,6 +499,13 @@ digitação, e a olho ninguém vê:</p>
   <p class="explica">aplicação, e não produto: a ordem fica na estrutura, e os
     dois termos não se cancelam. Sem a declaração o parser leria
     <code>X*nabla_{U}</code>, que comuta — e a curvatura sumiria.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\nabla_V X</code>
+  <samp class="erro-esperado">'V' não foi declarado</samp>
+  <p class="explica">∇<sub>V</sub> e ∇<sub>μ</sub> se escrevem igual. Quem
+    decide entre direção e índice é a declaração.</p>
 </div>
 
 <p>Com <code>R = curvatura</code>, <code>R(U,X)W</code> é o operador aplicado a
@@ -337,6 +566,24 @@ uma vez, e a prova a instancia onde precisar:</p>
     vazam para as linhas de baixo.</p>
 </div>
 
+<p>Escalar é o que não foi declarado tensor, e <code>\nabla_U f</code> é a
+derivada direcional U(f). Todo símbolo que não é número é tratado como
+função — o lado seguro: se c for constante, U(c) = 0 é caso particular, e a
+prova que precisar disso pede a hipótese.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U f = 0</code>
+  <code class="entrada">\nabla_U (f X) = f \nabla_U X</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">eq1·X</samp>
+  <p class="explica">Leibniz: ∇<sub>U</sub>(fX) = U(f)X + f∇<sub>U</sub>X, e
+    a hipótese escalar entra multiplicada por X. A combinação que fecha uma
+    prova é só com números: multiplicar por função é passo explícito, e de
+    fX = fU não sai X = U — falso onde f se anula.</p>
+</div>
+
 <p>Com <code>g = métrica</code>, <code>g(X,Y)</code> é o produto escalar —
 simétrico e linear em cada slot, sem hipótese. A compatibilidade com a métrica
 é hipótese, e com ela e a torção nula sai a fórmula de Koszul:</p>
@@ -356,115 +603,7 @@ simétrico e linear em cada slot, sem hipótese. A compatibilidade com a métric
     prova.</p>
 </div>
 
-<div class="exemplo">
-  <code class="entrada">\nabla_V X</code>
-  <samp class="erro-esperado">'V' não foi declarado</samp>
-  <p class="explica">∇<sub>V</sub> e ∇<sub>μ</sub> se escrevem igual. Quem
-    decide entre direção e índice é a declaração.</p>
-</div>
-
-<p>E a simetria dos slots se declara junto com o tipo. Serve às duas notações:
-com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</p>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
-  <code class="entrada">h = tensor(2, 0, simétrico)</code>
-  <code class="entrada">F_{\mu\nu} h^{\mu\nu}</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">0</samp>
-  <p class="explica">antissimétrico contraído com simétrico. A métrica é
-    simétrica sem precisar dizer; e simetria num (1,1) é recusada — trocar
-    índice de cima com de baixo pede a métrica, e aí é outro tensor.</p>
-</div>
-
-<div class="exemplo">
-  <code class="entrada">a, b, c, d = índices</code>
-  <code class="entrada">R = tensor(0, 4, riemann)</code>
-  <code class="entrada">R_{abcd} - R_{cdab}</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">0</samp>
-  <p class="explica">as simetrias do Riemann (0,4): antissimétrico em cada par,
-    simétrico na troca dos pares — iguais em todo livro. A identidade cíclica
-    não entra: é teorema, e pede torção nula.</p>
-</div>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">T = tensor(0, 2)</code>
-  <code class="entrada">T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">0</samp>
-  <p class="explica">(…) simetriza, […] antissimetriza, com o fator 1/n! de
-    Wald, MTW e Carroll; o que está entre barras, <code>S_{(\mu|\rho|\nu)}</code>,
-    fica de fora. Sem os índices declarados, recusa: o parser do SymPy
-    descarta os parênteses e leria T<sub>(μν)</sub> como T<sub>μν</sub>.</p>
-</div>
-
-<p>A delta de Kronecker e o Levi-Civita também se declaram — δ porque
-<code>\delta</code> é também variação, e ε porque há duas leituras:</p>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">\delta = kronecker</code>
-  <code class="entrada">A = tensor(1, 0)</code>
-  <code class="entrada">\delta^\mu_\nu A^\nu</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">A(mu)</samp>
-  <p class="explica">e <code>\delta^\mu_\mu</code> vira a dimensão.</p>
-</div>
-
-<div class="exemplo">
-  <code class="entrada">\epsilon = levi-civita</code>
-  <samp class="erro-esperado">levi-civita(símbolo) ou levi-civita(tensor)?</samp>
-  <p class="explica">o símbolo vale ±1 em toda carta e não sobe nem desce com
-    g; o tensor é √|g| vezes o símbolo, e sobe e desce. As duas leituras dão
-    contas diferentes em <code>contrair</code>.</p>
-</div>
-
-<p>E a derivada com índice é um objeto próprio, e não um fator — ∂ comuta,
-∇ não, e as duas seguem Leibniz:</p>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">0</samp>
-  <p class="explica">com ∇ no lugar de ∂, não zera: ∇<sub>μ</sub>∇<sub>ν</sub>
-    − ∇<sub>ν</sub>∇<sub>μ</sub> é torção e curvatura, e nada se supõe.</p>
-</div>
-
-<p>Com a conexão declarada, o comutador vira curvatura — na convenção da
-definição que você escreveu:</p>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
-  <code class="entrada">V = tensor(1, 0)</code>
-  <code class="entrada">W = tensor(0, 1)</code>
-  <code class="entrada">\nabla = levi-civita</code>
-  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
-  <code class="entrada">R = riemann(eq1)</code>
-  <code class="entrada">\nabla_\mu \nabla_\nu W_\rho - \nabla_\nu \nabla_\mu W_\rho</code>
-  <code class="entrada">simplificar(eq2)</code>
-  <samp class="saida">-R(L_0, -rho, -mu, -nu)*W(-L_0)</samp>
-  <p class="explica">o sinal e a ordem dos slots do Riemann variam de livro
-    para livro; <code>riemann(eq1)</code> os lê da identidade escrita. E
-    <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
-</div>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
-  <code class="entrada">\delta = kronecker</code>
-  <code class="entrada">g = métrica(-,+,+,+)</code>
-  <code class="entrada">\epsilon = levi-civita(tensor)</code>
-  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}</code>
-  <code class="entrada">simplificar(eq1)</code>
-  <samp class="saida">-24</samp>
-  <p class="explica">o sinal é (−1)<sup>s</sup>, com s os sinais negativos da
-    assinatura — por isso ela se declara com os sinais, e
-    <code>métrica(lorentziana)</code> sozinha é recusada. Com o símbolo, é +24
-    em qualquer assinatura.</p>
-</div>
+<h2 id="formas">10. Formas diferenciais</h2>
 
 <p>E as formas diferenciais, sem índice: d, ∧, ι<sub>X</sub>,
 ℒ<sub>X</sub>. <code>\omega = forma(2)</code> declara uma 2-forma;
@@ -495,6 +634,8 @@ numa forma declarada.</p>
     ⋆⋆.</p>
 </div>
 
+<h2 id="traducao">11. De uma notação à outra</h2>
+
 <p>E de uma notação à outra: <code>indices</code> escreve com índice o que
 foi provado sem.</p>
 
@@ -510,84 +651,7 @@ foi provado sem.</p>
     diz numa nota o que supôs sobre R sem índice.</p>
 </div>
 
-<h2>8. Métrica e curvatura</h2>
-
-<p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
-índices embaixo. Não diz o que <code>g</code> <em>vale</em>. Para Christoffel,
-Ricci e Riemann é preciso o outro lado: componentes, numa carta. Declare as
-coordenadas e depois a métrica, pela diagonal:</p>
-
-<div class="exemplo">
-  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
-  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
-  <samp class="saida">g é a métrica em (t, r, \theta, \phi), diagonal, com 4 componentes</samp>
-  <p class="explica">Schwarzschild. A diagonal, e não <code>\begin{pmatrix}</code>,
-    porque o parser de LaTeX do SymPy não lê matriz — e porque é assim que os
-    livros dão quase todas as métricas que importam.</p>
-</div>
-
-<p>Daí saem <code>christoffel</code>, <code>riemann</code>, <code>ricci</code>
-e <code>escalar</code>. O que volta são <em>componentes</em>, e por isso a
-resposta diz sempre em que coordenadas está: trocar de carta troca todas
-elas.</p>
-
-<div class="exemplo">
-  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
-  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
-  <code class="entrada">ricci(g)</code>
-  <samp class="saida">0 componente(s) não nula(s)</samp>
-  <p class="explica">Ricci nulo — Schwarzschild é solução do vácuo. Este é o
-    teste de sanidade de toda relatividade, e o programa o faz em segundos.
-    Ao contrário de uma componente, «Ricci é nulo» não depende da carta.</p>
-</div>
-
-<p>Declarada a métrica, o índice desce e sobe — <code>contrair</code> aplica a
-convenção <em>A<sub>μ</sub> ≡ g<sub>μν</sub>A<sup>ν</sup></em>:</p>
-
-<div class="exemplo">
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">g = métrica</code>
-  <code class="entrada">A = tensor(1,0)</code>
-  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
-  <code class="entrada">contrair(eq1)</code>
-  <samp class="saida">A(-mu)</samp>
-  <p class="explica">Ele exige o <code>g = métrica</code> porque baixar índice é
-    convenção <em>da métrica</em>, e não de um (0,2) qualquer — e nada na
-    expressão distingue os dois casos. Sem a declaração, recusa.</p>
-</div>
-
-<p>E se a métrica tiver componentes, <code>avaliar</code> dá o outro lado: não a
-estrutura, o valor.</p>
-
-<div class="exemplo">
-  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
-  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
-  <code class="entrada">\mu, \nu = índices</code>
-  <code class="entrada">A = tensor(1,0)</code>
-  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
-  <code class="entrada">avaliar(eq1)</code>
-  <samp class="saida">A_{t}</samp>
-  <p class="explica">as quatro componentes de A<sub>μ</sub>, cada uma em função
-    das de A<sup>μ</sup> — que ninguém declarou, e por isso entram como nomes
-    (<code>A__t</code> é A<sup>t</sup> na convenção do SymPy, que reentra sem
-    virar potência).</p>
-</div>
-
-<p>O que a tabela imprime tem nome, e nome é alvo de verbo:</p>
-
-<div class="exemplo">
-  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
-  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
-  <code class="entrada">christoffel(g)</code>
-  <code class="entrada">avaliar(\Gamma^{r}_{tt})</code>
-  <samp class="saida">M*(-2*M + r)/r**3</samp>
-  <p class="explica">sem as chaves duplas que a tabela usa — chave é tipografia
-    do TeX, não identidade. E a componente que vale zero <em>não</em> entra na
-    tabela (55 zeros escondem as nove que importam) mas responde quando
-    perguntada: <code>avaliar(\Gamma^{t}_{rr})</code> dá <code>0</code>.</p>
-</div>
-
-<h2>9. O caderno</h2>
+<h2 id="caderno">12. O caderno</h2>
 
 <table class="tabela">
   <tr><td><strong>Novo</strong></td><td>apaga o escrito e o acumulado</td></tr>
@@ -617,7 +681,7 @@ A = tensor(1,0)</code>
     duas metades sem sentido no lugar de um erro.</p>
 </div>
 
-<h2>10. O que ele ainda não faz</h2>
+<h2 id="limites">13. O que ele ainda não faz</h2>
 
 <p>Dizer isto é parte do trabalho. Nada abaixo falha em silêncio — tudo recusa
 com o motivo.</p>
@@ -627,18 +691,6 @@ com o motivo.</p>
     <code>\operatorname{arsinh}</code>, <code>\coth</code>,
     <code>\left\|·\right\|</code>. O SymPy <em>tem</em> essas funções; o parser
     de LaTeX é que não as lê.</li>
-  <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): é
-    lida, com Leibniz e com ∂ comutando; ∇g = 0 e a identidade de Ricci vêm
-    de <code>\nabla = levi-civita</code> e <code>R = riemann(eq)</code>, e εε
-    da assinatura, <code>g = métrica(-,+,+,+)</code>. A derivada
-    <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
-    com os vetores declarados, já são lidos, e <code>provar</code> encadeia
-    hipóteses sobre eles, gerais (<code>\forall</code>) ou não. Mas só
-    igualdades lineares entre campos vetoriais, com coeficientes escalares; a
-    regra de Leibniz entra, e hipótese escalar (<code>\nabla_U f = 0</code>)
-    também, mas escalar com <code>\forall</code> ainda não. E a busca é
-    finita: prova que pede muitas instâncias encadeadas pode demorar ou não
-    sair.</li>
   <li><strong><code>\frac{d}{dx}</code> como operador</strong> não é sítio
     declarado: funciona porque a gramática do SymPy tem uma regra para ela, e
     onde essa regra não alcança o silêncio volta.</li>
@@ -646,6 +698,15 @@ com o motivo.</p>
     vez.</li>
   <li><strong>Métrica não diagonal</strong>: a declaração pede a diagonal.
     Kerr, com o seu termo cruzado <em>dt dφ</em>, ainda não entra.</li>
+  <li><strong><code>provar</code></strong> encadeia hipóteses por álgebra
+    linear, com uma busca finita: prova que pede uma <em>ideia</em> — introduzir
+    uma quantidade que não aparece no enunciado — não sai, e prova que pede
+    muitas instâncias encadeadas pode demorar. Só trabalha sem índice.</li>
+  <li><strong>Formas</strong>: a fórmula de dω nos vetores entra como
+    hipótese, porque muda de fator com a normalização; o codiferencial
+    δ = ±⋆d⋆ não vem pronto, porque o sinal é de convenção.</li>
+  <li><strong>Tradução</strong>: só de sem índice para com índice; ∀ e formas
+    não se traduzem.</li>
 </ul>
 
 <p class="fecho">O código, as auditorias e a lista completa de limites estão em

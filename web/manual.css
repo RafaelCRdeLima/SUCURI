@@ -43,3 +43,6 @@
 .fecho{margin-top:30px;font-size:13px;color:var(--tinta-2)}
 
 @media (max-width:640px){ .manual{padding:22px 18px 36px} }
+.sumario{font-size:12.5px;line-height:1.9;color:var(--tinta-2);margin:14px 0 6px}
+.sumario a{color:var(--tinta-2);text-decoration:none;border-bottom:1px dotted var(--tinta-2)}
+.sumario a:hover{color:var(--folha);border-bottom-color:var(--folha)}
