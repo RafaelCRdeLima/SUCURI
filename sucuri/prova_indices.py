@@ -43,6 +43,10 @@ from sympy.tensor.tensor import TensAdd, TensExpr, Tensor, TensorIndex, TensMul
 from .derivadas import REGISTRO, derivar, escalar_de
 
 LIMITE_CANDIDATOS = 600
+LIMITE_ALVOS = 150
+"""Quantos termos a busca persegue. As provas da apostila usam até ~100; sem
+teto, um objetivo falso gerava alvo sobre alvo até ∇∇ e levava minutos para
+dizer que não achou."""
 RODADAS = 3
 
 
@@ -216,8 +220,11 @@ def proximo_nivel(atual, espaco, simplificar):
         base = r.bruto if r.bruto is not None else r.expr
         if base == 0:
             continue
-        bruto = derivar(base, "D", -c, espaco)
-        d = simplificar(bruto)
+        try:
+            bruto = derivar(base, "D", -c, espaco)
+            d = simplificar(bruto)
+        except RecursionError:
+            continue                    # ∇ de uma hipótese grande demais: fica sem
         if isinstance(d, TensExpr) and d != 0:
             proxima.append(Relacao(_renomear_mudos(d, espaco), r.origem,
                                    r.derivadas + (c,), r.latex_origem, bruto=bruto))
@@ -241,11 +248,38 @@ def _casar(fator_h, forma_t, mapa):
     return novo
 
 
-def _casamentos(termo_h, termo_t, metrica=None):
+def _mudos_frescos(fatores, espaco):
+    """Os fatores de um termo com os mudos renomeados, um a um — multiplicados
+    o SymPy os chamaria de L_0 de novo. Casar um livre da relação com o L_0
+    do alvo, numa relação que tem o seu próprio L_0 por dentro, daria dois
+    índices iguais, e a candidata se perderia calada."""
+    nomes = [i.name for f in fatores for i in f.indices]
+    mudos = {n for n in nomes if nomes.count(n) == 2}
+    if not mudos:
+        return fatores, {}
+    novo = {n: _fresco(espaco, "pz") for n in sorted(mudos)}
+    saida = []
+    for f in fatores:
+        trocas = [(i, novo[i.name] if i.is_up else -novo[i.name])
+                  for i in f.indices if i.name in novo]
+        saida.append(f.substitute_indices(*trocas) if trocas else f)
+    # para o certificado: os nomes novos voltam a ser os do objetivo
+    return saida, {v.name: TensorIndex(n, espaco.tipo) for n, v in novo.items()}
+
+
+def _de_volta(indice, voltar):
+    if indice.name not in voltar:
+        return indice
+    original = voltar[indice.name]
+    return original if indice.is_up else -original
+
+
+def _casamentos(termo_h, termo_t, metrica=None, ft=None):
     """Cada modo de pôr os fatores de h entre os de t: (mapa, índices de t
     usados). Um fator da métrica em h não precisa casar: a relação pode ser
     contraída com g^{..} que o cancela."""
-    fh, ft = _fatores(termo_h), _fatores(termo_t)
+    fh = _fatores(termo_h)
+    ft = _fatores(termo_t) if ft is None else ft
     sem_g = [f for f in fh if f.head.name != metrica]
     if metrica and sem_g and len(sem_g) < len(fh):
         fh = sem_g
@@ -354,12 +388,13 @@ def candidatos(alvo, relacoes, espaco, simplificar, vistos, livres=None):
         saida.append((c, r, trocas, cofator))
 
     for termo in _termos(alvo):
-        ft = _fatores(termo)
+        originais = _fatores(termo)
+        ft, voltar = _mudos_frescos(originais, espaco)
         for r in relacoes:
             if r.expr == 0:
                 continue
             for th in r.termos_para_casar(espaco):
-                pares = [(m, u) for m0, u in _casamentos(th, termo, espaco.metrica)
+                pares = [(m, u) for m0, u in _casamentos(th, termo, espaco.metrica, ft)
                          for m in _com_tracos(m0, r.livres, espaco)]
                 for mapa, usados in pares:
                     trocas, metricas = _trocas(r.livres, mapa, espaco)
@@ -375,11 +410,14 @@ def candidatos(alvo, relacoes, espaco, simplificar, vistos, livres=None):
                         continue
                     if not isinstance(c, TensExpr) or c == 0 or str(c) in vistos:
                         continue
-                    entra(c, r, trocas, cofator)
+                    exibidas = [(a, _de_volta(b, voltar)) for a, b in trocas]
+                    exibido = _produto([f for j, f in enumerate(originais)
+                                        if j not in usados])
+                    entra(c, r, exibidas, exibido)
                     for v, perm in _variantes(c, livres or []):
                         v = simplificar(v)
                         if isinstance(v, TensExpr) and v != 0:
-                            entra(v, r, trocas + [("perm", perm)], cofator)
+                            entra(v, r, exibidas + [("perm", perm)], exibido)
                     if len(vistos) > LIMITE_CANDIDATOS:
                         return saida
     return saida
@@ -491,6 +529,8 @@ def _buscar(objetivo, alvo, relacoes, espaco, simplificar, livres, estado):
             break
         pendentes = []
         for c, *_ in novos:
+            if len(estado.alvos) >= LIMITE_ALVOS:
+                break
             pendentes += estado._alvo(c)
         pendentes = list(estado.alvos) if not pendentes else pendentes
     return None

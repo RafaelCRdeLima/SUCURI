@@ -146,10 +146,10 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
+  <tr><td>indicial (30)</td><td>24</td><td>6</td><td>0</td></tr>
   <tr><td>componentes (25)</td><td>21</td><td>4</td><td>0</td></tr>
-  <tr><td>tensorial (30)</td><td>21</td><td>8</td><td>1</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>65</strong></td><td><strong>18</strong></td><td><strong>2</strong></td></tr>
+  <tr><td>tensorial (30)</td><td>21</td><td>9</td><td>0</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>66</strong></td><td><strong>19</strong></td><td><strong>0</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -166,13 +166,14 @@ para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64
 66), o Ricci como contração declarada (13, 63), e <code>provar</code> com
 hipóteses escritas com índice (10, 14, 15, 68, 69), contar componentes
 independentes (12, 13, 61), as coordenadas com índice (62) e a teoria
-linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri
+linearizada (71), e a lei de transformação dos Christoffel, com as duas cartas no mesmo tipo de índice (3). Em componentes, o Sucuri
 calcula Christoffel, Riemann, Ricci e escalar de qualquer métrica — dada pela
 diagonal, pelo elemento de linha, ou induzida por um mergulho ou mudança de
 coordenadas —, as geodésicas (as equações, o que se conserva, e as órbitas
 por quadratura), a base ortonormal com as formas de Cartan, e campos por
-componentes — ∇A, o laplaciano, ℒ<sub>X</sub>g e o colchete. O que falta pede
-transporte paralelo, ou achar uma transformação.</p>
+componentes — ∇A, o laplaciano, ℒ<sub>X</sub>g e o colchete —; e
+<code>em_carta</code> avalia qualquer expressão com índice componente por
+componente (36, 78). O que falta é argumento, ou achar uma transformação.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -316,6 +317,141 @@ declara. <code>expandir</code> abre cada ∇ em ∂ e um Γ por índice.</p>
   <samp class="saida">True</samp>
   <p class="explica">sem o termo de −Γ do índice de baixo, a resposta não é
     <code>True</code>.</p>
+</div>
+
+<h3>3. A transformação dos Christoffel <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-3">
+  <p class="titulo-enunciado">Enunciado 3 · A transformação dos símbolos de Christoffel</p>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 3, questão 4, itens (a)–(b), p. 2 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "4. Transformation of Christoffel symbols: (a) Show that, under a coordinate transformation, the components of the Christoffel symbol transform as follows: Γ^α'_β'γ' = (∂x^α'/∂x^α)(∂x^β/∂x^β')(∂x^γ/∂x^γ') Γ^α_βγ − (∂²x^α'/∂x^β∂x^γ)(∂x^β/∂x^β')(∂x^γ/∂x^γ'). Do this by considering the form of the Christoffel symbol in terms of derivatives of the metric. (b) Show that, using this rule, the components of the covariant derivative of a vector transform as tensors should: ∇_α' A^β' = (∂x^α/∂x^α')(∂x^β'/∂x^β) ∇_α A^β." -->
+  <blockquote>
+    <p>(a) Mostre que, sob uma mudança de coordenadas, as componentes do símbolo de Christoffel se transformam como</p>
+    <p>Γ<sup>α′</sup><sub>β′γ′</sub> = (∂x<sup>α′</sup>/∂x<sup>α</sup>)(∂x<sup>β</sup>/∂x<sup>β′</sup>)(∂x<sup>γ</sup>/∂x<sup>γ′</sup>) Γ<sup>α</sup><sub>βγ</sub> − (∂²x<sup>α′</sup>/∂x<sup>β</sup>∂x<sup>γ</sup>)(∂x<sup>β</sup>/∂x<sup>β′</sup>)(∂x<sup>γ</sup>/∂x<sup>γ′</sup>).</p>
+    <p>Faça isso considerando a forma do símbolo de Christoffel em termos das derivadas da métrica.</p>
+    <p>(b) Mostre que, com essa regra, as componentes da derivada covariante de um vetor se transformam como as de um tensor devem: ∇<sub>α′</sub>A<sup>β′</sup> = (∂x<sup>α</sup>/∂x<sup>α′</sup>)(∂x<sup>β′</sup>/∂x<sup>β</sup>) ∇<sub>α</sub>A<sup>β</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) e (b), pela forma dos Christoffel em termos das derivadas da métrica, como o enunciado pede. O ∂′ de um produto — Leibniz com a regra da cadeia, ∂′<sub>λ</sub> = J<sup>σ</sup><sub>λ</sub>∂<sub>σ</sub> — é escrito como hipótese: o Sucuri tem um jogo de coordenadas só, e o resto é álgebra de índices, que ele faz.</p>
+</div>
+
+<p>As duas cartas com o mesmo tipo de índice — as duas correm de 1 a n —, e o
+que as liga com nome: J<sup>α</sup><sub>μ</sub> = ∂x<sup>α</sup>/∂x′<sup>μ</sup>,
+a inversa K<sup>μ</sup><sub>α</sub> = ∂x′<sup>μ</sup>/∂x<sup>α</sup>, e
+H<sup>α</sup><sub>μν</sub> = ∂²x<sup>α</sup>/∂x′<sup>μ</sup>∂x′<sup>ν</sup>, simétrico.
+Q<sub>σαβ</sub> = ∂<sub>σ</sub>g<sub>αβ</sub>; P<sub>λμν</sub> = ∂′<sub>λ</sub>g′<sub>μν</sub>;
+k = g′<sup>−1</sup>; G e S, os Christoffel nas duas cartas. P vem de
+g′<sub>μν</sub> = J<sup>α</sup><sub>μ</sub>J<sup>β</sup><sub>ν</sub>g<sub>αβ</sub> por Leibniz e pela
+regra da cadeia — é a hipótese eq3.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \kappa, \lambda, \mu, \nu, \rho, \sigma, \tau = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">J = tensor(1, 1)</code>
+  <code class="entrada">K = tensor(1, 1)</code>
+  <code class="entrada">H = tensor(1, 2)</code>
+  <code class="entrada">Q = tensor(0, 3)</code>
+  <code class="entrada">P = tensor(0, 3)</code>
+  <code class="entrada">k = tensor(2, 0, simétrico)</code>
+  <code class="entrada">S = tensor(1, 2)</code>
+  <code class="entrada">G = tensor(1, 2)</code>
+  <code class="entrada">H^\alpha{}_{\mu\nu} = H^\alpha{}_{\nu\mu}</code>
+  <code class="entrada">k^{\mu\nu} = K^\mu{}_\alpha K^\nu{}_\beta g^{\alpha\beta}</code>
+  <code class="entrada">P_{\lambda\mu\nu} = H^\alpha{}_{\lambda\mu} J^\beta{}_\nu g_{\alpha\beta} + J^\alpha{}_\mu H^\beta{}_{\lambda\nu} g_{\alpha\beta} + J^\sigma{}_\lambda J^\alpha{}_\mu J^\beta{}_\nu Q_{\sigma\alpha\beta}</code>
+  <code class="entrada">S^\mu{}_{\nu\rho} = \frac{1}{2} k^{\mu\kappa} (P_{\nu\kappa\rho} + P_{\rho\kappa\nu} - P_{\kappa\nu\rho})</code>
+  <code class="entrada">G^\tau{}_{\lambda\sigma} = \frac{1}{2} g^{\tau\kappa} (Q_{\lambda\kappa\sigma} + Q_{\sigma\kappa\lambda} - Q_{\kappa\lambda\sigma})</code>
+  <code class="entrada">J^\alpha{}_\mu K^\mu{}_\beta = \delta^\alpha_\beta</code>
+  <code class="entrada">P_{\nu\kappa\rho} + P_{\rho\kappa\nu} - P_{\kappa\nu\rho} = 2 J^\alpha{}_\kappa H^\beta{}_{\nu\rho} g_{\alpha\beta} + J^\lambda{}_\nu J^\alpha{}_\kappa J^\sigma{}_\rho (Q_{\lambda\alpha\sigma} + Q_{\sigma\alpha\lambda} - Q_{\alpha\lambda\sigma})</code>
+  <code class="entrada">provar(eq7, eq1, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq3</samp>
+  <p class="explica">a combinação dos Christoffel: os termos em H se juntam em 2JH, pela simetria de H.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \kappa, \lambda, \mu, \nu, \rho, \sigma, \tau = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">J = tensor(1, 1)</code>
+  <code class="entrada">K = tensor(1, 1)</code>
+  <code class="entrada">H = tensor(1, 2)</code>
+  <code class="entrada">Q = tensor(0, 3)</code>
+  <code class="entrada">P = tensor(0, 3)</code>
+  <code class="entrada">k = tensor(2, 0, simétrico)</code>
+  <code class="entrada">S = tensor(1, 2)</code>
+  <code class="entrada">G = tensor(1, 2)</code>
+  <code class="entrada">H^\alpha{}_{\mu\nu} = H^\alpha{}_{\nu\mu}</code>
+  <code class="entrada">k^{\mu\nu} = K^\mu{}_\alpha K^\nu{}_\beta g^{\alpha\beta}</code>
+  <code class="entrada">P_{\lambda\mu\nu} = H^\alpha{}_{\lambda\mu} J^\beta{}_\nu g_{\alpha\beta} + J^\alpha{}_\mu H^\beta{}_{\lambda\nu} g_{\alpha\beta} + J^\sigma{}_\lambda J^\alpha{}_\mu J^\beta{}_\nu Q_{\sigma\alpha\beta}</code>
+  <code class="entrada">S^\mu{}_{\nu\rho} = \frac{1}{2} k^{\mu\kappa} (P_{\nu\kappa\rho} + P_{\rho\kappa\nu} - P_{\kappa\nu\rho})</code>
+  <code class="entrada">G^\tau{}_{\lambda\sigma} = \frac{1}{2} g^{\tau\kappa} (Q_{\lambda\kappa\sigma} + Q_{\sigma\kappa\lambda} - Q_{\kappa\lambda\sigma})</code>
+  <code class="entrada">J^\alpha{}_\mu K^\mu{}_\beta = \delta^\alpha_\beta</code>
+  <code class="entrada">k^{\mu\kappa} J^\alpha{}_\kappa g_{\alpha\beta} = K^\mu{}_\beta</code>
+  <code class="entrada">provar(eq7, eq2, eq6)</code>
+  <samp class="saida">provado a partir de eq2, eq6</samp>
+  <p class="explica">g′<sup>−1</sup> contraído com J e g é K.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \kappa, \lambda, \mu, \nu, \rho, \sigma, \tau = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">J = tensor(1, 1)</code>
+  <code class="entrada">K = tensor(1, 1)</code>
+  <code class="entrada">H = tensor(1, 2)</code>
+  <code class="entrada">Q = tensor(0, 3)</code>
+  <code class="entrada">P = tensor(0, 3)</code>
+  <code class="entrada">k = tensor(2, 0, simétrico)</code>
+  <code class="entrada">S = tensor(1, 2)</code>
+  <code class="entrada">G = tensor(1, 2)</code>
+  <code class="entrada">H^\alpha{}_{\mu\nu} = H^\alpha{}_{\nu\mu}</code>
+  <code class="entrada">k^{\mu\nu} = K^\mu{}_\alpha K^\nu{}_\beta g^{\alpha\beta}</code>
+  <code class="entrada">P_{\lambda\mu\nu} = H^\alpha{}_{\lambda\mu} J^\beta{}_\nu g_{\alpha\beta} + J^\alpha{}_\mu H^\beta{}_{\lambda\nu} g_{\alpha\beta} + J^\sigma{}_\lambda J^\alpha{}_\mu J^\beta{}_\nu Q_{\sigma\alpha\beta}</code>
+  <code class="entrada">S^\mu{}_{\nu\rho} = \frac{1}{2} k^{\mu\kappa} (P_{\nu\kappa\rho} + P_{\rho\kappa\nu} - P_{\kappa\nu\rho})</code>
+  <code class="entrada">G^\tau{}_{\lambda\sigma} = \frac{1}{2} g^{\tau\kappa} (Q_{\lambda\kappa\sigma} + Q_{\sigma\kappa\lambda} - Q_{\kappa\lambda\sigma})</code>
+  <code class="entrada">J^\alpha{}_\mu K^\mu{}_\beta = \delta^\alpha_\beta</code>
+  <code class="entrada">P_{\nu\kappa\rho} + P_{\rho\kappa\nu} - P_{\kappa\nu\rho} = 2 J^\alpha{}_\kappa H^\beta{}_{\nu\rho} g_{\alpha\beta} + J^\lambda{}_\nu J^\alpha{}_\kappa J^\sigma{}_\rho (Q_{\lambda\alpha\sigma} + Q_{\sigma\alpha\lambda} - Q_{\alpha\lambda\sigma})</code>
+  <code class="entrada">k^{\mu\kappa} J^\alpha{}_\kappa g_{\alpha\beta} = K^\mu{}_\beta</code>
+  <code class="entrada">S^\mu{}_{\nu\rho} = K^\mu{}_\tau J^\lambda{}_\nu J^\sigma{}_\rho G^\tau{}_{\lambda\sigma} + K^\mu{}_\alpha H^\alpha{}_{\nu\rho}</code>
+  <code class="entrada">provar(eq9, eq4, eq5, eq7, eq8)</code>
+  <samp class="saida">provado a partir de eq4, eq5, eq7, eq8</samp>
+  <p class="explica">(a) na forma de Carroll: Γ′ = K J J Γ + K ∂²x/∂x′∂x′.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \mu, \nu, \rho = índices</code>
+  <code class="entrada">J = tensor(1, 1)</code>
+  <code class="entrada">K = tensor(1, 1)</code>
+  <code class="entrada">H = tensor(1, 2)</code>
+  <code class="entrada">L = tensor(1, 2)</code>
+  <code class="entrada">M = tensor(1, 2)</code>
+  <code class="entrada">L^\mu{}_{\nu\alpha} J^\alpha{}_\rho + K^\mu{}_\alpha H^\alpha{}_{\nu\rho} = 0</code>
+  <code class="entrada">L^\mu{}_{\nu\alpha} = J^\beta{}_\nu M^\mu{}_{\beta\alpha}</code>
+  <code class="entrada">K^\mu{}_\alpha H^\alpha{}_{\nu\rho} = - M^\mu{}_{\beta\gamma} J^\beta{}_\nu J^\gamma{}_\rho</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">provado a partir de eq1, eq2</samp>
+  <p class="explica">M = ∂²x′/∂x∂x, e L = ∂′K: eq1 é ∂′(KJ) = ∂′δ = 0, eq2 a regra da cadeia. Com isto, o K H da forma acima é o −M J J do enunciado.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \kappa, \lambda, \mu, \nu, \rho, \sigma, \tau = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">J = tensor(1, 1)</code>
+  <code class="entrada">K = tensor(1, 1)</code>
+  <code class="entrada">H = tensor(1, 2)</code>
+  <code class="entrada">L = tensor(1, 2)</code>
+  <code class="entrada">S = tensor(1, 2)</code>
+  <code class="entrada">G = tensor(1, 2)</code>
+  <code class="entrada">A = tensor(1, 0)</code>
+  <code class="entrada">U = tensor(1, 1)</code>
+  <code class="entrada">T = tensor(1, 1)</code>
+  <code class="entrada">L^\mu{}_{\nu\alpha} J^\alpha{}_\rho + K^\mu{}_\alpha H^\alpha{}_{\nu\rho} = 0</code>
+  <code class="entrada">S^\mu{}_{\nu\rho} = K^\mu{}_\tau J^\lambda{}_\nu J^\sigma{}_\rho G^\tau{}_{\lambda\sigma} + K^\mu{}_\alpha H^\alpha{}_{\nu\rho}</code>
+  <code class="entrada">T^\mu{}_\nu = L^\mu{}_{\nu\alpha} A^\alpha + K^\mu{}_\alpha J^\beta{}_\nu U^\alpha{}_\beta</code>
+  <code class="entrada">J^\alpha{}_\mu K^\mu{}_\beta = \delta^\alpha_\beta</code>
+  <code class="entrada">T^\mu{}_\nu + S^\mu{}_{\nu\rho} K^\rho{}_\gamma A^\gamma = K^\mu{}_\alpha J^\beta{}_\nu (U^\alpha{}_\beta + G^\alpha{}_{\beta\gamma} A^\gamma)</code>
+  <code class="entrada">provar(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3, eq4</samp>
+  <p class="explica">(b): U = ∂A, T = ∂′A′ com A′ = K A (Leibniz e cadeia, eq3); ∇′A′ = K J ∇A — o termo que não é tensor em Γ′ cancela o de ∂′A′.</p>
 </div>
 
 <h3>4. As derivadas da métrica <span class="pill ok">resolve</span></h3>
@@ -3503,6 +3639,80 @@ U = ℒ<sub>X</sub>P, W = ℒ<sub>Y</sub>Q e E = ℒ<sub>[X,Y]</sub>ω.</p>
   <p class="explica">o lado direito é a fórmula de Wendl: ℒ<sub>X</sub>(ω(Y, Z)) + ℒ<sub>Y</sub>(ω(Z, X)) + ℒ<sub>Z</sub>(ω(X, Y)) − ω([X, Y], Z) − ω([Y, Z], X) − ω([Z, X], Y).</p>
 </div>
 
+<h3>34. Equações de Maurer–Cartan <span class="pill aviso">em parte</span></h3>
+
+<div class="enunciado" id="enunciado-34">
+  <p class="titulo-enunciado">Enunciado 34 · Equações de Maurer–Cartan</p>
+  <p class="fonte">J. Ross, <em>Part III: Differential Geometry, Example Sheet 2</em> (Cambridge, 2016, versão 3 de 16/11/2016), questão 11, p. 7 do PDF — <a href="https://dec41.user.srcf.net/notes/III_M/differential_geometry_eg.pdf">dec41.user.srcf.net</a>.</p>
+  <!-- original: "11. Let G be Lie group that is a subgroup of GL_n(R) and X_i, i = 1, ..., d = dim G, be linearly independent left-invariant vector fields on G induced by a basis of T_I G. Show that the condition that ω^i(X_j) = δ^i_j identically on G defines a system of pointwise linearly independent smooth 1-forms ω^i on G. Show further that the 1-forms ω^i are left-invariant in the sense that
+         L_g^*(ω^i) = ω^i, for every g ∈ G.
+       Let C^k_{ij} be a set of real constants determined by [X_i, X_j] = Σ_k C^k_{ij} X_k. Deduce from the identity of the previous question the formula
+         dω^k = −½ Σ_{i,j} C^k_{ij} ω^i ∧ ω^j." -->
+  <blockquote>
+    <p><strong>11.</strong> Seja G um grupo de Lie que é subgrupo de GL<sub>n</sub>(ℝ) e sejam X<sub>i</sub>, i = 1, …, d = dim G, campos vetoriais invariantes à esquerda, linearmente independentes, em G, induzidos por uma base de T<sub>I</sub>G. Mostre que a condição ω<sup>i</sup>(X<sub>j</sub>) = δ<sup>i</sup><sub>j</sub>, identicamente em G, define um sistema de 1-formas suaves ω<sup>i</sup> em G, linearmente independentes em cada ponto. Mostre ainda que as 1-formas ω<sup>i</sup> são invariantes à esquerda, no sentido de que</p>
+    <p>L<sub>g</sub><sup>*</sup>(ω<sup>i</sup>) = ω<sup>i</sup>, &nbsp;&nbsp;para todo g ∈ G.</p>
+    <p>Sejam C<sup>k</sup><sub>ij</sub> as constantes reais determinadas por [X<sub>i</sub>, X<sub>j</sub>] = ∑<sub>k</sub> C<sup>k</sup><sub>ij</sub> X<sub>k</sub>. Deduza, a partir da identidade da questão anterior, a fórmula</p>
+    <p>dω<sup>k</sup> = −½ ∑<sub>i,j</sub> C<sup>k</sup><sub>ij</sub> ω<sup>i</sup> ∧ ω<sup>j</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a fórmula dω<sup>k</sup> = −½ C<sup>k</sup><sub>ij</sub> ω<sup>i</sup>∧ω<sup>j</sup>, deduzida da identidade da questão anterior — primeiro sem índice, dω(X, Y) = −ω([X, Y]) para ω(X), ω(Y) constantes; depois com índice, somando na base. Que as ω<sup>i</sup> existem, são suaves, independentes e invariantes à esquerda é argumento, e não conta.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">D = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">\forall A, B: D(A, B) = \nabla_A \omega(B) - \nabla_B \omega(A) - \omega([A, B])</code>
+  <code class="entrada">\forall A: \nabla_A \omega(X) = 0</code>
+  <code class="entrada">\forall A: \nabla_A \omega(Y) = 0</code>
+  <code class="entrada">D(X, Y) = -\omega([X, Y])</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">D é dω, pela identidade da questão anterior; X, Y são dois X<sub>i</sub>, e ω uma das ω<sup>k</sup>: ω<sup>k</sup>(X<sub>j</sub>) = δ<sup>k</sup><sub>j</sub> é constante.</p>
+</div>
+
+<p>Agora a soma na base. Com índice, a base X<sub>i</sub> é X<sup>a</sup><sub>i</sub>
+e a dual é ω<sup>i</sup><sub>a</sub>: o índice i numera os campos, e corre de 1 a
+d = dim G como o índice a da variedade — é por isso que os dois podem ser do
+mesmo tipo. D<sup>k</sup><sub>ab</sub> são as componentes de dω<sup>k</sup>,
+B<sup>c</sup><sub>ij</sub> as de [X<sub>i</sub>, X<sub>j</sub>], e δ, a delta
+declarada. As duas dualidades, ω(X) = δ e X ω = δ, são hipóteses: a segunda é
+dizer que os X<sub>i</sub> formam base.</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, i, j, k, l = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">D = tensor(1, 2)</code>
+  <code class="entrada">B = tensor(1, 2)</code>
+  <code class="entrada">C = tensor(1, 2)</code>
+  <code class="entrada">\omega = tensor(1, 1)</code>
+  <code class="entrada">X = tensor(1, 1)</code>
+  <code class="entrada">D^k{}_{ab} X^a{}_i X^b{}_j = -\omega^k{}_c B^c{}_{ij}</code>
+  <code class="entrada">B^c{}_{ij} = C^l{}_{ij} X^c{}_l</code>
+  <code class="entrada">\omega^i{}_a X^a{}_j = \delta^i_j</code>
+  <code class="entrada">D^k{}_{ab} X^a{}_i X^b{}_j = -C^k{}_{ij}</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">eq1 é o que se provou acima, nos X<sub>i</sub>; eq2, a definição de C: dω<sup>k</sup>(X<sub>i</sub>, X<sub>j</sub>) = −C<sup>k</sup><sub>ij</sub>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, i, j, k, l = índices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">D = tensor(1, 2)</code>
+  <code class="entrada">B = tensor(1, 2)</code>
+  <code class="entrada">C = tensor(1, 2)</code>
+  <code class="entrada">\omega = tensor(1, 1)</code>
+  <code class="entrada">X = tensor(1, 1)</code>
+  <code class="entrada">D^k{}_{ab} X^a{}_i X^b{}_j = -C^k{}_{ij}</code>
+  <code class="entrada">X^a{}_i \omega^i{}_b = \delta^a_b</code>
+  <code class="entrada">C^k{}_{ij} + C^k{}_{ji} = 0</code>
+  <code class="entrada">D^k{}_{ab} = -\frac{1}{2} C^k{}_{ij} (\omega^i{}_a \omega^j{}_b - \omega^i{}_b \omega^j{}_a)</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">(ω<sup>i</sup>∧ω<sup>j</sup>)<sub>ab</sub> = ω<sup>i</sup><sub>a</sub>ω<sup>j</sup><sub>b</sub> − ω<sup>i</sup><sub>b</sub>ω<sup>j</sup><sub>a</sub>: é dω<sup>k</sup> = −½ C<sup>k</sup><sub>ij</sub> ω<sup>i</sup>∧ω<sup>j</sup>.</p>
+</div>
+
 <h3>Formas numa carta</h3>
 
 <p>Até aqui as formas eram abstratas. Numa carta, uma forma se escreve com os d
@@ -3805,31 +4015,29 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 geodésicas, mergulhos, volumes, transporte paralelo — não estão listados aqui
 um a um: a nota sob cada enunciado diz o que fica de fora.</p>
 
-<h3>Notação indicial</h3>
+<p>Nenhum exercício da lista fica sem nada. O que falta ao programa, nos
+parciais, é isto:</p>
 
 <ul class="limites">
-  <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
-    mudança de coordenadas não é operação do Sucuri.</li>
-</ul>
-
-<h3>Componentes</h3>
-
-<p>Nenhum que não saia: os parciais que restam pedem um argumento ou um
-desenho além do cálculo.</p>
-
-<h3>Notação tensorial</h3>
-
-<ul class="limites">
-  <li><strong>34 (Cambridge DG 2 Q11).</strong> Maurer–Cartan pede as
-    constantes de estrutura numa base de campos invariantes — soma sobre
-    índices de base, que a notação sem índice não escreve.</li>
-  <li><strong>31, 33 (em parte).</strong> Pull-back, e ⋆d⋆ em termos de ∇.</li>
+  <li><strong>Argumentos, e não contas.</strong> Existência e suavidade (34),
+    o fluxo de um campo (26, 47), "duas derivações que coincidem em funções e
+    em df coincidem em tudo" (46), somar rotações infinitesimais (36), a
+    invariância da distância pelas isometrias (81): o Sucuri confere passos, e
+    não escreve o argumento.</li>
+  <li><strong>O lema geral.</strong> εε em n e p gerais (16), a fórmula
+    fechada da contagem (61), p-formas de grau qualquer (27, 28): o Sucuri
+    prova em cada dimensão e grau, e não por indução.</li>
+  <li><strong>Pull-back, e ⋆d⋆ em termos de ∇ (31, 33).</strong></li>
+  <li><strong>Mudança de carta numa métrica dada (39).</strong> A lei de
+    transformação sai (3); achar as coordenadas planas é tentativa.</li>
+  <li><strong>Desenhos e discussões</strong> (52, 65, 77): o que o enunciado
+    pede além da conta.</li>
 </ul>
 
 <h2 id="achados">VI. O que os exercícios ensinaram</h2>
 
 <p>Um leitor de notação só se testa com notação escrita por outra gente,
-para outro fim. Resolver estas listas achou catorze defeitos — sete deles
+para outro fim. Resolver estas listas achou dezesseis defeitos — oito deles
 silenciosos, o tipo de erro que este programa existe para não cometer. Todos
 corrigidos, e cada um com teste.</p>
 
@@ -3893,6 +4101,16 @@ corrigidos, e cada um com teste.</p>
     Bianchi, verdadeira, dava equações não nulas, e o Riemann mais geral saía
     zero — e toda identidade saía verdadeira. Os arrays agora são de índices
     de baixo, e subir o SymPy faz certo.</li>
+  <li><strong>A divisão por d − 2 (exercício 25).</strong> O lema de Schur
+    sai dividindo por d − 2, e a prova dizia "provado" sem dizer que em 2D
+    não vale. Agora um denominador simbólico vira condição, dita na resposta.</li>
+  <li><strong>O mudo que colidia (exercício 34).</strong> Casar o índice livre
+    de uma hipótese com um mudo do objetivo, numa hipótese que tem o seu
+    próprio mudo por dentro — ω<sup>i</sup><sub>a</sub>X<sup>a</sup><sub>j</sub> = δ<sup>i</sup><sub>j</sub> —,
+    dava dois índices iguais, e a candidata era descartada calada:
+    ω<sup>i</sup><sub>a</sub>X<sup>a</sup><sub>l</sub>V<sub>i</sub> = V<sub>l</sub> não se provava. Não
+    era resposta falsa, mas prova que existia e não se achava. Os mudos do
+    objetivo agora ganham nomes novos antes do casamento.</li>
 </ul>
 
 <h2 id="fontes">Fontes</h2>

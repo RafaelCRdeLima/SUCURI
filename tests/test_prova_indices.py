@@ -105,3 +105,42 @@ def test_bianchi_segunda_da_identidade_de_ricci():
     certo = prova(*base, r"(\nabla_\lambda R^\rho{}_{\sigma\mu\nu} + \nabla_\mu R^\rho{}_{\sigma\nu\lambda}"
                          r" + \nabla_\nu R^\rho{}_{\sigma\lambda\mu}) V^\sigma = 0", "provar(eq2, eq1)")
     assert "provado" in certo["texto"]
+
+
+BASE_DUAL = [r"a, b, c, i, j, k, l = índices", r"\delta = kronecker", r"\omega = tensor(1, 1)",
+             r"X = tensor(1, 1)", "V = tensor(0, 1)", r"\omega^i{}_a X^a{}_j = \delta^i_j"]
+
+
+def test_o_mudo_da_hipotese_nao_colide_com_o_do_objetivo():
+    # ω X = δ tem um mudo por dentro; casado com o mudo de ω X V, os dois
+    # tinham o mesmo nome e a candidata se perdia calada.
+    d = prova(*BASE_DUAL, r"\omega^i{}_a X^a{}_l V_i = V_l", "provar(eq2, eq1)")
+    assert d["texto"].startswith("provado"), d.get("erro")
+
+
+def test_e_o_falso_continua_falso():
+    d = prova(*BASE_DUAL, r"\omega^i{}_a X^a{}_l V_i = 2 V_l", "provar(eq2, eq1)")
+    assert d.get("erro")
+
+
+def test_maurer_cartan():
+    d = prova(r"a, b, c, i, j, k, l = índices", r"\delta = kronecker", r"D = tensor(1, 2)", r"C = tensor(1, 2)",
+              r"\omega = tensor(1, 1)", r"X = tensor(1, 1)",
+              r"D^k{}_{ab} X^a{}_i X^b{}_j = -C^k{}_{ij}", r"X^a{}_i \omega^i{}_b = \delta^a_b",
+              r"C^k{}_{ij} + C^k{}_{ji} = 0",
+              r"D^k{}_{ab} = -\frac{1}{2} C^k{}_{ij} (\omega^i{}_a \omega^j{}_b - \omega^i{}_b \omega^j{}_a)",
+              "provar(eq4, eq1, eq2, eq3)")
+    assert d["texto"].startswith("provado"), d.get("erro")
+
+
+def test_derivada_covariante_transforma_como_tensor():
+    d = prova(r"\alpha, \beta, \gamma, \lambda, \mu, \nu, \rho, \sigma, \tau = índices", r"\delta = kronecker",
+              r"J = tensor(1, 1)", r"K = tensor(1, 1)", r"H = tensor(1, 2)", r"L = tensor(1, 2)",
+              r"S = tensor(1, 2)", r"G = tensor(1, 2)", r"A = tensor(1, 0)", r"U = tensor(1, 1)", r"T = tensor(1, 1)",
+              r"L^\mu{}_{\nu\alpha} J^\alpha{}_\rho + K^\mu{}_\alpha H^\alpha{}_{\nu\rho} = 0",
+              r"S^\mu{}_{\nu\rho} = K^\mu{}_\tau J^\lambda{}_\nu J^\sigma{}_\rho G^\tau{}_{\lambda\sigma} + K^\mu{}_\alpha H^\alpha{}_{\nu\rho}",
+              r"T^\mu{}_\nu = L^\mu{}_{\nu\alpha} A^\alpha + K^\mu{}_\alpha J^\beta{}_\nu U^\alpha{}_\beta",
+              r"J^\alpha{}_\mu K^\mu{}_\beta = \delta^\alpha_\beta",
+              r"T^\mu{}_\nu + S^\mu{}_{\nu\rho} K^\rho{}_\gamma A^\gamma = K^\mu{}_\alpha J^\beta{}_\nu (U^\alpha{}_\beta + G^\alpha{}_{\beta\gamma} A^\gamma)",
+              "provar(eq5, eq1, eq2, eq3, eq4)")
+    assert d["texto"].startswith("provado"), d.get("erro")
