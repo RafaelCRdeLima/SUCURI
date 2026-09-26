@@ -146,10 +146,10 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>20</td><td>9</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>18</td><td>6</td><td>1</td></tr>
+  <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
+  <tr><td>componentes (25)</td><td>19</td><td>6</td><td>0</td></tr>
   <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>47</strong></td><td><strong>25</strong></td><td><strong>13</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>51</strong></td><td><strong>22</strong></td><td><strong>12</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -469,7 +469,7 @@ expandido pela métrica g.</p>
     Sucuri a lê assim.</p>
 </div>
 
-<h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span> (5) <span class="pill aviso">em parte</span> (64, 66)</h3>
+<h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span> (5, 66) <span class="pill aviso">em parte</span> (64)</h3>
 
 <div class="enunciado" id="enunciado-5">
   <p class="titulo-enunciado">Enunciado 5 · Divergências covariantes e d'Alembertiano em base coordenada</p>
@@ -513,7 +513,7 @@ expandido pela métrica g.</p>
     <p>∂<sub>μ</sub>(√−g J<sup>μ</sup>) = 0.&nbsp;&nbsp;&nbsp;(10.14)</p>
     <p>Assim, √−g J<sup>μ</sup> é a verdadeira corrente conservada, e a eq. (10.13) implica que √−g atua como a constante dielétrica do vácuo.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (10.13), pela identidade ∇<sub>μ</sub>F<sup>μν</sup> = (−g)<sup>−1/2</sup>∂<sub>μ</sub>(√−g F<sup>μν</sup>); (10.14), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (10.13), pela identidade ∇<sub>μ</sub>F<sup>μν</sup> = (−g)<sup>−1/2</sup>∂<sub>μ</sub>(√−g F<sup>μν</sup>), e (10.14): ∂<sub>ν</sub> do lado esquerdo de (10.13) é identicamente zero.</p>
 </div>
 
 <p>MIT 8.962, lista 3, #7(d)–(f): ∇<sub>ν</sub>A<sub>μ</sub><sup>ν</sup> = |g|<sup>−1/2</sup>∂<sub>ν</sub>(|g|<sup>1/2</sup>A<sub>μ</sub><sup>ν</sup>)
@@ -585,6 +585,17 @@ da assinatura.</p>
   <samp class="saida">True</samp>
   <p class="explica">o termo Γ<sup>ν</sup><sub>μλ</sub>F<sup>μλ</sup> some porque Γ
     é simétrico e F não: sem <code>antissimétrico</code>, não sai.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = índices</code>
+  <code class="entrada">F = tensor(2, 0, antissimétrico)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">g = det(g)</code>
+  <code class="entrada">\partial_\nu \partial_\mu (\sqrt{-g} F^{\mu\nu})</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">66, (10.14): ∂<sub>ν</sub> aplicado aos dois lados de (10.13) zera o esquerdo — ∂∂ simétrico contra F antissimétrico —, e fica ∂<sub>ν</sub>(√−g J<sup>ν</sup>) = 0.</p>
 </div>
 
 <h3>10. A identidade de Bianchi contraída <span class="pill ok">resolve</span></h3>
@@ -802,7 +813,7 @@ Levi-Civita, <code>expandir</code> mostra a identidade.</p>
     não zera: o Sucuri não supõe torção nula.</p>
 </div>
 
-<h3>7 e 8. A identidade de Ricci <span class="pill ok">resolve</span> (8) <span class="pill aviso">em parte</span> (7)</h3>
+<h3>7 e 8. A identidade de Ricci <span class="pill ok">resolve</span> (7, 8)</h3>
 
 <div class="enunciado" id="enunciado-7">
   <p class="titulo-enunciado">Enunciado 7 · Identidade de Ricci</p>
@@ -817,7 +828,7 @@ Levi-Civita, <code>expandir</code> mostra a identidade.</p>
     <p>∇<sub>c</sub>∇<sub>d</sub>Z<sup>a</sup> − ∇<sub>d</sub>∇<sub>c</sub>Z<sup>a</sup> = R<sup>a</sup><sub>bcd</sub> Z<sup>b</sup>  (4.8)</p>
     <p><em>Dica:</em> mostre que a equação é verdadeira quando multiplicada por campos vetoriais arbitrários X<sup>c</sup> e Y<sup>d</sup>.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a identidade no vetor é, no Sucuri, a definição do Riemann — é dela que riemann(eq) lê o sinal e a ordem dos slots; o que sai é o que se deduz dela (a da 1-forma, enunciado 8).</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade (4.8), a partir das componentes (4.6) do Riemann, com a conexão sem torção.</p>
 </div>
 
 <div class="enunciado" id="enunciado-8">
@@ -852,6 +863,23 @@ livros não concordam. Dela, a da 1-forma sai:</p>
     −R<sup>σ</sup><sub>ρμν</sub>ω<sub>σ</sub>, a resposta de Tong. A ligação
     entre a identidade (7) e a definição sem índice R(X,Y)Z aparece em
     <code>indices</code>, no manual.</p>
+</div>
+
+<p>Reall define o Riemann por R(X, Y)Z e deduz as suas componentes numa base
+coordenada, (4.6). Com Γ declarado na convenção dele — o índice da derivada por
+último — e a conexão sem torção, <code>expandir</code> abre os dois lados:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \tau = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\rho V^\mu = \partial_\rho V^\mu + \Gamma^\mu{}_{\nu\rho} V^\nu</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\rho \nabla_\sigma Z^\mu - \nabla_\sigma \nabla_\rho Z^\mu = (\partial_\rho \Gamma^\mu{}_{\nu\sigma} - \partial_\sigma \Gamma^\mu{}_{\nu\rho} + \Gamma^\tau{}_{\nu\sigma} \Gamma^\mu{}_{\tau\rho} - \Gamma^\tau{}_{\nu\rho} \Gamma^\mu{}_{\tau\sigma}) Z^\nu</code>
+  <code class="entrada">expandir(eq2)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">sem <code>\nabla = levi-civita</code> sobram os termos de torção; com o sinal do Riemann trocado, não sai.</p>
 </div>
 
 <h3>9. A simetria de troca de pares do Riemann <span class="pill ok">resolve</span></h3>
@@ -1366,7 +1394,7 @@ nome da métrica, e é ele que sobe e desce os índices de h.</p>
     O Ricci com h̄ também sai, e está nos testes.</p>
 </div>
 
-<h3>67 e 70. A derivada exterior em componentes <span class="pill aviso">em parte</span></h3>
+<h3>67 e 70. A derivada exterior em componentes <span class="pill ok">resolve</span> (67) <span class="pill aviso">em parte</span> (70)</h3>
 
 <div class="enunciado" id="enunciado-67">
   <p class="titulo-enunciado">Enunciado 67 · Identidade de Bianchi para F = dA e conservação do tensor de Maxwell</p>
@@ -1379,7 +1407,7 @@ nome da métrica, e é ele que sobe e desce os índices de h.</p>
     <p>T<sup>αβ</sup> = F<sup>α</sup><sub>γ</sub>F<sup>βγ</sup> − ¼ g<sup>αβ</sup>F<sub>γδ</sub>F<sup>γδ</sup></p>
     <p>é conservado, isto é, ∇<sub>β</sub>T<sup>αβ</sup> = 0.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a identidade de Bianchi para F = dA (com ∂, que sem torção dá o mesmo que ∇); a conservação do tensor de Maxwell, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> ∇<sub>[γ</sub>F<sub>αβ]</sub> = 0 para F = dA escrito com ∇, pela primeira identidade de Bianchi, e a conservação de T<sup>αβ</sup>.</p>
 </div>
 
 <div class="enunciado" id="enunciado-70">
@@ -1429,6 +1457,40 @@ explícita das seis permutações, com ω antissimétrico, dá os três termos.<
   <code class="entrada">simplificar(eq1)</code>
   <samp class="saida">0</samp>
   <p class="explica">a antissimetrização que atravessa o índice da derivada, ∂<sub>[i</sub>ω<sub>jk]</sub>, ainda não se escreve: os colchetes valem dentro de um fator só.</p>
+</div>
+
+<p>Com ∇, como Evans escreve F<sub>αβ</sub> = ∇<sub>α</sub>A<sub>β</sub> − ∇<sub>β</sub>A<sub>α</sub>,
+a soma cíclica passa por comutadores — e sobra a soma cíclica do Riemann, que
+só a primeira identidade de Bianchi fecha. <code>provar</code> a usa como
+teorema; e a conservação do tensor energia-momento sai das duas hipóteses.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">A = tensor(0, 1)</code>
+  <code class="entrada">\nabla_\gamma (\nabla_\alpha A_\beta - \nabla_\beta A_\alpha) + \nabla_\alpha (\nabla_\beta A_\gamma - \nabla_\gamma A_\beta) + \nabla_\beta (\nabla_\gamma A_\alpha - \nabla_\alpha A_\gamma) = 0</code>
+  <code class="entrada">provar(eq2)</code>
+  <samp class="saida">Bianchi (teorema, da torção nula)</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \delta, \mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">F = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">\nabla_\beta F^{\alpha\beta} = 0</code>
+  <code class="entrada">\nabla_\gamma F_{\alpha\beta} + \nabla_\alpha F_{\beta\gamma} + \nabla_\beta F_{\gamma\alpha} = 0</code>
+  <code class="entrada">\nabla_\beta (F^\alpha{}_\gamma F^{\beta\gamma} - \frac{1}{4} g^{\alpha\beta} F_{\gamma\delta} F^{\gamma\delta}) = 0</code>
+  <code class="entrada">provar(eq4, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq2, eq3</samp>
+  <p class="explica">sem a identidade de Bianchi, eq3, não sai.</p>
 </div>
 
 <h2 id="componentes">II. Componentes numa carta</h2>
@@ -2308,6 +2370,41 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">(c): a superfície tem ds² = dr²/(1 − 2m/r) + r²dφ², a fatia equatorial de Schwarzschild; (d): K = R/2 = −m/r³, negativa.</p>
 </div>
 
+<h3>83. O Ricci de um campo fraco <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-83">
+  <p class="titulo-enunciado">Enunciado 83 · O escalar de Ricci de uma métrica especial</p>
+  <p class="fonte">Y. Ali-Haïmoud, <em>General Relativity</em> (NYU, Fall 2019), Homework 6, Exercise 3, p. 1 — <a href="https://cosmo.nyu.edu/yacine/teaching/GR_2019/homeworks/homework6.pdf">cosmo.nyu.edu</a>.</p>
+  <!-- original: "Exercise 3: Ricci scalar of special metric. At linear order in Φ, compute the 10 components of the Ricci tensor, as well as the Ricci scalar of the metric ds² = −[1 + 2Φ(x⃗)] dt² + [1 − 2Φ(x⃗)] δ_ij dx^i dx^j. (3) Note that Φ(x⃗) is assumed to depend only on the spatial coordinates (i.e. not on t)." -->
+  <blockquote>
+    <p>Em ordem linear em Φ, calcule as 10 componentes do tensor de Ricci, e também o escalar de Ricci, da métrica</p>
+    <p>ds² = −[1 + 2Φ(x⃗)] dt² + [1 − 2Φ(x⃗)] δ<sub>ij</sub> dx<sup>i</sup>dx<sup>j</sup>. &nbsp;&nbsp;(3)</p>
+    <p>Note que Φ(x⃗) depende só das coordenadas espaciais (isto é, não de t).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as dez componentes e o escalar, em primeira ordem.</p>
+</div>
+
+<p><code>ricci(g, \Phi)</code> calcula em primeira ordem em Φ: troca Φ por εΦ, faz a
+conta exata, corta a série em ε depois da ordem 1 e põe ε = 1.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">\Phi = \Phi(x, y, z)</code>
+  <code class="entrada">g = métrica(-(1 + 2\Phi), 1 - 2\Phi, 1 - 2\Phi, 1 - 2\Phi)</code>
+  <code class="entrada">ricci(g, \Phi)</code>
+  <samp class="saida">R_{{t}{t}}=Derivative(Phi(x, y, z), (x, 2)) + Derivative(Phi(x, y, z), (y, 2)) + Derivative(Phi(x, y, z), (z, 2))</samp>
+  <p class="explica">R<sub>tt</sub> = ∇²Φ e R<sub>ij</sub> = δ<sub>ij</sub>∇²Φ; as seis fora da diagonal se anulam nesta ordem.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">\Phi = \Phi(x, y, z)</code>
+  <code class="entrada">g = métrica(-(1 + 2\Phi), 1 - 2\Phi, 1 - 2\Phi, 1 - 2\Phi)</code>
+  <code class="entrada">escalar(g, \Phi)</code>
+  <samp class="saida">2*Derivative(Phi(x, y, z), (x, 2)) + 2*Derivative(Phi(x, y, z), (y, 2)) + 2*Derivative(Phi(x, y, z), (z, 2))</samp>
+  <p class="explica">R = 2∇²Φ.</p>
+</div>
+
 <h3>84. Formas de conexão na esfera <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-84">
@@ -2919,8 +3016,6 @@ um a um: a nota sob cada enunciado diz o que fica de fora.</p>
 <h3>Componentes</h3>
 
 <ul class="limites">
-  <li><strong>83 (NYU HW6).</strong> Ricci de −(1+2Φ)dt² + (1−2Φ)dx² em
-    ordem linear: o Sucuri calcula exato, e não trunca em Φ.</li>
   <li><strong>78 (em parte).</strong> Resolver a equação de Ricci para f.</li>
 </ul>
 

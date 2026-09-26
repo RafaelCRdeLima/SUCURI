@@ -1204,7 +1204,7 @@ class Caderno:
 
     def _comando(self, verbo, alvo, segundo=None):
         if verbo in VERBOS_GEOMETRIA.values():
-            return self._geometria(verbo, alvo)
+            return self._geometria(verbo, alvo, segundo)
         if verbo == "expandir":
             return self._expandir(alvo, segundo)
         if verbo == "independentes":
@@ -1613,7 +1613,7 @@ class Caderno:
         saida["nomeados"] = [self._nome_de(o) for o in resultado.produz]
         return saida
 
-    def _geometria(self, verbo, alvo):
+    def _geometria(self, verbo, alvo, linear=None):
         """Christoffel, Ricci, Riemann, escalar — a partir das componentes.
 
         O que sai são COMPONENTES num sistema de coordenadas, e não o tensor:
@@ -1629,7 +1629,30 @@ class Caderno:
                             f"(tenho: {conhecidas})"}
         metrica = self.metricas[alvo]
         calculo = getattr(geometria, verbo)
-        resultado = calculo(metrica)
+        if linear:
+            # `ricci(g, \Phi)`: em primeira ordem em Φ — Φ → εΦ, a conta, a
+            # série em ε até a ordem 1, e ε = 1.
+            eps = sp.Symbol("varepsilon_ordem")
+            alvo_f = [f for f in metrica.matriz().atoms(sp.Function) if f.func.__name__ == linear]
+            simbolo = sp.Symbol(linear)
+            if not alvo_f and simbolo not in metrica.matriz().free_symbols:
+                return {"erro": f"'{linear}' não aparece nas componentes de {alvo}"}
+            troca = {f: eps * f for f in alvo_f}
+            if simbolo in metrica.matriz().free_symbols:
+                troca[simbolo] = eps * simbolo
+            G = metrica.matriz().xreplace(troca)
+            perturbada = geometria.Metrica(metrica.nome, metrica.simbolos, G, metrica.escrita)
+            bruto = calculo(perturbada)
+            def corta(v):
+                return sp.simplify(sp.series(v, eps, 0, 2).removeO().subs(eps, 1))
+            if verbo == "escalar":
+                resultado = corta(bruto)
+            else:
+                lista, todas = bruto
+                todas = {k: corta(v) for k, v in todas.items()}
+                resultado = ([(k, v) for k, v in todas.items() if v != 0], todas)
+        else:
+            resultado = calculo(metrica)
 
         base = {"alvo": alvo, "proveniencia": "estabelecida",
                 "apresentavel": True,
