@@ -50,3 +50,39 @@ def test_o_exercicio_da_apostila_sai(exemplo):
 def test_a_apostila_esta_publicada():
     web = pathlib.Path(__file__).parents[1] / "web" / "apostila.html"
     assert web.read_text(encoding="utf-8") == APOSTILA.read_text(encoding="utf-8")
+
+
+def test_o_placar_confere_com_os_titulos():
+    """Os totais da tabela são os das marcações dos exercícios — contados, e
+    não escritos à mão. Um placar que diverge dos títulos engana quem lê."""
+    import re
+    s = APOSTILA.read_text(encoding="utf-8")
+    corpo = s[s.index('<h2 id="indicial">'):s.index('<h2 id="nao-sai">')]
+    status = {}
+    for h in re.findall(r"<h3>(.*?)</h3>", corpo):
+        cab = h.split(".")[0]
+        if "–" in cab:
+            a, b = map(int, cab.split("–"))
+            nums = list(range(a, b + 1))
+        else:
+            nums = [int(x) for x in re.findall(r"\d+", cab)]
+        pills = re.findall(r'pill (ok|aviso)">[^<]*</span>(?:\s*\(([^)]*)\))?', h)
+        if len(pills) == 1 and not pills[0][1]:
+            for n in nums:
+                status.setdefault(n, pills[0][0])
+        else:
+            for p, lista in pills:
+                for n in re.findall(r"\d+", lista):
+                    status.setdefault(int(n), p)
+    v = s[s.index('<h2 id="nao-sai">'):s.index('<h2 id="achados">')]
+    nao = set()
+    for li in re.findall(r"<li><strong>([^<]*)</strong>", v):
+        if "em parte" not in li:
+            nao |= {int(x) for x in re.findall(r"\d+", li.split("(")[0])}
+    assert not (nao & set(status)), "exercício com resolução e também em 'não sai'"
+    assert set(range(1, 86)) == set(status) | nao, "exercício sem marcação"
+    resolve = sum(1 for p in status.values() if p == "ok")
+    parte = sum(1 for p in status.values() if p == "aviso")
+    total = re.search(r"total \(85\)</strong></td><td><strong>(\d+)</strong></td>"
+                      r"<td><strong>(\d+)</strong></td><td><strong>(\d+)</strong>", s)
+    assert tuple(map(int, total.groups())) == (resolve, parte, len(nao))

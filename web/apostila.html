@@ -147,9 +147,9 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>19</td><td>6</td><td>0</td></tr>
-  <tr><td>tensorial (30)</td><td>12</td><td>7</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>54</strong></td><td><strong>19</strong></td><td><strong>12</strong></td></tr>
+  <tr><td>componentes (25)</td><td>20</td><td>5</td><td>0</td></tr>
+  <tr><td>tensorial (30)</td><td>20</td><td>8</td><td>2</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>63</strong></td><td><strong>19</strong></td><td><strong>3</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -1819,7 +1819,7 @@ puxa a métrica E pela parametrização, com as coordenadas novas declaradas por
   <p class="explica">(d): o numerador é o volume de ψ &lt; ϵ, que <code>volume(h, \psi = 0 .. \epsilon, …)</code> dá; o denominador, V<sub>E</sub> = 4πϵ³/3. A (7.20), 1 − ϵ²R/(6(d + 2)) com R = 6 e d = 3, é 1 − ϵ²/5.</p>
 </div>
 
-<h3>44. Campos de Killing da esfera <span class="pill aviso">em parte</span></h3>
+<h3>44. Campos de Killing da esfera <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-44">
   <p class="titulo-enunciado">Enunciado 44 · Isometrias e a álgebra so(3)</p>
@@ -1830,7 +1830,7 @@ puxa a métrica E pela parametrização, com as coordenadas novas declaradas por
     <p>(ii) Mostre que, se uma variedade riemanniana ou lorentziana tem duas isometrias “independentes”, então tem uma terceira, e defina o que se entende aqui por independente.</p>
     <p>(iii) Considere a esfera unitária com métrica ds² = dθ² + sen²θ dφ². Mostre que X = ∂/∂φ e Y = sen φ ∂/∂θ + cot θ cos φ ∂/∂φ são vetores de Killing. Encontre um terceiro, e mostre que eles obedecem à álgebra de Lie de so(3).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (iii) inteiro — X e Y de Killing, o terceiro Z = [X, Y], também de Killing, e [Y, Z] = X, [Z, X] = Y; (i) e (ii), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (i) em funções (a definição do colchete), em campos (Jacobi) e em 1-formas (Leibniz, enunciado 46); (ii) o colchete de dois campos de Killing é de Killing — “independentes” é que ele não seja combinação dos dois; (iii) inteiro.</p>
 </div>
 
 <p>Com os campos por componentes, <code>killing(g, X)</code> calcula ℒ<sub>X</sub>g e
@@ -1864,6 +1864,21 @@ que (ii) pede para ver em geral.</p>
   <code class="entrada">colchete(Y, Z)</code>
   <samp class="saida">(1)*∂_\phi</samp>
   <p class="explica">[Y, Z] = X; e <code>colchete(Z, X)</code> dá Y, e <code>killing(g, Z)</code>, True: so(3).</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">A = tensor(1, 0)</code>
+  <code class="entrada">B = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall C, D: \nabla_X g(C,D) = g([X,C],D) + g(C,[X,D])</code>
+  <code class="entrada">\forall C, D: \nabla_Y g(C,D) = g([Y,C],D) + g(C,[Y,D])</code>
+  <code class="entrada">\forall C, D, F: [C,[D,F]] + [D,[F,C]] + [F,[C,D]] = 0</code>
+  <code class="entrada">\nabla_{[X,Y]} g(A,B) = g([[X,Y],A],B) + g(A,[[X,Y],B])</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">(ii): ℒ<sub>X</sub>g = 0 e ℒ<sub>Y</sub>g = 0, escritas pela regra de Leibniz, dão ℒ<sub>[X,Y]</sub>g = 0.</p>
 </div>
 
 <h3>45. Robertson–Walker <span class="pill ok">resolve</span></h3>
@@ -2667,6 +2682,65 @@ hipótese para todos os campos —, as duas condições de Levi-Civita saem.</p>
     torção nula (três delas dentro de ∇) e Jacobi uma vez.</p>
 </div>
 
+<h3>25. A segunda identidade de Bianchi, e o lema de Schur <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-25">
+  <p class="titulo-enunciado">Enunciado 25 · Segunda identidade de Bianchi e variedades de Einstein</p>
+  <p class="fonte">A. G. Kovalev, <em>Part III: Riemannian Geometry — Example Sheets</em> (Cambridge, Lent 2017), Example Sheet 1, Questão 2, p. 1 — <a href="https://dec41.user.srcf.net/notes/III_L/riemannian_geometry_eg.pdf">dec41.user.srcf.net</a>.</p>
+  <!-- original: "2. (i) Let M be a Riemannian manifold. Show that the Levi–Civita covariant derivative of R(X, Y) ∈ Γ(End TM) is given by ∇_Z R(X, Y) = [∇_Z, R(X, Y)] − R(∇_Z X, Y) − R(X, ∇_Z Y). Deduce from this a version of the second Bianchi identity for the Levi–Civita connection
+         ∇_X R(Y, Z) + ∇_Y R(Z, X) + ∇_Z R(X, Y) = 0.   (∗)
+       (ii) When dim M ≥ 3, show, using (∗), that if Ric = f g for some smooth function f, then f is constant (M then is said to be an Einstein manifold).
+       (You might like to consider a map δ : Γ(Sym² T*M) → Γ(T*M) = Ω¹(M) defined by (δh)(X) = − Σ_{i=1}^n (∇_{e_i} h)(e_i, X), where {e_i} is any local orthonormal frame field on M, and put h = Ric.)" -->
+  <blockquote>
+    <p><strong>2.</strong> (i) Seja M uma variedade riemanniana. Mostre que a derivada covariante de Levi-Civita de R(X, Y) ∈ Γ(End TM) é dada por</p>
+    <p>∇<sub>Z</sub>R(X, Y) = [∇<sub>Z</sub>, R(X, Y)] − R(∇<sub>Z</sub>X, Y) − R(X, ∇<sub>Z</sub>Y).</p>
+    <p>Deduza daí uma versão da <em>segunda identidade de Bianchi</em> para a conexão de Levi-Civita:</p>
+    <p>∇<sub>X</sub>R(Y, Z) + ∇<sub>Y</sub>R(Z, X) + ∇<sub>Z</sub>R(X, Y) = 0. &nbsp;&nbsp;(∗)</p>
+    <p>(ii) Quando dim M ≥ 3, mostre, usando (∗), que se Ric = f g para alguma função suave f, então f é constante (diz-se então que M é uma <em>variedade de Einstein</em>).<br>
+    (Pode ser útil considerar a aplicação δ : Γ(Sym<sup>2</sup> T*M) → Γ(T*M) = Ω<sup>1</sup>(M) definida por (δh)(X) = −∑<sub>i=1</sub><sup>n</sup> (∇<sub>e<sub>i</sub></sub>h)(e<sub>i</sub>, X), onde {e<sub>i</sub>} é qualquer referencial ortonormal local em M, e tomar h = Ric.)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (i) a segunda identidade de Bianchi, da identidade de Ricci — a fórmula de ∇<sub>Z</sub>R(X, Y) é a regra de Leibniz para ∇ de um tensor, e a dedução sai em índices; (ii) Ric = fg ⇒ ∇f = 0, com a condição d ≠ 2 dita pela própria prova.</p>
+</div>
+
+<p>(i) em índices: a identidade de Ricci, ∇<sub>μ</sub>∇<sub>ν</sub>V − ∇<sub>ν</sub>∇<sub>μ</sub>V =
+RV, é o que a forma canônica já sabe — sozinha, simplifica a zero —, mas ∇ dela
+não: <code>provar</code> a deriva, soma as três permutações cíclicas, e fecha
+com a primeira identidade de Bianchi.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">(\nabla_\lambda R^\rho{}_{\sigma\mu\nu} + \nabla_\mu R^\rho{}_{\sigma\nu\lambda} + \nabla_\nu R^\rho{}_{\sigma\lambda\mu}) V^\sigma = 0</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">provado a partir de eq1, e de Bianchi</samp>
+  <p class="explica">para todo V: ∇<sub>[λ</sub>R<sup>ρ</sup><sub>|σ|μν]</sub> = 0. Com um sinal trocado na soma, não sai.</p>
+</div>
+
+<p>(ii) o lema de Schur: com a Bianchi contraída (exercício 10) e
+R<sub>μν</sub> = fg<sub>μν</sub>, ∇f = 0 — e a combinação divide por d − 2, que a
+prova diz. Em dimensão 2, todo Ricci é fg (enunciado 12), e f não precisa ser
+constante.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \lambda = índices(d)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">\nabla^\mu R_{\mu\nu} = \frac{1}{2} \nabla_\nu R</code>
+  <code class="entrada">R_{\mu\nu} = f g_{\mu\nu}</code>
+  <code class="entrada">\nabla_\nu f = 0</code>
+  <code class="entrada">provar(eq5, eq3, eq4)</code>
+  <samp class="saida">vale se d - 2 ≠ 0</samp>
+</div>
+
 <h3>26. Grupo de Lie com métrica bi-invariante <span class="pill aviso">em parte</span></h3>
 
 <div class="enunciado" id="enunciado-26">
@@ -2753,6 +2827,35 @@ definição, sai ¼[[X, Y], Z] — com a de Carroll sairia −¼, e o Sucuri o d
   <p class="explica">(v): para X, Y ortonormais, K(σ) = g(R(X, Y)X, Y) — na convenção de Kovalev — é ¼|[X, Y]|².</p>
 </div>
 
+<h3>27. dω nos vetores <span class="pill aviso">em parte</span></h3>
+
+<div class="enunciado" id="enunciado-27">
+  <p class="titulo-enunciado">Enunciado 27 · dω(X, Y) para uma 1-forma</p>
+  <p class="fonte">J. Ross, <em>Part III: Differential Geometry, Example Sheet 2</em> (Cambridge, 2016, versão 3 de 16/11/2016), questão 9, p. 6 do PDF — <a href="https://dec41.user.srcf.net/notes/III_M/differential_geometry_eg.pdf">dec41.user.srcf.net</a>.</p>
+  <!-- original: "9. (Differential Form Identity) Prove the identity dω(X, Y) = Xω(Y) − Yω(X) − ω([X, Y]), for a 1-form ω and vector fields X, Y. *Can you generalize this result to the case when ω is a p-form?" -->
+  <blockquote>
+    <p><strong>9.</strong> (Identidade de formas diferenciais) Prove a identidade</p>
+    <p>dω(X, Y) = Xω(Y) − Yω(X) − ω([X, Y])</p>
+    <p>para uma 1-forma ω e campos vetoriais X, Y. *Você consegue generalizar esse resultado para o caso em que ω é uma p-forma?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a fórmula para 1-formas, com dω<sub>μν</sub> = ∂<sub>μ</sub>ω<sub>ν</sub> − ∂<sub>ν</sub>ω<sub>μ</sub> (a normalização é a da fórmula); a generalização a p-formas, a parte estrelada, não.</p>
+</div>
+
+<p>Em componentes, a fórmula é Leibniz e o colchete. A normalização de d é a
+que a fórmula pede: com o fator de outro livro, sai outro fator — e é por isso
+que, sem índice, o Sucuri a toma como hipótese (seção V).</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">X^\mu Y^\nu (\partial_\mu \omega_\nu - \partial_\nu \omega_\mu) = X^\mu \partial_\mu (\omega_\nu Y^\nu) - Y^\nu \partial_\nu (\omega_\mu X^\mu) - \omega_\mu (X^\nu \partial_\nu Y^\mu - Y^\nu \partial_\nu X^\mu)</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+</div>
+
 <h3>53. O colchete pela conexão <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-53">
@@ -2778,6 +2881,60 @@ definição, sai ¼[[X, Y], Z] — com a de Carroll sairia −¼, e o Sucuri o d
   <code class="entrada">provar(eq2, eq1)</code>
   <samp class="saida">eq1[A→X, B→Y]</samp>
 </div>
+
+<h3>58. A derivada de Lie de um vetor e de um (0, 2) <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-58">
+  <p class="titulo-enunciado">Enunciado 58 · Derivada de Lie de vetores, covetores e tensores (0,2); condição de Killing</p>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 3</em> (Cambridge, Lent 2026), questão 9, p. 2 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22c.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "9. The Lie derivative (L_ξ V)^α of a vector field V^α with respect to a vector field ξ^α (assumed to be timelike) is defined by the following conditions: (i) If {x^α} is a coordinate system in which ξ^α = (1, 0, 0, 0), then
+         (L_ξ V)^α = ∂V^α/∂x^0 = ξ^β ∂V^α/∂x^β,
+       and (ii) (L_ξ V)^α transforms as a vector. Show that, in a general coordinate system,
+         (L_ξ V)^α = ξ^β ∇_β V^α − V^β ∇_β ξ^α.
+       Suppose, in addition, that the Lie derivative L_ξ φ of a scalar field φ with respect to a vector field ξ^α is defined in a general coordinate system {x^α} by
+         L_ξ φ = ξ^α ∂φ/∂x^α
+       and that the Lie derivative obeys the usual Leibniz rule when applied to a tensor product. Find the Lie derivative (L_ξ U)_α of a covector field U_α.
+       Write down an expression for the Lie derivative with respect to ξ^α of a (0, 2) tensor T_αβ and show that the condition for ξ^α to be a Killing vector field (as in question 6 above) is (L_ξ g)_αβ = 0, where g_αβ is the metric tensor."
+       [Questão 6 da mesma folha: "Let ξ_α be a Killing covector field, satisfying ξ_α;β + ξ_β;α = 0 (see question 5 on Example Sheet 2)."] -->
+  <blockquote>
+    <p><strong>9.</strong> A derivada de Lie (ℒ<sub>ξ</sub>V)<sup>α</sup> de um campo vetorial V<sup>α</sup> em relação a um campo vetorial ξ<sup>α</sup> (suposto tipo-tempo) é definida pelas seguintes condições: (i) se {x<sup>α</sup>} é um sistema de coordenadas no qual ξ<sup>α</sup> = (1, 0, 0, 0), então</p>
+    <p>(ℒ<sub>ξ</sub>V)<sup>α</sup> = ∂V<sup>α</sup>/∂x<sup>0</sup> = ξ<sup>β</sup> ∂V<sup>α</sup>/∂x<sup>β</sup>,</p>
+    <p>e (ii) (ℒ<sub>ξ</sub>V)<sup>α</sup> se transforma como um vetor. Mostre que, num sistema de coordenadas geral,</p>
+    <p>(ℒ<sub>ξ</sub>V)<sup>α</sup> = ξ<sup>β</sup>∇<sub>β</sub>V<sup>α</sup> − V<sup>β</sup>∇<sub>β</sub>ξ<sup>α</sup>.</p>
+    <p>Suponha, além disso, que a derivada de Lie ℒ<sub>ξ</sub>φ de um campo escalar φ em relação a um campo vetorial ξ<sup>α</sup> é definida, num sistema de coordenadas geral {x<sup>α</sup>}, por</p>
+    <p>ℒ<sub>ξ</sub>φ = ξ<sup>α</sup> ∂φ/∂x<sup>α</sup>,</p>
+    <p>e que a derivada de Lie obedece à regra de Leibniz usual quando aplicada a um produto tensorial. Encontre a derivada de Lie (ℒ<sub>ξ</sub>U)<sub>α</sub> de um campo covetorial U<sub>α</sub>.</p>
+    <p>Escreva uma expressão para a derivada de Lie, em relação a ξ<sup>α</sup>, de um tensor T<sub>αβ</sub> do tipo (0, 2) e mostre que a condição para que ξ<sup>α</sup> seja um campo de Killing (como na questão 6 acima, isto é, ξ<sub>α;β</sub> + ξ<sub>β;α</sub> = 0) é (ℒ<sub>ξ</sub>g)<sub>αβ</sub> = 0, onde g<sub>αβ</sub> é o tensor métrico.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> ℒ<sub>ξ</sub>V das coordenadas adaptadas, a forma covariante (sem torção), o covetor e o (0, 2) — os dois como no enunciado 17 — e a equação de Killing como ℒ<sub>ξ</sub>g = 0.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(u, v, w, s)</code>
+  <code class="entrada">xi = campo(1, 0, 0, 0)</code>
+  <code class="entrada">V = campo()</code>
+  <code class="entrada">colchete(xi, V)</code>
+  <samp class="saida">(Derivative(V^u(u, v, w, s), u))*∂_u</samp>
+  <p class="explica">nas coordenadas adaptadas, ξ = ∂<sub>u</sub>: [ξ, V] = ∂<sub>u</sub>V, que é a definição; e em qualquer carta [ξ, V]<sup>α</sup> = ξ<sup>β</sup>∂<sub>β</sub>V<sup>α</sup> − V<sup>β</sup>∂<sub>β</sub>ξ<sup>α</sup>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\xi = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\alpha V^\beta = \partial_\alpha V^\beta + \Gamma^\beta{}_{\alpha\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\xi^\beta \partial_\beta V^\alpha - V^\beta \partial_\beta \xi^\alpha = \xi^\beta \nabla_\beta V^\alpha - V^\beta \nabla_\beta \xi^\alpha</code>
+  <code class="entrada">expandir(eq2)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">a forma covariante; sem <code>\nabla = levi-civita</code>, sobra a torção.</p>
+</div>
+
+<p>O covetor e o (0, 2) são o enunciado 17: (ℒ<sub>ξ</sub>ω)<sub>α</sub> =
+ξ<sup>β</sup>∇<sub>β</sub>ω<sub>α</sub> + ω<sub>β</sub>∇<sub>α</sub>ξ<sup>β</sup>, e
+(ℒ<sub>ξ</sub>g)<sub>αβ</sub> = ∇<sub>α</sub>ξ<sub>β</sub> + ∇<sub>β</sub>ξ<sub>α</sub> —
+a equação de Killing da questão 6 é ℒ<sub>ξ</sub>g = 0.</p>
 
 <h2 id="formas">IV. Formas diferenciais</h2>
 
@@ -3085,7 +3242,333 @@ a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ
   <p class="explica">os sinais de d e de ι se cancelam dois a dois: sobra uma derivação sem sinal, como a de ℒ<sub>X</sub>.</p>
 </div>
 
-<h3>57. Uma 2-forma que não se decompõe <span class="pill aviso">em parte</span></h3>
+<h3>46. ℒ<sub>[X,Y]</sub> = [ℒ<sub>X</sub>, ℒ<sub>Y</sub>] <span class="pill aviso">em parte</span></h3>
+
+<div class="enunciado" id="enunciado-46">
+  <p class="titulo-enunciado">Enunciado 46 · ℒ<sub>[X,Y]</sub> = [ℒ<sub>X</sub>, ℒ<sub>Y</sub>] em formas</p>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 7</em> (Humboldt-Universität zu Berlin, 2016–17), problema 4(a), p. 3 — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset7.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "4. (a) Use Leibniz rules as in Problem 1 to show that for all X, Y ∈ Vec(M) and ω ∈ Ω^k(M),
+         L_[X,Y] ω = L_X L_Y ω − L_Y L_X ω."
+       [O problema 4 não tem preâmbulo: começa direto no item (a). As "regras de Leibniz do Problema 1" são d(L_X ω) = L_X(dω), L_X(α ∧ β) = L_X α ∧ β + α ∧ L_X β, e a fórmula de Cartan L_X ω = dι_X ω + ι_X dω.] -->
+  <blockquote>
+    <p><strong>4.</strong> (a) Use regras de Leibniz, como no Problema 1, para mostrar que, para todos X, Y ∈ Vec(M) e ω ∈ Ω<sup>k</sup>(M),</p>
+    <p>ℒ<sub>[X,Y]</sub>ω = ℒ<sub>X</sub>ℒ<sub>Y</sub>ω − ℒ<sub>Y</sub>ℒ<sub>X</sub>ω.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> em funções — é a definição do colchete — e em 1-formas, por Leibniz e Jacobi; nas formas de grau maior, o argumento de que duas derivações que coincidem em funções e em df coincidem em tudo, não.</p>
+</div>
+
+<p>Numa 1-forma, com ℒ<sub>X</sub> pela regra de Leibniz,
+(ℒ<sub>X</sub>ω)(B) = X(ω(B)) − ω([X, B]): P = ℒ<sub>Y</sub>ω, Q = ℒ<sub>X</sub>ω,
+U = ℒ<sub>X</sub>P, W = ℒ<sub>Y</sub>Q e E = ℒ<sub>[X,Y]</sub>ω.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">P = tensor(0, 1)</code>
+  <code class="entrada">Q = tensor(0, 1)</code>
+  <code class="entrada">U = tensor(0, 1)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">E = tensor(0, 1)</code>
+  <code class="entrada">\forall B: P(B) = \nabla_Y \omega(B) - \omega([Y,B])</code>
+  <code class="entrada">\forall B: Q(B) = \nabla_X \omega(B) - \omega([X,B])</code>
+  <code class="entrada">\forall B: U(B) = \nabla_X P(B) - P([X,B])</code>
+  <code class="entrada">\forall B: W(B) = \nabla_Y Q(B) - Q([Y,B])</code>
+  <code class="entrada">\forall B: E(B) = \nabla_{[X,Y]} \omega(B) - \omega([[X,Y],B])</code>
+  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
+  <code class="entrada">U(Z) - W(Z) = E(Z)</code>
+  <code class="entrada">provar(eq7, eq1, eq2, eq3, eq4, eq5, eq6)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3, eq4, eq5, eq6</samp>
+  <p class="explica">(ℒ<sub>X</sub>ℒ<sub>Y</sub> − ℒ<sub>Y</sub>ℒ<sub>X</sub>)ω = ℒ<sub>[X,Y]</sub>ω — e é também o item (i) do enunciado 44.</p>
+</div>
+
+<h3>49. dω(X, Y, Z) de uma 2-forma <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-49">
+  <p class="titulo-enunciado">Enunciado 49 · dω(X, Y, Z) para uma 2-forma</p>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 6</em> (Humboldt-Universität zu Berlin, 2016–17), problema 4 (preâmbulo) e item (c), pp. 2–3 — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset6.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "4. Recall that if (x^1, ..., x^n) : U → R^n is a chart defined on an open subset in some n-manifold M, any k-form ω ∈ Ω^k(M) can be written on U as
+         ω = ω_{i1...ik} dx^{i1} ⊗ ... ⊗ dx^{ik} = (1/k!) ω_{i1...ik} dx^{i1} ∧ ... ∧ dx^{ik} = Σ_{i1<...<ik} ω_{i1...ik} dx^{i1} ∧ ... ∧ dx^{ik},
+       where the first two expressions use the Einstein summation convention and the third one does not. Here the component functions ω_{i1...ik} : U → R can be written in terms of the coordinate vector fields ∂_1, ..., ∂_n as ω_{i1...ik} = ω(∂_{i1}, ..., ∂_{ik}). In order to write down a coordinate formula for the exterior derivative, we introduce the following notation: given any collection of functions T_{i1...ik} on U labeled by the indices i1, ..., ik, define
+         T_[i1...ik] := (1/k!) Σ_{σ∈S_k} (−1)^{|σ|} T_{iσ(1)...iσ(k)},
+       so for instance if T_{i1...ik} are the components of a tensor field T, then Alt(T)_{i1,...,ik} = T_[i1...ik], and the wedge product of α ∈ Ω^k(M) and β ∈ Ω^ℓ(M) can now be written in coordinates as
+         (α ∧ β)_{i1...ik j1...jℓ} = α_[i1...ik β_j1...jℓ].
+       [...]
+       (c) It now follows from Problem Set 4 #1(a) that the exterior derivative of a 1-form λ can also be written as
+         dλ(X, Y) = L_X(λ(Y)) − L_Y(λ(X)) − λ([X, Y]).
+       Indeed, the right hand side is C∞-linear with respect to vector fields X, Y ∈ Vec(M) and thus defines a tensor field, whose component functions we've seen match the formula from part (b). Prove the corresponding formula for the exterior derivative of a 2-form,
+         dω(X, Y, Z) = L_X(ω(Y, Z)) + L_Y(ω(Z, X)) + L_Z(ω(X, Y)) − ω([X, Y], Z) − ω([Y, Z], X) − ω([Z, X], Y).
+       Remark: Similar formulas exist for the exterior derivatives of k-forms for all k > 2, though I cannot recall ever having needed to use them."
+       [Itens omitidos: (a) (dω)_{i1...ik+1} = (k+1) ∂_[i1 ω_i2...ik+1]; (b) (dλ)_ij = ∂_i λ_j − ∂_j λ_i e (dω)_ijk = ∂_i ω_jk + ∂_j ω_ki + ∂_k ω_ij.] -->
+  <blockquote>
+    <p><strong>4.</strong> Lembre que, se (x<sup>1</sup>, …, x<sup>n</sup>) : U → ℝ<sup>n</sup> é uma carta definida num aberto de uma n-variedade M, qualquer k-forma ω ∈ Ω<sup>k</sup>(M) pode ser escrita em U como</p>
+    <p>ω = ω<sub>i<sub>1</sub>…i<sub>k</sub></sub> dx<sup>i<sub>1</sub></sup> ⊗ … ⊗ dx<sup>i<sub>k</sub></sup> = (1/k!) ω<sub>i<sub>1</sub>…i<sub>k</sub></sub> dx<sup>i<sub>1</sub></sup> ∧ … ∧ dx<sup>i<sub>k</sub></sup> = ∑<sub>i<sub>1</sub>&lt;…&lt;i<sub>k</sub></sub> ω<sub>i<sub>1</sub>…i<sub>k</sub></sub> dx<sup>i<sub>1</sub></sup> ∧ … ∧ dx<sup>i<sub>k</sub></sup>,</p>
+    <p>onde as duas primeiras expressões usam a convenção de soma de Einstein e a terceira não. Aqui as funções componentes ω<sub>i<sub>1</sub>…i<sub>k</sub></sub> : U → ℝ se escrevem, em termos dos campos coordenados ∂<sub>1</sub>, …, ∂<sub>n</sub>, como ω<sub>i<sub>1</sub>…i<sub>k</sub></sub> = ω(∂<sub>i<sub>1</sub></sub>, …, ∂<sub>i<sub>k</sub></sub>). Para escrever uma fórmula em coordenadas para a derivada exterior, introduzimos a seguinte notação: dada qualquer coleção de funções T<sub>i<sub>1</sub>…i<sub>k</sub></sub> em U indexada por i<sub>1</sub>, …, i<sub>k</sub>, defina</p>
+    <p>T<sub>[i<sub>1</sub>…i<sub>k</sub>]</sub> := (1/k!) ∑<sub>σ∈S<sub>k</sub></sub> (−1)<sup>|σ|</sup> T<sub>i<sub>σ(1)</sub>…i<sub>σ(k)</sub></sub>,</p>
+    <p>de modo que, por exemplo, se T<sub>i<sub>1</sub>…i<sub>k</sub></sub> são as componentes de um campo tensorial T, então Alt(T)<sub>i<sub>1</sub>…i<sub>k</sub></sub> = T<sub>[i<sub>1</sub>…i<sub>k</sub>]</sub>, e o produto exterior de α ∈ Ω<sup>k</sup>(M) e β ∈ Ω<sup>ℓ</sup>(M) pode agora ser escrito em coordenadas como</p>
+    <p>(α ∧ β)<sub>i<sub>1</sub>…i<sub>k</sub>j<sub>1</sub>…j<sub>ℓ</sub></sub> = α<sub>[i<sub>1</sub>…i<sub>k</sub></sub>β<sub>j<sub>1</sub>…j<sub>ℓ</sub>]</sub>.</p>
+    <p>[…]</p>
+    <p><strong>(c)</strong> Segue agora do Problem Set 4 #1(a) que a derivada exterior de uma 1-forma λ também pode ser escrita como</p>
+    <p>dλ(X, Y) = ℒ<sub>X</sub>(λ(Y)) − ℒ<sub>Y</sub>(λ(X)) − λ([X, Y]).</p>
+    <p>De fato, o lado direito é C<sup>∞</sup>-linear nos campos vetoriais X, Y ∈ Vec(M) e, portanto, define um campo tensorial, cujas funções componentes, como vimos, coincidem com a fórmula do item (b). Prove a fórmula correspondente para a derivada exterior de uma 2-forma:</p>
+    <p>dω(X, Y, Z) = ℒ<sub>X</sub>(ω(Y, Z)) + ℒ<sub>Y</sub>(ω(Z, X)) + ℒ<sub>Z</sub>(ω(X, Y)) − ω([X, Y], Z) − ω([Y, Z], X) − ω([Z, X], Y).</p>
+    <p><em>Observação:</em> existem fórmulas semelhantes para as derivadas exteriores de k-formas para todo k &gt; 2, embora eu não me lembre de alguma vez ter precisado usá-las.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a fórmula, em componentes, com (dω)<sub>λμν</sub> = ∂<sub>λ</sub>ω<sub>μν</sub> + ∂<sub>μ</sub>ω<sub>νλ</sub> + ∂<sub>ν</sub>ω<sub>λμ</sub>, a normalização dela.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">X^\lambda Y^\mu Z^\nu (\partial_\lambda \omega_{\mu\nu} + \partial_\mu \omega_{\nu\lambda} + \partial_\nu \omega_{\lambda\mu}) = X^\lambda \partial_\lambda (\omega_{\mu\nu} Y^\mu Z^\nu) + Y^\lambda \partial_\lambda (\omega_{\mu\nu} Z^\mu X^\nu) + Z^\lambda \partial_\lambda (\omega_{\mu\nu} X^\mu Y^\nu) - \omega_{\mu\nu} (X^\lambda \partial_\lambda Y^\mu - Y^\lambda \partial_\lambda X^\mu) Z^\nu - \omega_{\mu\nu} (Y^\lambda \partial_\lambda Z^\mu - Z^\lambda \partial_\lambda Y^\mu) X^\nu - \omega_{\mu\nu} (Z^\lambda \partial_\lambda X^\mu - X^\lambda \partial_\lambda Z^\mu) Y^\nu</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">o lado direito é a fórmula de Wendl: ℒ<sub>X</sub>(ω(Y, Z)) + ℒ<sub>Y</sub>(ω(Z, X)) + ℒ<sub>Z</sub>(ω(X, Y)) − ω([X, Y], Z) − ω([Y, Z], X) − ω([Z, X], Y).</p>
+</div>
+
+<h3>Formas numa carta</h3>
+
+<p>Até aqui as formas eram abstratas. Numa carta, uma forma se escreve com os d
+das coordenadas — <code>\alpha = forma(a\,dr + b\,d\theta + c\,d\phi)</code>,
+<code>H = forma(H_x dy \wedge dz + …)</code> — e as operações são contas:
+<code>cunha</code>, <code>exterior</code> (o d), <code>estrela</code> (o ⋆, com a
+métrica), <code>interior</code> e <code>lie</code> (com um campo), e
+<code>iguais</code>. Uma operação com nome à esquerda guarda o resultado:
+<code>S = estrela(\beta, g)</code>. A orientação é a da ordem das coordenadas: a
+forma de volume é √|g| dx¹∧…∧dxⁿ, e trocar duas coordenadas troca o sinal de ⋆.</p>
+
+<h3>50. O divergente pela derivada de Lie <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-50">
+  <p class="titulo-enunciado">Enunciado 50 · O divergente via ℒ<sub>X</sub>μ = div(X) μ</p>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 6</em> (Humboldt-Universität zu Berlin, 2016–17), problema 6 (preâmbulo) e item (b), p. 3 — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset6.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "6. Given a volume form µ ∈ Ω^n(M) on an n-manifold M, one can define volumes of compact regions U ⊂ M by
+         Vol(U) := ∫_U µ.
+       The divergence of a vector field X ∈ Vec(M) can then be defined in terms of the Lie derivative of µ with respect to X: let div(X) : M → R be the unique real-valued function such that
+         L_X µ = div(X) µ.
+       Note that this is well defined since L_X µ is an n-form and the space Λ^n T_p^*M of n-forms at each point p ∈ M is 1-dimensional. Observe also that dµ = 0 since Ω^{n+1}(M) = {0}, so Cartan's formula implies div(X) µ = dι_X µ, which matches the formula we saw in lecture for the case M = R^n.
+       [...]
+       (b) Show that in the case M = R³ with µ = dx ∧ dy ∧ dz and X = X^x ∂_x + X^y ∂_y + X^z ∂_z ∈ Vec(R³) in standard Cartesian coordinates (x, y, z),
+         div(X) = ∂_x X^x + ∂_y X^y + ∂_z X^z.
+       The latter expression is sometimes also denoted by ∇ · X.
+       Note: One can show more generally that if µ = dx^1 ∧ ... ∧ dx^n on R^n then div(X) = ∂_i X^i."
+       [Item omitido: (a) d/dt Vol(ϕ_X^t(U)) = ∫_{ϕ_X^t(U)} div(X) µ.] -->
+  <blockquote>
+    <p><strong>6.</strong> Dada uma forma de volume μ ∈ Ω<sup>n</sup>(M) numa n-variedade M, podem-se definir os volumes de regiões compactas U ⊂ M por</p>
+    <p>Vol(U) := ∫<sub>U</sub> μ.</p>
+    <p>O divergente de um campo vetorial X ∈ Vec(M) pode então ser definido em termos da derivada de Lie de μ em relação a X: seja div(X) : M → ℝ a única função real tal que</p>
+    <p>ℒ<sub>X</sub>μ = div(X) μ.</p>
+    <p>Note que isso está bem definido, pois ℒ<sub>X</sub>μ é uma n-forma e o espaço Λ<sup>n</sup>T<sub>p</sub><sup>*</sup>M das n-formas em cada ponto p ∈ M tem dimensão 1. Observe também que dμ = 0, já que Ω<sup>n+1</sup>(M) = {0}; assim, a fórmula de Cartan implica div(X) μ = dι<sub>X</sub>μ, o que coincide com a fórmula vista em aula para o caso M = ℝ<sup>n</sup>.</p>
+    <p>[…]</p>
+    <p><strong>(b)</strong> Mostre que, no caso M = ℝ<sup>3</sup> com μ = dx ∧ dy ∧ dz e X = X<sup>x</sup>∂<sub>x</sub> + X<sup>y</sup>∂<sub>y</sub> + X<sup>z</sup>∂<sub>z</sub> ∈ Vec(ℝ<sup>3</sup>) nas coordenadas cartesianas usuais (x, y, z),</p>
+    <p>div(X) = ∂<sub>x</sub>X<sup>x</sup> + ∂<sub>y</sub>X<sup>y</sup> + ∂<sub>z</sub>X<sup>z</sup>.</p>
+    <p>Esta última expressão às vezes também é denotada por ∇ · X.<br>
+    <em>Nota:</em> pode-se mostrar, mais geralmente, que se μ = dx<sup>1</sup> ∧ … ∧ dx<sup>n</sup> em ℝ<sup>n</sup>, então div(X) = ∂<sub>i</sub>X<sup>i</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> div(X) = ∂<sub>x</sub>X<sup>x</sup> + ∂<sub>y</sub>X<sup>y</sup> + ∂<sub>z</sub>X<sup>z</sup>, de ℒ<sub>X</sub>μ.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y, z)</code>
+  <code class="entrada">X = campo()</code>
+  <code class="entrada">\mu = forma(dx \wedge dy \wedge dz)</code>
+  <code class="entrada">lie(X, \mu)</code>
+  <samp class="saida">(Derivative(X^x(x, y, z), x) + Derivative(X^y(x, y, z), y) + Derivative(X^z(x, y, z), z))*dx∧dy∧dz</samp>
+  <p class="explica">ℒ<sub>X</sub>μ = dι<sub>X</sub>μ + ι<sub>X</sub>dμ, com X genérico: o coeficiente de μ é o divergente.</p>
+</div>
+
+<h3>52. Formas de contato <span class="pill aviso">em parte</span></h3>
+
+<div class="enunciado" id="enunciado-52">
+  <p class="titulo-enunciado">Enunciado 52 · Formas de contato em 3-variedades</p>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 12</em> (Humboldt-Universität zu Berlin, 2016–17), problema 4, itens (a)–(d), pp. 3–4 — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset12.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "4. Suppose M is an oriented 3-manifold and λ ∈ Ω¹(M) is nowhere zero, i.e. for all p ∈ M there exist vectors X ∈ T_pM with λ(X) ≠ 0. Then at every p ∈ M, the kernel ker λ_p = {X ∈ T_pM | λ(X) = 0} is a 2-dimensional subspace of T_pM, and the union of these for all p defines a smooth 2-dimensional distribution
+         ξ := ker λ ⊂ TM.
+       [figure: a contact structure on R³]
+       (a) Show that the following conditions are equivalent:
+         i. λ ∧ dλ ≡ 0;
+         ii. For all p ∈ M and X, Y ∈ T_pM, dλ(X, Y) = 0;
+         iii. ξ is integrable.
+       Hint: In Problem Set 6 #4(c), you will find a useful formula for dλ as a C∞-bilinear form on vector fields. Combine this with the Frobenius theorem.
+       The 1-form λ is called a contact form if λ ∧ dλ is a volume form; the distribution ξ (called the contact structure) is then "as non-integrable as possible." An example on R³ is shown in the figure above. Such examples can be constructed by the following trick. Let (ρ, φ, z) denote the standard cylindrical coordinates on R³, so x = ρ cos φ and y = ρ sin φ. Choose smooth real-valued functions f(ρ), g(ρ) and define λ at (ρ, φ, z) by
+         λ = f(ρ) dz + g(ρ) dφ.   (2)
+       (b) Since the coordinates (ρ, φ, z) are not well defined at ρ = 0, there is of course some danger that the 1-form defined in Equation (2) might be singular at the z-axis. Show that λ is in fact smooth on all of R³ and satisfies λ ∧ dλ ≠ 0 near the z-axis if we assume f(ρ) = 1 and g(ρ) = ρ² for ρ sufficiently close to 0. Hint: Convert to Cartesian coordinates.
+       (c) Assuming f and g take the form desribed above for ρ near 0, show that λ is a contact form if and only if
+         f(ρ)g′(ρ) − f′(ρ)g(ρ) ≠ 0
+       for all ρ > 0. What does this mean geometrically about the curve ρ ↦ (f(ρ), g(ρ)) ∈ R²? Interpret this in terms of "twisting" of the planes ξ_p as p ∈ R³ moves along radial paths away from the z-axis.
+       (d) By a fundamental result in contact geometry known as Gray's theorem, contact structures have the following remarkable "stability" property: if M is a closed 3-manifold and {ξ_t}_{t∈[0,1]} is any smooth family of contact structures on M, then they are all "equivalent" in the sense that there exists a smooth family of diffeomorphisms {ϕ_t : M → M}_{t∈[0,1]} such that ϕ_0 = Id and Tϕ_t(ξ_0) = ξ_t for all t ∈ [0, 1]. Show that this is not true in general for arbitrary smooth families of distributions, e.g. it becomes false if we assume that ξ_0 is integrable but ξ_t is a contact structure for each t > 0." -->
+  <blockquote>
+    <p><strong>4.</strong> Suponha que M é uma 3-variedade orientada e que λ ∈ Ω<sup>1</sup>(M) não se anula em nenhum ponto, isto é, para todo p ∈ M existem vetores X ∈ T<sub>p</sub>M com λ(X) ≠ 0. Então, em cada p ∈ M, o núcleo ker λ<sub>p</sub> = {X ∈ T<sub>p</sub>M | λ(X) = 0} é um subespaço de dimensão 2 de T<sub>p</sub>M, e a união desses núcleos, para todo p, define uma distribuição suave de dimensão 2</p>
+    <p>ξ := ker λ ⊂ TM.</p>
+    <p>(a) Mostre que as seguintes condições são equivalentes:<br>
+    i. λ ∧ dλ ≡ 0;<br>
+    ii. para todo p ∈ M e X, Y ∈ T<sub>p</sub>M, dλ(X, Y) = 0 [assim no original; pelo contexto, entenda-se X, Y ∈ ξ<sub>p</sub>];<br>
+    iii. ξ é integrável.<br>
+    <em>Dica:</em> no Problem Set 6 #4(c) há uma fórmula útil para dλ como forma C<sup>∞</sup>-bilinear em campos vetoriais. Combine-a com o teorema de Frobenius.</p>
+    <p>A 1-forma λ é chamada <em>forma de contato</em> se λ ∧ dλ é uma forma de volume; a distribuição ξ (chamada <em>estrutura de contato</em>) é então “tão não integrável quanto possível”. Um exemplo em ℝ<sup>3</sup> aparece na figura do original. Exemplos assim podem ser construídos pelo seguinte truque. Sejam (ρ, φ, z) as coordenadas cilíndricas usuais em ℝ<sup>3</sup>, de modo que x = ρ cos φ e y = ρ sen φ. Escolha funções suaves reais f(ρ), g(ρ) e defina λ em (ρ, φ, z) por</p>
+    <p>λ = f(ρ) dz + g(ρ) dφ. &nbsp;&nbsp;(2)</p>
+    <p>(b) Como as coordenadas (ρ, φ, z) não estão bem definidas em ρ = 0, há naturalmente o risco de a 1-forma definida na equação (2) ser singular no eixo z. Mostre que λ é, de fato, suave em todo o ℝ<sup>3</sup> e satisfaz λ ∧ dλ ≠ 0 perto do eixo z, supondo f(ρ) = 1 e g(ρ) = ρ<sup>2</sup> para ρ suficientemente próximo de 0. <em>Dica:</em> converta para coordenadas cartesianas.</p>
+    <p>(c) Supondo que f e g têm a forma descrita acima para ρ perto de 0, mostre que λ é uma forma de contato se, e somente se,</p>
+    <p>f(ρ)g′(ρ) − f′(ρ)g(ρ) ≠ 0</p>
+    <p>para todo ρ &gt; 0. O que isso significa geometricamente sobre a curva ρ ↦ (f(ρ), g(ρ)) ∈ ℝ<sup>2</sup>? Interprete isso em termos da “torção” dos planos ξ<sub>p</sub> quando p ∈ ℝ<sup>3</sup> se move ao longo de caminhos radiais, afastando-se do eixo z.</p>
+    <p>(d) Por um resultado fundamental da geometria de contato, conhecido como teorema de Gray, as estruturas de contato têm a seguinte notável propriedade de “estabilidade”: se M é uma 3-variedade fechada e {ξ<sub>t</sub>}<sub>t∈[0,1]</sub> é qualquer família suave de estruturas de contato em M, então elas são todas “equivalentes”, no sentido de que existe uma família suave de difeomorfismos {ϕ<sub>t</sub> : M → M}<sub>t∈[0,1]</sub> tal que ϕ<sub>0</sub> = Id e Tϕ<sub>t</sub>(ξ<sub>0</sub>) = ξ<sub>t</sub> para todo t ∈ [0, 1]. Mostre que isso não vale, em geral, para famílias suaves arbitrárias de distribuições; por exemplo, torna-se falso se supusermos que ξ<sub>0</sub> é integrável, mas ξ<sub>t</sub> é uma estrutura de contato para cada t &gt; 0.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (c): λ∧dλ = (f g′ − f′ g) dρ∧dφ∧dz, e λ é de contato se e só se esse coeficiente não se anula; as equivalências de (a), a regularidade no eixo de (b) e a estabilidade de (d), não.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\rho, \phi, z)</code>
+  <code class="entrada">f = f(\rho)</code>
+  <code class="entrada">h = h(\rho)</code>
+  <code class="entrada">\lambda = forma(f dz + h d\phi)</code>
+  <code class="entrada">D = exterior(\lambda)</code>
+  <code class="entrada">cunha(\lambda, D)</code>
+  <samp class="saida">(f(rho)*Derivative(h(rho), rho) - h(rho)*Derivative(f(rho), rho))*drho∧dphi∧dz</samp>
+  <p class="explica">com g de Wendl chamado h, porque g é a métrica.</p>
+</div>
+
+<h3>54. ⋆ em coordenadas esféricas <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-54">
+  <p class="titulo-enunciado">Enunciado 54 · Dual de Hodge em coordenadas esféricas</p>
+  <p class="fonte">T. Dray, <em>MTH 434/534, HW #3</em> (Oregon State University, inverno de 2024), problema 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw3.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. HODGE DUAL IN SPHERICAL COORDINATES
+       Consider spherical coordinates in 3-dimensional Euclidean space with the usual orientation, namely ω = r² sin θ dr ∧ dθ ∧ dφ.
+       WARNING: These are "physics" conventions: θ is the angle from the north pole (colatitude), and φ is the angle in the xy-plane (longitude).
+       (a) Determine the Hodge dual operator ∗ on all forms (expressed in spherical coordinates) by computing its action on basis forms at each rank.
+       (b) Compute the dot and cross products of two generic 1-forms in spherical coordinates using the expressions:
+         α · β = ∗(α ∧ ∗β)
+         α × β = ∗(α ∧ β)
+       You may express your results either with respect to an orthonormal basis or with respect to a "coordinate" (non-orthonormal) spherical basis; make sure you know which you're doing. ("Generic" means for any two 1-forms, e.g. in terms of their components.)" -->
+  <blockquote>
+    <p><strong>1. Dual de Hodge em coordenadas esféricas.</strong> Considere coordenadas esféricas no espaço euclidiano tridimensional com a orientação usual, a saber, ω = r<sup>2</sup> sen θ dr ∧ dθ ∧ dφ.<br>
+    <em>Atenção:</em> estas são as convenções “da física”: θ é o ângulo medido a partir do polo norte (colatitude) e φ é o ângulo no plano xy (longitude).</p>
+    <p>(a) Determine o operador dual de Hodge ∗ em todas as formas (expresso em coordenadas esféricas), calculando sua ação sobre as formas da base em cada grau.</p>
+    <p>(b) Calcule os produtos escalar e vetorial de duas 1-formas genéricas em coordenadas esféricas, usando as expressões</p>
+    <p>α · β = ∗(α ∧ ∗β),<br>
+    α × β = ∗(α ∧ β).</p>
+    <p>Você pode exprimir os resultados em relação a uma base ortonormal ou em relação a uma base esférica “coordenada” (não ortonormal); certifique-se de saber qual das duas está usando. (“Genéricas” significa quaisquer duas 1-formas, por exemplo em termos de suas componentes.)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) ⋆ em todas as formas da base, e (b) α·β e α×β de duas 1-formas genéricas — na base coordenada, que o enunciado permite, e dita.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\alpha = forma(dr)</code>
+  <code class="entrada">estrela(\alpha, g)</code>
+  <samp class="saida">r**2*sin(theta)*dtheta∧dphi</samp>
+  <p class="explica">e ⋆dθ = sen θ dφ∧dr, ⋆dφ = dr∧dθ/sen θ, ⋆(dr∧dθ) = sen θ dφ, ⋆(dθ∧dφ) = dr/(r² sen θ), ⋆(dφ∧dr) = dθ/sen θ; ⋆1 = r² sen θ dr∧dθ∧dφ e ⋆(dr∧dθ∧dφ) = 1/(r² sen θ).</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\alpha = forma(a_1 dr + a_2 d\theta + a_3 d\phi)</code>
+  <code class="entrada">\beta = forma(b_1 dr + b_2 d\theta + b_3 d\phi)</code>
+  <code class="entrada">S = estrela(\beta, g)</code>
+  <code class="entrada">C = cunha(\alpha, S)</code>
+  <code class="entrada">estrela(C, g)</code>
+  <samp class="saida">(a_{1}*b_{1}*r**2 + a_{2}*b_{2} + a_{3}*b_{3}/sin(theta)**2)/r**2</samp>
+  <p class="explica">α·β = ⋆(α∧⋆β) = g<sup>ij</sup>a<sub>i</sub>b<sub>j</sub>; com <code>cunha(\alpha, \beta)</code> em vez de S, α×β = ⋆(α∧β).</p>
+</div>
+
+<h3>55. ⋆ no espaço de Minkowski <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-55">
+  <p class="titulo-enunciado">Enunciado 55 · Dual de Hodge no espaço de Minkowski</p>
+  <p class="fonte">T. Dray, <em>MTH 434/534, HW #3</em> (Oregon State University, inverno de 2024), problema 2 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw3.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "2. HODGE DUAL IN MINKOWSKI SPACE
+       4-dimensional Minkowski space has an orthonormal, oriented basis of 1-forms given by
+         {dx, dy, dz, dt}
+       with g(dt, dt) = −1, g(dx, dx) = g(dy, dy) = g(dz, dz) = 1, and all others zero. The "volume element" (choice of orientation) is given by ω = dx ∧ dy ∧ dz ∧ dt.
+       (a) Determine the Hodge dual operator ∗ on all forms by computing its action on basis forms at each rank.
+       (b) How does your answer change if the opposite orientation is chosen, namely
+         ω = dt ∧ dx ∧ dy ∧ dz" -->
+  <blockquote>
+    <p><strong>2. Dual de Hodge no espaço de Minkowski.</strong> O espaço de Minkowski de dimensão 4 tem uma base ortonormal e orientada de 1-formas dada por</p>
+    <p>{dx, dy, dz, dt},</p>
+    <p>com g(dt, dt) = −1, g(dx, dx) = g(dy, dy) = g(dz, dz) = 1 e todos os demais nulos. O “elemento de volume” (escolha de orientação) é dado por ω = dx ∧ dy ∧ dz ∧ dt.</p>
+    <p>(a) Determine o operador dual de Hodge ∗ em todas as formas, calculando sua ação sobre as formas da base em cada grau.</p>
+    <p>(b) Como muda sua resposta se for escolhida a orientação oposta, a saber,</p>
+    <p>ω = dt ∧ dx ∧ dy ∧ dz?</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) ⋆ nas formas da base, com ω = dx∧dy∧dz∧dt, e (b) a orientação oposta, que troca o sinal de todas.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y, z, t)</code>
+  <code class="entrada">g = métrica(1, 1, 1, -1)</code>
+  <code class="entrada">\alpha = forma(dt)</code>
+  <code class="entrada">estrela(\alpha, g)</code>
+  <samp class="saida">dx∧dy∧dz</samp>
+  <p class="explica">⋆dx = dy∧dz∧dt, ⋆dt = dx∧dy∧dz, ⋆(dx∧dt) = −dy∧dz, ⋆(dx∧dy) = dz∧dt, …</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">g = métrica(-1, 1, 1, 1)</code>
+  <code class="entrada">\alpha = forma(dt)</code>
+  <code class="entrada">estrela(\alpha, g)</code>
+  <samp class="saida">-dx∧dy∧dz</samp>
+  <p class="explica">(b): com as coordenadas na ordem (t, x, y, z), a orientação é dt∧dx∧dy∧dz = −ω, e cada ⋆ troca de sinal.</p>
+</div>
+
+<h3>56. Operadores vetoriais em coordenadas parabólicas <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-56">
+  <p class="titulo-enunciado">Enunciado 56 · Gradiente, rotacional, divergente e laplaciano com d e ∗</p>
+  <p class="fonte">T. Dray, <em>MTH 434/534, HW #4</em> (Oregon State University, inverno de 2024), problema 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw4.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. ORTHOGONAL COORDINATES
+       Choose any orthogonal coordinate system in 3-dimensional Euclidean space R³ other than Cartesian, cylindrical, or spherical coordinates. (You may see me for suggestions.) Working in an orthonormal basis, compute the gradient and Laplacian of an arbitrary function, and the curl and divergence of an arbitrary "vector field" (again, really a 1-form), using the expressions:
+         ∇f = df
+         ∇ × α = ∗dα
+         ∇ · α = ∗d∗α
+         △f = ∇ · ∇f = ∗d∗df
+       You may check your answer in standard reference books, but you should use exterior differentiation and Hodge duality in your computation." -->
+  <blockquote>
+    <p><strong>1. Coordenadas ortogonais.</strong> Escolha qualquer sistema de coordenadas ortogonais no espaço euclidiano tridimensional ℝ<sup>3</sup> que não seja o cartesiano, o cilíndrico ou o esférico. (Você pode me procurar para sugestões.) Trabalhando numa base ortonormal, calcule o gradiente e o laplaciano de uma função arbitrária, e o rotacional e o divergente de um “campo vetorial” arbitrário (novamente, na verdade uma 1-forma), usando as expressões</p>
+    <p>∇f = df,<br>
+    ∇ × α = ∗dα,<br>
+    ∇ · α = ∗d∗α,<br>
+    △f = ∇ · ∇f = ∗d∗df.</p>
+    <p>Você pode conferir sua resposta em livros de referência usuais, mas deve usar a diferenciação exterior e a dualidade de Hodge nos seus cálculos.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> gradiente, rotacional, divergente e laplaciano pelas quatro fórmulas, em coordenadas parabólicas — e no cobase ortonormal, como o enunciado pede.</p>
+</div>
+
+<p>Parabólicas: ds² = (u² + v²)(du² + dv²) + u²v²dφ². <code>ortonormal(α, g)</code>
+escreve α no cobase σ<sup>i</sup> = √|g<sub>ii</sub>| dx<sup>i</sup>.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(u, v, \phi)</code>
+  <code class="entrada">g = métrica(u^2 + v^2, u^2 + v^2, u^2 v^2)</code>
+  <code class="entrada">f = f(u, v, \phi)</code>
+  <code class="entrada">F = forma(f)</code>
+  <code class="entrada">D = exterior(F)</code>
+  <code class="entrada">ortonormal(D, g)</code>
+  <samp class="saida">Derivative(f(u, v, phi), u)/sqrt(u**2 + v**2)*σ^u</samp>
+  <p class="explica">∇f = df, no cobase ortonormal.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(u, v, \phi)</code>
+  <code class="entrada">g = métrica(u^2 + v^2, u^2 + v^2, u^2 v^2)</code>
+  <code class="entrada">f = f(u, v, \phi)</code>
+  <code class="entrada">F = forma(f)</code>
+  <code class="entrada">D = exterior(F)</code>
+  <code class="entrada">S = estrela(D, g)</code>
+  <code class="entrada">T = exterior(S)</code>
+  <code class="entrada">estrela(T, g)</code>
+  <samp class="saida">(u**2*Derivative(f(u, v, phi), (phi, 2)) + u*v*(u*v*Derivative(f(u, v, phi), (u, 2)) + u*v*Derivative(f(u, v, phi), (v, 2)) + u*Derivative(f(u, v, phi), v) + v*Derivative(f(u, v, phi), u)) + v**2*Derivative(f(u, v, phi), (phi, 2)))/(u**2*v**2*(u**2 + v**2))</samp>
+  <p class="explica">△f = ⋆d⋆df = [∂<sub>u</sub>(u∂<sub>u</sub>f)/u + ∂<sub>v</sub>(v∂<sub>v</sub>f)/v]/(u² + v²) + ∂²<sub>φ</sub>f/(u²v²), o das tabelas. O rotacional ⋆dα e o divergente ⋆d⋆α de α = a du + b dv + c dφ saem igual.</p>
+</div>
+
+<h3>57. Uma 2-forma que não se decompõe <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-57">
   <p class="titulo-enunciado">Enunciado 57 · Formas decomponíveis</p>
@@ -3099,7 +3582,7 @@ a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ
     <p>(d) Somente para alunos de MTH 534 (ou crédito extra): mostre que todas as 3-formas em ℝ<sup>4</sup> são decomponíveis.</p>
     <p>Crédito extra: você consegue argumentar que todos os elementos de ⋀<sup>n−1</sup>(ℝ<sup>n</sup>) são decomponíveis?</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b) e (c): a 2-forma α∧β + γ∧κ, que em ℝ⁴ é dx∧dy + dz∧dw, tem quadrado não nulo, e α∧β tem quadrado nulo; (a) e (d), não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) toda 2-forma de ℝ³ é α∧β — a decomposição, para H<sub>x</sub> ≠ 0, conferida; os outros casos trocam as coordenadas —, (b) e (c), e (d): toda 3-forma de ℝ⁴ é α∧β∧γ, do mesmo jeito. O crédito extra, em ℝⁿ, fica com o leitor.</p>
 </div>
 
 <p>Dray, MTH 434, HW2 #1: toda 2-forma de ℝ³ é α∧β, mas em ℝ⁴
@@ -3114,6 +3597,30 @@ a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ
   <code class="entrada">(\alpha \wedge \beta + \gamma \wedge \kappa) \wedge (\alpha \wedge \beta + \gamma \wedge \kappa) = 2 \alpha \wedge \beta \wedge \gamma \wedge \kappa</code>
   <code class="entrada">provar(eq1)</code>
   <samp class="saida">provado a partir de nenhuma hipótese</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y, z)</code>
+  <code class="entrada">H = forma(H_x dy \wedge dz + H_y dz \wedge dx + H_z dx \wedge dy)</code>
+  <code class="entrada">\alpha = forma(H_x dy - H_y dx)</code>
+  <code class="entrada">\beta = forma(\frac{1}{H_x} (H_x dz - H_z dx))</code>
+  <code class="entrada">P = cunha(\alpha, \beta)</code>
+  <code class="entrada">iguais(P, H)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">(a): H = (H<sub>x</sub>dy − H<sub>y</sub>dx) ∧ (H<sub>x</sub>dz − H<sub>z</sub>dx)/H<sub>x</sub>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y, z, w)</code>
+  <code class="entrada">H = forma(v_1 dy \wedge dz \wedge dw - v_2 dx \wedge dz \wedge dw + v_3 dx \wedge dy \wedge dw - v_4 dx \wedge dy \wedge dz)</code>
+  <code class="entrada">\alpha = forma(v_1 dy - v_2 dx)</code>
+  <code class="entrada">\beta = forma(v_1 dz - v_3 dx)</code>
+  <code class="entrada">\gamma = forma(\frac{1}{v_1^2} (v_1 dw - v_4 dx))</code>
+  <code class="entrada">A = cunha(\alpha, \beta)</code>
+  <code class="entrada">P = cunha(A, \gamma)</code>
+  <code class="entrada">iguais(P, H)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">(d): a 3-forma geral de ℝ⁴, com v<sub>1</sub> ≠ 0, é um produto de três 1-formas.</p>
 </div>
 
 <h2 id="nao-sai">V. O que não sai</h2>
@@ -3143,26 +3650,10 @@ um a um: a nota sob cada enunciado diz o que fica de fora.</p>
 <ul class="limites">
   <li><strong>22 (Reall §3.1).</strong> A diferença de duas conexões: o
     Sucuri conhece uma ∇ só.</li>
-  <li><strong>25 (Kovalev 1 Q2).</strong> A segunda identidade de Bianchi pede
-    ∇R — a derivada covariante de um tensor, e não de um vetor.</li>
-  <li><strong>27 (Cambridge DG 2 Q9).</strong> dω(X,Y) = Xω(Y) − Yω(X) −
-    ω([X,Y]) é, no Sucuri, hipótese: muda de fator com a normalização do
-    produto exterior, e nenhuma é suposta.</li>
   <li><strong>34 (Cambridge DG 2 Q11).</strong> Maurer–Cartan pede as
     constantes de estrutura numa base de campos invariantes — soma sobre
     índices de base, que a notação sem índice não escreve.</li>
   <li><strong>31, 33 (em parte).</strong> Pull-back, e ⋆d⋆ em termos de ∇.</li>
-  <li><strong>46 (Wendl 7, 4(a)).</strong> ℒ<sub>[X,Y]</sub> = [ℒ<sub>X</sub>, ℒ<sub>Y</sub>]
-    nas formas não sai, nem com a fórmula de dω como hipótese: falta
-    [ℒ<sub>X</sub>, ι<sub>Y</sub>] = ι<sub>[X,Y]</sub>.</li>
-  <li><strong>49 (Wendl 6, 4(c)).</strong> dω(X,Y,Z) de uma 2-forma a partir
-    da fórmula das 1-formas: pede escrever ω como soma de produtos.</li>
-  <li><strong>50, 52, 54, 55, 56 (Wendl; Dray).</strong> div por
-    ℒ<sub>X</sub>μ, formas de contato, as tabelas de ⋆ e os operadores
-    vetoriais em coordenadas: formas escritas em dx, dy, dz — formas numa
-    carta — o Sucuri não tem.</li>
-  <li><strong>58 (Evans 3 Q9).</strong> A derivada de Lie de um (0,2), e
-    ℒ<sub>ξ</sub>g = 2∇<sub>(a</sub>ξ<sub>b)</sub>.</li>
 </ul>
 
 <h2 id="achados">VI. O que os exercícios ensinaram</h2>

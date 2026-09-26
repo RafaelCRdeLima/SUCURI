@@ -138,13 +138,16 @@ def _formas(fator):
 class Relacao:
     """Uma relação E = 0, com a história de onde veio."""
 
-    def __init__(self, expr, origem, derivadas=(), latex_origem=None):
+    def __init__(self, expr, origem, derivadas=(), latex_origem=None, bruto=None):
         self.expr = expr
+        # A forma escrita, de onde se deriva: a identidade de Ricci simplifica
+        # a zero — a forma canônica já a sabe —, mas ∇ dela não.
+        self.bruto = bruto
         self.origem = origem
         self.derivadas = tuple(derivadas)
         self.latex_origem = latex_origem or origem
         self.livres = list(expr.get_free_indices()) if isinstance(
-            expr, TensExpr) else []
+            expr, TensExpr) and expr != 0 else []
 
     def termos_para_casar(self, espaco):
         """Os termos, e também desdobrados: ∇_ν R, com R o escalar, só casa
@@ -190,13 +193,18 @@ def nivel_zero(hipoteses, espaco, simplificar):
     base = []
     for nome, expr in hipoteses.items():
         e = simplificar(expr)
-        if isinstance(e, TensExpr):
-            base.append(Relacao(e, nome))
+        if isinstance(e, TensExpr) and e != 0:
+            base.append(Relacao(e, nome, bruto=expr))
+        elif isinstance(expr, TensExpr):
+            # Zero na forma canônica: não casa com nada, mas as suas
+            # derivadas podem não ser zero.
+            base.append(Relacao(sp.S.Zero, nome, bruto=expr))
     if (espaco.riemann and espaco.conexao == "levi-civita"):
         base.append(Relacao(simplificar(_bianchi(espaco)), "Bianchi",
                             latex_origem=r"\text{Bianchi}"))
     for r in base:
-        r.expr = _renomear_mudos(r.expr, espaco)
+        if r.expr != 0:
+            r.expr = _renomear_mudos(r.expr, espaco)
     return base
 
 
@@ -205,10 +213,17 @@ def proximo_nivel(atual, espaco, simplificar):
     proxima = []
     for r in atual:
         c = _fresco(espaco, "pc")
-        d = simplificar(derivar(r.expr, "D", -c, espaco))
+        base = r.bruto if r.bruto is not None else r.expr
+        if base == 0:
+            continue
+        bruto = derivar(base, "D", -c, espaco)
+        d = simplificar(bruto)
         if isinstance(d, TensExpr) and d != 0:
             proxima.append(Relacao(_renomear_mudos(d, espaco), r.origem,
-                                   r.derivadas + (c,), r.latex_origem))
+                                   r.derivadas + (c,), r.latex_origem, bruto=bruto))
+        elif isinstance(bruto, TensExpr):
+            proxima.append(Relacao(sp.S.Zero, r.origem, r.derivadas + (c,),
+                                   r.latex_origem, bruto=bruto))
     return proxima
 
 
@@ -226,10 +241,14 @@ def _casar(fator_h, forma_t, mapa):
     return novo
 
 
-def _casamentos(termo_h, termo_t):
+def _casamentos(termo_h, termo_t, metrica=None):
     """Cada modo de pôr os fatores de h entre os de t: (mapa, índices de t
-    usados)."""
+    usados). Um fator da métrica em h não precisa casar: a relação pode ser
+    contraída com g^{..} que o cancela."""
     fh, ft = _fatores(termo_h), _fatores(termo_t)
+    sem_g = [f for f in fh if f.head.name != metrica]
+    if metrica and sem_g and len(sem_g) < len(fh):
+        fh = sem_g
     if not fh or len(fh) > len(ft):
         return
     opcoes = [[j for j, f in enumerate(ft) if f.head == h.head] for h in fh]
@@ -298,6 +317,32 @@ def _trocas(livres, mapa, espaco):
     return trocas, metricas
 
 
+def _com_tracos(mapa, livres, espaco):
+    """Os livres da relação que o casamento não alcançou, contraídos dois a
+    dois — o traço da relação, que é também relação. Até quatro."""
+    soltos = [i for i in livres if i.name not in mapa]
+    if not soltos:
+        yield mapa
+        return
+    if len(soltos) % 2 or len(soltos) > 4 or not espaco.metrica:
+        return
+    def pareamentos(xs):
+        if not xs:
+            yield []
+            return
+        a = xs[0]
+        for k in range(1, len(xs)):
+            for resto in pareamentos(xs[1:k] + xs[k + 1:]):
+                yield [(a, xs[k])] + resto
+    for pares in pareamentos(soltos):
+        novo = dict(mapa)
+        for a, b in pares:
+            t = _fresco(espaco, "pq")
+            novo[a.name] = t if a.is_up else -t
+            novo[b.name] = -t if b.is_up else t
+        yield novo
+
+
 def candidatos(alvo, relacoes, espaco, simplificar, vistos, livres=None):
     saida = []
 
@@ -311,10 +356,12 @@ def candidatos(alvo, relacoes, espaco, simplificar, vistos, livres=None):
     for termo in _termos(alvo):
         ft = _fatores(termo)
         for r in relacoes:
+            if r.expr == 0:
+                continue
             for th in r.termos_para_casar(espaco):
-                for mapa, usados in _casamentos(th, termo):
-                    if any(i.name not in mapa for i in r.livres):
-                        continue
+                pares = [(m, u) for m0, u in _casamentos(th, termo, espaco.metrica)
+                         for m in _com_tracos(m0, r.livres, espaco)]
+                for mapa, usados in pares:
                     trocas, metricas = _trocas(r.livres, mapa, espaco)
                     if trocas is None:
                         continue
@@ -357,10 +404,13 @@ def _resolver(objetivo, lista):
 
 
 class ProvaIndices:
-    def __init__(self, objetivo, passos, usadas):
+    def __init__(self, objetivo, passos, usadas, condicoes=()):
         self.objetivo = objetivo
         self.passos = passos            # [(coef, relação, trocas, cofator, expr)]
         self.hipoteses_usadas = usadas
+        # Os denominadores dos coeficientes: dividir por d − 2 é supor d ≠ 2,
+        # e a prova só vale onde eles não se anulam — dito, e não calado.
+        self.condicoes = list(condicoes)
 
 
 def provar(objetivo, hipoteses, espaco, simplificar):
@@ -456,9 +506,15 @@ def _certificado(objetivo, alvo, lista, x, simplificar):
         raise SemProvaIndices("a combinação achada não fecha ao conferir — "
                               "defeito do motor, e não prova")
     usadas = list(dict.fromkeys(r.origem for _, _, r, _, _ in passos))
+    condicoes = []
+    for c, *_ in passos:
+        for fator in sp.factor_list(sp.denom(sp.together(c)))[1]:
+            base = fator[0]
+            if base.free_symbols and base not in condicoes:
+                condicoes.append(base)
     return ProvaIndices(objetivo, [(c, r, trocas, cofator, expr)
                                    for c, expr, r, trocas, cofator in passos],
-                        usadas)
+                        usadas, condicoes)
 
 
 def linhas(prova, latex_de):

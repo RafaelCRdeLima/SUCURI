@@ -59,6 +59,11 @@ _RE_VOLUME = re.compile(r"^\s*volume\s*\((.*)\)\s*$", re.I | re.S)
 _RE_SERIE = re.compile(r"^\s*(?:s[ée]rie|series)\s*\((.*)\)\s*$", re.I | re.S)
 # `A = campo(A^r, A^θ)`, `W = covetor(…)`: campos por componentes na carta.
 _RE_CAMPO = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(campo|covetor)\s*\((.*)\)\s*$", re.I | re.S)
+# `\alpha = forma(a dr + b d\theta)`: forma numa carta, com d das coordenadas.
+# `\beta = estrela(\alpha, g)`, `cunha(α, β)`, `exterior(α)`, `interior(X, α)`,
+# `lie(X, α)`: operações, com ou sem nome à esquerda.
+_RE_FORMA_C = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\((.*[^0-9\s].*)\)\s*$", re.I | re.S)
+_RE_OP_FORMA = re.compile(r"^\s*(?:(\\?[A-Za-z]\w*)\s*=\s*)?(cunha|exterior|estrela|interior|lie|iguais|ortonormal)\s*\((.*)\)\s*$", re.I | re.S)
 # `killing(g, X)`, `killing(g, 1)`, `colchete(X, Y)`, `nabla(g, A)`,
 # `laplaciano(g, A)`, `restringir(K, h)`: verbos de campos por componentes.
 _RE_VERBO_CAMPO = re.compile(r"^\s*(killing|colchete|nabla|laplaciano|restringir)\s*\((.*)\)\s*$", re.I | re.S)
@@ -136,6 +141,8 @@ VERBOS = {
     "elemento": "elemento",
     "cartan": "cartan", "tetrada": "cartan", "tétrada": "cartan",
     "killing": "killing", "colchete": "colchete", "nabla": "nabla",
+    "cunha": "cunha", "exterior": "exterior", "estrela": "estrela",
+    "interior": "interior", "lie": "lie", "iguais": "iguais", "ortonormal": "ortonormal",
     "laplaciano": "laplaciano", "restringir": "restringir",
     **VERBOS_GEOMETRIA,
 }
@@ -272,6 +279,7 @@ class Caderno:
         self.prontos = {}           # nome -> objeto produzido por um verbo
         self.metricas = {}          # nome -> Metrica, com componentes
         self.campos = {}            # nome -> Campo, por componentes numa carta
+        self.formas_c = {}          # nome -> FormaC, forma numa carta
         self.rotulos = {}           # 'A_t' -> valor, o que as tabelas imprimem
         self.contador = 0
 
@@ -325,6 +333,15 @@ class Caderno:
         induz = _RE_INDUZIDA.match(fonte or "")
         if induz:
             return self._induzida(induz.group(1), induz.group(2))
+
+        fc = _RE_FORMA_C.match(fonte or "")
+        if fc and self.sessao.coordenadas and not _RE_FORMA.match(fonte or ""):
+            return self._forma_carta(fc.group(1), fc.group(2))
+
+        opf = _RE_OP_FORMA.match(fonte or "")
+        if opf:
+            return Celula(None, fonte, "comando",
+                          self._op_forma(opf.group(1), opf.group(2).lower(), opf.group(3)))
 
         campo = _RE_CAMPO.match(fonte or "")
         if campo:
@@ -615,6 +632,68 @@ class Caderno:
             "declarado": [{"nome": limpo, "campo": True}],
             "texto": (f"{nome} = " + " + ".join(f"({sp.sstr(v)}) {b}" for v, b in zip(c.componentes, base))
                       + f" — {'vetor' if cima else 'covetor'}, na base coordenada")})
+
+    def _forma_carta(self, nome, texto):
+        from .formas_carta import FormaMalEscrita, ler
+        limpo = _sem_barra(nome)
+        fonte = f"{nome} = forma({texto.strip()})"
+        def expr(t):
+            e = self.sessao.expressao_de(t)
+            if e.pending:
+                raise FormaMalEscrita("; ".join(e.questions()))
+            return e.to_sympy()
+        try:
+            f = ler(texto, list(self.sessao.coordenadas), self.sessao.escrita_coord, expr)
+        except (FormaMalEscrita, ValueError) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.formas_c[limpo] = f
+        t, l = f.texto(self.sessao.escrita_coord)
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "forma": f.grau}],
+            "texto": f"{nome} = {t} — uma {f.grau}-forma na carta ({', '.join(map(str, self.sessao.coordenadas))})",
+            "latex_exato": l})
+
+    def _op_forma(self, nome, verbo, texto):
+        from . import formas_carta as F
+        partes = [_sem_barra(p_) for p_ in self._argumentos(texto)]
+        def forma(n):
+            if n in self.formas_c:
+                return self.formas_c[n]
+            if re.fullmatch(r"-?\d+", n):          # ⋆1: a 0-forma constante
+                return F.FormaC(list(self.sessao.coordenadas), {(): sp.Integer(n)}, 0)
+            raise KeyError(f"não conheço a forma '{n}' (tenho: {', '.join(self.formas_c) or 'nenhuma'})")
+        try:
+            if verbo == "iguais":
+                a, b = forma(partes[0]), forma(partes[1])
+                dif = a + b.escalar(-1)
+                return {"alvo": partes[0], "exato": "True" if dif.nula() else "False",
+                        "texto": (f"{partes[0]} = {partes[1]}" if dif.nula() else
+                                  f"{partes[0]} − {partes[1]} = {dif.texto(self.sessao.escrita_coord)[0]}")}
+            if verbo == "ortonormal":
+                o = F.ortonormal(forma(partes[0]), self._metrica_de(partes[1]))
+                t, l = F.texto_ortonormal(o, self.sessao.escrita_coord)
+                return {"alvo": partes[0], "exato": t, "latex_exato": l,
+                        "texto": f"{partes[0]} no cobase ortonormal σ^i = √|g_ii| dx^i"}
+            if verbo == "cunha":
+                r = F.cunha(forma(partes[0]), forma(partes[1]))
+            elif verbo == "exterior":
+                r = F.exterior(forma(partes[0]))
+            elif verbo == "estrela":
+                r = F.estrela(forma(partes[0]), self._metrica_de(partes[1]))
+            elif verbo in ("interior", "lie"):
+                if partes[0] not in self.campos:
+                    raise KeyError(f"não conheço o campo '{partes[0]}'")
+                f = forma(partes[1])
+                r = (F.interior if verbo == "interior" else F.lie)(self.campos[partes[0]], f)
+        except (KeyError, IndexError, ValueError) as e:
+            return {"erro": str(e.args[0]) if e.args else "argumentos a menos"}
+        escrita = self.sessao.escrita_coord
+        t, l = r.texto(escrita)
+        rotulo = {"cunha": "∧", "exterior": "d", "estrela": "⋆", "interior": "ι", "lie": "ℒ"}[verbo]
+        if nome:
+            self.formas_c[_sem_barra(nome)] = r
+        return {"alvo": partes[0], "exato": t, "latex_exato": l,
+                "texto": (f"{nome + ' = ' if nome else ''}{rotulo}(" + ", ".join(partes) + f") — uma {r.grau}-forma")}
 
     def _verbo_campo(self, verbo, texto):
         from . import campos as C
@@ -1438,7 +1517,9 @@ class Caderno:
                  + " — com ∇ delas, trocas de índice e produtos; e do que a "
                    "forma canônica sabe: simetrias declaradas, [∇,∇] como "
                    "curvatura, ∇g = 0"
-                 + (f"; não precisou de {', '.join(sobrou)}" if sobrou else ""))
+                 + (f"; não precisou de {', '.join(sobrou)}" if sobrou else "")
+                 + ("; vale se " + ", ".join(f"{sp.sstr(c)} ≠ 0" for c in prova.condicoes)
+                    + " — a combinação divide por isso" if prova.condicoes else ""))
         tabela.append(["somando", sp.sstr(objetivo),
                        latex_de(objetivo, espaco) + r"\quad\blacksquare"])
         tabela.append(["usou", texto])

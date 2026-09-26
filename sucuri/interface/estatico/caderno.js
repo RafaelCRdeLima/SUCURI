@@ -140,6 +140,7 @@ var VERBOS = [
   'independentes', 'independent', 'em_componentes',
   'linearizar', 'linearize',
   'geodesicas', 'geodésicas', 'geodesics', 'volume', 'serie', 'série', 'orbitas', 'órbitas', 'elemento', 'cartan', 'tetrada', 'tétrada', 'killing', 'colchete', 'nabla', 'laplaciano', 'restringir',
+  'cunha', 'exterior', 'estrela', 'interior', 'lie', 'iguais', 'ortonormal',
   'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
 ];
 

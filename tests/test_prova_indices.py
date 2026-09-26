@@ -85,3 +85,23 @@ def test_o_certificado_fecha():
               r"\nabla_a (T^{ab} X_b) = 0", "provar(eq3, eq1, eq2)")
     rotulos = [l[0] for l in d["linhas"]]
     assert rotulos[0].startswith("eq1") and rotulos[1].startswith("1/2 · eq2")
+
+
+SCHUR = [r"\mu, \nu, \rho, \sigma, \lambda = índices(d)", "V = tensor(1, 0)", r"\nabla = levi-civita", "g = métrica",
+         *RIEMANN, *RICCI, r"\nabla^\mu R_{\mu\nu} = \frac{1}{2} \nabla_\nu R", r"R_{\mu\nu} = f g_{\mu\nu}"]
+
+
+def test_schur_diz_que_divide_por_d_menos_2():
+    """Ric = fg ⇒ ∇f = 0: pelo traço da hipótese, e dividindo por d − 2 —
+    o que a prova tem de dizer, e não supor calada."""
+    d = prova(*SCHUR, r"\nabla_\nu f = 0", "provar(eq5, eq3, eq4)")
+    assert "d - 2 ≠ 0" in d["texto"]
+
+
+def test_bianchi_segunda_da_identidade_de_ricci():
+    """A identidade de Ricci simplifica a zero — a forma canônica a sabe —,
+    mas ∇ dela não: é daí que sai a segunda identidade de Bianchi."""
+    base = [r"\mu, \nu, \rho, \sigma, \lambda = índices", "V = tensor(1, 0)", r"\nabla = levi-civita", "g = métrica", *RIEMANN]
+    certo = prova(*base, r"(\nabla_\lambda R^\rho{}_{\sigma\mu\nu} + \nabla_\mu R^\rho{}_{\sigma\nu\lambda}"
+                         r" + \nabla_\nu R^\rho{}_{\sigma\lambda\mu}) V^\sigma = 0", "provar(eq2, eq1)")
+    assert "provado" in certo["texto"]
