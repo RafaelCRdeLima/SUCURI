@@ -94,9 +94,9 @@ componentes, índices e soma de Einstein; e <strong>tensorial</strong>, sem
 faz com ele: resolve, resolve em parte, ou não resolve — e por quê.</p>
 
 <p class="nota-manual">Cada exercício resolvido aqui é executado pela suíte de
-testes a cada mudança do programa: a saída impressa é a saída. Os enunciados
-são paráfrases; o número e a fonte de cada um estão ao lado, para conferir no
-original.</p>
+testes a cada mudança do programa: a saída impressa é a saída. Nas seções
+I–IV, os enunciados são paráfrases; os enunciados completos dos exercícios
+resolvidos, traduzidos e com a referência exata, estão na seção VII.</p>
 
 <nav class="sumario">
   <a href="#como-ler">Como ler</a> ·
@@ -107,6 +107,7 @@ original.</p>
   <a href="#formas">IV. Formas diferenciais</a> ·
   <a href="#nao-sai">V. O que não sai</a> ·
   <a href="#achados">VI. O que os exercícios ensinaram</a> ·
+  <a href="#enunciados">VII. Os enunciados</a> ·
   <a href="#fontes">Fontes</a>
 </nav>
 
@@ -360,7 +361,9 @@ expandido pela métrica g.</p>
 
 <h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span></h3>
 
-<p>MIT 8.962, lista 3, #7: ∇<sub>μ</sub>V<sup>μ</sup> = |g|<sup>−1/2</sup>∂<sub>μ</sub>(|g|<sup>1/2</sup>V<sup>μ</sup>).
+<p>MIT 8.962, lista 3, #7(d)–(f): ∇<sub>ν</sub>A<sub>μ</sub><sup>ν</sup> = |g|<sup>−1/2</sup>∂<sub>ν</sub>(|g|<sup>1/2</sup>A<sub>μ</sub><sup>ν</sup>)
+− Γ<sup>λ</sup><sub>νμ</sub>A<sub>λ</sub><sup>ν</sup>, a versão com F antissimétrico e o
+d'alembertiano; o caso mais simples é a divergência de um vetor.
 Evans, folha 3, Q10: Γ<sup>β</sup><sub>αβ</sub> = ∂<sub>α</sub> ln √−g.
 't Hooft, (10.13)–(10.14): com F antissimétrico,
 ∇<sub>μ</sub>F<sup>μν</sup> = (−g)<sup>−1/2</sup>∂<sub>μ</sub>(√−g F<sup>μν</sup>).
@@ -382,6 +385,22 @@ da assinatura.</p>
   <samp class="saida">True</samp>
   <p class="explica">sem a assinatura, g é só real e não nulo, e |g| fica |g|
     — o que basta. Com −g no lugar de √|g|, não sai.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">A = tensor(1, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">g = det(g)</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\nu A^\nu{}_\mu = \frac{1}{\sqrt{|g|}} \partial_\nu (\sqrt{|g|} A^\nu{}_\mu) - \Gamma^\lambda{}_{\nu\mu} A^\nu{}_\lambda</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">o item (d) da lista; sem o termo de Γ, não sai. O (f),
+    g<sup>μν</sup>∇<sub>μ</sub>∇<sub>ν</sub>S, também sai.</p>
 </div>
 
 <div class="exemplo">
@@ -1135,7 +1154,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
 
 <h3>76. de Sitter em fatias planas <span class="pill ok">resolve</span></h3>
 
-<p>Hirata, Ph236, HW5 #1: ds² = (−dη² + dx²)/(H²η²). R<sub>μν</sub> = 3H²g<sub>μν</sub> — logo G<sub>μν</sub> = −3H²g<sub>μν</sub> e Λ = 3H².</p>
+<p>Hirata, Ph236, HW5 #1: ds² = (−dη² + dx² + dy² + dz²)/(H²η²). R<sub>μν</sub> = 3H²g<sub>μν</sub> — logo G<sub>μν</sub> = −3H²g<sub>μν</sub> e Λ = 3H².</p>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(\eta, x, y, z)</code>
@@ -1290,8 +1309,10 @@ R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
 
 <h3>23. A fórmula de Koszul <span class="pill ok">resolve</span></h3>
 
-<p>Richard, ex. 5.4.5 (e Reall §3.2): a fórmula de Koszul, das duas condições
-de Levi-Civita — compatibilidade com a métrica e torção nula.</p>
+<p>Richard, ex. 5.4.5 (e Reall §3.2): a fórmula de Koszul, das duas condições de
+Levi-Civita — compatibilidade com a métrica e torção nula. Richard pede a
+direção contrária (definida ∇ pela fórmula, conferir as duas condições); o
+Sucuri prova esta, que é a unicidade (seção VII).</p>
 
 <div class="exemplo">
   <code class="entrada">g = métrica</code>
@@ -1618,6 +1639,840 @@ corrigidos, e cada um com teste.</p>
     zero — e toda identidade saía verdadeira. Os arrays agora são de índices
     de baixo, e subir o SymPy faz certo.</li>
 </ul>
+
+<h2 id="enunciados">VII. Os enunciados</h2>
+
+<p>Os enunciados completos dos 57 exercícios que o placar conta como
+resolvidos, com a referência exata — lista, questão, página ou equação — e o
+link para o original. A tradução é nossa; as fórmulas seguem a notação de cada
+fonte. No fim de cada um, o que o Sucuri faz dele.</p>
+
+<p class="nota-manual">No placar, “resolve” quer dizer que o cálculo que o
+exercício tem no centro sai. Ao pôr os enunciados inteiros ao lado, 23 deles
+pedem mais do que isso — um mergulho, geodésicas, um volume, uma discussão —,
+e a nota diz o que fica de fora. Num (23), o Sucuri prova a direção contrária
+à pedida.</p>
+
+<div class="enunciado" id="enunciado-1">
+  <h3>1. Contração de par simetrizado com par antissimetrizado</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §1.7 “Tensors”, exercício logo após a eq. (1.42), p. 20 — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Exercise. Show that T^{(ab)} X_{[a|cd|b]} = 0. -->
+  <blockquote>
+    <p>Mostre que T<sup>(ab)</sup> X<sub>[a|cd|b]</sub> = 0.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade inteira (seção I).</p>
+</div>
+
+<div class="enunciado" id="enunciado-2">
+  <h3>2. Derivada covariante de um tensor (1,1)</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §3.1 “Introduction”, exercício logo após a eq. (3.17), p. 34 — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Now the Leibniz rule can be used to obtain the formula for the coordinate basis components of ∇T where T is a (r,s) tensor: T^{μ1…μr}_{ν1…νs;ρ} = T^{μ1…μr}_{ν1…νs,ρ} + Γ^{μ1}_{σρ} T^{σμ2…μr}_{ν1…νs} + … + Γ^{μr}_{σρ} T^{μ1…μr−1 σ}_{ν1…νs} − Γ^σ_{ν1ρ} T^{μ1…μr}_{σν2…νs} − … − Γ^σ_{νsρ} T^{μ1…μr}_{ν1…νs−1 σ} (3.17). Exercise. Prove this result for a (1,1) tensor. -->
+  <blockquote>
+    <p>Agora a regra de Leibniz pode ser usada para obter a fórmula das componentes na base coordenada de ∇T, onde T é um tensor (r, s):</p>
+    <p>T<sup>μ₁…μ<sub>r</sub></sup><sub>ν₁…ν<sub>s</sub>;ρ</sub> = T<sup>μ₁…μ<sub>r</sub></sup><sub>ν₁…ν<sub>s</sub>,ρ</sub> + Γ<sup>μ₁</sup><sub>σρ</sub> T<sup>σμ₂…μ<sub>r</sub></sup><sub>ν₁…ν<sub>s</sub></sub> + … + Γ<sup>μ<sub>r</sub></sup><sub>σρ</sub> T<sup>μ₁…μ<sub>r−1</sub>σ</sup><sub>ν₁…ν<sub>s</sub></sub> − Γ<sup>σ</sup><sub>ν₁ρ</sub> T<sup>μ₁…μ<sub>r</sub></sup><sub>σν₂…ν<sub>s</sub></sub> − … − Γ<sup>σ</sup><sub>ν<sub>s</sub>ρ</sub> T<sup>μ₁…μ<sub>r</sub></sup><sub>ν₁…ν<sub>s−1</sub>σ</sub> &nbsp;&nbsp;(3.17)</p>
+    <p><strong>Exercício.</strong> Prove este resultado para um tensor (1, 1).</p>
+    <p>[Contexto: as eqs. (3.9) e (3.16) do mesmo texto dão, na base coordenada, Y<sup>μ</sup><sub>;ν</sub> = Y<sup>μ</sup><sub>,ν</sub> + Γ<sup>μ</sup><sub>ρν</sub>Y<sup>ρ</sup> e η<sub>μ;ν</sub> = η<sub>μ,ν</sub> − Γ<sup>ρ</sup><sub>μν</sub>η<sub>ρ</sub>. O resultado pedido é, portanto, T<sup>μ</sup><sub>ν;ρ</sub> = T<sup>μ</sup><sub>ν,ρ</sub> + Γ<sup>μ</sup><sub>σρ</sub>T<sup>σ</sup><sub>ν</sub> − Γ<sup>σ</sup><sub>νρ</sub>T<sup>μ</sup><sub>σ</sub>. Esta é uma especialização de (3.17) e não aparece literalmente no texto.]</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> o tensor (1,1), na convenção de Reall, lida da definição escrita.</p>
+</div>
+
+<div class="enunciado" id="enunciado-4">
+  <h3>4. Identidades da conexão: derivadas da métrica</h3>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 3, questão 7, itens (a)–(c), p. 3 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "7. Prove the following connection identities: (a) ∂_λ g_μν = Γ_μνλ + Γ_νμλ. (b) g_μκ ∂_λ g^κν = −g^κν ∂_λ g_μκ. (c) ∂_λ g^μν = −Γ^μ_λκ g^κν − Γ^ν_λκ g^κμ" -->
+  <blockquote>
+    <p>Prove as seguintes identidades da conexão:</p>
+    <p>(a) ∂<sub>λ</sub>g<sub>μν</sub> = Γ<sub>μνλ</sub> + Γ<sub>νμλ</sub>.</p>
+    <p>(b) g<sub>μκ</sub>∂<sub>λ</sub>g<sup>κν</sup> = −g<sup>κν</sup>∂<sub>λ</sub>g<sub>μκ</sub>.</p>
+    <p>(c) ∂<sub>λ</sub>g<sup>μν</sup> = −Γ<sup>μ</sup><sub>λκ</sub>g<sup>κν</sup> − Γ<sup>ν</sup><sub>λκ</sub>g<sup>κμ</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a), (b) e (c).</p>
+</div>
+
+<div class="enunciado" id="enunciado-5">
+  <h3>5. Divergências covariantes e d'Alembertiano em base coordenada</h3>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 3, questão 7, itens (d)–(f), p. 3 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "The next three parts rely on an identity I will prove on either Thursday March 2nd or on Tuesday March 7th. The quantity g is the determinant of the metric g_μν. (d) ∇_ν A_μ^ν = |g|^{-1/2} ∂_ν(|g|^{1/2} A_μ^ν) − Γ^λ_νμ A_λ^ν in a coordinate basis. (e) ∇_ν F^μν = |g|^{-1/2} ∂_ν(|g|^{1/2} F^μν) in a coordinate basis, if F^μν is antisymmetric. (f) □S ≡ g^μν ∇_μ ∇_ν S = |g|^{-1/2} ∂_μ(|g|^{1/2} g^μν ∂_ν S) in a coordinate basis. (S is a scalar function.)" -->
+  <blockquote>
+    <p>(Continuação da questão 7: “Prove as seguintes identidades da conexão”.) Os três itens seguintes dependem de uma identidade que será provada em aula. A quantidade g é o determinante da métrica g<sub>μν</sub>.</p>
+    <p>(d) ∇<sub>ν</sub>A<sub>μ</sub><sup>ν</sup> = |g|<sup>−1/2</sup>∂<sub>ν</sub>(|g|<sup>1/2</sup>A<sub>μ</sub><sup>ν</sup>) − Γ<sup>λ</sup><sub>νμ</sub>A<sub>λ</sub><sup>ν</sup> numa base coordenada.</p>
+    <p>(e) ∇<sub>ν</sub>F<sup>μν</sup> = |g|<sup>−1/2</sup>∂<sub>ν</sub>(|g|<sup>1/2</sup>F<sup>μν</sup>) numa base coordenada, se F<sup>μν</sup> for antissimétrico.</p>
+    <p>(f) □S ≡ g<sup>μν</sup>∇<sub>μ</sub>∇<sub>ν</sub>S = |g|<sup>−1/2</sup>∂<sub>μ</sub>(|g|<sup>1/2</sup>g<sup>μν</sup>∂<sub>ν</sub>S) numa base coordenada. (S é uma função escalar.)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (d), (e) e (f); e a divergência de um vetor, que é o caso particular.</p>
+</div>
+
+<div class="enunciado" id="enunciado-6">
+  <h3>6. Torção e comutador de derivadas covariantes de uma função</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 2, p. 1 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 2. Let ∇ be a connection that is not torsion-free. Let T(X,Y) = ∇_X Y − ∇_Y X − [X,Y] where X and Y are vector fields. Show that this defines a (1,2) tensor field T. This is called the torsion tensor. Show that, for any function f, 2∇_[μ ∇_ν] f = −T^ρ_{μν} ∇_ρ f -->
+  <blockquote>
+    <p>Seja ∇ uma conexão que não é livre de torção. Seja T(X, Y) = ∇<sub>X</sub>Y − ∇<sub>Y</sub>X − [X, Y], onde X e Y são campos vetoriais. Mostre que isto define um campo tensorial T do tipo (1, 2). Ele é chamado de tensor de torção. Mostre que, para qualquer função f,</p>
+    <p>2∇<sub>[μ</sub>∇<sub>ν]</sub> f = −T<sup>ρ</sup><sub>μν</sub> ∇<sub>ρ</sub> f.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade, com a torção escrita numa carta, T<sup>ρ</sup><sub>μν</sub> = Γ<sup>ρ</sup><sub>μν</sub> − Γ<sup>ρ</sup><sub>νμ</sub>; que T é tensor sai sem índice (enunciado 21).</p>
+</div>
+
+<div class="enunciado" id="enunciado-8">
+  <h3>8. Identidade de Ricci para uma 1-forma</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 3, p. 1 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 3. Let ∇ be a torsion-free connection. Derive the analogue of the Ricci identity for a 1-form ω, 2∇_[μ ∇_ν] ω_ρ = −R^σ_{ρμν} ω_σ -->
+  <blockquote>
+    <p>Seja ∇ uma conexão livre de torção. Deduza o análogo da identidade de Ricci para uma 1-forma ω:</p>
+    <p>2∇<sub>[μ</sub>∇<sub>ν]</sub> ω<sub>ρ</sub> = −R<sup>σ</sup><sub>ρμν</sub> ω<sub>σ</sub>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade na 1-forma, a partir da definição do Riemann num vetor.</p>
+</div>
+
+<div class="enunciado" id="enunciado-9">
+  <h3>9. Simetria de troca de pares do tensor de Riemann</h3>
+  <p class="fonte">S. M. Carroll, <em>Lecture Notes on General Relativity</em> (1997), cap. 3 “Curvature”, parágrafo logo após a eq. (3.81), p. 79 — <a href="https://arxiv.org/abs/gr-qc/9712019">arxiv.org</a>.</p>
+  <!-- original: This last property is equivalent to the vanishing of the antisymmetric part of the last three indices: R_ρ[σμν] = 0. (3.81) All of these properties have been derived in a special coordinate system, but they are all tensor equations; therefore they will be true in any coordinates. Not all of them are independent; with some effort, you can show that (3.64), (3.78) and (3.81) together imply (3.79). The logical interdependence of the equations is usually less important than the simple fact that they are true. -->
+  <blockquote>
+    <p>Esta última propriedade equivale ao anulamento da parte antissimétrica nos três últimos índices:</p>
+    <p>R<sub>ρ[σμν]</sub> = 0. &nbsp;&nbsp;(3.81)</p>
+    <p>Todas essas propriedades foram deduzidas num sistema de coordenadas especial, mas são todas equações tensoriais e, portanto, valem em quaisquer coordenadas. Nem todas são independentes: com algum esforço, você pode mostrar que (3.64), (3.78) e (3.81), juntas, implicam (3.79). A interdependência lógica das equações costuma ser menos importante do que o simples fato de que elas são verdadeiras.</p>
+    <p>[Referências do texto: (3.64) R<sup>ρ</sup><sub>σμν</sub> = −R<sup>ρ</sup><sub>σνμ</sub>; (3.78) R<sub>ρσμν</sub> = −R<sub>σρμν</sub>; (3.79) R<sub>ρσμν</sub> = R<sub>μνρσ</sub>; (3.80) R<sub>ρσμν</sub> + R<sub>ρμνσ</sub> + R<sub>ρνσμ</sub> = 0.]</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a troca de pares, reescrita sem índice, com as três propriedades como hipóteses.</p>
+</div>
+
+<div class="enunciado" id="enunciado-10">
+  <h3>10. Identidade de Bianchi contraída</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 4, p. 1 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 4. The Riemann tensor constructed from the Levi-Civita connection obeys the Bianchi identity R^μ_{ν[ρσ;λ]} = 0. Use this fact to derive the contracted Bianchi identity G^μ_{ν;μ} = 0 where G_μν = R_μν − ½ R g_μν is the Einstein tensor. -->
+  <blockquote>
+    <p>O tensor de Riemann construído a partir da conexão de Levi-Civita obedece à identidade de Bianchi R<sup>μ</sup><sub>ν[ρσ;λ]</sub> = 0. Use esse fato para deduzir a identidade de Bianchi contraída G<sup>μ</sup><sub>ν;μ</sub> = 0, onde G<sub>μν</sub> = R<sub>μν</sub> − ½ R g<sub>μν</sub> é o tensor de Einstein.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade contraída, a partir da segunda identidade de Bianchi.</p>
+</div>
+
+<div class="enunciado" id="enunciado-11">
+  <h3>11. Riemann a partir de sua parte simetrizada</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §4.5 “Geodesic deviation”, exercício com a eq. (4.25), p. 47 (as simetrias usadas são as eqs. (4.16)–(4.17) do §4.4, p. 45) — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Hence by measuring the LHS above we can determine R^a_(bc)d. From this we can determine R^a_bcd: Exercise. Show that, for a torsion-free connection, R^a_bcd = (2/3)(R^a_(bc)d − R^a_(bd)c) (4.25) -->
+  <blockquote>
+    <p>[…] Portanto, medindo o lado esquerdo acima [da equação do desvio geodésico (4.24)], podemos determinar R<sup>a</sup><sub>(bc)d</sub>. A partir disso podemos determinar R<sup>a</sup><sub>bcd</sub>:</p>
+    <p><strong>Exercício.</strong> Mostre que, para uma conexão livre de torção,</p>
+    <p>R<sup>a</sup><sub>bcd</sub> = ⅔ (R<sup>a</sup><sub>(bc)d</sub> − R<sup>a</sup><sub>(bd)c</sub>). &nbsp;&nbsp;(4.25)</p>
+    <p>[Simetrias disponíveis no texto: (4.16) R<sup>a</sup><sub>b(cd)</sub> = 0 e, para conexão livre de torção, (4.17) R<sup>a</sup><sub>[bcd]</sub> = 0.]</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (4.25), reescrita sem índice.</p>
+</div>
+
+<div class="enunciado" id="enunciado-12">
+  <h3>12. Componentes independentes do Riemann; o caso bidimensional</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 8, p. 2 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 8. How many independent components does the Riemann tensor (of the Levi-Civita connection) have in two, three and four dimensions? Show that in two dimensions R_μνρσ = ½ R (g_μρ g_νσ − g_μσ g_νρ). Discuss the implications for general relativity in two spacetime dimensions. -->
+  <blockquote>
+    <p>Quantas componentes independentes o tensor de Riemann (da conexão de Levi-Civita) tem em duas, três e quatro dimensões? Mostre que, em duas dimensões,</p>
+    <p>R<sub>μνρσ</sub> = ½ R (g<sub>μρ</sub>g<sub>νσ</sub> − g<sub>μσ</sub>g<sub>νρ</sub>).</p>
+    <p>Discuta as implicações para a relatividade geral em duas dimensões de espaço-tempo.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as contagens (1, 6 e 20), a fórmula em 2D e, para a discussão, que G<sub>μν</sub> ≡ 0 em 2D.</p>
+</div>
+
+<div class="enunciado" id="enunciado-13">
+  <h3>13. O tensor de Weyl</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 9, p. 3 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 9. In a d-dimensional spacetime, define a tensor C_μνρσ = R_μνρσ + α(R_μρ g_νσ + R_νσ g_μρ − R_μσ g_νρ − R_νρ g_μσ) + β R (g_μρ g_νσ − g_μσ g_νρ) where α and β are constants. Show that C_μνρσ has the same symmetries as R_μνρσ. What values of α and β give C^μ_{νμσ} = 0? Determine them. With this extra condition C_μνρσ is called the Weyl tensor. Show that it vanishes if d = 2, 3. Setting d = 4, how many independent components do R_μν and C_μνρσ have? Show that in vacuum ∇^μ C_μνρσ = 0. What does the Weyl tensor represent physically? -->
+  <blockquote>
+    <p>Num espaço-tempo de dimensão d, defina o tensor</p>
+    <p>C<sub>μνρσ</sub> = R<sub>μνρσ</sub> + α(R<sub>μρ</sub>g<sub>νσ</sub> + R<sub>νσ</sub>g<sub>μρ</sub> − R<sub>μσ</sub>g<sub>νρ</sub> − R<sub>νρ</sub>g<sub>μσ</sub>) + βR(g<sub>μρ</sub>g<sub>νσ</sub> − g<sub>μσ</sub>g<sub>νρ</sub>),</p>
+    <p>onde α e β são constantes. Mostre que C<sub>μνρσ</sub> tem as mesmas simetrias que R<sub>μνρσ</sub>.</p>
+    <p>Quais valores de α e β dão C<sup>μ</sup><sub>νμσ</sub> = 0? Determine-os. Com essa condição adicional, C<sub>μνρσ</sub> é chamado de tensor de Weyl. Mostre que ele se anula se d = 2, 3.</p>
+    <p>Tomando d = 4, quantas componentes independentes têm R<sub>μν</sub> e C<sub>μνρσ</sub>? Mostre que, no vácuo,</p>
+    <p>∇<sup>μ</sup>C<sub>μνρσ</sub> = 0.</p>
+    <p>O que o tensor de Weyl representa fisicamente?</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as simetrias, α e β, o Weyl nulo em d = 2, 3, as contagens em d = 4 e ∇<sup>μ</sup>C<sub>μνρσ</sub> = 0 no vácuo; a pergunta física fica com o leitor.</p>
+</div>
+
+<div class="enunciado" id="enunciado-15">
+  <h3>15. Corrente conservada associada a um vetor de Killing</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §5.3 “Lie derivative”, último exercício da seção, p. 57 — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>; e D. Tong, <em>General Relativity: Example Sheet 3</em> (2019), questão 5, p. 2 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk3.pdf">davidtong.org</a>.</p>
+  <!-- original (Reall): Exercise. Let J^a = T^a_b X^b where T_ab is symmetric and satisfies ∇_a T^ab = 0 (e.g. the energy-momentum tensor: see later) and X^b is a Killing vector field. Show that ∇_a J^a = 0, i.e., J^a is a conserved current. -->
+  <!-- original (Tong): 5. Let K^μ be a Killing vector field and T_μν the energy momentum tensor. Let J^μ = T^μ_ν K^ν. Show that J^μ is a conserved current, meaning ∇_μ J^μ = 0. -->
+  <blockquote>
+    <p><strong>Reall:</strong> Seja J<sup>a</sup> = T<sup>a</sup><sub>b</sub>X<sup>b</sup>, onde T<sub>ab</sub> é simétrico e satisfaz ∇<sub>a</sub>T<sup>ab</sup> = 0 (por exemplo, o tensor energia-momento: ver adiante) e X<sup>b</sup> é um campo vetorial de Killing. Mostre que ∇<sub>a</sub>J<sup>a</sup> = 0, isto é, que J<sup>a</sup> é uma corrente conservada.</p>
+    <p><strong>Tong:</strong> Seja K<sup>μ</sup> um campo vetorial de Killing e T<sub>μν</sub> o tensor energia-momento. Seja J<sup>μ</sup> = T<sup>μ</sup><sub>ν</sub>K<sup>ν</sup>. Mostre que J<sup>μ</sup> é uma corrente conservada, isto é, que ∇<sub>μ</sub>J<sup>μ</sup> = 0.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as duas versões: a conservação a partir das duas hipóteses.</p>
+</div>
+
+<div class="enunciado" id="enunciado-16">
+  <h3>16. Contração de dois tensores de Levi-Civita</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §8.5 “Volume form”, lema com a eq. (8.54) (“Proof. Optional exercise.”), p. 107 — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Lemma. ε^{a1…ap c_{p+1}…c_n} ε_{b1…bp c_{p+1}…c_n} = ± p!(n−p)! δ^{[a1}_{b1} … δ^{ap]}_{bp} (8.54) where the upper (lower) sign holds for Riemannian (Lorentzian) signature. Proof. Optional exercise. -->
+  <blockquote>
+    <p><strong>Lema.</strong></p>
+    <p>ε<sup>a₁…a<sub>p</sub> c<sub>p+1</sub>…c<sub>n</sub></sup> ε<sub>b₁…b<sub>p</sub> c<sub>p+1</sub>…c<sub>n</sub></sub> = ± p!(n − p)! δ<sup>[a₁</sup><sub>b₁</sub> … δ<sup>a<sub>p</sub>]</sup><sub>b<sub>p</sub></sub>, &nbsp;&nbsp;(8.54)</p>
+    <p>onde o sinal superior (inferior) vale para assinatura riemanniana (lorentziana).</p>
+    <p><em>Demonstração.</em> Exercício opcional.</p>
+    <p>[Contexto: (8.52) ε<sub>12…n</sub> = √|g| e (8.53) ε<sup>12…n</sup> = ±1/√|g| numa carta destra. O caso particular ε<sup>abcd</sup>ε<sub>abcd</sub> = −24 (p = 0, n = 4, assinatura lorentziana) não aparece escrito no texto.]</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os casos p = 0 e p = 2 em 4D, com as duas assinaturas; o lema para n e p gerais, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-17">
+  <h3>17. Derivada de Lie de um covetor e da métrica</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §5.3 “Lie derivative”, “Exercises (examples sheet 2)” 1 e 2, eqs. (5.18)–(5.21), pp. 55–56 (o mesmo conteúdo está em D. Tong, <em>Example Sheet 1</em>, Q5, e <em>Example Sheet 2</em>, Q7) — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Exercises (examples sheet 2). 1. Derive the formula for the Lie derivative of a covector field ω_a in a coordinate basis: (L_X ω)_μ = X^ν ∂_ν ω_μ + ω_ν ∂_μ X^ν (5.18). Show that this can be written in the basis-independent form (L_X ω)_a = X^b ∇_b ω_a + ω_b ∇_a X^b (5.19) where ∇ is any torsion-free connection. 2. Show that the Lie derivative of a (0,2) tensor field g_ab in a coordinate basis is (L_X g)_μν = X^ρ ∂_ρ g_μν + g_μρ ∂_ν X^ρ + g_ρν ∂_μ X^ρ (5.20) and that this can be written in the basis-independent form (L_X g)_ab = ∇_a X_b + ∇_b X_a (5.21) where ∇ is the Levi-Civita connection. -->
+  <blockquote>
+    <p>(1) Deduza a fórmula da derivada de Lie de um campo covetorial ω<sub>a</sub> numa base coordenada:</p>
+    <p>(L<sub>X</sub>ω)<sub>μ</sub> = X<sup>ν</sup>∂<sub>ν</sub>ω<sub>μ</sub> + ω<sub>ν</sub>∂<sub>μ</sub>X<sup>ν</sup>. &nbsp;&nbsp;(5.18)</p>
+    <p>Mostre que isto pode ser escrito na forma independente de base</p>
+    <p>(L<sub>X</sub>ω)<sub>a</sub> = X<sup>b</sup>∇<sub>b</sub>ω<sub>a</sub> + ω<sub>b</sub>∇<sub>a</sub>X<sup>b</sup>, &nbsp;&nbsp;(5.19)</p>
+    <p>onde ∇ é qualquer conexão livre de torção.</p>
+    <p>(2) Mostre que a derivada de Lie de um campo tensorial g<sub>ab</sub> do tipo (0, 2), numa base coordenada, é</p>
+    <p>(L<sub>X</sub>g)<sub>μν</sub> = X<sup>ρ</sup>∂<sub>ρ</sub>g<sub>μν</sub> + g<sub>μρ</sub>∂<sub>ν</sub>X<sup>ρ</sup> + g<sub>ρν</sub>∂<sub>μ</sub>X<sup>ρ</sup>, &nbsp;&nbsp;(5.20)</p>
+    <p>e que isto pode ser escrito na forma independente de base</p>
+    <p>(L<sub>X</sub>g)<sub>ab</sub> = ∇<sub>a</sub>X<sub>b</sub> + ∇<sub>b</sub>X<sub>a</sub>, &nbsp;&nbsp;(5.21)</p>
+    <p>onde ∇ é a conexão de Levi-Civita.</p>
+    <p>Note que não podemos usar índices abstratos em (5.18) e (5.20), pois elas só valem numa base coordenada.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (1) e (2): as formas com ∇ no lugar de ∂.</p>
+</div>
+
+<div class="enunciado" id="enunciado-18">
+  <h3>18. O colchete de Lie faz de 𝔛(M) uma álgebra de Lie</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 2.2.3, §2.2, p. 19 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original (contexto imediatamente anterior, p. 18–19): "The set X(M) has also the structure of a Lie algebra, meaning that there exists a Lie bracket [ , ] : X(M) × X(M) → X(M) satisfying (i) It is linear in each argument, (ii) It is antisymmetric: [Y,X]=-[X,Y], (iii) The Jacobi identity holds: [X,[Y,Z]] + [Y,[Z,X]] + [Z,[X,Y]] = 0. [...] by defining [X,Y]_p(f) := X_p(Yf) − Y_p(Xf), this verifies the linearity property and the Leibniz rule. As a consequence, [X,Y]_p is an element of T_p(M) for each p ∈ M. The details can be checked in the following exercise:"
+       "Exercise 2.2.3 (r). Check that X(M) endowed with the product [X, Y] is a Lie algebra, see [2, p. 152–153]." -->
+  <blockquote>
+    <p><em>Contexto:</em> 𝔛(M) tem estrutura de álgebra de Lie, isto é, existe um colchete de Lie [ , ] : 𝔛(M) × 𝔛(M) → 𝔛(M) que satisfaz:</p>
+    <p>(i) é linear em cada argumento;<br>
+    (ii) é antissimétrico: [Y, X] = −[X, Y];<br>
+    (iii) vale a identidade de Jacobi: [X, [Y, Z]] + [Y, [Z, X]] + [Z, [X, Y]] = 0.</p>
+    <p>Definindo [X, Y]<sub>p</sub>(f) := X<sub>p</sub>(Yf) − Y<sub>p</sub>(Xf), valem a linearidade e a regra de Leibniz; portanto [X, Y]<sub>p</sub> é um elemento de T<sub>p</sub>(M) para cada p ∈ M.</p>
+    <p><strong>Exercício 2.2.3.</strong> Verifique que 𝔛(M), munido do produto [X, Y], é uma álgebra de Lie (veja [2, p. 152–153]).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as propriedades do colchete, sem índice.</p>
+</div>
+
+<div class="enunciado" id="enunciado-19">
+  <h3>19. Colchete de campos multiplicados por funções</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 2.2.4, §2.2, p. 19 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original: "Exercise 2.2.4. For any X, Y ∈ X(M) and f, g ∈ C∞(M), check the following equality: [fX, gY] = fg[X, Y] + f(Xg)Y − g(Yf)X." -->
+  <blockquote>
+    <p><strong>Exercício 2.2.4.</strong> Para quaisquer X, Y ∈ 𝔛(M) e f, g ∈ C<sup>∞</sup>(M), verifique a igualdade</p>
+    <p>[fX, gY] = fg[X, Y] + f(Xg)Y − g(Yf)X.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a fórmula.</p>
+</div>
+
+<div class="enunciado" id="enunciado-20">
+  <h3>20. Propriedades da derivada de Lie de campos vetoriais</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 2.3.12, §2.3, p. 23 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original: "Lemma 2.3.11. For any X, Y ∈ X(M), one has L_X(Y) = [X, Y].
+       Exercise 2.3.12. Prove (and understand) the following equality, for any X, Y, Z ∈ X(M) and f ∈ C∞(M):
+       (i) L_X[Y, Z] = [L_X Y, Z] + [Y, L_X Z], (ii) L_X ∘ L_Y − L_Y ∘ L_X = L_[X,Y], (iii) L_X(fY) = (L_X f)Y + f(L_X Y)." -->
+  <blockquote>
+    <p><em>Contexto (Lema 2.3.11):</em> para quaisquer X, Y ∈ 𝔛(M), tem-se L<sub>X</sub>(Y) = [X, Y].</p>
+    <p><strong>Exercício 2.3.12.</strong> Prove (e entenda) as seguintes igualdades, para quaisquer X, Y, Z ∈ 𝔛(M) e f ∈ C<sup>∞</sup>(M):</p>
+    <p>(i) L<sub>X</sub>[Y, Z] = [L<sub>X</sub>Y, Z] + [Y, L<sub>X</sub>Z];<br>
+    (ii) L<sub>X</sub> ∘ L<sub>Y</sub> − L<sub>Y</sub> ∘ L<sub>X</sub> = L<sub>[X,Y]</sub>;<br>
+    (iii) L<sub>X</sub>(fY) = (L<sub>X</sub>f)Y + f(L<sub>X</sub>Y).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (i); (ii) e (iii) não foram escritos.</p>
+</div>
+
+<div class="enunciado" id="enunciado-21">
+  <h3>21. Torção e curvatura são C<sup>∞</sup>(M)-lineares</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 5.4.3 (após a Definição 5.4.2), §5.4, p. 49 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original: "Definition 5.4.2 (Torsion and curvature). For a Riemannian manifold M and an affine connection ∇ one sets for any X, Y ∈ X(M) T(X, Y) := ∇_X Y − ∇_Y X − [X, Y] ∈ X(M) and R(X, Y) := ∇_X ∇_Y − ∇_Y ∇_X − ∇_[X,Y] ∈ End(X(M)) the former being called the torsion while the latter is called the curvature of the connection. It is then interesting to observe that the map (X, Y) ↦ T(X, Y) is C∞(M)-linear in both arguments, and that the map (X, Y, Z) ↦ R(X, Y)Z is C∞(M)-linear in the three arguments.
+       Exercise 5.4.3. Show the C∞(M)-linearity mentioned above, see also [8, Prop. 6.3]." -->
+  <blockquote>
+    <p><em>Contexto (Definição 5.4.2):</em> para uma variedade riemanniana M com uma conexão afim ∇, define-se, para quaisquer X, Y ∈ 𝔛(M),</p>
+    <p>T(X, Y) := ∇<sub>X</sub>Y − ∇<sub>Y</sub>X − [X, Y] ∈ 𝔛(M) &nbsp;e&nbsp; R(X, Y) := ∇<sub>X</sub>∇<sub>Y</sub> − ∇<sub>Y</sub>∇<sub>X</sub> − ∇<sub>[X,Y]</sub> ∈ End(𝔛(M)),</p>
+    <p>chamadas, respectivamente, torção e curvatura da conexão. Observa-se que a aplicação (X, Y) ↦ T(X, Y) é C<sup>∞</sup>(M)-linear nos dois argumentos e que a aplicação (X, Y, Z) ↦ R(X, Y)Z é C<sup>∞</sup>(M)-linear nos três argumentos.</p>
+    <p><strong>Exercício 5.4.3.</strong> Mostre a C<sup>∞</sup>(M)-linearidade mencionada acima (veja também [8, Prop. 6.3]).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a C<sup>∞</sup>(M)-linearidade de T e de R.</p>
+</div>
+
+<div class="enunciado" id="enunciado-23">
+  <h3>23. Fórmula de Koszul</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 5.4.5, §5.4, p. 49 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original: "Exercise 5.4.5 (Koszul formula). For X, Y, Z ∈ X(M) set
+       ⟨∇_X Y, Z⟩ := 1/2 { X⟨Y, Z⟩ + Y⟨Z, X⟩ − Z⟨X, Y⟩ − ⟨X, [Y, Z]⟩ + ⟨Y, [Z, X]⟩ + ⟨Z, [X, Y]⟩ }.
+       Check that the connection defined by this relation is torsion free and satisfies (5.4.1). This equality is called Koszul formula and shows the existence of a Riemannian connection."
+       (5.4.1): X⟨Y1, Y2⟩ = ⟨∇_X Y1, Y2⟩ + ⟨Y1, ∇_X Y2⟩ -->
+  <blockquote>
+    <p><em>Contexto:</em> uma conexão é dita livre de torção se T(X, Y) = 0 para quaisquer X, Y, e é dita riemanniana (ou de Levi-Civita) se, além disso,</p>
+    <p>X⟨Y<sub>1</sub>, Y<sub>2</sub>⟩ = ⟨∇<sub>X</sub>Y<sub>1</sub>, Y<sub>2</sub>⟩ + ⟨Y<sub>1</sub>, ∇<sub>X</sub>Y<sub>2</sub>⟩. &nbsp;&nbsp;(5.4.1)</p>
+    <p><strong>Exercício 5.4.5 (fórmula de Koszul).</strong> Para X, Y, Z ∈ 𝔛(M), ponha</p>
+    <p>⟨∇<sub>X</sub>Y, Z⟩ := ½ { X⟨Y, Z⟩ + Y⟨Z, X⟩ − Z⟨X, Y⟩ − ⟨X, [Y, Z]⟩ + ⟨Y, [Z, X]⟩ + ⟨Z, [X, Y]⟩ }.</p>
+    <p>Verifique que a conexão definida por essa relação é livre de torção e satisfaz (5.4.1). Essa igualdade é chamada fórmula de Koszul e mostra a existência de uma conexão riemanniana.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a direção contrária: o Sucuri deduz a fórmula de Koszul das duas condições de Levi-Civita (a unicidade). O exercício pede a outra — que a conexão definida pela fórmula é sem torção e compatível com a métrica (a existência) —, e essa não foi feita.</p>
+</div>
+
+<div class="enunciado" id="enunciado-24">
+  <h3>24. Primeira identidade de Bianchi</h3>
+  <p class="fonte">S. Richard, <em>Differential geometry</em> (Nagoya University, 2024), Exercício 6.2.2 (sobre o Lema 6.2.1), §6.2, p. 60 — <a href="https://www.math.nagoya-u.ac.jp/~richard/teaching/f2024/Differential.pdf">math.nagoya-u.ac.jp</a>.</p>
+  <!-- original: "Lemma 6.2.1. Assume that the connection on smooth manifold is torsion free, then the following identity holds for the curvature: for any X, Y, Z ∈ X(M), R(X, Y)Z + R(Y, Z)X + R(Z, X)Y = 0 where 0 means the 0-vector field.
+       Exercise 6.2.2. Prove Bianchi identity getting inspiration from [4, Prop. 4.1.3]." -->
+  <blockquote>
+    <p><em>Contexto (Lema 6.2.1):</em> suponha que a conexão na variedade diferenciável seja livre de torção. Então a curvatura satisfaz, para quaisquer X, Y, Z ∈ 𝔛(M),</p>
+    <p>R(X, Y)Z + R(Y, Z)X + R(Z, X)Y = 0,</p>
+    <p>onde 0 denota o campo vetorial nulo.</p>
+    <p><strong>Exercício 6.2.2.</strong> Prove a identidade de Bianchi, inspirando-se em [4, Prop. 4.1.3].</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade, das definições e da torção nula.</p>
+</div>
+
+<div class="enunciado" id="enunciado-28">
+  <h3>28. Derivada exterior via conexão sem torção</h3>
+  <p class="fonte">A. G. Kovalev, <em>Part III: Riemannian Geometry, Example Sheet 3</em> (Cambridge, Lent 2017), questão 3 — <a href="https://dec41.user.srcf.net/notes/III_L/riemannian_geometry_eg.pdf">dec41.user.srcf.net</a>.</p>
+  <!-- original: "3. Show that for the Levi–Civita connection, the following diagram commutes
+       Γ(Λ^p T*M) --∇--> Γ(T*M ⊗ Λ^p T*M) --alt--> Γ(Λ^{p+1} T*M), with d : Γ(Λ^p T*M) → Γ(Λ^{p+1} T*M),
+       where alt(ξ ⊗ α) = ξ ∧ α denotes projection to the subspace of anti-symmetric tensors (p > 0). Deduce the formula for the exterior derivative of one-forms dα(X, Y) = (∇_X α)(Y) − (∇_Y α)(X) as stated in the Lectures. ∗ Show that these results hold for any torsion-free connection ∇ on M." -->
+  <blockquote>
+    <p><strong>3.</strong> Mostre que, para a conexão de Levi-Civita, o diagrama a seguir comuta:</p>
+    <p>Γ(Λ<sup>p</sup>T*M) —∇→ Γ(T*M ⊗ Λ<sup>p</sup>T*M) —alt→ Γ(Λ<sup>p+1</sup>T*M), &nbsp;igual a&nbsp; d : Γ(Λ<sup>p</sup>T*M) → Γ(Λ<sup>p+1</sup>T*M),</p>
+    <p>onde alt(ξ ⊗ α) = ξ ∧ α denota a projeção no subespaço dos tensores antissimétricos (p &gt; 0). Deduza a fórmula para a derivada exterior de 1-formas</p>
+    <p>dα(X, Y) = (∇<sub>X</sub>α)(Y) − (∇<sub>Y</sub>α)(X),</p>
+    <p>conforme enunciada nas aulas. (*) Mostre que esses resultados valem para qualquer conexão ∇ sem torção em M.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a fórmula de dα para qualquer conexão sem torção, com a fórmula de dα nos vetores como hipótese; o diagrama para p-formas, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-29">
+  <h3>29. Contração (produto interior) como antiderivação</h3>
+  <p class="fonte">J. Ross, <em>Part III: Differential Geometry, Example Sheet 2</em> (Cambridge, 2016, versão 2 de 14/10/2016), questão 8 — <a href="https://dec41.user.srcf.net/notes/III_M/differential_geometry_eg.pdf">dec41.user.srcf.net</a>.</p>
+  <!-- original: "8. (Contractions) Let V be a vector space, X ∈ V and ω ∈ Λ^k V*. Define i_X(ω) by i_X(ω)(Y1, ..., Y_{k−1}) = ω(X, Y1, ..., Y_{k−1}). Prove that i_X(ω) ∈ Λ^{k−1} V [sic]. Prove also that if ω ∈ Λ^k V [sic] and η ∈ Λ^l V [sic] then i_X(ω ∧ η) = i(X)ω ∧ η + (−1)^k ω ∧ (i_X η). Now on a smooth manifold M suppose X ∈ Vect(M) and ω ∈ Ω^p(M). Show how the formula i_X ω|_p := i_{X_p}(ω_p) gives an element of Ω^{p−1}(M)." -->
+  <blockquote>
+    <p><strong>8. (Contrações)</strong> Seja V um espaço vetorial, X ∈ V e ω ∈ Λ<sup>k</sup>V*. Defina i<sub>X</sub>(ω) por</p>
+    <p>i<sub>X</sub>(ω)(Y<sub>1</sub>, …, Y<sub>k−1</sub>) = ω(X, Y<sub>1</sub>, …, Y<sub>k−1</sub>).</p>
+    <p>Prove que i<sub>X</sub>(ω) ∈ Λ<sup>k−1</sup>V*. Prove também que, se ω ∈ Λ<sup>k</sup>V* e η ∈ Λ<sup>l</sup>V*, então</p>
+    <p>i<sub>X</sub>(ω ∧ η) = i<sub>X</sub>ω ∧ η + (−1)<sup>k</sup> ω ∧ (i<sub>X</sub>η).</p>
+    <p>Agora, numa variedade diferenciável M, suponha X ∈ Vect(M) e ω ∈ Ω<sup>p</sup>(M). Mostre como a fórmula</p>
+    <p>i<sub>X</sub>ω|<sub>p</sub> := i<sub>X<sub>p</sub></sub>(ω<sub>p</sub>)</p>
+    <p>fornece um elemento de Ω<sup>p−1</sup>(M).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a regra de antiderivação de ι<sub>X</sub>; o resto do enunciado é definição.</p>
+</div>
+
+<div class="enunciado" id="enunciado-30">
+  <h3>30. Derivada de Lie de uma 1-forma e fórmula de Cartan</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 1</em> (2019), questão 5*, p. 2 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk1.pdf">davidtong.org</a>.</p>
+  <!-- original: 5*. Use the Leibniz rule to derive the formula for the Lie derivative of a 1-form ω, valid in any coordinate basis: (L_X ω)_μ = X^ν ∂_ν ω_μ + ω_ν ∂_μ X^ν [Hint: consider (L_X ω)(Y) for a vector field Y.] Show that the Lie derivative of a (0,2) tensor g is (L_X g)_μν = X^ρ ∂_ρ g_μν + g_μρ ∂_ν X^ρ + g_ρν ∂_μ X^ρ. For a p-form η, define ι_X η to be the (p−1)-form that results from contracting a vector field X with the first index of η. Show that for a 1-form ω, L_X ω = i_X(dω) + d(i_X ω) -->
+  <blockquote>
+    <p>Use a regra de Leibniz para deduzir a fórmula da derivada de Lie de uma 1-forma ω, válida em qualquer base coordenada:</p>
+    <p>(L<sub>X</sub>ω)<sub>μ</sub> = X<sup>ν</sup>∂<sub>ν</sub>ω<sub>μ</sub> + ω<sub>ν</sub>∂<sub>μ</sub>X<sup>ν</sup></p>
+    <p>[Dica: considere (L<sub>X</sub>ω)(Y) para um campo vetorial Y.] Mostre que a derivada de Lie de um tensor g do tipo (0, 2) é</p>
+    <p>(L<sub>X</sub>g)<sub>μν</sub> = X<sup>ρ</sup>∂<sub>ρ</sub>g<sub>μν</sub> + g<sub>μρ</sub>∂<sub>ν</sub>X<sup>ρ</sup> + g<sub>ρν</sub>∂<sub>μ</sub>X<sup>ρ</sup></p>
+    <p>Para uma p-forma η, defina ι<sub>X</sub>η como a (p − 1)-forma que resulta de contrair um campo vetorial X com o primeiro índice de η. Mostre que, para uma 1-forma ω,</p>
+    <p>L<sub>X</sub>ω = ι<sub>X</sub>(dω) + d(ι<sub>X</sub>ω).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a fórmula de Cartan numa 1-forma, que no Sucuri é a definição de ℒ<sub>X</sub> (vira identidade); as fórmulas em coordenadas de ℒ<sub>X</sub>ω e ℒ<sub>X</sub>g saem com índice (enunciado 17).</p>
+</div>
+
+<div class="enunciado" id="enunciado-32">
+  <h3>32. Comutatividade graduada e associatividade do produto exterior</h3>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §8.1 “Introduction”, exercício com as eqs. (8.2)–(8.3), p. 99 — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: Definition. The wedge product of a p-form X and a q-form Y is the (p+q)-form X∧Y defined by (X∧Y)_{a1…ap b1…bq} = ((p+q)!/(p!q!)) X_[a1…ap Y_b1…bq] (8.1). Exercise. Show that X∧Y = (−1)^{pq} Y∧X (8.2) (so X∧X = 0 if p is odd); and (X∧Y)∧Z = X∧(Y∧Z) (8.3) i.e. the wedge product is associative so we don't need to include the brackets. -->
+  <blockquote>
+    <p><strong>Definição.</strong> O produto exterior de uma p-forma X e uma q-forma Y é a (p + q)-forma X ∧ Y definida por</p>
+    <p>(X ∧ Y)<sub>a₁…a<sub>p</sub>b₁…b<sub>q</sub></sub> = [(p + q)!/(p! q!)] X<sub>[a₁…a<sub>p</sub></sub>Y<sub>b₁…b<sub>q</sub>]</sub>. &nbsp;&nbsp;(8.1)</p>
+    <p><strong>Exercício.</strong> Mostre que</p>
+    <p>X ∧ Y = (−1)<sup>pq</sup> Y ∧ X &nbsp;&nbsp;(8.2)</p>
+    <p>(de modo que X ∧ X = 0 se p for ímpar); e que</p>
+    <p>(X ∧ Y) ∧ Z = X ∧ (Y ∧ Z), &nbsp;&nbsp;(8.3)</p>
+    <p>isto é, o produto exterior é associativo e, portanto, não precisamos escrever os parênteses.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (8.2) e (8.3).</p>
+</div>
+
+<div class="enunciado" id="enunciado-35">
+  <h3>35. Esfera unitária: Christoffel, Ricci e escalar de Ricci</h3>
+  <p class="fonte">J. M. Cline, <em>A Short Course in General Relativity</em> (2026), cap. 7, §7.5 Problems, problema 7.2, p. 43 — <a href="https://arxiv.org/abs/2604.17441">arxiv.org</a>.</p>
+  <!-- original: "7.2. (a) Compute the nonvanishing Christoffel symbols for the unit sphere metric, with ds² = dθ² + sin²θ dϕ². (b) Compute the Ricci tensor. (c) Compute the Ricci scalar." -->
+  <blockquote>
+    <p>(a) Calcule os símbolos de Christoffel não nulos para a métrica da esfera unitária, ds² = dθ² + sen²θ dϕ².</p>
+    <p>(b) Calcule o tensor de Ricci.</p>
+    <p>(c) Calcule o escalar de Ricci.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a), (b) e (c).</p>
+</div>
+
+<div class="enunciado" id="enunciado-36">
+  <h3>36. Curvatura de uma esfera</h3>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 5, questão 4 (“Curvature of a sphere”), itens (a)–(c), p. 3 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "4. Curvature of a sphere (a) Compute all the nonvanishing components of the Riemann tensor R_ijkl [(i,j,k,l) ∈ (θ,φ)] for the surface of a 2-sphere. (b) Consider the parallel transport of a tangent vector A = A^θ e_θ + A^φ e_φ on the sphere around an infinitesimal parallelogram of sides e_θ dθ and e_φ dφ. Using the results of part (a), show that to first order in dΩ ≡ sin θ dθ dφ, the length of A is unchanged, but its direction rotates through an angle equal to dΩ. (c) Show that, if A is parallel transported around the boundary of any simply connected solid angle Ω, its direction rotates through an angle Ω. ("Simply connected" is a topological term meaning that the boundary of the region could be shrunk to a point; it tells us that there are no holes in the manifold or other pathologies. See http://mathworld.wolfram.com/SimplyConnected.html for illustrations.) Compare with the result of Problem 3." [Problem 3 defines: "On the surface of a 2-sphere of radius a, ds² = a²(dθ² + sin²θ dφ²)."] -->
+  <blockquote>
+    <p>(a) Calcule todas as componentes não nulas do tensor de Riemann R<sub>ijkl</sub> [(i, j, k, l) ∈ (θ, φ)] para a superfície de uma 2-esfera.</p>
+    <p>(b) Considere o transporte paralelo de um vetor tangente <b>A</b> = A<sup>θ</sup> <b>e</b><sub>θ</sub> + A<sup>φ</sup> <b>e</b><sub>φ</sub> sobre a esfera ao longo de um paralelogramo infinitesimal de lados <b>e</b><sub>θ</sub> dθ e <b>e</b><sub>φ</sub> dφ. Usando os resultados do item (a), mostre que, em primeira ordem em dΩ ≡ sen θ dθ dφ, o comprimento de <b>A</b> não se altera, mas sua direção gira de um ângulo igual a dΩ.</p>
+    <p>(c) Mostre que, se <b>A</b> for transportado paralelamente ao longo da fronteira de qualquer ângulo sólido Ω simplesmente conexo, sua direção gira de um ângulo Ω. (“Simplesmente conexo” é um termo topológico que significa que a fronteira da região pode ser encolhida até um ponto; ele garante que não há buracos na variedade nem outras patologias.) Compare com o resultado do Problema 3 (transporte paralelo ao longo do paralelo θ = θ<sub>0</sub> na 2-esfera de raio a, ds² = a²(dθ² + sen²θ dφ²)).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (a); o transporte paralelo, (b) e (c), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-38">
+  <h3>38. Conexão no espaço-tempo de Rindler</h3>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 4, questão 1, p. 1 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "1. Connection in Rindler spacetime. The spacetime for an accelerated observer that we derived on Pset 2, ds² = −(1 + g x̄)² dt̄² + dx̄² + dȳ² + dz̄² (1) is known as "Rindler spacetime". Compute all non-zero Christoffel symbols for this spacetime. (Carroll problem 3.3 will help you quite a bit here.)" -->
+  <blockquote>
+    <p>O espaço-tempo de um observador acelerado, deduzido na Lista 2,</p>
+    <p>ds² = −(1 + g x̄)² dt̄² + dx̄² + dȳ² + dz̄² &nbsp;&nbsp;(1)</p>
+    <p>é conhecido como “espaço-tempo de Rindler”. Calcule todos os símbolos de Christoffel não nulos desse espaço-tempo. (O problema 3.3 de Carroll ajudará bastante aqui.)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> os Christoffel.</p>
+</div>
+
+<div class="enunciado" id="enunciado-39">
+  <h3>39. Tensor de Riemann para espaços-tempos estáticos 1+1</h3>
+  <p class="fonte">MIT OpenCourseWare, <em>8.962 General Relativity</em> (Spring 2020), Problem Set 5, questão 6, itens (a)–(b), p. 3 — <a href="https://ocw.mit.edu/courses/8-962-general-relativity-spring-2020/">ocw.mit.edu</a>.</p>
+  <!-- original: "6. Riemann tensor for 1+1 static spacetimes (a) Compute all the nonvanishing components of the Riemann tensor for the spacetime with line element ds² = −e^{2φ(x)} dt² + e^{−2ψ(x)} dx². (b) For the case φ = ψ = ½ ln|g(x − x0)| where g and x0 are constants, show that the spacetime is flat and find a coordinate transformation to globally flat coordinates (t̄, x̄) such that ds² = −dt̄² + dx̄²." -->
+  <blockquote>
+    <p>(a) Calcule todas as componentes não nulas do tensor de Riemann para o espaço-tempo com elemento de linha</p>
+    <p>ds² = −e<sup>2φ(x)</sup> dt² + e<sup>−2ψ(x)</sup> dx².</p>
+    <p>(b) No caso φ = ψ = ½ ln|g(x − x<sub>0</sub>)|, em que g e x<sub>0</sub> são constantes, mostre que o espaço-tempo é plano e encontre uma transformação de coordenadas para coordenadas globalmente planas (t̄, x̄) tais que ds² = −dt̄² + dx̄².</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (a); em (b), a mudança para coordenadas planas não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-40">
+  <h3>40. Símbolos de Christoffel e curvatura de uma métrica estática esfericamente simétrica</h3>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 2</em> (2019), questão 11*, p. 3 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk2.pdf">davidtong.org</a>.</p>
+  <!-- original: 11*. Consider metrics of the form ds² = −f(r)² dt² + f(r)^{−2} dr² + r²(dθ² + sin²θ dφ²). Use the action for a test particle to write down the geodesic equations in this metric, and hence extract the Christoffel symbols in coordinates (t, r, θ, φ). Use a basis of vierbeins to determine the curvature 2-form, and hence the components of the Riemann tensor in coordinates (t, r, θ, φ). -->
+  <blockquote>
+    <p>Considere métricas da forma</p>
+    <p>ds<sup>2</sup> = −f(r)<sup>2</sup> dt<sup>2</sup> + f(r)<sup>−2</sup> dr<sup>2</sup> + r<sup>2</sup>(dθ<sup>2</sup> + sin<sup>2</sup>θ dφ<sup>2</sup>).</p>
+    <p>Use a ação de uma partícula-teste para escrever as equações da geodésica nesta métrica e, a partir delas, extraia os símbolos de Christoffel nas coordenadas (t, r, θ, φ).</p>
+    <p>Use uma base de vierbeins (tétradas) para determinar a 2-forma de curvatura e, a partir dela, as componentes do tensor de Riemann nas coordenadas (t, r, θ, φ).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel, e o Riemann em coordenadas; os vierbeins e a 2-forma de curvatura, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-43">
+  <h3>43. A 3-esfera unitária</h3>
+  <p class="fonte">J. M. Cline, <em>A Short Course in General Relativity</em> (2026), cap. 7, §7.5 Problems, problema 7.10, pp. 44–45 — <a href="https://arxiv.org/abs/2604.17441">arxiv.org</a>.</p>
+  <!-- original: "7.10. The unit 3-sphere can be embedded into 4D Euclidean space with coordinates (w, x, y, z) by the constraint x² + y² + z² + w² = 1. (a) Show that the constraint is satisfied by parametrizing the Euclidean coordinates by w = c_ψ, x = s_ψ s_θ c_ϕ, y = s_ψ s_θ s_ϕ, z = s_ψ c_θ (7.46) where c and s stand for cosine and sine of the subscripted angles 1 ≤ θ, ψ ≤ π and 0 ≤ ϕ ≤ 2π. (b) By computing the line element in Euclidean space, show that the induced metric is given by diag(1, s²_ψ, s²_ψ s²_θ) for the coordinates (ψ, θ, ϕ). Hint: start with dx² + dy² to isolate the dϕ² term, then add dz² to get the dθ² term. Add dw² last. Find the volume element and compute the volume of the 3-sphere. (c) Plug the metric into a symbolic manipulation package and show that the Ricci curvature is R = 6. Also find R_ij. (d) Compute the volume V of a small region ψ < ϵ to O(ϵ⁵) and compare it to the corresponding volume V_E of a sphere of radius ϵ in flat (Euclidean) space. Thereby check Eq. (7.20) for the 3-sphere." -->
+  <blockquote>
+    <p>A 3-esfera unitária pode ser mergulhada no espaço euclidiano 4D, com coordenadas (w, x, y, z), pelo vínculo x² + y² + z² + w² = 1.</p>
+    <p>(a) Mostre que o vínculo é satisfeito ao parametrizar as coordenadas euclidianas por</p>
+    <p>w = c<sub>ψ</sub>, &nbsp; x = s<sub>ψ</sub>s<sub>θ</sub>c<sub>ϕ</sub>, &nbsp; y = s<sub>ψ</sub>s<sub>θ</sub>s<sub>ϕ</sub>, &nbsp; z = s<sub>ψ</sub>c<sub>θ</sub> &nbsp;&nbsp;(7.46)</p>
+    <p>em que c e s denotam o cosseno e o seno dos ângulos indicados no índice, com 1 ≤ θ, ψ ≤ π e 0 ≤ ϕ ≤ 2π. [sic: leia-se 0 ≤ θ, ψ ≤ π]</p>
+    <p>(b) Calculando o elemento de linha no espaço euclidiano, mostre que a métrica induzida é diag(1, s<sub>ψ</sub><sup>2</sup>, s<sub>ψ</sub><sup>2</sup>s<sub>θ</sub><sup>2</sup>) nas coordenadas (ψ, θ, ϕ). Dica: comece com dx² + dy² para isolar o termo em dϕ², depois some dz² para obter o termo em dθ². Some dw² por último. Encontre o elemento de volume e calcule o volume da 3-esfera.</p>
+    <p>(c) Insira a métrica num pacote de manipulação simbólica e mostre que a curvatura de Ricci é R = 6. Encontre também R<sub>ij</sub>.</p>
+    <p>(d) Calcule o volume V de uma pequena região ψ &lt; ϵ até O(ϵ<sup>5</sup>) e compare-o com o volume correspondente V<sub>E</sub> de uma esfera de raio ϵ no espaço plano (euclidiano). Verifique assim a Eq. (7.20), V/V<sub>E</sub> = 1 − r²R/[6(d + 2)] + O(r<sup>4</sup>), para a 3-esfera.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (c); o mergulho, o volume e (d), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-45">
+  <h3>45. Curvatura da métrica de Robertson–Walker</h3>
+  <p class="fonte">S. M. Carroll, <em>Lecture Notes on General Relativity</em> (1997), cap. 8 “Cosmology”, métrica (8.7) na p. 219 e eqs. (8.12)–(8.14) na p. 220 — <a href="https://arxiv.org/abs/gr-qc/9712019">arxiv.org</a>.</p>
+  <!-- original: With the metric in hand, we can set about computing the connection coefficients and curvature tensor. Setting ȧ ≡ da/dt, the Christoffel symbols are given by Γ^0_11 = aȧ/(1−kr²), Γ^0_22 = aȧr², Γ^0_33 = aȧr² sin²θ, Γ^1_01 = Γ^1_10 = Γ^2_02 = Γ^2_20 = Γ^3_03 = Γ^3_30 = ȧ/a, Γ^1_22 = −r(1−kr²), Γ^1_33 = −r(1−kr²) sin²θ, Γ^2_12 = Γ^2_21 = Γ^3_13 = Γ^3_31 = 1/r, Γ^2_33 = −sinθ cosθ, Γ^3_23 = Γ^3_32 = cotθ. (8.12) The nonzero components of the Ricci tensor are R_00 = −3ä/a, R_11 = (aä + 2ȧ² + 2k)/(1−kr²), R_22 = r²(aä + 2ȧ² + 2k), R_33 = r²(aä + 2ȧ² + 2k) sin²θ, (8.13) and the Ricci scalar is then R = (6/a²)(aä + ȧ² + k). (8.14) -->
+  <blockquote>
+    <p>[Métrica (8.7): ds<sup>2</sup> = −dt<sup>2</sup> + a<sup>2</sup>(t)[dr<sup>2</sup>/(1 − kr<sup>2</sup>) + r<sup>2</sup>(dθ<sup>2</sup> + sin<sup>2</sup>θ dφ<sup>2</sup>)].]</p>
+    <p>Com a métrica em mãos, podemos passar ao cálculo dos coeficientes da conexão e do tensor de curvatura. Escrevendo ȧ ≡ da/dt, os símbolos de Christoffel são dados por</p>
+    <p>Γ<sup>0</sup><sub>11</sub> = aȧ/(1 − kr<sup>2</sup>), &nbsp; Γ<sup>0</sup><sub>22</sub> = aȧr<sup>2</sup>, &nbsp; Γ<sup>0</sup><sub>33</sub> = aȧr<sup>2</sup> sin<sup>2</sup>θ,<br>
+    Γ<sup>1</sup><sub>01</sub> = Γ<sup>1</sup><sub>10</sub> = Γ<sup>2</sup><sub>02</sub> = Γ<sup>2</sup><sub>20</sub> = Γ<sup>3</sup><sub>03</sub> = Γ<sup>3</sup><sub>30</sub> = ȧ/a,<br>
+    Γ<sup>1</sup><sub>22</sub> = −r(1 − kr<sup>2</sup>), &nbsp; Γ<sup>1</sup><sub>33</sub> = −r(1 − kr<sup>2</sup>) sin<sup>2</sup>θ,<br>
+    Γ<sup>2</sup><sub>12</sub> = Γ<sup>2</sup><sub>21</sub> = Γ<sup>3</sup><sub>13</sub> = Γ<sup>3</sup><sub>31</sub> = 1/r,<br>
+    Γ<sup>2</sup><sub>33</sub> = −sin θ cos θ, &nbsp; Γ<sup>3</sup><sub>23</sub> = Γ<sup>3</sup><sub>32</sub> = cot θ. &nbsp;&nbsp;(8.12)</p>
+    <p>As componentes não nulas do tensor de Ricci são</p>
+    <p>R<sub>00</sub> = −3ä/a, &nbsp; R<sub>11</sub> = (aä + 2ȧ<sup>2</sup> + 2k)/(1 − kr<sup>2</sup>), &nbsp; R<sub>22</sub> = r<sup>2</sup>(aä + 2ȧ<sup>2</sup> + 2k), &nbsp; R<sub>33</sub> = r<sup>2</sup>(aä + 2ȧ<sup>2</sup> + 2k) sin<sup>2</sup>θ, &nbsp;&nbsp;(8.13)</p>
+    <p>e o escalar de Ricci é então</p>
+    <p>R = (6/a<sup>2</sup>)(aä + ȧ<sup>2</sup> + k). &nbsp;&nbsp;(8.14)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> os Christoffel, o Ricci e o escalar.</p>
+</div>
+
+<div class="enunciado" id="enunciado-47">
+  <h3>47. d comuta com a derivada de Lie; regra de Leibniz para L<sub>X</sub></h3>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 7</em> (Humboldt-Universität zu Berlin, 2016–17), problema 1(a) — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset7.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "1. The goal of this problem is to prove Cartan's formula for the Lie derivative of a differential form, L_X ω = dι_X ω + ι_X dω. (1) Recall that for a k-form ω ∈ Ω^k(M) on a smooth n-manifold M, L_X ω ∈ Ω^k(M) is defined as ∂_t φ_t* ω|_{t=0} where φ_t : M → M denotes the time t flow of the vector field X ∈ Vec(M).
+       (a) Use the definition of the Lie derivative to prove the relation d(L_X ω) = L_X(dω) and the Leibniz rule L_X(α ∧ β) = L_X α ∧ β + α ∧ L_X β. (2) Observe that this formula determines the action of L_X on arbitrary differential forms if we know how it acts on 0-forms (i.e. smooth functions) and exact 1-forms (i.e. differentials of smooth functions)." -->
+  <blockquote>
+    <p><strong>1.</strong> O objetivo deste problema é provar a fórmula de Cartan para a derivada de Lie de uma forma diferencial:</p>
+    <p>L<sub>X</sub>ω = dι<sub>X</sub>ω + ι<sub>X</sub>dω. &nbsp;&nbsp;(1)</p>
+    <p>Lembre que, para uma k-forma ω ∈ Ω<sup>k</sup>(M) numa n-variedade diferenciável M, L<sub>X</sub>ω ∈ Ω<sup>k</sup>(M) é definida como ∂<sub>t</sub> φ<sub>t</sub>*ω|<sub>t=0</sub>, onde φ<sub>t</sub> : M → M denota o fluxo, no tempo t, do campo vetorial X ∈ Vec(M).</p>
+    <p><strong>(a)</strong> Use a definição da derivada de Lie para provar a relação</p>
+    <p>d(L<sub>X</sub>ω) = L<sub>X</sub>(dω)</p>
+    <p>e a regra de Leibniz</p>
+    <p>L<sub>X</sub>(α ∧ β) = L<sub>X</sub>α ∧ β + α ∧ L<sub>X</sub>β. &nbsp;&nbsp;(2)</p>
+    <p>Observe que essa fórmula determina a ação de L<sub>X</sub> sobre formas diferenciais arbitrárias, desde que se saiba como ela age sobre 0-formas (isto é, funções suaves) e sobre 1-formas exatas (isto é, diferenciais de funções suaves).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> d ℒ<sub>X</sub> = ℒ<sub>X</sub> d; a regra de Leibniz de ℒ<sub>X</sub> vem da definição usada no Sucuri.</p>
+</div>
+
+<div class="enunciado" id="enunciado-48">
+  <h3>48. dι<sub>X</sub> + ι<sub>X</sub>d satisfaz a regra de Leibniz (fórmula de Cartan)</h3>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 7</em> (Humboldt-Universität zu Berlin, 2016–17), problema 1(d) — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset7.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "(d) For any fixed X ∈ Vec(M), use the graded Leibniz rules satisfied by d and ι_X to show that the operator (d ∘ ι_X + ι_X ∘ d) : Ω^k(M) → Ω^k(M) also satisfies the Leibniz rule (2). Deduce that this operator matches L_X."
+       footnote 2: "Notice that in contrast to the exterior derivative and the interior product treated in part (c), the Leibniz rule satisfied by L_X does not include any annoying signs. This is consistent with our usual mnemonic if we think of L_X : Ω^k(M) → Ω^k(M) as an object of degree zero (hence even), while d : Ω^k(M) → Ω^{k+1}(M) is an object of degree one (hence odd) [...]. The mnemonic applies similarly to ι_X : Ω^k(M) → Ω^{k−1}(M) by thinking of the latter as an object of degree −1, hence odd." -->
+  <blockquote>
+    <p><em>Contexto:</em> o problema 1 visa provar a fórmula de Cartan L<sub>X</sub>ω = dι<sub>X</sub>ω + ι<sub>X</sub>dω (1). No item (a), prova-se a regra de Leibniz L<sub>X</sub>(α ∧ β) = L<sub>X</sub>α ∧ β + α ∧ L<sub>X</sub>β (2). No item (c), prova-se que ι<sub>v</sub> satisfaz a regra de Leibniz graduada ι<sub>v</sub>(α ∧ β) = ι<sub>v</sub>α ∧ β + (−1)<sup>|α|</sup> α ∧ ι<sub>v</sub>β.</p>
+    <p><strong>(d)</strong> Para qualquer X ∈ Vec(M) fixado, use as regras de Leibniz graduadas satisfeitas por d e ι<sub>X</sub> para mostrar que o operador (d ∘ ι<sub>X</sub> + ι<sub>X</sub> ∘ d) : Ω<sup>k</sup>(M) → Ω<sup>k</sup>(M) também satisfaz a regra de Leibniz (2). Deduza que esse operador coincide com L<sub>X</sub>.</p>
+    <p><em>Nota do autor (rodapé 2):</em> ao contrário da derivada exterior e do produto interior, a regra de Leibniz satisfeita por L<sub>X</sub> não tem sinais incômodos. Isso é coerente com pensar em L<sub>X</sub> : Ω<sup>k</sup>(M) → Ω<sup>k</sup>(M) como um objeto de grau zero (portanto par), em d como um objeto de grau um (ímpar) e em ι<sub>X</sub> : Ω<sup>k</sup>(M) → Ω<sup>k−1</sup>(M) como um objeto de grau −1 (também ímpar).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> que dι<sub>X</sub> + ι<sub>X</sub>d satisfaz a regra de Leibniz.</p>
+</div>
+
+<div class="enunciado" id="enunciado-51">
+  <h3>51. d² = 0 em ℝ³: rot grad = 0 e div rot = 0</h3>
+  <p class="fonte">C. Wendl, <em>Differential Geometry I, Problem Set 6</em> (Humboldt-Universität zu Berlin, 2016–17), problema 6(c) — <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset6.pdf">mathematik.hu-berlin.de</a>.</p>
+  <!-- original: "6. Given a volume form µ ∈ Ω^n(M) on an n-manifold M, one can define volumes of compact regions U ⊂ M by Vol(U) := ∫_U µ. The divergence of a vector field X ∈ Vec(M) can then be defined in terms of the Lie derivative of µ with respect to X: let div(X) : M → R be the unique real-valued function such that L_X µ = div(X) µ. [...]
+       (b) Show that in the case M = R³ with µ = dx ∧ dy ∧ dz and X = X^x ∂x + X^y ∂y + X^z ∂z ∈ Vec(R³) in standard Cartesian coordinates (x, y, z), div(X) = ∂x X^x + ∂y X^y + ∂z X^z. The latter expression is sometimes also denoted by ∇ · X.
+       (c) Recall that on R³, the gradient of a function f : R³ → R is the vector field grad(f) = ∇f := (∂x f)∂x + (∂y f)∂y + (∂z f)∂z, and the curl of a vector field X = X^x ∂x + X^y ∂y + X^z ∂z is the vector field curl(X) = ∇ × X := (∂y X^z − ∂z X^y)∂x + (∂z X^x − ∂x X^z)∂y + (∂x X^y − ∂y X^x)∂z. Using the relations of these operations to differential forms and the exterior derivative, deduce from d² = 0 the formulas ∇ × (∇f) = 0 and ∇ · (∇ × X) = 0 for all f ∈ C∞(R³) and X ∈ Vec(R³)." -->
+  <blockquote>
+    <p><em>Contexto (preâmbulo do problema 6 e item (b)):</em> dada uma forma de volume μ ∈ Ω<sup>n</sup>(M) numa n-variedade M, o divergente de X ∈ Vec(M) é a única função div(X) : M → ℝ tal que L<sub>X</sub>μ = div(X) μ. Em M = ℝ³, com μ = dx ∧ dy ∧ dz e X = X<sup>x</sup>∂<sub>x</sub> + X<sup>y</sup>∂<sub>y</sub> + X<sup>z</sup>∂<sub>z</sub>, tem-se div(X) = ∂<sub>x</sub>X<sup>x</sup> + ∂<sub>y</sub>X<sup>y</sup> + ∂<sub>z</sub>X<sup>z</sup>, expressão às vezes denotada por ∇ · X.</p>
+    <p><strong>(c)</strong> Lembre que, em ℝ³, o gradiente de uma função f : ℝ³ → ℝ é o campo vetorial</p>
+    <p>grad(f) = ∇f := (∂<sub>x</sub>f)∂<sub>x</sub> + (∂<sub>y</sub>f)∂<sub>y</sub> + (∂<sub>z</sub>f)∂<sub>z</sub>,</p>
+    <p>e o rotacional de um campo vetorial X = X<sup>x</sup>∂<sub>x</sub> + X<sup>y</sup>∂<sub>y</sub> + X<sup>z</sup>∂<sub>z</sub> é o campo vetorial</p>
+    <p>rot(X) = ∇ × X := (∂<sub>y</sub>X<sup>z</sup> − ∂<sub>z</sub>X<sup>y</sup>)∂<sub>x</sub> + (∂<sub>z</sub>X<sup>x</sup> − ∂<sub>x</sub>X<sup>z</sup>)∂<sub>y</sub> + (∂<sub>x</sub>X<sup>y</sup> − ∂<sub>y</sub>X<sup>x</sup>)∂<sub>z</sub>.</p>
+    <p>Usando as relações dessas operações com as formas diferenciais e a derivada exterior, deduza de d² = 0 as fórmulas</p>
+    <p>∇ × (∇f) = 0 &nbsp;&nbsp;e&nbsp;&nbsp; ∇ · (∇ × X) = 0</p>
+    <p>para toda f ∈ C<sup>∞</sup>(ℝ³) e todo X ∈ Vec(ℝ³).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> rot grad = 0 e div rot = 0, com formas e com índices.</p>
+</div>
+
+<div class="enunciado" id="enunciado-53">
+  <h3>53. Comutador de campos vetoriais via derivada covariante</h3>
+  <p class="fonte">Y. Ali-Haïmoud, <em>General Relativity</em> (NYU, Fall 2019), Homework 6, Exercise 1, item (iii), p. 1 — <a href="https://cosmo.nyu.edu/yacine/teaching/GR_2019/homeworks/homework6.pdf">cosmo.nyu.edu</a>.</p>
+  <!-- original: "Exercise 1: Commutator of vector fields. Given a vector field X, for any smooth function f : M → R, we can define the smooth function X(f) which, at each point p ∈ M, associates X|_p(f). Given two vector fields X and Y, we define their commutator [X, Y] such that [X, Y](f) ≡ X(Y(f)) − Y(X(f)). (1) ... (iii) Recall the notation convention ∇_X Y^α ≡ X^β ∇_β Y^α. Prove that [X, Y]^α = ∇_X Y^α − ∇_Y X^α." -->
+  <blockquote>
+    <p>Dado um campo vetorial X, para qualquer função suave f : 𝓜 → ℝ podemos definir a função suave X(f) que, em cada ponto p ∈ 𝓜, associa X|<sub>p</sub>(f). Dados dois campos vetoriais X e Y, definimos seu comutador [X, Y] por</p>
+    <p>[X, Y](f) ≡ X(Y(f)) − Y(X(f)). &nbsp;&nbsp;(1)</p>
+    <p>(iii) Lembre a convenção de notação ∇<sub>X</sub>Y<sup>α</sup> ≡ X<sup>β</sup>∇<sub>β</sub>Y<sup>α</sup>. Prove que [X, Y]<sup>α</sup> = ∇<sub>X</sub>Y<sup>α</sup> − ∇<sub>Y</sub>X<sup>α</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade.</p>
+</div>
+
+<div class="enunciado" id="enunciado-57">
+  <h3>57. Formas decomponíveis</h3>
+  <p class="fonte">T. Dray, <em>MTH 434/534 – HW #2</em> (Oregon State, inverno de 2024), problema 1 “Decomposable forms”, p. 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw2.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. DECOMPOSABLE FORMS. Denote the p-forms in R^n by ⋀^p(R^n). A typical 1-form in R² would therefore take the form F = F_x dx + F_y dy ∈ ⋀^1(R²). A p-form β ∈ ⋀^p(R^n) is called decomposable if there exist 1-forms α_i ∈ ⋀^1(R^n) with β = α_1 ∧ ... ∧ α_p. (a) Show that all elements of ⋀^2(R³), that is, all 2-forms in R³, are decomposable. In other words, show that H = H_x dy∧dz + H_y dz∧dx + H_z dx∧dy is decomposable. HINT: Consider the previous assignment! You may cite your solution to the previous assignment without proof, so long as an explicit reference is given ("see HW #1"). If you do this, it wouldn't hurt to include a copy of your previous assignment. (b) Find an example of an indecomposable 2-form γ ∈ ⋀^p(R^n). HINT: Don't work in R³... (c) Is γ∧γ = 0? Should it be? Can it be? (d) MTH 534 students only (or extra credit): Show that all 3-forms are decomposable in R⁴. Extra Credit: Can you argue that all elements of ⋀^{n−1}(R^n) are decomposable?" -->
+  <blockquote>
+    <p>Denote as p-formas em ℝ<sup>n</sup> por ⋀<sup>p</sup>(ℝ<sup>n</sup>). Uma 1-forma típica em ℝ<sup>2</sup> teria, portanto, a forma F = F<sub>x</sub> dx + F<sub>y</sub> dy ∈ ⋀<sup>1</sup>(ℝ<sup>2</sup>). Uma p-forma β ∈ ⋀<sup>p</sup>(ℝ<sup>n</sup>) é dita <em>decomponível</em> se existem 1-formas α<sub>i</sub> ∈ ⋀<sup>1</sup>(ℝ<sup>n</sup>) tais que β = α<sub>1</sub> ∧ … ∧ α<sub>p</sub>.</p>
+    <p>(a) Mostre que todos os elementos de ⋀<sup>2</sup>(ℝ<sup>3</sup>), isto é, todas as 2-formas em ℝ<sup>3</sup>, são decomponíveis. Em outras palavras, mostre que H = H<sub>x</sub> dy∧dz + H<sub>y</sub> dz∧dx + H<sub>z</sub> dx∧dy é decomponível. <em>Dica:</em> considere a lista anterior! Você pode citar sua solução da lista anterior sem demonstração, desde que dê uma referência explícita (“ver HW #1”). Se fizer isso, não custa anexar uma cópia da lista anterior.</p>
+    <p>(b) Encontre um exemplo de 2-forma indecomponível γ ∈ ⋀<sup>p</sup>(ℝ<sup>n</sup>). <em>Dica:</em> não trabalhe em ℝ<sup>3</sup>…</p>
+    <p>(c) Vale γ ∧ γ = 0? Deveria valer? Pode valer?</p>
+    <p>(d) Somente para alunos de MTH 534 (ou crédito extra): mostre que todas as 3-formas em ℝ<sup>4</sup> são decomponíveis.</p>
+    <p>Crédito extra: você consegue argumentar que todos os elementos de ⋀<sup>n−1</sup>(ℝ<sup>n</sup>) são decomponíveis?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b) e (c): a 2-forma α∧β + γ∧κ, que em ℝ⁴ é dx∧dy + dz∧dw, tem quadrado não nulo, e α∧β tem quadrado nulo; (a) e (d), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-59">
+  <h3>59. Identidades vetoriais em notação de índices</h3>
+  <p class="fonte">R. E. Hunt, <em>Vector Calculus: Example Sheet 1</em> (Part IA, Cambridge, Lent 2026), questão 3, p. 1 — <a href="https://www.damtp.cam.ac.uk/user/examples/A5a.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "3. Use suffix notation to show that for vector fields u(x) and v(x), ∇ × (u × v) = (∇ · v)u − (∇ · u)v + (v · ∇)u − (u · ∇)v and (u · ∇)u = ∇(½|u|²) − u × (∇ × u)." -->
+  <blockquote>
+    <p>Use notação de índices para mostrar que, para campos vetoriais <b>u</b>(<b>x</b>) e <b>v</b>(<b>x</b>),</p>
+    <p>∇ × (<b>u</b> × <b>v</b>) = (∇ · <b>v</b>)<b>u</b> − (∇ · <b>u</b>)<b>v</b> + (<b>v</b> · ∇)<b>u</b> − (<b>u</b> · ∇)<b>v</b></p>
+    <p>e</p>
+    <p>(<b>u</b> · ∇)<b>u</b> = ∇(½|<b>u</b>|²) − <b>u</b> × (∇ × <b>u</b>).</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as duas identidades.</p>
+</div>
+
+<div class="enunciado" id="enunciado-60">
+  <h3>60. Decomposição de um tensor de segunda ordem</h3>
+  <p class="fonte">R. E. Hunt, <em>Vector Calculus: Example Sheet 4</em> (Part IA, Cambridge, Lent 2026), seção “Symmetries of Tensors”, questão 6, p. 2 — <a href="https://www.damtp.cam.ac.uk/user/examples/A5d.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "6. (i) By first decomposing into symmetric and antisymmetric parts, show that an arbitrary second rank tensor T_ij can be written in the form T_ij = α δ_ij + ε_ijk ω_k + D_ij for some scalar α, vector ω and symmetric traceless tensor D_ij. (ii) Let u(x) be a vector field and let T_ij = ∂u_i/∂x_j. Show that α = ⅓ ∇·u and ω = −½ ∇×u. Find D_ij (the "deviatoric strain tensor") for the case u(x) = (xy², yz², zx²). * Verify that (0, 0, 1) is a principal axis of D_ij at the point x = (2, 3, 0), and find the others." -->
+  <blockquote>
+    <p>(i) Decompondo primeiro em partes simétrica e antissimétrica, mostre que um tensor arbitrário de segunda ordem T<sub>ij</sub> pode ser escrito na forma</p>
+    <p>T<sub>ij</sub> = α δ<sub>ij</sub> + ε<sub>ijk</sub> ω<sub>k</sub> + D<sub>ij</sub></p>
+    <p>para algum escalar α, algum vetor <b>ω</b> e algum tensor simétrico de traço nulo D<sub>ij</sub>.</p>
+    <p>(ii) Seja <b>u</b>(<b>x</b>) um campo vetorial e seja T<sub>ij</sub> = ∂u<sub>i</sub>/∂x<sub>j</sub>. Mostre que α = ⅓ ∇ · <b>u</b> e <b>ω</b> = −½ ∇ × <b>u</b>. Encontre D<sub>ij</sub> (o “tensor de deformação desviador”) para o caso <b>u</b>(<b>x</b>) = (xy², yz², zx²).</p>
+    <p>* Verifique que (0, 0, 1) é um eixo principal de D<sub>ij</sub> no ponto <b>x</b> = (2, 3, 0) e encontre os demais.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (i), pela parte antissimétrica; (ii), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-61">
+  <h3>61. Contando componentes de tensores antissimétricos</h3>
+  <p class="fonte">A. Guth, <em>MIT 8.962 General Relativity</em> (Spring 2018), Problem Set 4, Problem 1 (“Counting Tensors”), p. 1 — <a href="https://web.mit.edu/8.962/www/probsets/ps04-grs18.pdf">web.mit.edu</a>.</p>
+  <!-- original: "PROBLEM 1: COUNTING TENSORS (5 pts) In lecture we derived the fact that if S_{μ1···μR} is fully symmetric in its indices, and each index can take on D different values, then the number of independent components is N = (R + D − 1)! / [R!(D − 1)!]. Suppose that A_{μ1···μR} is fully antisymmetric in its indices, with each index again taking on D different values. How many independent components does A_{μ1···μR} have?" -->
+  <blockquote>
+    <p>Em aula deduzimos que, se S<sub>μ<sub>1</sub>···μ<sub>R</sub></sub> é totalmente simétrico em seus índices e cada índice pode assumir D valores diferentes, então o número de componentes independentes é</p>
+    <p>N = (R + D − 1)! / [R! (D − 1)!].</p>
+    <p>Suponha que A<sub>μ<sub>1</sub>···μ<sub>R</sub></sub> seja totalmente antissimétrico em seus índices, com cada índice podendo novamente assumir D valores diferentes. Quantas componentes independentes A<sub>μ<sub>1</sub>···μ<sub>R</sub></sub> possui?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a contagem dimensão a dimensão; a fórmula geral em R e D, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-62">
+  <h3>62. Campos de Killing de rotação no espaço euclidiano 3D</h3>
+  <p class="fonte">Y. Ali-Haïmoud, <em>General Relativity</em> (NYU, Fall 2019), Homework 6, Exercise 1, itens (v) e (vi) (com o preâmbulo que os precede), p. 1 — <a href="https://cosmo.nyu.edu/yacine/teaching/GR_2019/homeworks/homework6.pdf">cosmo.nyu.edu</a>.</p>
+  <!-- original: "Consider flat 3-D space, with cartesian coordinates x¹, x², x³ and associated coordinate basis {∂_(i)}, i = 1, 2, 3, and line element dℓ² = δ_ij dx^i dx^j. Define the three vectors fields V_(i) ≡ ε_ijk x^j ∂_(k), where ε_ijk is the Levi-Civita symbol (fully antisymmetric, such that ε_123 = 1), and we sum over repeated indices, even if they are not up and down. (v) Show that these three vector fields are Killing vector fields. (vi) Show that they satisfy the commutation relations [V_(i), V_(j)] = −ε_ijk V_(k)." -->
+  <blockquote>
+    <p>Considere o espaço plano tridimensional, com coordenadas cartesianas x<sup>1</sup>, x<sup>2</sup>, x<sup>3</sup>, base coordenada associada {∂<sub>(i)</sub>}, i = 1, 2, 3, e elemento de linha dℓ² = δ<sub>ij</sub>dx<sup>i</sup>dx<sup>j</sup>. Defina os três campos vetoriais V<sub>(i)</sub> ≡ ε<sub>ijk</sub>x<sup>j</sup>∂<sub>(k)</sub>, em que ε<sub>ijk</sub> é o símbolo de Levi-Civita (totalmente antissimétrico, com ε<sub>123</sub> = 1), e soma-se sobre índices repetidos mesmo que não estejam um em cima e outro embaixo.</p>
+    <p>(v) Mostre que esses três campos vetoriais são campos de Killing.</p>
+    <p>(vi) Mostre que eles satisfazem as relações de comutação [V<sub>(i)</sub>, V<sub>(j)</sub>] = −ε<sub>ijk</sub>V<sub>(k)</sub>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (v) e (vi).</p>
+</div>
+
+<div class="enunciado" id="enunciado-63">
+  <h3>63. Identidade de Ricci para tensores de ordem 2</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 3</em> (Cambridge, 2026), questão 1, itens (i)–(ii), p. 1 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22c.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "1. The Ricci identity for a vector field V^μ is ∇_α∇_β V^μ − ∇_β∇_α V^μ = R^μ_{ναβ} V^ν. (i) Deduce the corresponding result for a covector field W_μ by considering ∇_α∇_β(V^μ W_μ) − ∇_β∇_α(V^μ W_μ). Is there an easier way to find this result? (ii) Given two vector fields U^μ and V^μ, evaluate ∇_α∇_β(U^μ V^ν) − ∇_β∇_α(U^μ V^ν). Deduce that, for an arbitrary tensor field T^{μν}, ∇_α∇_β T^{μν} − ∇_β∇_α T^{μν} = R^μ_{σαβ} T^{σν} + R^ν_{σαβ} T^{μσ}. Hence show that ∇_α∇_β T^{αβ} = ∇_β∇_α T^{αβ}, for any tensor field T^{αβ}." -->
+  <blockquote>
+    <p>A identidade de Ricci para um campo vetorial V<sup>μ</sup> é ∇<sub>α</sub>∇<sub>β</sub>V<sup>μ</sup> − ∇<sub>β</sub>∇<sub>α</sub>V<sup>μ</sup> = R<sup>μ</sup><sub>ναβ</sub>V<sup>ν</sup>.</p>
+    <p>(i) Deduza o resultado correspondente para um campo covetorial W<sub>μ</sub>, considerando ∇<sub>α</sub>∇<sub>β</sub>(V<sup>μ</sup>W<sub>μ</sub>) − ∇<sub>β</sub>∇<sub>α</sub>(V<sup>μ</sup>W<sub>μ</sub>). Há uma maneira mais fácil de obter esse resultado?</p>
+    <p>(ii) <strong>[item correspondente ao exercício 63]</strong> Dados dois campos vetoriais U<sup>μ</sup> e V<sup>μ</sup>, calcule ∇<sub>α</sub>∇<sub>β</sub>(U<sup>μ</sup>V<sup>ν</sup>) − ∇<sub>β</sub>∇<sub>α</sub>(U<sup>μ</sup>V<sup>ν</sup>). Deduza que, para um campo tensorial arbitrário T<sup>μν</sup>,</p>
+    <p>∇<sub>α</sub>∇<sub>β</sub>T<sup>μν</sup> − ∇<sub>β</sub>∇<sub>α</sub>T<sup>μν</sup> = R<sup>μ</sup><sub>σαβ</sub>T<sup>σν</sup> + R<sup>ν</sup><sub>σαβ</sub>T<sup>μσ</sup>.</p>
+    <p>Mostre então que ∇<sub>α</sub>∇<sub>β</sub>T<sup>αβ</sup> = ∇<sub>β</sub>∇<sub>α</sub>T<sup>αβ</sup> para qualquer campo tensorial T<sup>αβ</sup>.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (i) (enunciado 8) e (ii).</p>
+</div>
+
+<div class="enunciado" id="enunciado-64">
+  <h3>64. Variação do determinante e contração dos símbolos de Christoffel</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 3</em> (Cambridge, 2026), questão 10, itens (i)–(iv), p. 3 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22c.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "10. (i) Let M be an invertible matrix. Show that under a small change δM, the corresponding change in the determinant is, to first order, δ(det M) = (det M) tr(M^{-1} δM). [Hint: if the entries of a matrix A are small then, to first order, det(I + A) = 1 + tr A, where I is the identity matrix.] (ii) Let g_{αβ} be a metric with Lorentzian signature and let g = det(g_{αβ}). Use the result in (i) to show that Γ_α{}^β{}_β = (1/2g) ∂g/∂x^α = (1/√−g) ∂/∂x^α √−g, where Γ_α{}^γ{}_β is the Levi-Civita connection. (Note that g < 0 for a metric with Lorentzian signature.) (iii) A tensor density of weight q is defined to be a quantity that transforms as a tensor under a change in coordinates from {x^μ} to {x̃^α} but with an additional factor of Δ^q, where Δ = det(∂x^μ/∂x̃^α), the Jacobian. Show that g transforms as a scalar density of weight 2. (iv) For ψ a scalar density of weight q, the covariant derivative is defined by ∇_α ψ = ∂ψ/∂x^α − q Γ_α{}^β{}_β ψ. Show that ∇_α ψ is a covector density of weight q." -->
+  <blockquote>
+    <p>(i) Seja M uma matriz inversível. Mostre que, sob uma pequena variação δM, a variação correspondente do determinante é, em primeira ordem, δ(det M) = (det M) tr(M<sup>−1</sup>δM). [<em>Dica:</em> se as entradas de uma matriz A são pequenas, então, em primeira ordem, det(I + A) = 1 + tr A, onde I é a matriz identidade.]</p>
+    <p>(ii) Seja g<sub>αβ</sub> uma métrica de assinatura lorentziana e seja g = det(g<sub>αβ</sub>). Use o resultado de (i) para mostrar que</p>
+    <p>Γ<sub>α</sub><sup>β</sup><sub>β</sub> = (1/2g) ∂g/∂x<sup>α</sup> = (1/√−g) ∂(√−g)/∂x<sup>α</sup>,</p>
+    <p>onde Γ<sub>α</sub><sup>γ</sup><sub>β</sub> é a conexão de Levi-Civita. (Note que g &lt; 0 para uma métrica de assinatura lorentziana.)</p>
+    <p>(iii) Uma <em>densidade tensorial de peso q</em> é uma quantidade que se transforma como um tensor sob uma mudança de coordenadas de {x<sup>μ</sup>} para {x̃<sup>α</sup>}, mas com um fator adicional Δ<sup>q</sup>, onde Δ = det(∂x<sup>μ</sup>/∂x̃<sup>α</sup>) é o jacobiano. Mostre que g se transforma como uma densidade escalar de peso 2.</p>
+    <p>(iv) Para ψ uma densidade escalar de peso q, a derivada covariante é definida por</p>
+    <p>∇<sub>α</sub>ψ = ∂ψ/∂x<sup>α</sup> − q Γ<sub>α</sub><sup>β</sup><sub>β</sub> ψ.</p>
+    <p>Mostre que ∇<sub>α</sub>ψ é uma densidade covetorial de peso q.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (ii); (i) é a fórmula de Jacobi, que no Sucuri é a declaração de det g; (iii) e (iv), densidades, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-65">
+  <h3>65. Métricas conformes e a teoria de Nordstrøm</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 1</em> (Cambridge, 2026), questão 8, p. 2 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22a.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "8. Two metrics g_{αβ} and ĝ_{αβ} are conformally related if ĝ_{αβ} = Ω² g_{αβ} for some scalar function Ω. Show that their Christoffel symbols {α βγ} and {α βγ}^ are related by {α βγ}^ = {α βγ} + Ω^{-1}(δ^α_β Ω_{,γ} + δ^α_γ Ω_{,β} − g^{αδ} g_{βγ} Ω_{,δ}). In Nordstrøm's theory of gravity the metric is given by g_{αβ} = e^{2φ} η_{αβ}, where φ is a scalar function of position and η_{αβ} is the Minkowski metric. Compute the equation of a geodesic in Nordstrøm's theory and use your result to show that T^α T^β g_{αβ} is constant on a geodesic, where T^α is the tangent vector corresponding to an affine parameter. Using the results of question 5, show that a null geodesic is also a null geodesic in Minkowski spacetime, and hence deduce that light rays are not subject to gravitational deflection. Show that for any time-like geodesic, with suitably chosen parameter μ, d²x^α/dμ² = −η^{αγ} ψ_{,γ} for some function ψ. [A comma denotes differentiation with respect to a coordinate, e.g. φ_{,α} = ∂_α φ, and the Christoffel symbols are defined by {α βγ} = ½ g^{αμ}(g_{βμ,γ} + g_{μγ,β} − g_{βγ,μ}).]" -->
+  <blockquote>
+    <p>Duas métricas g<sub>αβ</sub> e ĝ<sub>αβ</sub> são <em>conformemente relacionadas</em> se ĝ<sub>αβ</sub> = Ω<sup>2</sup>g<sub>αβ</sub> para alguma função escalar Ω. Mostre que seus símbolos de Christoffel Γ<sup>α</sup><sub>βγ</sub> e Γ̂<sup>α</sup><sub>βγ</sub> estão relacionados por</p>
+    <p>Γ̂<sup>α</sup><sub>βγ</sub> = Γ<sup>α</sup><sub>βγ</sub> + Ω<sup>−1</sup>(δ<sup>α</sup><sub>β</sub>Ω<sub>,γ</sub> + δ<sup>α</sup><sub>γ</sub>Ω<sub>,β</sub> − g<sup>αδ</sup>g<sub>βγ</sub>Ω<sub>,δ</sub>).</p>
+    <p>Na teoria da gravitação de Nordstrøm, a métrica é dada por g<sub>αβ</sub> = e<sup>2φ</sup>η<sub>αβ</sub>, onde φ é uma função escalar da posição e η<sub>αβ</sub> é a métrica de Minkowski. Calcule a equação de uma geodésica na teoria de Nordstrøm e use o resultado para mostrar que T<sup>α</sup>T<sup>β</sup>g<sub>αβ</sub> é constante ao longo de uma geodésica, onde T<sup>α</sup> é o vetor tangente correspondente a um parâmetro afim.</p>
+    <p>Usando os resultados da questão 5, mostre que uma geodésica nula é também uma geodésica nula no espaço-tempo de Minkowski e deduza daí que os raios de luz não sofrem deflexão gravitacional.</p>
+    <p>Mostre que, para qualquer geodésica tipo tempo, com um parâmetro μ convenientemente escolhido,</p>
+    <p>d<sup>2</sup>x<sup>α</sup>/dμ<sup>2</sup> = −η<sup>αγ</sup>ψ<sub>,γ</sub></p>
+    <p>para alguma função ψ.</p>
+    <p>[A vírgula denota derivação em relação a uma coordenada, por exemplo φ<sub>,α</sub> = ∂<sub>α</sub>φ, e os símbolos de Christoffel são definidos por Γ<sup>α</sup><sub>βγ</sub> = ½ g<sup>αμ</sup>(g<sub>βμ,γ</sub> + g<sub>μγ,β</sub> − g<sub>βγ,μ</sub>).]</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a relação entre os Christoffel; a teoria de Nordstrøm, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-66">
+  <h3>66. Equações de Maxwell com √−g</h3>
+  <p class="fonte">G. 't Hooft, <em>Introduction to General Relativity</em> (Utrecht, 2013), cap. 10 “Electromagnetism”, exercício após a eq. (10.12), eqs. (10.13)–(10.14), p. 45 — <a href="https://webspace.science.uu.nl/~hooft101/lectures/genrel_2013.pdf">webspace.science.uu.nl</a>.</p>
+  <!-- original (context): "4) Varying A_μ, we find that the inhomogeneous equation becomes D_μ F_{μν} = g^{αβ} D_α F_{βν} = −J_ν, (10.12) and hence receives a contribution from the gravitational field Γ^λ_{μν} and the potential g^{αβ}. Exercise: show, both with formal arguments and explicitly, that Eq. (10.11) does not change if we replace the derivatives by covariant derivatives. Exercise: show that Eq. (10.12) can also be written as ∂_μ(√−g F^{μν}) = −√−g J^ν, (10.13) and that ∂_μ(√−g J^μ) = 0. (10.14) Thus √−g J^μ is the real conserved current, and Eq. (10.13) implies that √−g acts as the dielectric constant of the vacuum." (D_μ F_{μν} uses the author's modified summation convention, eq. (6.33).) -->
+  <blockquote>
+    <p>[Contexto: variando A<sub>μ</sub>, a equação de Maxwell inomogênea torna-se D<sub>μ</sub>F<sub>μν</sub> = g<sup>αβ</sup>D<sub>α</sub>F<sub>βν</sub> = −J<sub>ν</sub> (10.12), recebendo assim uma contribuição do campo gravitacional Γ<sup>λ</sup><sub>μν</sub> e do potencial g<sup>αβ</sup>.]</p>
+    <p><em>Exercício:</em> mostre que a eq. (10.12) pode também ser escrita como</p>
+    <p>∂<sub>μ</sub>(√−g F<sup>μν</sup>) = −√−g J<sup>ν</sup>,&nbsp;&nbsp;&nbsp;(10.13)</p>
+    <p>e que</p>
+    <p>∂<sub>μ</sub>(√−g J<sup>μ</sup>) = 0.&nbsp;&nbsp;&nbsp;(10.14)</p>
+    <p>Assim, √−g J<sup>μ</sup> é a verdadeira corrente conservada, e a eq. (10.13) implica que √−g atua como a constante dielétrica do vácuo.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (10.13), pela identidade ∇<sub>μ</sub>F<sup>μν</sup> = (−g)<sup>−1/2</sup>∂<sub>μ</sub>(√−g F<sup>μν</sup>); (10.14), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-69">
+  <h3>69. Campo escalar com ∇∇φ = Ricci</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 3</em> (Cambridge, 2026), questão 4, p. 1 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22c.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "4. Let φ be a scalar field in curved spacetime such that ∇_α∇_β φ = R_{αβ}, where R_{αβ} is the Ricci tensor. Show that ∇_α(∇_β∇^β φ) = −2R_{αβ}∇^β φ and hence deduce that ∇_αφ ∇^αφ + R is constant. [Hint: use the Ricci identity and the contracted Bianchi identity, ∇^β R_{αβ} = ½∇_α R.]" -->
+  <blockquote>
+    <p>Seja φ um campo escalar num espaço-tempo curvo tal que</p>
+    <p>∇<sub>α</sub>∇<sub>β</sub>φ = R<sub>αβ</sub>,</p>
+    <p>onde R<sub>αβ</sub> é o tensor de Ricci. Mostre que</p>
+    <p>∇<sub>α</sub>(∇<sub>β</sub>∇<sup>β</sup>φ) = −2R<sub>αβ</sub>∇<sup>β</sup>φ</p>
+    <p>e deduza daí que ∇<sub>α</sub>φ∇<sup>α</sup>φ + R é constante.</p>
+    <p>[<em>Dica:</em> use a identidade de Ricci e a identidade de Bianchi contraída, ∇<sup>β</sup>R<sub>αβ</sub> = ½∇<sub>α</sub>R.]</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a conclusão, com a Bianchi contraída como hipótese, como na dica.</p>
+</div>
+
+<div class="enunciado" id="enunciado-71">
+  <h3>71. Curvatura linearizada</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 4</em> (Cambridge, 2026), questão 10, item (i), p. 4 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22d.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "10. (i) A weak gravitational field has the spacetime metric g_{αβ} = η_{αβ} + εh_{αβ} + O(ε²), where η_{αβ} is the Minkowski metric and ε is small. Show that R_{αβγδ} = ½ε(h_{αδ,βγ} + h_{βγ,αδ} − h_{αγ,βδ} − h_{βδ,αγ}) + O(ε²). Let h = h^γ_γ and define h̄_{αβ} = h_{αβ} − ½h η_{αβ}. Check that h_{αβ} = h̄_{αβ} − ½h̄ η_{αβ} where h̄ = h̄^γ_γ, and show that R_{αβ} = ½ε(−□h̄_{αβ} + h̄_α^γ_{,βγ} + h̄_β^γ_{,αγ} + ½η_{αβ}□h̄) + O(ε²), where □ = η^{αβ}∂_α∂_β. What is the linearised vacuum Einstein equation for h̄_{αβ}?" -->
+  <blockquote>
+    <p>(i) Um campo gravitacional fraco tem a métrica de espaço-tempo g<sub>αβ</sub> = η<sub>αβ</sub> + εh<sub>αβ</sub> + O(ε<sup>2</sup>), onde η<sub>αβ</sub> é a métrica de Minkowski e ε é pequeno. Mostre que</p>
+    <p>R<sub>αβγδ</sub> = ½ε(h<sub>αδ,βγ</sub> + h<sub>βγ,αδ</sub> − h<sub>αγ,βδ</sub> − h<sub>βδ,αγ</sub>) + O(ε<sup>2</sup>).</p>
+    <p>Seja h = h<sup>γ</sup><sub>γ</sub> e defina h̄<sub>αβ</sub> = h<sub>αβ</sub> − ½h η<sub>αβ</sub>. Verifique que h<sub>αβ</sub> = h̄<sub>αβ</sub> − ½h̄ η<sub>αβ</sub>, onde h̄ = h̄<sup>γ</sup><sub>γ</sub>, e mostre que</p>
+    <p>R<sub>αβ</sub> = ½ε(−□h̄<sub>αβ</sub> + h̄<sub>α</sub><sup>γ</sup><sub>,βγ</sub> + h̄<sub>β</sub><sup>γ</sup><sub>,αγ</sub> + ½η<sub>αβ</sub>□h̄) + O(ε<sup>2</sup>),</p>
+    <p>onde □ = η<sup>αβ</sup>∂<sub>α</sub>∂<sub>β</sub>. Qual é a equação de Einstein linearizada no vácuo para h̄<sub>αβ</sub>?</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> o Riemann e o Ricci linearizados; a equação de vácuo é leitura do resultado.</p>
+</div>
+
+<div class="enunciado" id="enunciado-72">
+  <h3>72. Curvatura negativa: o espaço hiperbólico 3D</h3>
+  <p class="fonte">A. Guth, <em>MIT 8.962 General Relativity</em> (Spring 2018), Problem Set 6, Problem 4 (“Negative Curvature”), p. 4 — <a href="https://web.mit.edu/8.962/www/probsets/ps06-grs18.pdf">web.mit.edu</a>.</p>
+  <!-- original: "PROBLEM 4: NEGATIVE CURVATURE (10 pts) Consider a 3-dimensional space given by the set of points {(x, y, z), x ∈ R, y ∈ R, z > 0} with the metric ds² = (a/z²)(dx² + dy² + dz²). (4.1) Compute the metric, connection, Riemann curvature tensor, Ricci tensor, and Ricci scalar." -->
+  <blockquote>
+    <p>Considere o espaço tridimensional dado pelo conjunto de pontos {(x, y, z), x ∈ ℝ, y ∈ ℝ, z &gt; 0}, com a métrica</p>
+    <p>ds² = (a/z²)(dx² + dy² + dz²). &nbsp;&nbsp;(4.1)</p>
+    <p>Calcule a métrica, a conexão, o tensor de curvatura de Riemann, o tensor de Ricci e o escalar de Ricci.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a conexão, o Riemann, o Ricci e o escalar.</p>
+</div>
+
+<div class="enunciado" id="enunciado-73">
+  <h3>73. Superfícies de revolução</h3>
+  <p class="fonte">C. Hirata, <em>Ph 236 – Homework 4</em> (Caltech, 2011), problema 1 “Surfaces of revolution”, p. 1 — <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw4.pdf">tapir.caltech.edu</a>.</p>
+  <!-- original: "1. Surfaces of revolution. [14 points] Consider a 2-dimensional surface M embedded in 3-dimensional Euclidean space R³. Suppose further that it is a surface of revolution, i.e. it can be described in cylindrical coordinates (z, ϖ, φ) by an equation of the form z = f(ϖ). (1) The two-dimensional surface can be written locally with coordinates (ϖ, φ). (a) Show that the line element for the surface is ds² = F(ϖ) dϖ² + ϖ² dφ², (2) where F(ϖ) = 1 + [f′(ϖ)]². (b) Compute the Christoffel symbols for this surface. (c) Compute the Riemann tensor R_{ijkl} for this surface (hint: use symmetries of the Riemann tensor to avoid having to do 16 tedious calculations). (d) Show that the Ricci scalar is R = F′(ϖ)/(ϖ[F(ϖ)]²). (3) (e) Prove that a 2-dimensional surface has zero Riemann tensor if and only if its Ricci scalar vanishes. (f) Use (e) to completely classify the surfaces of revolution with zero Riemann tensor." -->
+  <blockquote>
+    <p>Considere uma superfície bidimensional M mergulhada no espaço euclidiano tridimensional ℝ<sup>3</sup>. Suponha, além disso, que seja uma superfície de revolução, isto é, que possa ser descrita em coordenadas cilíndricas (z, ϖ, φ) por uma equação da forma</p>
+    <p>z = f(ϖ).</p>
+    <p>Localmente, a superfície bidimensional pode ser descrita pelas coordenadas (ϖ, φ).</p>
+    <p>(a) Mostre que o elemento de linha da superfície é ds<sup>2</sup> = F(ϖ) dϖ<sup>2</sup> + ϖ<sup>2</sup> dφ<sup>2</sup>, onde F(ϖ) = 1 + [f′(ϖ)]<sup>2</sup>.</p>
+    <p>(b) Calcule os símbolos de Christoffel desta superfície.</p>
+    <p>(c) Calcule o tensor de Riemann R<sub>ijkl</sub> desta superfície (dica: use as simetrias do tensor de Riemann para não ter de fazer 16 cálculos tediosos).</p>
+    <p>(d) Mostre que o escalar de Ricci é R = F′(ϖ) / (ϖ[F(ϖ)]<sup>2</sup>).</p>
+    <p>(e) Prove que uma superfície bidimensional tem tensor de Riemann nulo se e somente se seu escalar de Ricci se anula.</p>
+    <p>(f) Use (e) para classificar completamente as superfícies de revolução com tensor de Riemann nulo.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b), (c) e (d); o mergulho (a) e (e)–(f), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-74">
+  <h3>74. Geodésicas, conexão e curvatura na esfera e no cone</h3>
+  <p class="fonte">P. van Baal, <em>Problem Set – Theory of General Relativity</em> (Leiden), problema 5 “Geodesics, connections, curvature”, pp. 1–2 — <a href="https://www.lorentz.leidenuniv.nl/research/vanbaal/DECEASED/ART/art-eng.pdf">lorentz.leidenuniv.nl</a>.</p>
+  <!-- original: "5) Geodesics, connections, curvature. To get more familiar to curved spaces and geodesics we now consider the two dimensional sphere and cone embedded in R³ with ds² = dx² + dy² + dz². sphere: x = a sin θ cos φ, y = a sin θ sin φ, z = a cos θ; cone: x = r cos φ, y = r sin φ, z = r. The following questions are to be answered for both the sphere and the cone. (Hint: see example FN.2.2.1 and problem FN.2.3). a) What is the metric tensor? b) Calculate the Christoffel symbols Γ^a_{bc}. c) Calculate the curvature tensor R^a_{bcd} ≡ ∂_c Γ^a_{bd} − ∂_d Γ^a_{bc} + Γ^e_{bd} Γ^a_{ec} − Γ^e_{bc} Γ^a_{ed}. Furthermore, calculate R_{bd} ≡ R^a_{bad} and R ≡ R^a_a. Give an interpretation of the results. d) What are the geodesic equations? Determine the most general solutions. Hint for the sphere: Show that the angular momentum is conserved, and use this to determine the geodesics. Hint for the cone: If you cut open the cone, what are the geodesics? Does this agree with what you found for the curvature?" -->
+  <blockquote>
+    <p>Para nos familiarizarmos melhor com espaços curvos e geodésicas, consideramos agora a esfera e o cone bidimensionais mergulhados em ℝ<sup>3</sup> com ds<sup>2</sup> = dx<sup>2</sup> + dy<sup>2</sup> + dz<sup>2</sup>:</p>
+    <p>esfera: x = a sen θ cos φ, y = a sen θ sen φ, z = a cos θ;<br>cone: x = r cos φ, y = r sen φ, z = r.</p>
+    <p>As perguntas a seguir devem ser respondidas tanto para a esfera quanto para o cone. (Dica: veja o exemplo FN.2.2.1 e o problema FN.2.3.)</p>
+    <p>a) Qual é o tensor métrico?</p>
+    <p>b) Calcule os símbolos de Christoffel Γ<sup>a</sup><sub>bc</sub>.</p>
+    <p>c) Calcule o tensor de curvatura R<sup>a</sup><sub>bcd</sub> ≡ ∂<sub>c</sub>Γ<sup>a</sup><sub>bd</sub> − ∂<sub>d</sub>Γ<sup>a</sup><sub>bc</sub> + Γ<sup>e</sup><sub>bd</sub>Γ<sup>a</sup><sub>ec</sub> − Γ<sup>e</sup><sub>bc</sub>Γ<sup>a</sup><sub>ed</sub>. Calcule também R<sub>bd</sub> ≡ R<sup>a</sup><sub>bad</sub> e R ≡ R<sup>a</sup><sub>a</sub>. Dê uma interpretação dos resultados.</p>
+    <p>d) Quais são as equações das geodésicas? Determine as soluções mais gerais. Dica para a esfera: mostre que o momento angular se conserva e use isso para determinar as geodésicas. Dica para o cone: se você cortar e abrir o cone, quais são as geodésicas? Isso concorda com o que você encontrou para a curvatura?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o cone: métrica, Christoffel e curvatura; as geodésicas, não (a esfera: enunciados 35 e 36).</p>
+</div>
+
+<div class="enunciado" id="enunciado-75">
+  <h3>75. Símbolos de Christoffel no limite newtoniano</h3>
+  <p class="fonte">A. Guth, <em>MIT 8.962 General Relativity</em> (Spring 2018), Problem Set 3, Problem 2 (“An Inertial Coordinate System in the Newtonian Limit”), item (a), p. 2 — <a href="https://web.mit.edu/8.962/www/probsets/ps03-grs18.pdf">web.mit.edu</a>.</p>
+  <!-- original: "PROBLEM 2: AN INERTIAL COORDINATE SYSTEM IN THE NEWTONIAN LIMIT (11 pts) Consider the spacetime metric with components g_00 = −(1 + az), g_0i = 0, g_ij = δ_ij in a region near the origin O = (0, 0, 0, 0) where az ≪ 1, and a is a constant. (a) [3 pts] Compute the nonzero Christoffel coefficients of this metric." -->
+  <blockquote>
+    <p>Considere a métrica de espaço-tempo com componentes</p>
+    <p>g<sub>00</sub> = −(1 + az), &nbsp; g<sub>0i</sub> = 0, &nbsp; g<sub>ij</sub> = δ<sub>ij</sub></p>
+    <p>numa região próxima da origem O = (0, 0, 0, 0) onde az ≪ 1, sendo a uma constante.</p>
+    <p>(a) Calcule os coeficientes de Christoffel não nulos dessa métrica.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> os Christoffel.</p>
+</div>
+
+<div class="enunciado" id="enunciado-76">
+  <h3>76. Espaço-tempo de de Sitter em coordenadas planas</h3>
+  <p class="fonte">C. Hirata, <em>Ph 236 – Homework 5</em> (Caltech, 2011), problema 1 “Cosmological constant”, p. 1 — <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw5.pdf">tapir.caltech.edu</a>.</p>
+  <!-- original: "1. Cosmological constant. [16 points] Consider the highly symmetrical spacetime with line element given by ds² = (1/(H²η²))(−dη² + dx² + dy² + dz²), (1) where H > 0 is a constant, and in the domain η < 0. (This is known as de Sitter spacetime, and H is the Hubble constant.) (a) Find the Einstein tensor for this spacetime. (b) Prove that de Sitter spacetime is a vacuum solution of Einstein's equations in the presence of a positive cosmological constant for a particular choice of H. What is the relation between H and Λ? (c) Consider an observer whose world line is given by fixed spatial coordinates (x, y, z). Explain why this trajectory is a geodesic, and show that an infinite amount of proper time elapses before the observer reaches η = 0." -->
+  <blockquote>
+    <p>Considere o espaço-tempo altamente simétrico com elemento de linha</p>
+    <p>ds<sup>2</sup> = (1/(H<sup>2</sup>η<sup>2</sup>)) (−dη<sup>2</sup> + dx<sup>2</sup> + dy<sup>2</sup> + dz<sup>2</sup>),</p>
+    <p>onde H &gt; 0 é uma constante, no domínio η &lt; 0. (Este é o chamado espaço-tempo de de Sitter, e H é a constante de Hubble.)</p>
+    <p>(a) Encontre o tensor de Einstein deste espaço-tempo.</p>
+    <p>(b) Prove que o espaço-tempo de de Sitter é uma solução de vácuo das equações de Einstein na presença de uma constante cosmológica positiva, para uma escolha particular de H. Qual é a relação entre H e Λ?</p>
+    <p>(c) Considere um observador cuja linha de universo é dada por coordenadas espaciais (x, y, z) fixas. Explique por que essa trajetória é uma geodésica e mostre que decorre um tempo próprio infinito antes que o observador alcance η = 0.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a) e (b); (c), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-77">
+  <h3>77. Espaço-tempo de de Sitter bidimensional</h3>
+  <p class="fonte">J. M. Evans, <em>Part II General Relativity, Example Sheet 1</em> (Cambridge, 2026), questão 9, p. 3 — <a href="https://www.damtp.cam.ac.uk/user/examples/D22a.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "9. 2-dimensional de Sitter space-time has the line element ds² = −du² + cosh²u dφ², where −∞ < u < ∞ and 0 ≤ φ < 2π. Compute the Christoffel symbols and hence the geodesic equations. Verify that the equations of an affinely parametrized geodesic x^α = x^α(λ) can be derived from the variational principle δ∫(u̇² − cosh²u φ̇²) dλ = 0, where u̇ = du/dλ etc. Verify from the variational principle that there are two first integrals cosh²u φ̇ = K, cosh²u u̇² = K² + L cosh²u, along the geodesic, where K and L are constants. Show that if K = 0 the geodesics are φ = const. If K ≠ 0, show that λ may be eliminated in favour of φ as a parameter along the geodesic and obtain the equation v′² = M² − v², where v = tanh u, v′ = dv/dφ and M is a constant depending on L and K. Hence show that the K ≠ 0 geodesics are given by tanh u = M sin(φ − φ0), where φ0 is a constant. Show also that M² > 1 for timelike geodesics, M² = 1 for null geodesics and M² < 1 for spacelike geodesics. Regarding u and φ as cartesian coordinates, sketch the set of geodesics starting from (0, 0). Show from your diagram that no two such timelike geodesics will meet again, but that spacelike geodesics may recross each other. Demonstrate also that there are pairs of points which cannot be joined by a geodesic. Which, if any, of these statements would be valid in Minkowski spacetime?" -->
+  <blockquote>
+    <p>O espaço-tempo de de Sitter bidimensional tem elemento de linha</p>
+    <p>ds<sup>2</sup> = −du<sup>2</sup> + cosh<sup>2</sup>u dφ<sup>2</sup>,</p>
+    <p>com −∞ &lt; u &lt; ∞ e 0 ≤ φ &lt; 2π. Calcule os símbolos de Christoffel e, a partir deles, as equações das geodésicas. Verifique que as equações de uma geodésica afimente parametrizada x<sup>α</sup> = x<sup>α</sup>(λ) podem ser obtidas do princípio variacional</p>
+    <p>δ ∫ (u̇<sup>2</sup> − cosh<sup>2</sup>u φ̇<sup>2</sup>) dλ = 0,</p>
+    <p>onde u̇ = du/dλ etc. Verifique, a partir do princípio variacional, que há duas integrais primeiras ao longo da geodésica,</p>
+    <p>cosh<sup>2</sup>u φ̇ = K,&nbsp;&nbsp;&nbsp;cosh<sup>2</sup>u u̇<sup>2</sup> = K<sup>2</sup> + L cosh<sup>2</sup>u,</p>
+    <p>onde K e L são constantes.</p>
+    <p>Mostre que, se K = 0, as geodésicas são φ = const. Se K ≠ 0, mostre que λ pode ser eliminado em favor de φ como parâmetro ao longo da geodésica e obtenha a equação</p>
+    <p>v′<sup>2</sup> = M<sup>2</sup> − v<sup>2</sup>,</p>
+    <p>onde v = tanh u, v′ = dv/dφ e M é uma constante que depende de L e K. Mostre então que as geodésicas com K ≠ 0 são dadas por</p>
+    <p>tanh u = M sen(φ − φ<sub>0</sub>),</p>
+    <p>onde φ<sub>0</sub> é uma constante. Mostre também que M<sup>2</sup> &gt; 1 para geodésicas tipo tempo, M<sup>2</sup> = 1 para geodésicas nulas e M<sup>2</sup> &lt; 1 para geodésicas tipo espaço. Tratando u e φ como coordenadas cartesianas, esboce o conjunto das geodésicas que partem de (0, 0).</p>
+    <p>Mostre, a partir do seu diagrama, que duas dessas geodésicas tipo tempo nunca voltam a se encontrar, mas que geodésicas tipo espaço podem voltar a se cruzar. Demonstre também que há pares de pontos que não podem ser ligados por uma geodésica. Quais dessas afirmações, se alguma, seriam válidas no espaço-tempo de Minkowski?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel (e R = 2, que é da folha 3, Q3); as geodésicas, não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-79">
+  <h3>79. Curvatura de Ricci de Reissner–Nordström</h3>
+  <p class="fonte">T. Dray, <em>MTH 437/537 – HW #6</em> (Oregon State, primavera de 2024), problema 1, p. 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH437/hw/hw6.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. Consider the Reissner-Nordström geometry, with line element −f(r) dt² + dr²/f(r) + r²(dθ² + sin θ dφ²) where f(r) = 1 − 2m/r + q²/r². Determine the components R_ij of the Ricci curvature. You may use any formalism you wish, and any coordinate system you wish. Tedious computation by hand is discouraged, as is trying to fully typeset your results. Other options include using computer algebra and/or using or adapting a computation published elsewhere. Such strategies must of course be documented. However, make sure you understand—and clearly describe—the conventions being used! One reasonable starting point would be the curvature 2-forms, and the relations Ω^i_j = ½ R^i_{jkl} σ^k ∧ σ^l, R_ij = R^m_{imj} where repeated indices are summed over." [sic: "sin θ dφ²" as printed in the original] -->
+  <blockquote>
+    <p>Considere a geometria de Reissner–Nordström, com elemento de linha</p>
+    <p>−f(r) dt<sup>2</sup> + dr<sup>2</sup>/f(r) + r<sup>2</sup>(dθ<sup>2</sup> + sen<sup>2</sup>θ dφ<sup>2</sup>),</p>
+    <p>onde f(r) = 1 − 2m/r + q<sup>2</sup>/r<sup>2</sup>. Determine as componentes R<sub>ij</sub> da curvatura de Ricci.</p>
+    <p><em>Você pode usar o formalismo e o sistema de coordenadas que quiser. Desaconselham-se cálculos tediosos à mão, assim como tentar digitar integralmente os resultados. Outras opções incluem usar álgebra computacional e/ou usar ou adaptar um cálculo publicado em outro lugar. Essas estratégias devem, naturalmente, ser documentadas. No entanto, certifique-se de entender — e de descrever com clareza — as convenções usadas! Um ponto de partida razoável seriam as 2-formas de curvatura e as relações</em></p>
+    <p>Ω<sup>i</sup><sub>j</sub> = ½ R<sup>i</sup><sub>jkl</sub> σ<sup>k</sup> ∧ σ<sup>l</sup>,&nbsp;&nbsp;&nbsp;R<sub>ij</sub> = R<sup>m</sup><sub>imj</sub>,</p>
+    <p><em>com soma sobre índices repetidos.</em></p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as componentes R<sub>ij</sub>.</p>
+</div>
+
+<div class="enunciado" id="enunciado-80">
+  <h3>80. Métrica de AdS<sub>3</sub></h3>
+  <p class="fonte">T. Hartman, <em>Lectures on Quantum Gravity and Black Holes</em> (Cornell, 2015), §9.1 “Exercise: Metric of AdS<sub>3</sub>”, eqs. (9.1)–(9.4), pp. 97–98 — <a href="http://www.hartmanhep.net/topics2015/gravity-lectures.pdf">hartmanhep.net</a>.</p>
+  <!-- original: "Anti-de Sitter space is a constant-negative-curvature spacetime. It is the maximally symmetric solution of Einstein's equation with a negative cosmological constant. AdS_D can be realized as a hyperboloid embedded in a D+1-dimensional geometry. In this section we will talk about AdS_3, which is the hyperboloid X_A X^A = −ℓ² (9.1) where A = 0,1,2,3 is an index in the space Minkowski_2 × Minkowski_2, with metric H_{AB} dX^A dX^B = −dX_0² + dX_1² + dX_2² − dX_3². (9.2) To find intrinsic coordinates on AdS_3, we just need to solve (9.1). One way to solve this equation is by X_0 = ℓ cosh ρ cos t, X_1 = ℓ sinh ρ sin φ, X_2 = ℓ sinh ρ cos φ, X_3 = ℓ cosh ρ sin t. (9.3) (a) Check that this solves (9.1), and use (9.2) to find the induced metric on the hyperboloid. Answer: ds² = ℓ²(−cosh²ρ dt² + dρ² + sinh²ρ dφ²). (9.4) These are global coordinates on AdS_3. Although on the hyperboloid (9.1) we can see from (9.3) that t is a periodic coordinate, when we say 'AdS_3' we will always mean the space in which t is 'unwrapped', t ∈ (−∞, ∞) (the universal covering space of the hyperboloid). (b) Find the cosmological constant in terms of the AdS radius ℓ." -->
+  <blockquote>
+    <p>O espaço anti-de Sitter é um espaço-tempo de curvatura constante negativa. É a solução maximamente simétrica da equação de Einstein com constante cosmológica negativa. O AdS<sub>D</sub> pode ser realizado como um hiperboloide mergulhado numa geometria de D + 1 dimensões. Nesta seção tratamos do AdS<sub>3</sub>, que é o hiperboloide</p>
+    <p>X<sub>A</sub>X<sup>A</sup> = −ℓ<sup>2</sup>&nbsp;&nbsp;&nbsp;(9.1)</p>
+    <p>onde A = 0, 1, 2, 3 é um índice no espaço Minkowski<sub>2</sub> × Minkowski<sub>2</sub>, com métrica</p>
+    <p>H<sub>AB</sub> dX<sup>A</sup>dX<sup>B</sup> = −dX<sub>0</sub><sup>2</sup> + dX<sub>1</sub><sup>2</sup> + dX<sub>2</sub><sup>2</sup> − dX<sub>3</sub><sup>2</sup>.&nbsp;&nbsp;&nbsp;(9.2)</p>
+    <p>Para encontrar coordenadas intrínsecas no AdS<sub>3</sub>, basta resolver (9.1). Uma maneira de resolver essa equação é</p>
+    <p>X<sub>0</sub> = ℓ cosh ρ cos t,&nbsp; X<sub>1</sub> = ℓ senh ρ sen φ,&nbsp; X<sub>2</sub> = ℓ senh ρ cos φ,&nbsp; X<sub>3</sub> = ℓ cosh ρ sen t.&nbsp;&nbsp;&nbsp;(9.3)</p>
+    <p>(a) Verifique que isso resolve (9.1) e use (9.2) para encontrar a métrica induzida no hiperboloide.</p>
+    <p><em>Resposta:</em> ds<sup>2</sup> = ℓ<sup>2</sup>(−cosh<sup>2</sup>ρ dt<sup>2</sup> + dρ<sup>2</sup> + senh<sup>2</sup>ρ dφ<sup>2</sup>).&nbsp;&nbsp;&nbsp;(9.4)</p>
+    <p>Estas são as coordenadas globais do AdS<sub>3</sub>. Embora no hiperboloide (9.1) se veja por (9.3) que t é uma coordenada periódica, quando dissermos “AdS<sub>3</sub>” sempre entenderemos o espaço em que t é “desenrolado”, t ∈ (−∞, ∞) (o recobrimento universal do hiperboloide).</p>
+    <p>(b) Encontre a constante cosmológica em termos do raio ℓ do AdS.</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (b): Λ = −1/ℓ², pelo Ricci; o mergulho (a), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-81">
+  <h3>81. Geometria do espaço hiperbólico</h3>
+  <p class="fonte">C. Hirata, <em>Ph 236 – Homework 16</em> (Caltech, 2012), problema 1 “Geometry of hyperbolic space”, p. 1 — <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw16.pdf">tapir.caltech.edu</a>.</p>
+  <!-- original: "1. Geometry of hyperbolic space. [20 points] Consider the hyperbolic space H³ with unit negative curvature, ds² = dχ² + sinh²χ (dθ² + sin²θ dφ²). (1) (a) Show that this is the geometry that one obtains by taking 4-dimensional Minkowski space M⁴ and restricting to the spacelike 3-surface Σ ⊂ M⁴ given by −t² + x² + y² + z² = −1. (2) What is the mapping Φ : H³ → Σ of the coordinates (χ, θ, φ) to (t, x, y, z)? (b) Using your knowledge of infinitesimal Lorentz transformations, find the 6 Killing fields corresponding to Lorentz rotations and boosts, and express them as contravariant vectors in the χθφ coordinate system. (c) Show that given two points P, Q ∈ H³ that the separation s between them (i.e. length of the shortest¹ geodesic that connects them) is given by cosh s = −Φ(P)·Φ(Q), (3) where the dot product is that defined in M⁴. (d) Use the result of (c) to prove that in the hyperbolic space, the law of cosines is given by cosh c = cosh a cosh b − sinh a sinh b cos γ, (4) where we denote the side lengths of a "triangle" (i.e. set of 3 geodesics connecting the 3 vertices) as a, b, and c, and the angles opposite them as α, β, and γ. (e) Taylor expand the result from (d) and show that if a, b, and c are ≪ 1 then the usual law of cosines is recovered. — Footnote 1: In hyperbolic space, the statement about the shortest geodesic is redundant: there is exactly one geodesic connecting any two points. This is actually true for any simply connected space of Euclidean signature (+++) and negative-semidefinite curvature, i.e. where R_{αβγδ} ξ^α η^β ξ^γ η^δ ≤ 0 for any vectors ξ and η." -->
+  <blockquote>
+    <p>Considere o espaço hiperbólico H<sup>3</sup> com curvatura negativa unitária,</p>
+    <p>ds<sup>2</sup> = dχ<sup>2</sup> + senh<sup>2</sup>χ (dθ<sup>2</sup> + sen<sup>2</sup>θ dφ<sup>2</sup>).</p>
+    <p>(a) Mostre que esta é a geometria obtida tomando o espaço de Minkowski quadridimensional M<sup>4</sup> e restringindo-o à 3-superfície tipo espaço Σ ⊂ M<sup>4</sup> dada por −t<sup>2</sup> + x<sup>2</sup> + y<sup>2</sup> + z<sup>2</sup> = −1. Qual é a aplicação Φ : H<sup>3</sup> → Σ das coordenadas (χ, θ, φ) em (t, x, y, z)?</p>
+    <p>(b) Usando o que você sabe sobre transformações de Lorentz infinitesimais, encontre os 6 campos de Killing correspondentes às rotações e aos boosts de Lorentz e expresse-os como vetores contravariantes no sistema de coordenadas χθφ.</p>
+    <p>(c) Mostre que, dados dois pontos P, Q ∈ H<sup>3</sup>, a separação s entre eles (isto é, o comprimento da geodésica mais curta¹ que os liga) é dada por cosh s = −Φ(P)·Φ(Q), onde o produto escalar é o de M<sup>4</sup>.</p>
+    <p>(d) Use o resultado de (c) para provar que, no espaço hiperbólico, a lei dos cossenos é cosh c = cosh a cosh b − senh a senh b cos γ, onde denotamos por a, b e c os comprimentos dos lados de um “triângulo” (isto é, um conjunto de 3 geodésicas ligando 3 vértices) e por α, β e γ os ângulos opostos a eles.</p>
+    <p>(e) Expanda em série de Taylor o resultado de (d) e mostre que, se a, b e c são ≪ 1, recupera-se a lei dos cossenos usual.</p>
+    <p><small>¹ No espaço hiperbólico, a menção à geodésica mais curta é redundante: há exatamente uma geodésica ligando dois pontos quaisquer. Isso vale, na verdade, para qualquer espaço simplesmente conexo de assinatura euclidiana (+ + +) e curvatura negativa semidefinida, isto é, em que R<sub>αβγδ</sub>ξ<sup>α</sup>η<sup>β</sup>ξ<sup>γ</sup>η<sup>δ</sup> ≤ 0 para quaisquer vetores ξ e η.</small></p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> só a premissa, a curvatura −1 (R<sub>ij</sub> = −2g<sub>ij</sub>); o que o exercício pede, (a)–(e), não.</p>
+</div>
+
+<div class="enunciado" id="enunciado-82">
+  <h3>82. Curvatura de Ricci da N-esfera</h3>
+  <p class="fonte">G. 't Hooft, <em>Introduction to General Relativity</em> (Utrecht, 2013), cap. 14 “The Robertson-Walker metric”, exercício após a eq. (14.8), com a eq. (14.9), p. 60 — <a href="https://webspace.science.uu.nl/~hooft101/lectures/genrel_2013.pdf">webspace.science.uu.nl</a>.</p>
+  <!-- original (context: dω² = B(ϱ)dϱ² + ϱ²(dθ² + sin²θ dϕ²) (14.2); isotropy R_ij = λ g_ij (14.5); solution B = 1/(1 − ½λϱ²) (14.8)): "Exercise: show that with ϱ = √(2/λ) sin ψ, this gives the metric of the 3-sphere, in terms of its three angular coordinates ψ, θ, ϕ. Indeed, the metric for an N-sphere can be written as dω_N² = dψ_N² + sin²ψ_N dω²_{N−1}, R^{(N)}_{ij} = λ_N g_ij; λ_N = N − 1. (14.9)" -->
+  <blockquote>
+    <p>[Contexto: para o espaço isotrópico tridimensional dω<sup>2</sup> = B(ϱ)dϱ<sup>2</sup> + ϱ<sup>2</sup>(dθ<sup>2</sup> + sen<sup>2</sup>θ dϕ<sup>2</sup>) (14.2), exige-se R<sub>ij</sub> = λg<sub>ij</sub> (14.5), o que leva a B = 1/(1 − ½λϱ<sup>2</sup>) (14.8).]</p>
+    <p><em>Exercício:</em> mostre que, com ϱ = √(2/λ) sen ψ, isso dá a métrica da 3-esfera em termos de suas três coordenadas angulares ψ, θ, ϕ. De fato, a métrica de uma N-esfera pode ser escrita como</p>
+    <p>dω<sub>N</sub><sup>2</sup> = dψ<sub>N</sub><sup>2</sup> + sen<sup>2</sup>ψ<sub>N</sub> dω<sub>N−1</sub><sup>2</sup>,&nbsp;&nbsp;&nbsp;R<sub>ij</sub><sup>(N)</sup> = λ<sub>N</sub>g<sub>ij</sub>;&nbsp;&nbsp;λ<sub>N</sub> = N − 1.&nbsp;&nbsp;&nbsp;(14.9)</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> R<sub>ij</sub> = (N − 1)g<sub>ij</sub> para N = 4 (e a 3-esfera no enunciado 43).</p>
+</div>
+
+<div class="enunciado" id="enunciado-85">
+  <h3>85. A forma da geometria de Schwarzschild (paraboloide de Flamm)</h3>
+  <p class="fonte">T. Dray, <em>MTH 437/537 – HW #5</em> (Oregon State, primavera de 2024), problema 1 “Shape of Schwarzschild geometry”, p. 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH437/hw/hw5.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. SHAPE OF SCHWARZSCHILD GEOMETRY. (a) Plot the graph of 8mr = h² + 16m² with r as the horizontal coordinate. Equivalently, solve this equation for h, and plot h as a function of r. (b) Express arclength along this graph in terms of r (and dr). Assume that (r, h) are rectangular, Euclidean coordinates. (c) Consider the surface of revolution obtained by rotating your curve about the h-axis. What is the line element for this surface? Compare your answer with the Schwarzschild geometry. (d) Find the Gaussian curvature of this surface. Is it positive or negative?" -->
+  <blockquote>
+    <p>(a) Trace o gráfico de 8mr = h<sup>2</sup> + 16m<sup>2</sup>, com r como coordenada horizontal. De modo equivalente, resolva essa equação para h e trace h como função de r.</p>
+    <p>(b) Expresse o comprimento de arco ao longo desse gráfico em termos de r (e dr). Suponha que (r, h) sejam coordenadas euclidianas retangulares.</p>
+    <p>(c) Considere a superfície de revolução obtida girando sua curva em torno do eixo h. Qual é o elemento de linha dessa superfície? Compare sua resposta com a geometria de Schwarzschild.</p>
+    <p>(d) Encontre a curvatura gaussiana dessa superfície. Ela é positiva ou negativa?</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (c) e (d) na fatia equatorial de Schwarzschild; o gráfico e o comprimento de arco, não.</p>
+</div>
 
 <h2 id="fontes">Fontes</h2>
 
