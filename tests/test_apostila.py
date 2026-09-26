@@ -20,20 +20,24 @@ APOSTILA = (pathlib.Path(__file__).parents[1] / "sucuri" / "interface"
             / "estatico" / "apostila.html")
 
 
-def exercicios():
+TUTORIAL = APOSTILA.with_name("tutorial.html")
+
+
+def exercicios(pagina=None):
     leitor = Leitor()
-    leitor.feed(APOSTILA.read_text(encoding="utf-8"))
+    leitor.feed((pagina or APOSTILA).read_text(encoding="utf-8"))
     assert leitor.exemplos, "nenhum exercício encontrado na apostila"
     return leitor.exemplos
 
 
-@pytest.mark.parametrize("exemplo", exercicios(),
-                         ids=lambda e: e["entradas"][-2][:40])
-def test_o_exercicio_da_apostila_sai(exemplo):
-    caderno = Caderno()
-    d = {}
-    for fonte in exemplo["entradas"]:
-        d = caderno.executar(fonte).to_dict()
+def _pares():
+    """Cada exercício da apostila com o seu gêmeo do tutorial, em inglês."""
+    pt, en = exercicios(), exercicios(TUTORIAL)
+    assert len(pt) == len(en), "a apostila e o tutorial têm exercícios diferentes"
+    return list(zip(pt, en))
+
+
+def _confere(exemplo, d, pagina):
     esperado = exemplo["saida"]
     exatos = [d.get("exato"), d.get("sympy")]
     if esperado in exatos:
@@ -42,21 +46,40 @@ def test_o_exercicio_da_apostila_sai(exemplo):
     assert not d.get("erro") or exemplo["especie"] == "erro-esperado", d.get("erro")
     # Resposta curta só vale inteira: "0" dentro de "10" não é resposta.
     assert len(esperado) > 3, (
-        f"a apostila anuncia {esperado!r} e a resposta foi {exatos!r}")
+        f"{pagina} anuncia {esperado!r} e a resposta foi {exatos!r}")
     assert esperado in saida, (
-        f"a apostila anuncia {esperado!r}\nmas a saída foi {saida[:400]!r}")
+        f"{pagina} anuncia {esperado!r}\nmas a saída foi {saida[:400]!r}")
 
 
-def test_a_apostila_esta_publicada():
-    web = pathlib.Path(__file__).parents[1] / "web" / "apostila.html"
-    assert web.read_text(encoding="utf-8") == APOSTILA.read_text(encoding="utf-8")
+@pytest.mark.parametrize("par", _pares(),
+                         ids=lambda p: p[0]["entradas"][-2][:40])
+def test_o_exercicio_da_apostila_sai(par):
+    """Uma conta só, conferida nas duas línguas: o tutorial roda as entradas
+    em inglês — que o motor lê como as da apostila — e a mesma resposta tem
+    de trazer a saída da apostila e, traduzida, a do tutorial."""
+    from sucuri.idioma import traduzir_resposta
+    pt, en = par
+    assert len(pt["entradas"]) == len(en["entradas"])
+    caderno = Caderno()
+    d = {}
+    for fonte in en["entradas"]:
+        d = caderno.executar(fonte).to_dict()
+    _confere(pt, d, "a apostila")
+    _confere(en, traduzir_resposta(d, "en"), "o tutorial")
 
 
-def test_o_placar_confere_com_os_titulos():
+@pytest.mark.parametrize("pagina", [APOSTILA, TUTORIAL], ids=lambda p: p.name)
+def test_a_apostila_esta_publicada(pagina):
+    web = pathlib.Path(__file__).parents[1] / "web" / pagina.name
+    assert web.read_text(encoding="utf-8") == pagina.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("pagina", [APOSTILA, TUTORIAL], ids=lambda p: p.name)
+def test_o_placar_confere_com_os_titulos(pagina):
     """Os totais da tabela são os das marcações dos exercícios — contados, e
     não escritos à mão. Um placar que diverge dos títulos engana quem lê."""
     import re
-    s = APOSTILA.read_text(encoding="utf-8")
+    s = pagina.read_text(encoding="utf-8")
     corpo = s[s.index('<h2 id="indicial">'):s.index('<h2 id="nao-sai">')]
     status = {}
     for h in re.findall(r"<h3>(.*?)</h3>", corpo):
@@ -77,7 +100,7 @@ def test_o_placar_confere_com_os_titulos():
     v = s[s.index('<h2 id="nao-sai">'):s.index('<h2 id="achados">')]
     nao = set()
     for li in re.findall(r"<li><strong>([^<]*)</strong>", v):
-        if "em parte" not in li:
+        if "em parte" not in li and "partly" not in li:
             nao |= {int(x) for x in re.findall(r"\d+", li.split("(")[0])}
     assert not (nao & set(status)), "exercício com resolução e também em 'não sai'"
     assert set(range(1, 86)) == set(status) | nao, "exercício sem marcação"

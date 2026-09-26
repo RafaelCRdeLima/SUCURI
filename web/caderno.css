@@ -4,6 +4,9 @@
 .modo{color:var(--verde);font-size:13px;text-decoration:none;
   border:1px solid rgba(143,190,69,.35);border-radius:999px;padding:3px 10px}
 .modo:hover{background:rgba(143,190,69,.12)}
+/* o botão de idioma: o mesmo desenho dos links do cabeçalho */
+button.modo{background:none;font-family:inherit;cursor:pointer;line-height:inherit;
+  flex:none;width:auto;min-width:0;color:var(--verde);font-size:13px;padding:3px 10px}
 
 .caderno-convencoes{padding:16px 22px;border-bottom:1px solid var(--areia-2);
   margin:0;background:#fff}

@@ -144,6 +144,12 @@ VERBOS = {
     "cunha": "cunha", "exterior": "exterior", "estrela": "estrela",
     "interior": "interior", "lie": "lie", "iguais": "iguais", "ortonormal": "ortonormal",
     "laplaciano": "laplaciano", "restringir": "restringir",
+    # em inglês: idioma.normalizar_entrada os troca antes da leitura; aqui
+    # estão para a tela reconhecê-los como verbo
+    "in_chart": "em_carta", "in_components": "em_componentes", "orbits": "orbitas",
+    "element": "elemento", "tetrad": "cartan", "bracket": "colchete",
+    "laplacian": "laplaciano", "restrict": "restringir", "wedge": "cunha",
+    "star": "estrela", "equal": "iguais", "scalar": "escalar",
     **VERBOS_GEOMETRIA,
 }
 
@@ -307,10 +313,22 @@ class Caderno:
         equação em LaTeX pode legitimamente ocupar duas linhas, e quebrá-la em
         duas leituras daria duas metades sem sentido em vez de um erro.
         """
-        linhas = [l for l in (fonte or "").split("\n") if l.strip()]
+        from .idioma import normalizar_entrada
+        # Os comandos em inglês valem sempre — `g = metric(…)`, `prove(…)` —
+        # e a célula devolve o que foi ESCRITO, não a palavra do caderno.
+        escritas = [l for l in (fonte or "").split("\n") if l.strip()]
+        linhas = [normalizar_entrada(l) for l in escritas]
         if len(linhas) > 1 and all(_e_instrucao(l) for l in linhas):
-            return self._encadeadas(fonte, linhas)
-        return self._uma(fonte)
+            celula = self._encadeadas(fonte, linhas)
+            for parte, escrita, lida in zip(celula.dados["partes"], escritas, linhas):
+                if parte.get("fonte") == lida:
+                    parte["fonte"] = escrita
+            return celula
+        lida = "\n".join(normalizar_entrada(l) for l in (fonte or "").split("\n"))
+        celula = self._uma(lida)
+        if celula.fonte == lida:
+            celula.fonte = fonte
+        return celula
 
     def _encadeadas(self, fonte, linhas):
         """Cada linha por sua vez, e o que cada uma produziu, na ordem."""
@@ -1136,7 +1154,7 @@ class Caderno:
             dentro = _re.search(r"\(\s*([^)]*?)\s*\)", especie)
             qual = (dentro.group(1).lower() if dentro else "")
             qual = {"tensor": "tensor", "símbolo": "simbolo",
-                    "simbolo": "simbolo"}.get(qual)
+                    "simbolo": "simbolo", "symbol": "simbolo"}.get(qual)
             if qual is None:
                 return Celula(None, f"{nomes} = {especie}", "declaracao", {
                     "erro": "levi-civita(símbolo) ou levi-civita(tensor)? Os "

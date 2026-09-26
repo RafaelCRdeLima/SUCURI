@@ -27,7 +27,7 @@ ANTLR_URL = ("https://files.pythonhosted.org/packages/py3/a/"
              "antlr4-python3-runtime/" + ANTLR)
 
 # O que a interface local e a online compartilham, byte a byte.
-COMPARTILHADO = ["sucuri.css", "sucuri.js", "sitios.js", "caderno.css",
+COMPARTILHADO = ["sucuri.css", "sucuri.js", "sitios.js", "idioma.js", "caderno.css",
                  "caderno.js", "manual.css", "tokens.css", "favicon.svg"]
 
 # As páginas: as mesmas da interface local, com a tela de carregamento
@@ -37,7 +37,7 @@ PAGINAS = ["index.html", "caderno.html"]
 
 # O manual não carrega motor nenhum: é texto, e a tela de
 # carregamento seria uma espera por nada.
-PAGINAS_SIMPLES = ["manual.html", "apostila.html"]
+PAGINAS_SIMPLES = ["manual.html", "apostila.html", "manual-en.html", "tutorial.html"]
 
 
 def motor_zip():

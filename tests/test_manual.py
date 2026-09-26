@@ -57,11 +57,26 @@ class Leitor(HTMLParser):
             self._atual = None
 
 
-def exemplos():
+MANUAL_EN = MANUAL.with_name("manual-en.html")
+
+
+def exemplos(pagina=None):
     leitor = Leitor()
-    leitor.feed(MANUAL.read_text(encoding="utf-8"))
+    leitor.feed((pagina or MANUAL).read_text(encoding="utf-8"))
     assert leitor.exemplos, "nenhum exemplo encontrado no manual"
     return leitor.exemplos
+
+
+def executar(caderno, fonte, idioma="pt"):
+    """A célula, no idioma da página: em inglês, a resposta traduzida como a
+    rota a devolve à tela."""
+    from sucuri.idioma import traduzir_resposta
+    return traduzir_resposta(caderno.executar(fonte).to_dict(), idioma)
+
+
+def _casos():
+    return ([(e, "pt") for e in exemplos()]
+            + [(e, "en") for e in exemplos(MANUAL_EN)])
 
 
 def tudo_que_saiu(d):
@@ -85,9 +100,9 @@ def tudo_que_saiu(d):
     return " | ".join(p for p in pedacos if p)
 
 
-@pytest.mark.parametrize("exemplo", exemplos(),
-                         ids=lambda e: e["entradas"][-1][:40])
-def test_o_exemplo_do_manual_faz_o_que_diz(exemplo, monkeypatch):
+@pytest.mark.parametrize("exemplo, idioma", _casos(),
+                         ids=lambda x: x if isinstance(x, str) else x["entradas"][-1][:40])
+def test_o_exemplo_do_manual_faz_o_que_diz(exemplo, idioma, monkeypatch):
     caderno = Caderno()
     if any("6 y^2" in e for e in exemplo["entradas"]):
         # monkeypatch, e não atribuição: baixar o prazo e não repor contamina
@@ -98,7 +113,7 @@ def test_o_exemplo_do_manual_faz_o_que_diz(exemplo, monkeypatch):
 
     saida = ""
     for fonte in exemplo["entradas"]:
-        saida = tudo_que_saiu(caderno.executar(fonte).to_dict())
+        saida = tudo_que_saiu(executar(caderno, fonte, idioma))
 
     esperado = exemplo["saida"]
     if exemplo["especie"] == "pergunta":
@@ -119,7 +134,12 @@ def test_todos_os_exemplos_tem_entrada_e_saida():
         assert e["entradas"] and e["saida"]
 
 
-def test_o_manual_esta_publicado():
-    web = pathlib.Path(__file__).parents[1] / "web" / "manual.html"
+@pytest.mark.parametrize("pagina", [MANUAL, MANUAL_EN], ids=lambda p: p.name)
+def test_o_manual_esta_publicado(pagina):
+    web = pathlib.Path(__file__).parents[1] / "web" / pagina.name
     assert web.exists()
-    assert web.read_text(encoding="utf-8") == MANUAL.read_text(encoding="utf-8")
+    assert web.read_text(encoding="utf-8") == pagina.read_text(encoding="utf-8")
+
+
+def test_as_duas_versoes_do_manual_tem_os_mesmos_exemplos():
+    assert len(exemplos()) == len(exemplos(MANUAL_EN))

@@ -5,6 +5,13 @@
 Um ambiente simbólico em que a equação escrita pelo usuário **é** um objeto
 manipulável — e em que nenhuma ambiguidade é adivinhada.
 
+> **In English.** The interface has a PT/EN switch in the header (or open
+> `caderno.html?lang=en`). Commands have English names that work in either
+> language — `g = metric(…)`, `\mu, \nu = indices`, `prove(eq3, eq1)`,
+> `solve(eq1)`, `in_chart(eq2)` — and the engine's messages come back in
+> English. The manual is `manual-en.html`, and the exercise book is
+> `tutorial.html`, the English twin of `apostila.html`.
+
 ## O problema que ele existe para resolver
 
 LaTeX é tipografia, não semântica. Entregar LaTeX a um parser produz erro

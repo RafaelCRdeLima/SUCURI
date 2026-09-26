@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUCURI — manual</title>
+<meta name="description" content="How to use Sucuri: writing, declaring, solving, and what each answer means.">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="sucuri.css">
+<link rel="stylesheet" href="caderno.css">
+<link rel="stylesheet" href="manual.css">
+</head>
+<body>
+<div class="app">
+
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-label="SUCURI">
+    <path d="M68 28 C68 16, 44 14, 40 28 C36 42, 62 50, 62 66 C62 80, 40 82, 34 72"
+          fill="none" stroke="#8FBE45" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="68" cy="28" r="9" fill="#8FBE45"/>
+    <g transform="rotate(-31 34 72)"><rect x="27" y="65" width="14" height="14" rx="1.5" fill="#8FBE45"/></g>
+  </svg>
+  <span class="wordmark">SUCURI</span>
+  <a class="modo" href="caderno.html?lang=en">notebook</a>
+  <a class="modo" href="index.html?lang=en">one equation</a>
+  <a class="modo" href="tutorial.html">tutorial</a>
+  <a class="modo" href="manual.html" lang="pt-BR">português</a>
+  <span class="arquivo">manual</span>
+</header>
+
+<main class="manual">
+
+<p class="abertura">You write mathematics in LaTeX. Sucuri reads it as SymPy, and
+shows what it understood — in textbook mathematics, and in code you can
+copy. <strong>Where the notation is ambiguous, it asks instead of
+guessing.</strong> That is the only rule, and everything here follows from it.</p>
+
+<p class="nota-manual">To see Sucuri facing exercises from real differential
+geometry problem sets — what it solves, what it doesn't, and why —, there is the
+<a href="tutorial.html">tutorial</a>.</p>
+
+<p class="nota-manual">Every example in this manual is run by the test
+suite on every change. What is written here as output is the output.</p>
+
+<nav class="sumario">
+  <a href="#escrever">1. Writing</a> ·
+  <a href="#pergunta">2. When it asks</a> ·
+  <a href="#declarar">3. Declaring</a> ·
+  <a href="#verbos">4. The verbs</a> ·
+  <a href="#respostas">5. The answers</a> ·
+  <a href="#nao-acha">6. When it finds nothing</a> ·
+  <a href="#indices">7. Tensors with indices</a> ·
+  <a href="#componentes">8. Components</a> ·
+  <a href="#sem-indice">9. Without indices</a> ·
+  <a href="#formas">10. Forms</a> ·
+  <a href="#traducao">11. From one notation to the other</a> ·
+  <a href="#caderno">12. The notebook</a> ·
+  <a href="#limites">13. What it does not do yet</a>
+</nav>
+
+<h2 id="escrever">1. Writing and running</h2>
+
+<p>In the <a href="caderno.html?lang=en">notebook</a>, type in the cell and press
+<kbd>Shift</kbd>+<kbd>Enter</kbd>. Every cell that becomes mathematics gets a
+name — <code>eq1</code>, <code>eq2</code> — and that is how you refer to it
+later.</p>
+
+<div class="exemplo">
+  <code class="entrada">x^2 + 1</code>
+  <samp class="saida">x**2 + 1</samp>
+</div>
+
+<h2 id="pergunta">2. When it asks</h2>
+
+<p>Not all notation says what it means. <code>y''</code> may be the second
+derivative of <em>y</em>, or a symbol called “y double prime” — both are
+written the same way, and Sucuri does not choose for you:</p>
+
+<div class="exemplo">
+  <code class="entrada">y'' + y = 0</code>
+  <samp class="pergunta">y''  →  derivative of order 2 of y  |  symbol named y''</samp>
+</div>
+
+<p>You answer by clicking the right reading — or, better, by <strong>declaring</strong>,
+which answers once for the whole notebook.</p>
+
+<h2 id="declarar">3. Declaring</h2>
+
+<p>Declaring does not pick between the readings: <strong>it dissolves the ambiguity</strong>. If
+<em>y</em> is a function of <em>x</em>, then <code>y'</code> can only be
+<em>dy/dx</em> — there is nothing to ask.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <samp class="saida">Eq(y(x) + Derivative(y(x), (x, 2)), 0)</samp>
+</div>
+
+<table class="tabela">
+  <tr><td><code>u = u(t,x)</code></td><td>u is a function of t and x</td></tr>
+  <tr><td><code>e = euler</code></td><td>e is Euler's number, not a symbol</td></tr>
+  <tr><td><code>a = symbol</code></td><td>a is not a function: <code>a(x+1)</code> is a product</td></tr>
+  <tr><td><code>\mu, \nu = indices</code></td><td>tensor indices — <code>indices(3)</code> gives the dimension; <code>indices(d)</code>, a letter</td></tr>
+  <tr><td><code>T = tensor(0,2)</code></td><td>Schutz's type: 0 forms, 2 vectors</td></tr>
+  <tr><td><code>F = tensor(0,2, antisymmetric)</code></td><td>and the symmetry of the slots: <code>symmetric</code>, <code>antisymmetric</code>, <code>riemann</code></td></tr>
+  <tr><td><code>\omega = form(2)</code></td><td>a 2-form — an antisymmetric (0,2)</td></tr>
+  <tr><td><code>g = metric</code></td><td>the metric: lowers and raises indices, and is symmetric</td></tr>
+  <tr><td><code>g = metric(-,+,+,+)</code></td><td>with the signature, written in signs</td></tr>
+  <tr><td><code>g = metric(cartesian)</code></td><td>Euclidean and constant, ∂g = 0; or <code>(-,+,+,+, constant)</code></td></tr>
+  <tr><td><code>x = coordinates</code></td><td>x<sup>i</sup>, the coordinates with an index: ∂<sub>j</sub>x<sup>i</sup> = δ<sup>i</sup><sub>j</sub></td></tr>
+  <tr><td><code>g = det(g)</code></td><td>g without an index is det g<sub>μν</sub>: √−g, ln|g|</td></tr>
+  <tr><td><code>g = metric(…components…)</code></td><td>with the diagonal components (section 8)</td></tr>
+  <tr><td><code>\delta = kronecker</code></td><td>the delta: δ<sup>μ</sup><sub>ν</sub></td></tr>
+  <tr><td><code>\epsilon = levi-civita(tensor)</code></td><td>or <code>(symbol)</code> — the books don't agree</td></tr>
+  <tr><td><code>\nabla = levi-civita</code></td><td>the connection: ∇g = 0, torsion-free</td></tr>
+  <tr><td><code>R = riemann(eq1)</code></td><td>the Riemann tensor, in the convention eq1 writes</td></tr>
+  <tr><td><code>R = ricci(eq2)</code></td><td>R<sub>μν</sub> and R, contractions of the Riemann tensor, in the convention eq2 writes</td></tr>
+  <tr><td><code>\Gamma = christoffel(eq1)</code></td><td>the Christoffel symbols, in the slot order eq1 writes</td></tr>
+  <tr><td><code>R = curvature</code></td><td>R(U,X)W is the curvature operator, index-free</td></tr>
+  <tr><td><code>\star = hodge</code></td><td>the Hodge dual (needs the signature)</td></tr>
+</table>
+
+<p>Parentheses, as in a book. Written with the same name on both sides it is a
+tautology — nobody writes <code>u = u(t,x)</code> as an equation —, and that
+repetition is what separates a declaration from mathematics: <code>u(t,x)</code> alone
+is still an expression.</p>
+
+<h2 id="verbos">4. The verbs</h2>
+
+<p>They are few, and closed on purpose. If you could write Python here, the
+bridge this program is would stop being mandatory — and what would be left is a Jupyter
+with extra steps.</p>
+
+<h3>solve</h3>
+
+<p>A single verb; the object decides the computation. A differential equation goes to the
+ODE solver, with the solution <strong>checked by substitution</strong>; an algebraic
+equation goes to <code>solve</code>.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <code class="entrada">solve(eq1)</code>
+  <samp class="saida">Eq(y(x), C1*sin(x) + C2*cos(x))</samp>
+  <p class="explica">plus the line <em>check: substituted into the equation, remainder 0</em>.
+    Without it the answer is not presented as a conclusion.</p>
+</div>
+
+<h3>evaluate</h3>
+
+<div class="exemplo">
+  <code class="entrada">\int_0^1 x^2</code>
+  <code class="entrada">evaluate(eq1)</code>
+  <samp class="saida">1/3</samp>
+  <p class="explica">with the approximation <code>≈ 0.333333333333</code> beside it —
+    never in place of the exact value.</p>
+</div>
+
+<p>An indefinite integral returns the <strong>family</strong>, with the constant:</p>
+
+<div class="exemplo">
+  <code class="entrada">\int \sin x\,dx</code>
+  <code class="entrada">evaluate(eq1)</code>
+  <samp class="saida">-cos(x)</samp>
+  <p class="explica">shown as <code>−cos(x) + C</code>: the result is the
+    whole family, and the copyable code carries one antiderivative of it.</p>
+</div>
+
+<h3>simplify</h3>
+
+<div class="exemplo">
+  <code class="entrada">\frac{x^2 - 1}{x - 1}</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">x + 1</samp>
+</div>
+
+<h3>export</h3>
+
+<p>The most honest request a program like this gets: <em>give me the code
+you used</em>. What comes out runs on its own, without Sucuri.</p>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' + y = 0</code>
+  <code class="entrada">export(eq1)</code>
+  <samp class="saida">eq1 = Eq(y(x) + Derivative(y(x), (x, 2)), 0)</samp>
+  <p class="explica">together with the symbol declarations, the solver call and
+    the line that checks the solution.</p>
+</div>
+
+<h3>separate and check</h3>
+
+<p>For partial differential equations. SymPy's <code>pdsolve</code> solves
+little — it does not solve the wave equation —, but separating variables and checking
+a candidate solve the problem the classical way.</p>
+
+<div class="exemplo">
+  <code class="entrada">u = u(t,x)</code>
+  <code class="entrada">c = symbol</code>
+  <code class="entrada">\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}</code>
+  <code class="entrada">separate(eq1)</code>
+  <samp class="saida">Eq(Derivative(T(t), (t, 2)), k*T(t))</samp>
+  <p class="explica">and the equation in x, each with its own solution — and each
+    with a name (<code>eq2</code>, <code>eq3</code>), so you can carry on:
+    <code>solve(eq2)</code>.</p>
+</div>
+
+<p><strong>Separating does not solve the equation</strong>, and the result says so: it assumes
+the solution is a product. What comes out are the modes; the general solution is their
+superposition, and separation does not prove it is complete.</p>
+
+<p>And <code>check</code> goes the opposite way from solve: <strong>you
+propose, it tests</strong>.</p>
+
+<div class="exemplo">
+  <code class="entrada">u = u(t,x)</code>
+  <code class="entrada">c = symbol</code>
+  <code class="entrada">F = F(z)</code>
+  <code class="entrada">G = G(z)</code>
+  <code class="entrada">\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}</code>
+  <code class="entrada">u = F(x - c t) + G(x + c t)</code>
+  <code class="entrada">check(eq1, eq2)</code>
+  <samp class="saida">candidata verificada</samp>
+  <p class="explica">d'Alembert: remainder 0. A wrong candidate comes out as
+    <em>candidate NOT verified</em>, with the remainder left over; and when the
+    checker cannot test, it says so instead of accusing.</p>
+</div>
+
+<h3>prove</h3>
+
+<p>The goal first, then the hypotheses — only the named ones. Writing an
+equation in the notebook is not asserting it, and a proof that used the scratch
+computation on the line above would prove nothing.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U X = \nabla_X U</code>
+  <code class="entrada">\nabla_Y \nabla_U X = \nabla_Y \nabla_X U</code>
+  <code class="entrada">prove(eq2, eq1)</code>
+  <samp class="saida">nabla_Y(eq1)</samp>
+  <p class="explica">each line of the answer says which hypothesis it came from and what
+    was done with it — here, ∇<sub>Y</sub> applied to both sides of eq1 —, and the
+    sum is checked again before the ∎. Index-free, it works with the connection and
+    with forms (sections 9 and 10); when it finds nothing, it says that not finding is not proof
+    that it is false.</p>
+</div>
+
+<p>With indices, the same verb. The relations the search draws from each hypothesis
+are those that hold for any tensor equation: permuting the free indices
+(and contracting them, with the metric), multiplying by a tensor, applying ∇ once or
+twice. With Levi-Civita and the Riemann tensor declared, the first Bianchi
+identity enters as a theorem, and the proof cites it when it uses it.</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b = indices</code>
+  <code class="entrada">T = tensor(2, 0, symmetric)</code>
+  <code class="entrada">X = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = metric</code>
+  <code class="entrada">\nabla_a T^{ab} = 0</code>
+  <code class="entrada">\nabla_a X_b + \nabla_b X_a = 0</code>
+  <code class="entrada">\nabla_a (T^{ab} X_b) = 0</code>
+  <code class="entrada">prove(eq3, eq1, eq2)</code>
+  <samp class="saida">1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)</samp>
+  <p class="explica">the current of a Killing field is conserved: eq1
+    times X, plus ½ eq2 times T. The two notations do not mix in a proof:
+    an index-free hypothesis in a goal with indices is refused.</p>
+</div>
+
+<h3>independent, in_components, linearize</h3>
+
+<p>Three verbs for what index algebra cannot reach on its own, all
+in a dimension given as a number — <code>indices(4)</code>:</p>
+
+<table class="tabela">
+  <tr><td><code>independent(T, eq…)</code></td><td>how many components of T
+    remain, given the declared symmetries and the given equations (linear in T).
+    Zero: only the null tensor has these properties. The Riemann tensor with Levi-Civita
+    brings the first Bianchi identity along.</td></tr>
+  <tr><td><code>in_components(eq)</code></td><td>checks the identity with the
+    most general tensor the declarations allow and an arbitrary metric,
+    component by component.</td></tr>
+  <tr><td><code>linearize(eq, h)</code></td><td>g = η + εh to first
+    order in ε: opens ∇ into Γ and Γ into ∂g, substitutes g and ∂g, and truncates.</td></tr>
+</table>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = indices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = metric</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\mu\nu} = \frac{1}{2} R g_{\mu\nu}</code>
+  <code class="entrada">in_components(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">in two dimensions, the Einstein tensor vanishes
+    identically. With <code>indices(3)</code>, <code>False</code>.</p>
+</div>
+
+<h3>contract, indices</h3>
+
+<p><code>contract</code> lowers and raises indices with the metric (section 7);
+<code>indices</code> writes with indices what was written without them (section 11). The
+component verbs — <code>christoffel</code>, <code>riemann</code>,
+<code>ricci</code>, <code>scalar</code> — are in section 8.
+<code>expand</code> opens ∇ into ∂ and Γ, with indices (section 7) — and
+<code>\Gamma = christoffel(eq1)</code>, with a name on the left, is not the component
+verb: it is the declaration of the Γ convention.</p>
+
+<h2 id="respostas">5. What each answer means</h2>
+
+<table class="tabela">
+  <tr><td class="prov est">established</td>
+      <td>checked. May be cited as a conclusion.</td></tr>
+  <tr><td class="prov sem">unsourced</td>
+      <td>the program found something and could <em>not</em> confirm it.
+          It is not presented as a conclusion.</td></tr>
+  <tr><td class="prov nap">not applicable</td>
+      <td>it is data, not a conclusion — a table, a separation, an intermediate step.</td></tr>
+</table>
+
+<p>And the colours: <span class="pill ok">green</span> decided or checked;
+<span class="pill aviso">amber</span> came from a general rule and nobody looked at
+that case; <span class="pill erro">red</span> blocks you from going on. A scope
+note — “this does not solve the equation” — is green: the computation is right; what it
+does not do is something that needed saying.</p>
+
+<h2 id="nao-acha">6. When it finds nothing</h2>
+
+<div class="exemplo">
+  <code class="entrada">y = y(x)</code>
+  <code class="entrada">y'' = 6 y^2</code>
+  <code class="entrada">solve(eq1)</code>
+  <samp class="saida">no solution found</samp>
+  <p class="explica">with the patterns SymPy tried, and the reminder that
+    matters: <strong>not finding a solution is not proof that none exists</strong>.
+    For that other question there is the <code>korvin</code> module, which decides
+    non-integrability via Galois theory — and which does not ship with the
+    online version.</p>
+</div>
+
+<h2 id="indices">7. Tensors with indices</h2>
+
+<p>An index is not an exponent, and SymPy's LaTeX parser does not know the difference:
+without a declaration, <code>A^\mu</code> would become <em>A raised to μ</em>. You are the one
+who decides:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">g = tensor(0, 2)</code>
+  <code class="entrada">g_{\mu\nu} A^\mu A^\nu</code>
+  <samp class="saida">g(-L_0, -L_1)*A(L_0)*A(L_1)</samp>
+  <p class="explica">all indices contracted. The valence appears on screen,
+    because it is the first thing you check in a tensor.</p>
+</div>
+
+<p>And consistency comes along — this is a relativity error, not a
+typo, and nobody spots it by eye:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">A^\mu B_\mu + C^\nu</code>
+  <samp class="erro-esperado">the terms of the sum have different free indices</samp>
+</div>
+
+<p>Once the metric is declared, indices go down and up — <code>contract</code> applies the
+convention <em>A<sub>μ</sub> ≡ g<sub>μν</sub>A<sup>ν</sup></em>:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">g = metric</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">contract(eq1)</code>
+  <samp class="saida">A(-mu)</samp>
+  <p class="explica">It requires <code>g = metric</code> because lowering an index is a
+    convention <em>of the metric</em>, not of any (0,2) — and nothing in the
+    expression distinguishes the two cases. Without the declaration, it refuses.</p>
+</div>
+
+<h3>Symmetry</h3>
+
+<p>And the symmetry of the slots is declared together with the type. It serves both notations:
+with indices, <code>simplify</code> uses it; index-free, <code>prove</code> does.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">F = tensor(0, 2, antisymmetric)</code>
+  <code class="entrada">h = tensor(2, 0, symmetric)</code>
+  <code class="entrada">F_{\mu\nu} h^{\mu\nu}</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">antisymmetric contracted with symmetric. The metric is
+    symmetric without needing to be told; and symmetry on a (1,1) is refused — swapping
+    an upper index with a lower one needs the metric, and then it is another tensor.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">a, b, c, d = indices</code>
+  <code class="entrada">R = tensor(0, 4, riemann)</code>
+  <code class="entrada">R_{abcd} - R_{cdab}</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">the symmetries of the (0,4) Riemann tensor: antisymmetric in each pair,
+    symmetric under exchange of the pairs — the same in every book. The cyclic identity
+    does not enter: it is a theorem, and needs zero torsion.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">T = tensor(0, 2)</code>
+  <code class="entrada">T_{(\mu\nu)} + T_{[\mu\nu]} - T_{\mu\nu}</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">(…) symmetrizes, […] antisymmetrizes, with the 1/n! factor of
+    Wald, MTW and Carroll; what is between bars, <code>S_{(\mu|\rho|\nu)}</code>,
+    is left out. Without the indices declared, it refuses: SymPy's parser
+    drops the parentheses and would read T<sub>(μν)</sub> as T<sub>μν</sub>.</p>
+</div>
+
+<h3>Kronecker and Levi-Civita</h3>
+
+<p>The Kronecker delta and Levi-Civita are declared too — δ because
+<code>\delta</code> also means variation, and ε because there are two readings:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">A = tensor(1, 0)</code>
+  <code class="entrada">\delta^\mu_\nu A^\nu</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">A(mu)</samp>
+  <p class="explica">and <code>\delta^\mu_\mu</code> becomes the dimension.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\epsilon = levi-civita</code>
+  <samp class="erro-esperado">levi-civita(symbol) or levi-civita(tensor)?</samp>
+  <p class="explica">the symbol is ±1 in every chart and is not raised or lowered
+    with g; the tensor is √|g| times the symbol, and is raised and lowered. The two
+    readings give different results in <code>contract</code>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = indices</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = metric(-,+,+,+)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">-24</samp>
+  <p class="explica">the sign is (−1)<sup>s</sup>, with s the number of minus signs
+    in the signature — which is why it is declared with the signs, and
+    <code>metric(lorentzian)</code> alone is refused. With the symbol, it is +24
+    in any signature.</p>
+</div>
+
+<h3>Derivative with an index</h3>
+
+<p>And the derivative with an index is an object of its own, not a factor — ∂
+commutes, ∇ does not, and both obey Leibniz:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">\partial_\mu \partial_\nu \phi - \partial_\nu \partial_\mu \phi</code>
+  <code class="entrada">simplify(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">with ∇ in place of ∂, it does not vanish: ∇<sub>μ</sub>∇<sub>ν</sub>
+    − ∇<sub>ν</sub>∇<sub>μ</sub> is torsion and curvature, and nothing is assumed.</p>
+</div>
+
+<p>With the connection declared, the commutator becomes curvature — in the
+convention of the definition you wrote:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = indices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu W_\rho - \nabla_\nu \nabla_\mu W_\rho</code>
+  <code class="entrada">simplify(eq2)</code>
+  <samp class="saida">-R(L_0, -rho, -mu, -nu)*W(-L_0)</samp>
+  <p class="explica">the sign and slot order of the Riemann tensor vary from book
+    to book; <code>riemann(eq1)</code> reads them off the identity you wrote. And
+    <code>\nabla = levi-civita</code> is what makes ∇g = 0 — without it, no.</p>
+</div>
+
+<p>And ∇ opens into ∂ and Γ. The slot order of Γ also varies — Carroll puts the
+derivative index first, Reall last — and so it too is read from the
+definition. <code>expand(eq)</code> replaces each ∇ with ∂ plus one Γ per index
+(+ for upper, − for lower); <code>expand(eq, g)</code> also writes
+each Γ in terms of the metric, which only holds — and is only done — with
+<code>\nabla = levi-civita</code>. For an equation, the answer is
+<code>True</code> when both sides agree.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \sigma = indices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = metric</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\partial_\lambda g_{\mu\nu} = g_{\mu\sigma} \Gamma^\sigma{}_{\nu\lambda} + g_{\nu\sigma} \Gamma^\sigma{}_{\mu\lambda}</code>
+  <code class="entrada">expand(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">∂<sub>λ</sub>g<sup>μν</sup> = −g<sup>μα</sup>g<sup>νβ</sup>∂<sub>λ</sub>g<sub>αβ</sub>
+    — what “inverse” means — is applied by <code>simplify</code> whenever
+    a metric is declared.</p>
+</div>
+
+<h2 id="componentes">8. Components in a chart</h2>
+
+<p>Index notation gives the <em>structure</em> — that <code>g</code> has two
+lower indices. It does not say what <code>g</code> <em>is</em>. For Christoffel,
+Ricci and Riemann you need the other side: components, in a chart. Declare the
+coordinates and then the metric, by its diagonal:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordinates(t, r, \theta, \phi)</code>
+  <code class="entrada">g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <samp class="saida">g is the metric in (t, r, \theta, \phi), diagonal, with 4 components</samp>
+  <p class="explica">Schwarzschild. The diagonal, and not <code>\begin{pmatrix}</code>,
+    because SymPy's LaTeX parser does not read matrices — and because that is how
+    books give almost every metric that matters.</p>
+</div>
+
+<p>From there come <code>christoffel</code>, <code>riemann</code>, <code>ricci</code>
+and <code>scalar</code>. What comes back are <em>components</em>, and so the
+answer always says which coordinates it is in: changing chart changes all of
+them.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordinates(t, r, \theta, \phi)</code>
+  <code class="entrada">g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">0 nonzero component(s)</samp>
+  <p class="explica">Vanishing Ricci — Schwarzschild is a vacuum solution. This is
+    the sanity check of all of relativity, and the program does it in seconds.
+    Unlike a component, “Ricci vanishes” does not depend on the chart.</p>
+</div>
+
+<p>And if the metric has components, <code>evaluate</code> gives the other side:
+not the structure, the value.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordinates(t, r, \theta, \phi)</code>
+  <code class="entrada">g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">\mu, \nu = indices</code>
+  <code class="entrada">A = tensor(1,0)</code>
+  <code class="entrada">g_{\mu\nu} A^{\nu}</code>
+  <code class="entrada">evaluate(eq1)</code>
+  <samp class="saida">A_{t}</samp>
+  <p class="explica">the four components of A<sub>μ</sub>, each as a function
+    of those of A<sup>μ</sup> — which nobody declared, and so they enter as names
+    (<code>A__t</code> is A<sup>t</sup> in SymPy's convention, which re-enters
+    without becoming a power).</p>
+</div>
+
+<p>What the table prints has a name, and a name is a target for a verb:</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordinates(t, r, \theta, \phi)</code>
+  <code class="entrada">g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">christoffel(g)</code>
+  <code class="entrada">evaluate(\Gamma^{r}_{tt})</code>
+  <samp class="saida">M*(-2*M + r)/r**3</samp>
+  <p class="explica">without the double braces the table uses — braces are TeX
+    typography, not identity. And a component that is zero does <em>not</em> go
+    into the table (55 zeros would hide the nine that matter) but answers when
+    asked: <code>evaluate(\Gamma^{t}_{rr})</code> gives <code>0</code>.</p>
+</div>
+
+<h2 id="sem-indice">9. Without indices: the connection</h2>
+
+<p>Without indices, the vector is the abstract object, and the same declaration
+says what <code>\nabla_U</code> means: the derivative in the direction of U.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U \nabla_X U - \nabla_X \nabla_U U</code>
+  <samp class="saida">nabla_U(nabla_X(U)) - nabla_X(nabla_U(U))</samp>
+  <p class="explica">application, not product: the order stays in the structure,
+    and the two terms do not cancel. Without the declaration the parser would read
+    <code>X*nabla_{U}</code>, which commutes — and the curvature would vanish.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\nabla_V X</code>
+  <samp class="erro-esperado">'V' was not declared</samp>
+  <p class="explica">∇<sub>V</sub> and ∇<sub>μ</sub> are written the same way. What
+    decides between direction and index is the declaration.</p>
+</div>
+
+<p>With <code>R = curvature</code>, <code>R(U,X)W</code> is the operator applied to
+W, not R times the parenthesis. And between two vectors the bracket can only be
+the Lie bracket:</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvature</code>
+  <code class="entrada">R(U,X)U = \nabla_U \nabla_X U - \nabla_X \nabla_U U - \nabla_{[U,X]} U</code>
+  <samp class="saida">Eq(R(U, X)(U), nabla_U(nabla_X(U)) - nabla_X(nabla_U(U)) - nabla_{[U, X]}(U))</samp>
+  <p class="explica">the declaration gives R's role, not its sign: the argument
+    order and the sign vary from book to book, and for reading that does not
+    matter.</p>
+</div>
+
+<p>And with the reading comes the proof. <code>prove</code> takes the goal and the
+hypotheses — only the named ones: writing an equation in the notebook is not
+asserting it.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvature</code>
+  <code class="entrada">[U,X] = 0</code>
+  <code class="entrada">\nabla_U U = 0</code>
+  <code class="entrada">\nabla_U X - \nabla_X U = [U,X]</code>
+  <code class="entrada">R(U,X)U = \nabla_U \nabla_X U - \nabla_X \nabla_U U - \nabla_{[U,X]} U</code>
+  <code class="entrada">\nabla_U \nabla_U X = R(U,X)U</code>
+  <code class="entrada">prove(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">proved from eq1, eq2, eq3, eq4</samp>
+  <p class="explica">the geodesic deviation equation. Each step of the table says
+    which hypothesis it came from and what was done to it — <code>nabla_U(eq3)</code>
+    is eq3 with ∇<sub>U</sub> applied to both sides — and the sum is checked again
+    before the ∎. On its own the engine knows only what holds for any connection —
+    linearity, Leibniz; the sign of R comes from the definition you gave, and with
+    the opposite sign the same call does not prove.</p>
+</div>
+
+<p>A definition holds for any vector. With <code>\forall</code> it is stated
+once, and the proof instantiates it wherever it needs to:</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">R = curvature</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">[U,X] = 0</code>
+  <code class="entrada">\nabla_U U = 0</code>
+  <code class="entrada">\nabla_U \nabla_U X = R(U,X)U</code>
+  <code class="entrada">prove(eq5, eq1, eq2, eq3, eq4)</code>
+  <samp class="saida">eq1[A→U, B→X, W→U]</samp>
+  <p class="explica">the table says in which instance each general hypothesis was
+    used. The separator after the ∀ list is mandatory — a colon,
+    <code>\colon</code>, <code>\quad</code> — and the bound variables do not
+    leak into the lines below.</p>
+</div>
+
+<p>A scalar is whatever was not declared a tensor, and <code>\nabla_U f</code> is
+the directional derivative U(f). Every symbol that is not a number is treated as a
+function — the safe side: if c is constant, U(c) = 0 is a special case, and a
+proof that needs it asks for the hypothesis.</p>
+
+<div class="exemplo">
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U f = 0</code>
+  <code class="entrada">\nabla_U (f X) = f \nabla_U X</code>
+  <code class="entrada">prove(eq2, eq1)</code>
+  <samp class="saida">eq1·X</samp>
+  <p class="explica">Leibniz: ∇<sub>U</sub>(fX) = U(f)X + f∇<sub>U</sub>X, and
+    the scalar hypothesis enters multiplied by X. The combination that closes a
+    proof uses numbers only: multiplying by a function is an explicit step, and
+    fX = fU does not give X = U — false where f vanishes.</p>
+</div>
+
+<p>With <code>g = metric</code>, <code>g(X,Y)</code> is the inner product —
+symmetric and linear in each slot, with no hypothesis. Metric compatibility is a
+hypothesis, and with it and zero torsion the Koszul formula follows:</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">g = metric</code>
+  <code class="entrada">\forall A, B, C: \nabla_A g(B,C) = g(\nabla_A B, C) + g(B, \nabla_A C)</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">2 g(\nabla_X Y, Z) = \nabla_X g(Y,Z) + \nabla_Y g(X,Z) - \nabla_Z g(X,Y) + g([X,Y],Z) - g([X,Z],Y) - g([Y,Z],X)</code>
+  <code class="entrada">prove(eq3, eq1, eq2)</code>
+  <samp class="saida">g(eq2[A→X, B→Y], Z)</samp>
+  <p class="explica">zero torsion placed in the first slot of g: a relation
+    between vectors turned into one between scalars. Without eq2, the same call
+    does not prove.</p>
+</div>
+
+<h2 id="formas">10. Differential forms</h2>
+
+<p>And differential forms, without indices: d, ∧, ι<sub>X</sub>,
+ℒ<sub>X</sub>. <code>\omega = form(2)</code> declares a 2-form;
+<code>\mathrm{d}</code> is always the operator, and <code>d</code> only when it
+acts on a declared form.</p>
+
+<div class="exemplo">
+  <code class="entrada">\omega = form(1)</code>
+  <code class="entrada">\eta = form(2)</code>
+  <code class="entrada">\mathrm{d}(\omega \wedge \eta) = \mathrm{d}\omega \wedge \eta - \omega \wedge \mathrm{d}\eta</code>
+  <code class="entrada">prove(eq1)</code>
+  <samp class="saida">proved from no hypothesis</samp>
+  <p class="explica">d², graded Leibniz, graded commutativity, ι as an
+    antiderivation and Cartan's formula hold with no hypothesis. η∧η = 0 does not
+    pass — η has even degree.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">g = metric(-,+,+,+)</code>
+  <code class="entrada">\star = hodge</code>
+  <code class="entrada">F = form(2)</code>
+  <code class="entrada">\star \star F = -F</code>
+  <code class="entrada">prove(eq1)</code>
+  <samp class="saida">proved from no hypothesis</samp>
+  <p class="explica">⋆⋆ = (−1)<sup>p(n−p)+s</sup>: with Euclidean signature
+    the same call does not prove. Hodge requires the signature to be
+    declared; the orientation, no — it flips the sign of ⋆, not that of
+    ⋆⋆.</p>
+</div>
+
+<h2 id="traducao">11. From one notation to the other</h2>
+
+<p>And from one notation to the other: <code>indices</code> writes with indices
+what was proved without them.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \alpha, \beta = indices</code>
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U X</code>
+  <code class="entrada">indices(eq1)</code>
+  <samp class="saida">U(L_0)*D_X(-L_0, mu)</samp>
+  <p class="explica">U<sup>α</sup>∇<sub>α</sub>X<sup>μ</sup>. The curvature
+    R(U,X)W is translated in the convention of <code>riemann(eq)</code>, and the
+    translation states in a note what it assumed about the index-free R.</p>
+</div>
+
+<h2 id="caderno">12. The notebook</h2>
+
+<table class="tabela">
+  <tr><td><strong>New</strong></td><td>erases what is written and what has accumulated</td></tr>
+  <tr><td><strong>Open</strong> / <strong>Save</strong></td>
+      <td>a text file, cells separated by <code>%%</code>; opens in
+          any editor</td></tr>
+  <tr><td><strong>Run all</strong></td><td>redoes everything from what is written, in order</td></tr>
+  <tr><td><strong>Restart</strong></td>
+      <td>throws away <em>only</em> what has accumulated: <code>eq1</code> ceases to exist,
+          and not one line of what you wrote moves</td></tr>
+</table>
+
+<p>Between two cells there is a <strong>+</strong> to insert; in the corner of each
+one, a <strong>×</strong> to delete, with <em>undo</em> in the notice
+bar.</p>
+
+<p><strong>Enter</strong> breaks the line; <strong>Shift+Enter</strong> runs. A
+single cell can hold more than one instruction, one per line, and each answers in
+order:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu = indices
+A = tensor(1,0)</code>
+  <samp class="saida">A is a tensor of type (1,0)</samp>
+  <p class="explica">it only chains when <em>every</em> line is a recognized
+    instruction. A LaTeX equation may span two lines, and splitting it would give
+    two meaningless halves instead of an error.</p>
+</div>
+
+<h2 id="limites">13. What it does not do yet</h2>
+
+<p>Saying this is part of the job. Nothing below fails silently — everything is
+refused with the reason.</p>
+
+<ul class="limites">
+  <li><strong>Functions the parser does not know</strong>:
+    <code>\operatorname{arsinh}</code>, <code>\coth</code>,
+    <code>\left\|·\right\|</code>. SymPy <em>has</em> these functions; it is the
+    LaTeX parser that does not read them.</li>
+  <li><strong><code>\frac{d}{dx}</code> as an operator</strong> is not a declared
+    site: it works because SymPy's grammar has a rule for it, and where that rule
+    does not reach, the silence returns.</li>
+  <li><strong>Systems of equations</strong>: one verb at a time, one equation at a
+    time.</li>
+  <li><strong>Non-diagonal metric</strong>: the declaration asks for the diagonal.
+    Kerr, with its cross term <em>dt dφ</em>, does not go in yet.</li>
+  <li><strong><code>prove</code></strong> chains hypotheses by linear algebra,
+    with a finite search: a proof that needs an <em>idea</em> — introducing a
+    quantity that does not appear in the statement — does not come out, and a proof
+    that needs many chained instances may take a while. With indices, it goes up to
+    ∇∇ of the hypotheses.</li>
+  <li><strong>Forms</strong>: the formula for dω on vectors enters as a
+    hypothesis, because its factor changes with the normalization; the codifferential
+    δ = ±⋆d⋆ does not come built in, because the sign is a convention.</li>
+  <li><strong>Translation</strong>: only from index-free to indexed; ∀ and forms
+    are not translated.</li>
+</ul>
+
+<p class="fecho">The code, the audits and the full list of limitations are at
+<a href="https://github.com/RafaelCRdeLima/SUCURI">github.com/RafaelCRdeLima/SUCURI</a>.</p>
+
+</main>
+
+<footer>
+  <span>manual</span>
+  <span>Sucuri</span>
+</footer>
+
+</div>
+</body>
+</html>
