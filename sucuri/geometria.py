@@ -103,7 +103,8 @@ def nao_nulas(arranjo, simbolos, posto, cima=1, escrita=None, de_volta=None):
     for indices in _combinacoes(n, posto):
         valor = sp.simplify(arranjo[indices])
         if de_volta:
-            valor = sp.simplify(valor.subs(de_volta, simultaneous=True))
+            valor = _sem_subs(sp.simplify(valor.subs(de_volta, simultaneous=True)),
+                              de_volta)
         rotulo = _rotulo(simbolos, indices, cima, escrita)
         todas[rotulo] = valor
         if valor != 0:
@@ -147,8 +148,29 @@ def escalar(metrica):
     inversa = metrica.matriz().inv()
     n = len(metrica.simbolos)
     bruto = sum(inversa[i, j] * R[i, j] for i in range(n) for j in range(n))
-    return sp.simplify(sp.sympify(bruto).subs(metrica.de_volta,
-                                              simultaneous=True))
+    return _sem_subs(sp.simplify(sp.sympify(bruto).subs(metrica.de_volta,
+                                                        simultaneous=True)),
+                     metrica.de_volta)
+
+
+def _sem_subs(valor, de_volta=None):
+    """Subs(Derivative(f(ξ), ξ), ξ, r) é f'(r): o diffgeom deixa a derivada
+    avaliada por substituição, que está certa e é ilegível.
+
+    E o ponto da substituição é o campo escalar do diffgeom, não o símbolo r:
+    a troca de volta não entra no ponto de um Subs, e o campo vazava para a
+    saída. O ponto é trocado aqui, junto com a avaliação."""
+    valor = sp.sympify(valor)
+    if not valor.has(sp.Subs):
+        return valor
+    de_volta = de_volta or {}
+
+    def avaliar(e):
+        pontos = [de_volta.get(p, p) for p in e.point]
+        return e.expr.subs(dict(zip(e.variables, pontos)))
+
+    # Sem simplify depois: ele reescreve a derivada de volta como Subs.
+    return valor.replace(lambda e: isinstance(e, sp.Subs), avaliar)
 
 
 def _simbolo_componente(base, coordenada, cima):

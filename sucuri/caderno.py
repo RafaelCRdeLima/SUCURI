@@ -62,7 +62,7 @@ _RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*riemann\s*\(\s*(" +
 # uma expressão legítima — aplicação, ou produto, que é justamente um sítio
 # ambíguo — e engoli-la como declaração seria decidir por quem escreveu.
 # `u = u(t,x)` é tautologia: ninguém escreve isso como equação.
-_RE_DECLARA = re.compile(r"^\s*([A-Za-z]\w*)\s*=\s*\1\s*\([^)]*\)\s*$")
+_RE_DECLARA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*\1\s*\([^)]*\)\s*$")
 
 # `x = coordenadas(t, r, \theta, \phi)` e `g = métrica(...)`: as componentes.
 # A métrica vai pela DIAGONAL porque o parser de LaTeX não lê matriz —

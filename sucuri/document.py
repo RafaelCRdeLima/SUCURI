@@ -155,7 +155,7 @@ def _canonizar(expr):
         lambda e: sp.log(e.args[0], e.args[1]))
 
 
-_RE_DECLARACAO = re.compile(r"^\s*([A-Za-z][\w]*)\s*(?:=\s*\1\s*)?"
+_RE_DECLARACAO = re.compile(r"^\s*(\\?[A-Za-z][\w]*)\s*(?:=\s*\1\s*)?"
                             r"\(\s*([^)]*)\s*\)\s*$")
 
 
@@ -176,7 +176,9 @@ def _declaracao(texto):
     if not m:
         return texto.strip(), None
     args = tuple(v.strip() for v in m.group(2).split(",") if v.strip())
-    return m.group(1), args
+    # \phi = \phi(x): o nome grego se escreve com barra, e a função se chama
+    # phi — é assim que a leitura de \phi o encontra.
+    return m.group(1).lstrip("\\"), args
 
 
 def declaracoes(texto):
