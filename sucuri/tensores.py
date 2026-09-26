@@ -586,7 +586,10 @@ u, e não L_0.
     """
     from .derivadas import latex as _latex
     texto = _latex(expr)
-    if espaco is None or not isinstance(expr, TensExpr):
+    tensorial = isinstance(expr, TensExpr) or (
+        isinstance(expr, sp.Equality)
+        and any(isinstance(l, TensExpr) for l in (expr.lhs, expr.rhs)))
+    if espaco is None or not tensorial:
         return texto
     for k, nome in enumerate(mudos):
         escrito = espaco.escrita.get(nome, nome)

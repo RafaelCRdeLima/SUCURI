@@ -495,6 +495,21 @@ numa forma declarada.</p>
     ⋆⋆.</p>
 </div>
 
+<p>E de uma notação à outra: <code>indices</code> escreve com índice o que
+foi provado sem.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \alpha, \beta = índices</code>
+  <code class="entrada">U = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla_U X</code>
+  <code class="entrada">indices(eq1)</code>
+  <samp class="saida">U(L_0)*D_X(-L_0, mu)</samp>
+  <p class="explica">U<sup>α</sup>∇<sub>α</sub>X<sup>μ</sup>. A curvatura
+    R(U,X)W se traduz na convenção de <code>riemann(eq)</code>, e a tradução
+    diz numa nota o que supôs sobre R sem índice.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois

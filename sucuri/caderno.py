@@ -108,6 +108,7 @@ VERBOS = {
     "separar": "separar", "separate": "separar",
     "conferir": "conferir", "check": "conferir", "verificar": "conferir",
     "contrair": "contrair", "contract": "contrair",
+    "indices": "indices", "índices": "indices", "indexar": "indices",
     **VERBOS_GEOMETRIA,
 }
 
@@ -758,6 +759,8 @@ class Caderno:
             return {"codigo": self.exportar(alvo), "alvo": alvo}
         if verbo == "contrair":
             return self._contrair(alvo, expressao)
+        if verbo == "indices":
+            return self._traduzir(alvo, expressao)
         if verbo == "avaliar":
             if isinstance(expressao.to_sympy(), TensExpr):
                 return self._componentes(alvo, expressao)
@@ -770,7 +773,17 @@ class Caderno:
             return d
         if verbo == "simplificar":
             objeto = expressao.to_sympy()
-            if isinstance(objeto, TensExpr):
+            if isinstance(objeto, sp.Equality) and any(
+                    isinstance(l, TensExpr) for l in (objeto.lhs, objeto.rhs)):
+                # Igualdade entre tensores: simplifica a diferença, e diz se
+                # os dois lados coincidem.
+                from .tensores import simplificar as _simplificar
+                espaco = self.sessao.documento()[0].espaco
+                diferenca = _simplificar(objeto.lhs - objeto.rhs, espaco)
+                objeto = sp.true if diferenca == 0 else sp.Eq(
+                    _simplificar(objeto.lhs, espaco),
+                    _simplificar(objeto.rhs, espaco), evaluate=False)
+            elif isinstance(objeto, TensExpr):
                 # O simplify do SymPy não usa a simetria de um tensor; a
                 # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}
                 # só vira 0 por ela. E a delta declarada é contraída antes.
@@ -820,6 +833,35 @@ class Caderno:
         tabela.append(["usou", texto])
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
+
+    def _traduzir(self, alvo, expressao):
+        """`indices(eq5)` — a mesma igualdade, escrita com índice."""
+        from .tensores import latex_de
+        from .traducao import SemTraducao, traduzir
+        doc = self.sessao.documento()[0]
+        if not self.sessao.indices:
+            return {"erro": "declare os índices antes (\\mu, \\nu, … = "
+                            "índices): é com eles que a tradução se escreve",
+                    "alvo": alvo}
+        espaco = doc.espaco
+        primeiro = _sem_barra(self.sessao.indices[0])
+        try:
+            # Sem canonicalizar: com a métrica, a forma canônica sobe e desce
+            # os mudos, e R^μ{}_{σαβ}U^σ sairia R^{μαβσ}U_σ — igual, e
+            # ilegível. A tradução fica como foi montada.
+            resultado, notas = traduzir(expressao.to_sympy(), espaco,
+                                        doc.tensores_com_graus(),
+                                        espaco.indice(primeiro))
+        except (SemTraducao, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+        mudos = [_sem_barra(n) for n in self.sessao.indices[1:]]
+        nome = self._registrar(resultado)
+        latex = latex_de(resultado, espaco, mudos)
+        return {"alvo": alvo, "exato": sp.sstr(resultado), "latex_exato": latex,
+                "texto": "; ".join(notas) if notas else None,
+                "notas": notas,
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(resultado),
+                              "latex": latex}]}
 
     def _contrair(self, alvo, expressao):
         r"""`g_{\mu\nu}A^\nu` vira `A_\mu`: baixar o índice, de fato.

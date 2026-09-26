@@ -85,3 +85,18 @@ print("  com a definição de sinal oposto, a forma do MTW não sai:")
 mostrar(c, "provar(eq5, eq1, eq2, eq3, eq4)")
 print("  e a com sinal trocado, sim:")
 mostrar(c, "provar(eq6, eq1, eq2, eq3, eq4)")
+
+print("\n--- E com índice, como no livro de física ---")
+c = Caderno()
+for fonte in (r"\mu, \alpha, \beta, \sigma, \rho, \nu = índices",
+              "U = tensor(1,0)", "X = tensor(1,0)", "V = tensor(1,0)",
+              r"\nabla = levi-civita",
+              r"\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho"
+              r" = R^\rho{}_{\sigma\mu\nu} V^\sigma",           # eq1
+              "R = riemann(eq1)", "R = curvatura",
+              r"\nabla_U \nabla_U X = R(U,X)U"):               # eq2
+    mostrar(c, fonte)
+d = c.executar("indices(eq2)").to_dict()
+print(f"  indices(eq2)\n      {d['latex_exato']}")
+for nota in d.get("notas") or []:
+    print(f"      nota: {nota}")

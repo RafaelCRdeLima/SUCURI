@@ -601,6 +601,41 @@ g(R(U,X)Y, W) = −g(Y, R(U,X)W): essa prova precisa introduzir h = g(Y,W) e
 comparar [U,X](h) com U(X(h)) − X(U(h)). Nada disso aparece no enunciado, e a
 busca só instancia o que aparece.
 
+### De uma notação à outra
+
+```
+\nabla = levi-civita
+\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma      eq1
+R = riemann(eq1)
+R = curvatura
+\nabla_U \nabla_U X = R(U,X)U                                                    eq2
+indices(eq2)
+    U^α(U^β ∇_α∇_β X^μ + ∇_α U^β ∇_β X^μ) = R^μ{}_{αβσ} U^α U^β X^σ
+```
+
+A prova sem índice é mais curta e não depende de carta, e o livro de física
+escreve com índice. `indices(eq)` traduz com as regras que as declarações já
+fixaram:
+
+- X vira X^μ;
+- g(X,Y) vira g_{αβ}X^αY^β, e ω(X) vira ω_αX^α;
+- ∇_X Y vira X^α∇_αY^μ, com Leibniz nos produtos;
+- X(f) vira X^α∇_α f;
+- [X,Y] vira X^α∇_αY^μ − Y^α∇_αX^μ com Levi-Civita, e com ∂ sem ela;
+- R(U,X)W segue a convenção de `riemann(eq)`.
+
+Para traduzir R(U,X)W, a mesma letra tem de estar declarada `curvatura` e
+`riemann(eq)`. A tradução supõe então R(U,X) = ∇_U∇_X − ∇_X∇_U − ∇_{[U,X]}, que
+é como a definição com índice a lê, e diz isso numa nota.
+
+As duas notações falam da mesma coisa, e isso se confere. A compatibilidade
+com a métrica, escrita sem índice e traduzida, dá `True` em `simplificar` com
+Levi-Civita, porque ∇g = 0. Uma versão errada mostra a diferença que sobra.
+
+A saída não é canonicalizada. Com a métrica, a forma canônica sobe e desce os
+mudos, e R^μ{}_{σαβ}U^σ sairia R^{μαβσ}U_σ, que é igual e ilegível. Ainda não:
+a volta, de índice para sem índice; e ∀ e formas não se traduzem.
+
 ### Formas diferenciais
 
 ```

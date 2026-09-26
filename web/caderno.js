@@ -135,6 +135,7 @@ var VERBOS = [
   'separar', 'separate',
   'conferir', 'check', 'verificar',
   'contrair', 'contract',
+  'indices', 'índices', 'indexar',
   'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura'
 ];
 
