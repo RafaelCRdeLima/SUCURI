@@ -137,12 +137,18 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <h2 id="placar">O placar</h2>
 
+<p>“Resolve” quer dizer: tudo o que o enunciado pede, e não só o cálculo que
+ele tem no centro. A contagem foi refeita assim quando os enunciados inteiros
+entraram na apostila (seção VII): 23 exercícios que saíam no cálculo central
+pedem também um mergulho, geodésicas, um volume, transporte paralelo, ou uma
+prova na direção contrária — e passaram a “em parte”.</p>
+
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>24</td><td>5</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
-  <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>57</strong></td><td><strong>13</strong></td><td><strong>15</strong></td></tr>
+  <tr><td>indicial (30)</td><td>18</td><td>11</td><td>1</td></tr>
+  <tr><td>componentes (25)</td><td>7</td><td>15</td><td>3</td></tr>
+  <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>34</strong></td><td><strong>36</strong></td><td><strong>15</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -159,9 +165,11 @@ para ∂g já se faz (2, 4, 17, 65), e o determinante da métrica também (5, 64
 66), o Ricci como contração declarada (13, 63), e <code>provar</code> com
 hipóteses escritas com índice (10, 14, 15, 68, 69), contar componentes
 independentes (12, 13, 61), as coordenadas com índice (62) e a teoria
-linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
-o que não sai pede base ortonormal, linearização, ou vetores dados por
-componentes.</p>
+linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri
+calcula tudo o que é métrica diagonal — Christoffel, Riemann, Ricci, escalar —,
+mas os exercícios quase sempre pedem mais: geodésicas, transporte paralelo, o
+mergulho que dá a métrica, uma base ortonormal. Por isso a maioria sai em
+parte.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -208,7 +216,7 @@ com o que aparece no problema.</p>
     <code>simétrico</code> em T, também não.</p>
 </div>
 
-<h3>16. Contração de dois Levi-Civita <span class="pill ok">resolve</span></h3>
+<h3>16. Contração de dois Levi-Civita <span class="pill aviso">em parte</span></h3>
 
 <p>Reall §8.5, eq. (8.54): em n dimensões,
 ε<sup>a…c…</sup>ε<sub>b…c…</sub> = ±p!(n−p)! δ<sup>[a</sup><sub>b</sub>…δ<sup>…]</sup><sub>…</sub>,
@@ -338,7 +346,7 @@ pode ser escrita com ∇ no lugar de ∂ se a conexão não tem torção; e
   <samp class="saida">True</samp>
 </div>
 
-<h3>65. Christoffel de métricas conformes <span class="pill ok">resolve</span></h3>
+<h3>65. Christoffel de métricas conformes <span class="pill aviso">em parte</span></h3>
 
 <p>Evans, <em>Part II GR</em>, folha 1, Q8: se ĝ = Ω²g, então
 Γ̂<sup>α</sup><sub>βγ</sub> = Γ<sup>α</sup><sub>βγ</sub> + Ω<sup>−1</sup>(δ<sup>α</sup><sub>β</sub>∂<sub>γ</sub>Ω + δ<sup>α</sup><sub>γ</sub>∂<sub>β</sub>Ω − g<sup>ασ</sup>g<sub>βγ</sub>∂<sub>σ</sub>Ω).
@@ -359,7 +367,7 @@ expandido pela métrica g.</p>
     Sucuri a lê assim.</p>
 </div>
 
-<h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span></h3>
+<h3>5, 64 e 66. O determinante da métrica <span class="pill ok">resolve</span> (5) <span class="pill aviso">em parte</span> (64, 66)</h3>
 
 <p>MIT 8.962, lista 3, #7(d)–(f): ∇<sub>ν</sub>A<sub>μ</sub><sup>ν</sup> = |g|<sup>−1/2</sup>∂<sub>ν</sub>(|g|<sup>1/2</sup>A<sub>μ</sub><sup>ν</sup>)
 − Γ<sup>λ</sup><sub>νμ</sub>A<sub>λ</sub><sup>ν</sup>, a versão com F antissimétrico e o
@@ -664,7 +672,7 @@ que nelas é ∂:</p>
     ∂g = 0 calado (seção VI).</p>
 </div>
 
-<h3>60. Decomposição de um tensor de posto 2 <span class="pill ok">resolve</span></h3>
+<h3>60. Decomposição de um tensor de posto 2 <span class="pill aviso">em parte</span></h3>
 
 <p>Hunt, <em>Part IA Vector Calculus</em>, folha 4, Q6: todo T<sub>ij</sub>
 em 3D é αδ<sub>ij</sub> + ε<sub>ijk</sub>ω<sub>k</sub> + D<sub>ij</sub>, com
@@ -863,7 +871,7 @@ componente. Se vale para o mais geral, vale para todos.</p>
     nada.</p>
 </div>
 
-<h3>61. Componentes de um tensor antissimétrico <span class="pill ok">resolve</span></h3>
+<h3>61. Componentes de um tensor antissimétrico <span class="pill aviso">em parte</span></h3>
 
 <p>MIT 8.962 (2018), lista 4, P1: quantas componentes independentes tem um
 tensor antissimétrico? n(n−1)/2 para dois índices, e, para p índices, o
@@ -968,7 +976,7 @@ explícita das seis permutações, com ω antissimétrico, dá os três termos.<
 declaradas, <code>christoffel</code>, <code>riemann</code>,
 <code>ricci</code> e <code>escalar</code> fazem o cálculo inteiro.</p>
 
-<h3>35 e 36. A esfera <span class="pill ok">resolve</span></h3>
+<h3>35 e 36. A esfera <span class="pill ok">resolve</span> (35) <span class="pill aviso">em parte</span> (36)</h3>
 
 <p>Cline, problema 7.2 (esfera unitária: Christoffel, Ricci, R = 2); MIT 8.962,
 PS5 #4, com o exemplo resolvido de Carroll, eq. (3.105) (raio a: R = 2/a²).</p>
@@ -1019,7 +1027,7 @@ g é a métrica.</p>
     é Minkowski em outra carta.</p>
 </div>
 
-<h3>39. Espaço-tempo estático em 1+1 <span class="pill ok">resolve</span></h3>
+<h3>39. Espaço-tempo estático em 1+1 <span class="pill aviso">em parte</span></h3>
 
 <p>MIT 8.962, PS5 #6: para ds² = −e<sup>2φ(x)</sup>dt² + e<sup>−2ψ(x)</sup>dx²,
 o Riemann e o escalar de curvatura.</p>
@@ -1038,7 +1046,7 @@ o Riemann e o escalar de curvatura.</p>
     <code>\phi = \phi(x)</code> não era aceita, e a métrica saía plana.</p>
 </div>
 
-<h3>40 e 41. Schwarzschild e a família f(r) <span class="pill ok">resolve</span> (40) <span class="pill aviso">em parte</span> (41)</h3>
+<h3>40 e 41. Schwarzschild e a família f(r) <span class="pill aviso">em parte</span></h3>
 
 <p>Tong, folha 2, Q11: os Christoffel de
 ds² = −f²dt² + f<sup>−2</sup>dr² + r²dΩ². Reall §8.4 pede as 2-formas de
@@ -1078,7 +1086,7 @@ saem; as equações das geodésicas, não.</p>
     Γ<sup>y</sup><sub>yy</sub> = −1/y.</p>
 </div>
 
-<h3>43. A 3-esfera <span class="pill ok">resolve</span></h3>
+<h3>43. A 3-esfera <span class="pill aviso">em parte</span></h3>
 
 <p>Cline, problema 7.10: R = 6 e R<sub>ij</sub> = 2g<sub>ij</sub> para a
 3-esfera unitária. (O volume, 2π², é integral — não é do Sucuri.)</p>
@@ -1116,7 +1124,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">-6/a</samp>
 </div>
 
-<h3>73. Superfície de revolução <span class="pill ok">resolve</span></h3>
+<h3>73. Superfície de revolução <span class="pill aviso">em parte</span></h3>
 
 <p>Hirata, Caltech Ph236, HW4 #1: ds² = F(ϖ)dϖ² + ϖ²dφ², com R = F′/(ϖF²).</p>
 
@@ -1129,7 +1137,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">este achou um erro silencioso: a variável <code>\varpi</code> ficava com a barra, F saía constante e a superfície, plana (seção VI).</p>
 </div>
 
-<h3>74. O cone <span class="pill ok">resolve</span></h3>
+<h3>74. O cone <span class="pill aviso">em parte</span></h3>
 
 <p>van Baal (Leiden), ex. 5: o cone z = r mergulhado em ℝ³ tem ds² = 2dr² + r²dφ², com Γ<sup>r</sup><sub>φφ</sub> = −r/2 e curvatura nula.</p>
 
@@ -1152,7 +1160,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">e Γ<sup>t</sup><sub>tz</sub> = a/(2(1 + az)), Γ<sup>z</sup><sub>tt</sub> = a/2.</p>
 </div>
 
-<h3>76. de Sitter em fatias planas <span class="pill ok">resolve</span></h3>
+<h3>76. de Sitter em fatias planas <span class="pill aviso">em parte</span></h3>
 
 <p>Hirata, Ph236, HW5 #1: ds² = (−dη² + dx² + dy² + dz²)/(H²η²). R<sub>μν</sub> = 3H²g<sub>μν</sub> — logo G<sub>μν</sub> = −3H²g<sub>μν</sub> e Λ = 3H².</p>
 
@@ -1164,7 +1172,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">e <code>ricci(g)</code> dá R<sub>ηη</sub> = −3/η², R<sub>ii</sub> = 3/η².</p>
 </div>
 
-<h3>77. de Sitter em 2D <span class="pill ok">resolve</span></h3>
+<h3>77. de Sitter em 2D <span class="pill aviso">em parte</span></h3>
 
 <p>Evans, folha 1, Q9: ds² = −du² + cosh²u dφ², Γ<sup>u</sup><sub>φφ</sub> = senh u cosh u, Γ<sup>φ</sup><sub>uφ</sub> = tgh u, e R = 2.</p>
 
@@ -1199,7 +1207,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">R_{{\theta}{\theta}}=q**2/r**2</samp>
 </div>
 
-<h3>80. AdS₃ global <span class="pill ok">resolve</span></h3>
+<h3>80. AdS₃ global <span class="pill aviso">em parte</span></h3>
 
 <p>Hartman (Cornell), §9.1: ds² = ℓ²(−cosh²ρ dt² + dρ² + senh²ρ dφ²), com R<sub>μν</sub> = −(2/ℓ²)g<sub>μν</sub>, R = −6/ℓ² e Λ = −1/ℓ².</p>
 
@@ -1210,7 +1218,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">-6/ell**2</samp>
 </div>
 
-<h3>81. O espaço hiperbólico H³ <span class="pill ok">resolve</span></h3>
+<h3>81. O espaço hiperbólico H³ <span class="pill aviso">em parte</span></h3>
 
 <p>Hirata, Ph236, HW16: ds² = dχ² + senh²χ dΩ², curvatura −1: R<sub>ij</sub> = −2g<sub>ij</sub>, R = −6.</p>
 
@@ -1232,7 +1240,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <samp class="saida">12</samp>
 </div>
 
-<h3>85. O paraboloide de Flamm <span class="pill ok">resolve</span></h3>
+<h3>85. O paraboloide de Flamm <span class="pill aviso">em parte</span></h3>
 
 <p>Dray, MTH 437, HW5: a fatia equatorial de Schwarzschild, ds² = dr²/(1 − 2m/r) + r²dφ², tem curvatura de Gauss K = −m/r³, isto é, R = 2K.</p>
 
@@ -1273,7 +1281,7 @@ colchete. E é por ela que Jacobi sai, aplicada a uma função h:</p>
   <samp class="saida">provado a partir de nenhuma hipótese</samp>
 </div>
 
-<h3>20. A derivada de Lie do colchete <span class="pill ok">resolve</span></h3>
+<h3>20. A derivada de Lie do colchete <span class="pill aviso">em parte</span></h3>
 
 <p>Richard, ex. 2.3.12: com ℒ<sub>X</sub>Y = [X,Y], ℒ<sub>X</sub> é derivação
 do colchete — que é Jacobi, reescrita. Com Jacobi como hipótese:</p>
@@ -1307,7 +1315,7 @@ R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
     sai do mesmo jeito.</p>
 </div>
 
-<h3>23. A fórmula de Koszul <span class="pill ok">resolve</span></h3>
+<h3>23. A fórmula de Koszul <span class="pill aviso">em parte</span></h3>
 
 <p>Richard, ex. 5.4.5 (e Reall §3.2): a fórmula de Koszul, das duas condições de
 Levi-Civita — compatibilidade com a métrica e torção nula. Richard pede a
@@ -1401,7 +1409,7 @@ sinal oposto. A curvatura seccional, ¼|[X,Y]|², é a mesma nas duas.</p>
 
 <h2 id="formas">IV. Formas diferenciais</h2>
 
-<h3>28. dα pela conexão <span class="pill ok">resolve</span></h3>
+<h3>28. dα pela conexão <span class="pill aviso">em parte</span></h3>
 
 <p>Kovalev, folha 3, Q3: para conexão sem torção,
 dα(X,Y) = (∇<sub>X</sub>α)(Y) − (∇<sub>Y</sub>α)(X). Com
@@ -1421,7 +1429,7 @@ vetores como hipótese (ela muda de fator com a normalização — ver 27):</p>
     vetores levada a uma entre escalares.</p>
 </div>
 
-<h3>29–33. A álgebra das formas <span class="pill ok">resolve</span></h3>
+<h3>29–33. A álgebra das formas <span class="pill ok">resolve</span> (29, 32) <span class="pill aviso">em parte</span> (30, 31, 33)</h3>
 
 <p>Cambridge, Part III Differential Geometry, folha 2, Q8 (ι<sub>X</sub> é
 antiderivação); Tong, folha 1, Q5–6 (Cartan numa 1-forma; d² = 0 e Leibniz
@@ -1472,7 +1480,7 @@ graduado); Reall §8.1 (α∧β = (−1)<sup>pq</sup>β∧α, associatividade) e
     exercício) não sai.</p>
 </div>
 
-<h3>47, 48 e 51. d, ι e ℒ <span class="pill ok">resolve</span></h3>
+<h3>47, 48 e 51. d, ι e ℒ <span class="pill ok">resolve</span> (48, 51) <span class="pill aviso">em parte</span> (47)</h3>
 
 <p>Wendl, lista 7, 1(a) e 1(d): [d, ℒ<sub>X</sub>] = 0; e
 P = dι<sub>X</sub> + ι<sub>X</sub>d é derivação de grau 0 — o passo que prova
@@ -1498,7 +1506,7 @@ a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ
   <p class="explica">os sinais de d e de ι se cancelam dois a dois: sobra uma derivação sem sinal, como a de ℒ<sub>X</sub>.</p>
 </div>
 
-<h3>57. Uma 2-forma que não se decompõe <span class="pill ok">resolve</span></h3>
+<h3>57. Uma 2-forma que não se decompõe <span class="pill aviso">em parte</span></h3>
 
 <p>Dray, MTH 434, HW2 #1: toda 2-forma de ℝ³ é α∧β, mas em ℝ⁴
 γ = dx∧dy + dz∧dw não é — γ∧γ = 2 dx∧dy∧dz∧dw ≠ 0, enquanto
@@ -1518,6 +1526,10 @@ a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ
 
 <p>Dizer isto é parte do trabalho. Cada item abaixo é um exercício da lista,
 e o motivo é o que falta ao programa — não ao exercício.</p>
+
+<p>Os que saem em parte porque o enunciado pede mais que o cálculo central —
+geodésicas, mergulhos, volumes, transporte paralelo — não estão listados aqui
+um a um: a nota de cada enunciado, na seção VII, diz o que fica de fora.</p>
 
 <h3>Notação indicial</h3>
 
@@ -1642,16 +1654,18 @@ corrigidos, e cada um com teste.</p>
 
 <h2 id="enunciados">VII. Os enunciados</h2>
 
-<p>Os enunciados completos dos 57 exercícios que o placar conta como
-resolvidos, com a referência exata — lista, questão, página ou equação — e o
+<p>Os enunciados completos dos 57 exercícios cujo cálculo central o Sucuri
+faz — os 34 que ele resolve inteiros e 23 que resolve em parte —, com a referência exata — lista, questão, página ou equação — e o
 link para o original. A tradução é nossa; as fórmulas seguem a notação de cada
 fonte. No fim de cada um, o que o Sucuri faz dele.</p>
 
-<p class="nota-manual">No placar, “resolve” quer dizer que o cálculo que o
-exercício tem no centro sai. Ao pôr os enunciados inteiros ao lado, 23 deles
+<p class="nota-manual">Até esta seção existir, o placar contava como
+resolvido o exercício cujo cálculo central saía. Ao pôr os enunciados inteiros
+ao lado, 23 deles
 pedem mais do que isso — um mergulho, geodésicas, um volume, uma discussão —,
 e a nota diz o que fica de fora. Num (23), o Sucuri prova a direção contrária
-à pedida.</p>
+à pedida. O placar foi refeito com a leitura estrita: esses passaram a “em
+parte”, e “resolve” agora é o exercício inteiro.</p>
 
 <div class="enunciado" id="enunciado-1">
   <h3>1. Contração de par simetrizado com par antissimetrizado</h3>
