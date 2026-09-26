@@ -236,7 +236,9 @@ def test_simetrizacao_entre_cima_e_baixo():
         c.executar(f)
     assert "junta índice de cima com de baixo" in \
         c.executar(r"T^{(\mu}_{\nu)}").to_dict()["erro"]
-    assert "atravessa grupos de índice" in \
+    # Com o {} lido como parte do fator, os dois jeitos de escrever caem no
+    # mesmo diagnóstico — que é o preciso.
+    assert "junta índice de cima com de baixo" in \
         c.executar(r"T^{(\mu}{}_{\nu)}").to_dict()["erro"]
 
 

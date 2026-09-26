@@ -248,6 +248,40 @@ recusas:
 Sem índice declarado, `\partial_p H` continua sendo a derivada parcial em
 relação a p, como sempre foi.
 
+### A conexão com índice, e a identidade de Ricci
+
+```
+\nabla = levi-civita
+\nabla_\lambda g_{\mu\nu}                          simplificar →  0
+\nabla_\mu \nabla_\nu \phi - \nabla_\nu \nabla_\mu \phi     simplificar →  0      sem torção
+
+\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma     eq1
+R = riemann(eq1)
+
+∇_μ∇_ν W_ρ − ∇_ν∇_μ W_ρ                 simplificar →  −R^σ{}_{ρμν} W_σ
+∇_μ∇_ν T^α{}_β − ∇_ν∇_μ T^α{}_β         simplificar →  R^α{}_{σμν}T^σ{}_β − R^σ{}_{βμν}T^α{}_σ
+```
+
+`\nabla = levi-civita` diz o que distingue Levi-Civita de uma conexão
+qualquer: ∇g = 0 e torção nula. Com ela, ∇ε = 0 quando ε é o tensor. Sem a
+declaração, nada disso se supõe. ∂δ = ∇δ = 0 vale sempre.
+
+O Riemann vem **da definição que você escreve**. Sinal e ordem dos slots variam
+de livro para livro: Carroll e MTW escrevem R^ρ{}_{σμν}, o Wald escreve
+R_{μνσ}{}^ρ, e há quem troque o sinal. `R = riemann(eq1)` lê a identidade e
+extrai dela o sinal e onde fica cada slot. Daí em diante, `simplificar` troca
+todo comutador ∇∇ por curvatura, com um termo por índice: o índice de cima com
+um sinal, o de baixo com o outro. Um ∇∇T sozinho sai como entrou. Com a
+definição de sinal trocado, sai a curvatura de sinal trocado. A definição tem
+de ter a forma do comutador num vetor, e senão recusa, dizendo qual é a forma.
+
+No caminho, dois silêncios, agora com teste:
+
+- `R^\rho{}_{\sigma\mu\nu} V^\sigma` era lido como `R(rho)`. O `{}` que todo
+  livro usa acabava o fator, e três índices e o V sumiam;
+- `\nabla_\mu T^\alpha{}_\beta` com β não declarado derivava `T**alpha` como
+  escalar. Agora recusa.
+
 A derivada **sem** índice, ∇_U X, é a seção seguinte.
 
 ### Simetria declarada

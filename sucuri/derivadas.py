@@ -170,6 +170,17 @@ def _operando(texto, i, indices, quem):
         return texto[i + 6:fim], fim + 7, None
     fator = _RE_FATOR.match(texto, i)
     if fator:
+        from .tensores import _RE_PEDACO
+        nomes = [n for p in _RE_PEDACO.finditer(fator.group(2))
+                 for n in indices_de(p.group(2))]
+        soltos = [n for n in nomes if n not in indices]
+        if soltos:
+            # Com um índice que ninguém declarou, o operando não é tensor — e
+            # derivá-lo como escalar seria inventar a conta.
+            return None, fator.end(), (
+                f"o operando {fator.group(0)} de {quem} tem índice não "
+                f"declarado ({', '.join(soltos)}): declare-o, ou a derivada "
+                f"não tem sobre o que agir")
         return fator.group(0), fator.end(), None
     simbolo = _RE_SIMBOLO.match(texto, i)
     if simbolo:
@@ -198,6 +209,9 @@ def cabeca_derivada(espaco, operacoes, base, posto_base):
         return espaco._cabecas[nome][0]
     k = len(operacoes)
     blocos = [k] if all(o == "d" for o in operacoes) else [1] * k
+    if (operacoes == ("D", "d") and posto_base == 0
+            and espaco.conexao == "levi-civita"):
+        blocos = [2]        # ∇_μ∇_ν φ = ∇_ν∇_μ φ: torção nula, num escalar
     simetria = _simetria_base(espaco, base)
     if posto_base > 1 and simetria == "simetrico":
         blocos.append(posto_base)
@@ -291,3 +305,248 @@ class Impressor(LatexPrinter):
 
 def latex(expr):
     return Impressor().doprint(expr)
+
+
+# ------------------------------------------ a conexão declarada, e Ricci
+
+def _mapear(expr, trocar):
+    """Refaz a expressão tensorial trocando cada Tensor por `trocar(t)`.
+
+    Multiplicando de novo, e não substituindo: os índices mudos são objetos
+    compartilhados entre fatores, e refazer o produto refaz a contração.
+    """
+    if isinstance(expr, TensAdd):
+        return _soma([_mapear(a, trocar) for a in expr.args])
+    if isinstance(expr, TensMul):
+        fatores = [a for a in expr.args if isinstance(a, TensExpr)]
+        return expr.coeff * _produto([_mapear(f, trocar) for f in fatores])
+    if isinstance(expr, Tensor):
+        return trocar(expr)
+    return expr
+
+
+def _nulo(t, espaco):
+    """A derivada que é zero pela declaração — ou por ser a delta.
+
+    ∂δ = ∇δ = 0 sempre: componentes constantes, e δ é a identidade em
+    qualquer conexão. ∇g = 0 e ∇ε = 0 só com a conexão de Levi-Civita
+    declarada — é o que a distingue de uma conexão qualquer.
+    """
+    operacoes, base = REGISTRO.get(t.head.name, ((), None))
+    if not operacoes:
+        return False
+    if base == espaco.kronecker:
+        return True
+    levi = espaco.conexao == "levi-civita"
+    if operacoes[-1] == "D" and levi:
+        if base == espaco.metrica or espaco.levi.get(base) == "tensor":
+            return True
+    return False
+
+
+def _comutavel(t, espaco):
+    """∇_μ∇_ν aplicado a alguma coisa — onde o comutador vira curvatura."""
+    operacoes, base = REGISTRO.get(t.head.name, ((), None))
+    if len(operacoes) < 2 or operacoes[0] != "D":
+        return False
+    if operacoes[1] == "D":
+        return True
+    # ∇_μ ∂_ν φ é ∇_μ ∇_ν φ num escalar.
+    return operacoes[1] == "d" and len(operacoes) == 2 and \
+        len(t.indices) == 2
+
+
+_MUDOS = [0]
+
+
+def _mudo(espaco):
+    from sympy.tensor.tensor import TensorIndex
+    _MUDOS[0] += 1
+    return TensorIndex(f"s_{_MUDOS[0]}", espaco.tipo)
+
+
+def _operando_de(t, espaco):
+    """A cabeça e os índices do que está SOB as duas primeiras derivadas."""
+    operacoes, base = REGISTRO[t.head.name]
+    indices = list(t.indices)
+    resto = operacoes[2:]
+    if resto:
+        cabeca = cabeca_derivada(espaco, resto, base, len(indices) - len(operacoes))
+    elif len(indices) == 2:
+        return None, []                       # um escalar: não há termo
+    else:
+        cabeca = espaco.cabeca(base, len(indices) - 2)
+    return cabeca, indices[2:]
+
+
+def _curvatura_de(t, espaco, mu, nu):
+    """[∇_μ, ∇_ν] T — um termo por índice de T, na convenção declarada.
+
+    Índice de cima entra no slot ρ do Riemann, e o de T vira mudo no σ; índice
+    de baixo entra no σ, com o sinal trocado, e o mudo vai para o ρ.
+    """
+    nome, conv = espaco.riemann
+    cabeca, indices = _operando_de(t, espaco)
+    if cabeca is None:
+        return sp.S.Zero
+    R = espaco.cabeca(nome, 4)
+    termos = []
+    for k, i in enumerate(indices):
+        s = _mudo(espaco)
+        slots = [None] * 4
+        slots[conv["mu"]], slots[conv["nu"]] = mu, nu
+        novos = list(indices)
+        if i.is_up:
+            slots[conv["rho"]], slots[conv["sigma"]] = i, -s
+            novos[k] = s
+            sinal = conv["sinal"]
+        else:
+            slots[conv["rho"]], slots[conv["sigma"]] = s, i
+            novos[k] = -s
+            sinal = -conv["sinal"]
+        termos.append(sinal * R(*slots) * cabeca(*novos))
+    return _soma(termos)
+
+
+def _simetrica(t, espaco):
+    """A cabeça da parte simétrica ∇_(μ∇_ν) — criada ao lado da derivada."""
+    operacoes, base = REGISTRO[t.head.name]
+    nome = "S" + t.head.name
+    if nome not in espaco._cabecas:
+        posto_base = len(t.indices) - len(operacoes)
+        blocos = [2] + [1] * (len(operacoes) - 2)
+        simetria = _simetria_base(espaco, base)
+        if posto_base > 1 and simetria == "simetrico":
+            blocos.append(posto_base)
+        elif posto_base > 1 and simetria == "antissimetrico":
+            blocos.append(-posto_base)
+        else:
+            blocos += [1] * posto_base
+        cabeca = TensorHead(nome, [espaco.tipo] * len(t.indices),
+                            TensorSymmetry.direct_product(*blocos))
+        espaco._cabecas[nome] = (cabeca, len(t.indices))
+    return espaco._cabecas[nome][0]
+
+
+def normalizar(expr, espaco):
+    """O que a conexão declarada permite dizer, antes da forma canônica.
+
+    Zeros: ∂δ, ∇δ; e com Levi-Civita, ∇g e ∇ε. Comutadores: com Levi-Civita e
+    o Riemann definido, cada ∇_μ∇_ν T vira ∇_(μ∇_ν)T + ½[∇_μ,∇_ν]T; a forma
+    canônica cancela as partes simétricas que se cancelam, e depois a parte
+    simétrica volta a ser escrita como ∇∇T − ½[…]. Um ∇∇T sozinho sai como
+    entrou; ∇_μ∇_ν T − ∇_ν∇_μ T sai como curvatura.
+    """
+    if not isinstance(expr, TensExpr) or espaco is None:
+        return expr
+    expr = _mapear(expr, lambda t: sp.S.Zero if _nulo(t, espaco) else t)
+    if not isinstance(expr, TensExpr):
+        return expr
+    if espaco.conexao != "levi-civita" or not espaco.riemann:
+        return expr
+
+    partes = {}
+
+    def abrir(t):
+        if not _comutavel(t, espaco):
+            return t
+        mu, nu = t.indices[0], t.indices[1]
+        S = _simetrica(t, espaco)
+        partes[S.name] = t.head
+        return S(*t.indices) + sp.Rational(1, 2) * _curvatura_de(t, espaco, mu, nu)
+
+    aberto = _mapear(expr, abrir)
+    if not isinstance(aberto, TensExpr):
+        return aberto
+    aberto = aberto.canon_bp()
+    if not isinstance(aberto, TensExpr):
+        return aberto
+
+    def fechar(t):
+        if t.head.name not in partes:
+            return t
+        original = partes[t.head.name](*t.indices)
+        mu, nu = t.indices[0], t.indices[1]
+        return original - sp.Rational(1, 2) * _curvatura_de(original, espaco, mu, nu)
+
+    return _mapear(aberto, fechar)
+
+
+def convencao_de(equacao, nome):
+    r"""Da definição escrita, a convenção: o sinal e onde fica cada slot.
+
+        \nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho
+            = R^\rho{}_{\sigma\mu\nu} V^\sigma
+
+    dá sinal +1, ρ no slot 0, σ no 1, μ no 2, ν no 3. Com o sinal trocado, ou
+    os slots em outra ordem, sai outra convenção — e é a que vale.
+    """
+    esperado = (r"a definição tem de ter a forma "
+                r"∇_μ∇_ν V^ρ − ∇_ν∇_μ V^ρ = ± " + nome +
+                r"(ρ, σ, μ, ν em alguma ordem) V^σ — o comutador num vetor de "
+                r"um lado, o Riemann contraído com o mesmo vetor do outro")
+    if not isinstance(equacao, sp.Equality):
+        raise ValueError(esperado)
+    lados = [equacao.lhs, equacao.rhs]
+    comutador = next((l for l in lados if isinstance(l, TensAdd)), None)
+    curvatura = next((l for l in lados if l is not comutador), None)
+    if comutador is None or not isinstance(curvatura, (TensMul, Tensor)):
+        raise ValueError(esperado)
+
+    termos = []
+    for a in comutador.args:
+        coef = a.coeff if isinstance(a, TensMul) else sp.S.One
+        tensores = ([x for x in a.args if isinstance(x, Tensor)]
+                    if isinstance(a, TensMul) else [a])
+        if len(tensores) != 1:
+            raise ValueError(esperado)
+        termos.append((coef, tensores[0]))
+    if len(termos) != 2 or {c for c, _ in termos} != {1, -1}:
+        raise ValueError(esperado)
+    positivo = next(t for c, t in termos if c == 1)
+    negativo = next(t for c, t in termos if c == -1)
+    for t in (positivo, negativo):
+        operacoes, _ = REGISTRO.get(t.head.name, ((), None))
+        if operacoes != ("D", "D") or len(t.indices) != 3 or not t.indices[2].is_up:
+            raise ValueError(esperado)
+    mu, nu, rho = positivo.indices
+    if list(negativo.indices) != [nu, mu, rho] or mu.is_up or nu.is_up:
+        raise ValueError(esperado)
+    vetor = REGISTRO[positivo.head.name][1]
+
+    coef = curvatura.coeff if isinstance(curvatura, TensMul) else sp.S.One
+    fatores = ([x for x in curvatura.args if isinstance(x, Tensor)]
+               if isinstance(curvatura, TensMul) else [curvatura])
+    R = [f for f in fatores if f.head.name == nome]
+    V = [f for f in fatores if f.head.name == vetor]
+    if coef not in (1, -1) or len(R) != 1 or len(V) != 1 or len(fatores) != 2:
+        raise ValueError(esperado)
+    R, V = R[0], V[0]
+    if len(R.indices) != 4 or len(V.indices) != 1:
+        raise ValueError(esperado)
+    sigma = V.indices[0]
+    posicoes = {}
+    for k, i in enumerate(R.indices):
+        if i == rho:
+            posicoes["rho"] = k
+        elif i == mu:
+            posicoes["mu"] = k
+        elif i == nu:
+            posicoes["nu"] = k
+        elif i.name == sigma.name and i.is_up != sigma.is_up:
+            posicoes["sigma"] = k
+    if len(posicoes) != 4:
+        raise ValueError(esperado)
+    return {"sinal": int(coef), **posicoes}
+
+
+def simetria_do_riemann(conv):
+    """Antissimétrico nos slots de μ e ν — em qualquer convenção, porque vem
+    do comutador. Só se exprime se os dois slots forem vizinhos no começo ou
+    no fim; noutro lugar, fica sem, o que não é falso, só incompleto."""
+    par = sorted((conv["mu"], conv["nu"]))
+    if par == [2, 3]:
+        return TensorSymmetry.direct_product(1, 1, -2)
+    if par == [0, 1]:
+        return TensorSymmetry.direct_product(-2, 1, 1)
+    return TensorSymmetry.no_symmetry(4)

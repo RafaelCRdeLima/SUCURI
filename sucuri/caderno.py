@@ -50,6 +50,9 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
 # hipóteses é justamente o que não pode ficar implícito.
 _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
                         r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
+# `R = riemann(eq1)`: R é o Riemann de ∇, na convenção que eq1 escreve.
+_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*riemann\s*\(\s*(" +
+                         _ROTULO + r")\s*\)\s*$", re.I)
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -195,7 +198,7 @@ def _e_instrucao(linha):
         return True
     return any(regra.match(texto) for regra in
                (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE,
-                _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR))
+                _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR, _RE_RIEMANN))
 
 
 def _chave(rotulo):
@@ -283,6 +286,10 @@ class Caderno:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
                                 int(tensorial.group(3)),
                                 _qual_simetria(tensorial.group(4)))
+
+        riemann = _RE_RIEMANN.match(fonte or "")
+        if riemann:
+            return self._riemann(riemann.group(1), _sem_barra(riemann.group(2)))
 
         especie = _RE_ESPECIE.match(fonte or "")
         if especie:
@@ -442,6 +449,36 @@ class Caderno:
                                  f" — {_indices_em(formas, 'em cima')},"
                                  f" {_indices_em(vetores, 'embaixo')}{nota}")})
 
+    def _riemann(self, nome, rotulo):
+        """`R = riemann(eq1)` — a convenção vem da definição escrita.
+
+        O sinal e a ordem dos índices do Riemann variam de livro para livro; em
+        vez de escolher um, o Sucuri lê a identidade que você escreveu e usa a
+        convenção dela.
+        """
+        from .derivadas import convencao_de
+        limpo = _sem_barra(nome)
+        fonte = f"{nome} = riemann({rotulo})"
+        if self.sessao.conexao != "levi-civita":
+            return Celula(None, fonte, "declaracao", {"erro": (
+                "a identidade sem termo de torção pede ∇ sem torção: declare "
+                "\\nabla = levi-civita antes")})
+        try:
+            equacao = self._objeto(rotulo).to_sympy()
+            conv = convencao_de(equacao, limpo)
+        except (KeyError, ValueError) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.sessao.riemann = (limpo, conv)
+        ordem = sorted(("rho", "sigma", "mu", "nu"), key=conv.get)
+        grego = {"rho": "ρ", "sigma": "σ", "mu": "μ", "nu": "ν"}
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "riemann": conv}],
+            "texto": (f"{limpo} é o Riemann de ∇, na convenção de {rotulo}: "
+                      f"[∇_μ, ∇_ν]V^ρ = "
+                      f"{'' if conv['sinal'] == 1 else '−'}{limpo}"
+                      f"({', '.join(grego[k] for k in ordem)}) V^σ. Ao "
+                      f"simplificar, todo comutador ∇∇ vira curvatura")})
+
     def _especie(self, nomes, especie):
         r"""`e = euler`, `a = símbolo`, `\mu = índice`.
 
@@ -487,6 +524,11 @@ class Caderno:
             texto = (f"{lista[0]}^μ_ν é a delta de Kronecker — a identidade: "
                      f"{lista[0]}^μ_ν A^ν vira A^μ ao simplificar, e "
                      f"{lista[0]}^μ_μ vira a dimensão")
+        elif especie.startswith("levi") and lista == ["\\nabla"]:
+            self.sessao.conexao = "levi-civita"
+            texto = ("∇ é a conexão de Levi-Civita: ∇g = 0, e sem torção — "
+                     "∇_μ∇_ν φ = ∇_ν∇_μ φ num escalar. Ao simplificar, ∇g e "
+                     "∇ε (tensor) viram zero")
         elif especie.startswith("levi"):
             import re as _re
             dentro = _re.search(r"\(\s*([^)]*?)\s*\)", especie)

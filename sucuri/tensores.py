@@ -44,8 +44,12 @@ Declarável: `\\mu = índice(3)`."""
 
 _SIMBOLO = r"(?:\\[a-zA-Z]+|[A-Za-z])"
 _GRUPO = r"(?:\{[^{}]*\}|" + _SIMBOLO + r"|[0-9])"
-_RE_FATOR = re.compile(rf"({_SIMBOLO})((?:\s*[_^]\s*{_GRUPO})+)")
-_RE_PEDACO = re.compile(rf"\s*([_^])\s*({_GRUPO})")
+# `R^\rho{}_{\sigma\mu\nu}`: o {} vazio é o jeito de todo livro separar o
+# índice de cima dos de baixo sem que o TeX os empilhe. Sem aceitá-lo, o fator
+# acabava em R^\rho, e o resto — três índices e o que vinha depois — sumia.
+_VAZIO = r"(?:\s*\{\s*\})?"
+_RE_FATOR = re.compile(rf"({_SIMBOLO})((?:{_VAZIO}\s*[_^]\s*{_GRUPO})+)")
+_RE_PEDACO = re.compile(rf"{_VAZIO}\s*([_^])\s*({_GRUPO})")
 
 
 def limpo(nome):
@@ -70,6 +74,8 @@ class Espaco:
         self._simetrias = {}        # nome -> 'simetrico' | 'antissimetrico'
         self.metrica = None         # o nome declarado como A métrica
         self.kronecker = None       # o nome declarado como a delta
+        self.conexao = None         # 'levi-civita', se declarada
+        self.riemann = None         # (nome, convenção), se definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
@@ -152,8 +158,12 @@ class Espaco:
                     f"'{nome}' {qual} índice(s) e agora com {posto}: "
                     f"um tensor tem um posto só")
             return cabeca
-        cabeca = TensorHead(nome, [self.tipo] * posto,
-                            _simetria(self._simetrias.get(nome), posto))
+        if self.riemann and nome == self.riemann[0] and posto == 4:
+            from .derivadas import simetria_do_riemann
+            simetria = simetria_do_riemann(self.riemann[1])
+        else:
+            simetria = _simetria(self._simetrias.get(nome), posto)
+        cabeca = TensorHead(nome, [self.tipo] * posto, simetria)
         self._cabecas[nome] = (cabeca, posto)
         return cabeca
 
@@ -430,6 +440,10 @@ def simplificar(expr, espaco):
         expr = expr.contract_delta(espaco.cabeca(espaco.kronecker, 2))
         if not isinstance(expr, TensExpr):
             return expr
+    from .derivadas import normalizar
+    expr = normalizar(expr, espaco)
+    if not isinstance(expr, TensExpr):
+        return expr
     return expr.canon_bp()
 
 

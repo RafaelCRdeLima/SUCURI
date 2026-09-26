@@ -45,6 +45,8 @@ class Sessao:
         self.metrica_abstrata = None  # qual nome é A métrica do espaço
         self.curvaturas = []        # nomes declarados operador de curvatura
         self.kronecker = None       # o nome declarado delta de Kronecker
+        self.conexao = None         # 'levi-civita', se declarada
+        self.riemann = None         # (nome, convenção) do Riemann definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
@@ -69,6 +71,8 @@ class Sessao:
             "metrica": self.metrica_abstrata,
             "curvaturas": list(self.curvaturas),
             "kronecker": self.kronecker,
+            "conexao": self.conexao,
+            "riemann": list(self.riemann) if self.riemann else None,
             "levi": dict(self.levi),
             "variaveis": list(self.variaveis),
             "anotacoes": [
@@ -131,6 +135,10 @@ class Sessao:
             doc.kronecker(self.kronecker)
         for nome, qual in self.levi.items():
             doc.levi_civita(nome, qual)
+        if self.conexao == "levi-civita":
+            doc.conexao_levi_civita()
+        if self.riemann:
+            doc.riemann(*self.riemann)
         if self.variaveis:
             doc.variable(*self.variaveis)
 

@@ -301,7 +301,7 @@ _RE_SUB = re.compile(rf"({_RE_BASE})\s*_\s*({_GRUPO})")
 # Só esta ordem: o parser do SymPy lê x_i^2 direito (Symbol('x_{i}')**2) e
 # estraga x^2_i (devolve x**2, sem o índice). Recusar a ordem que funciona
 # seria recusar matemática legítima.
-_RE_PERDE = re.compile(rf"({_RE_BASE})\s*\^\s*{_GRUPO}\s*_")
+_RE_PERDE = re.compile(rf"({_RE_BASE})\s*\^\s*{_GRUPO}\s*(?:\{{\s*\}}\s*)?_")
 
 
 class NotacaoTensorial(Exception):
@@ -657,6 +657,28 @@ class Document:
         limpo = _limpo_indice(nome)
         self._tensores[limpo] = (1, 1)
         self._espaco.definir_kronecker(limpo)
+        return self
+
+    def conexao_levi_civita(self):
+        """∇ é a conexão de Levi-Civita: ∇g = 0 e sem torção.
+
+        Declaração, e não suposição: uma conexão qualquer tem ∇g ≠ 0 e torção,
+        e é justamente isso que as distingue.
+        """
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.conexao = "levi-civita"
+        return self
+
+    def riemann(self, nome, convencao):
+        """R é o Riemann de ∇, na convenção extraída da definição escrita."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._espaco.riemann = (limpo, convencao)
+        self._espaco._cabecas.pop(limpo, None)
         return self
 
     def levi_civita(self, nome, qual):

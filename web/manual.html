@@ -434,6 +434,24 @@ com índice, <code>simplificar</code> a usa; sem índice, <code>provar</code>.</
     − ∇<sub>ν</sub>∇<sub>μ</sub> é torção e curvatura, e nada se supõe.</p>
 </div>
 
+<p>Com a conexão declarada, o comutador vira curvatura — na convenção da
+definição que você escreveu:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu W_\rho - \nabla_\nu \nabla_\mu W_\rho</code>
+  <code class="entrada">simplificar(eq2)</code>
+  <samp class="saida">-R(L_0, -rho, -mu, -nu)*W(-L_0)</samp>
+  <p class="explica">o sinal e a ordem dos slots do Riemann variam de livro
+    para livro; <code>riemann(eq1)</code> os lê da identidade escrita. E
+    <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
+</div>
+
 <h2>8. Métrica e curvatura</h2>
 
 <p>A notação de índice diz a <em>estrutura</em> — que <code>g</code> tem dois
@@ -552,8 +570,9 @@ com o motivo.</p>
     <code>\left\|·\right\|</code>. O SymPy <em>tem</em> essas funções; o parser
     de LaTeX é que não as lê.</li>
   <li><strong>Derivada com índice</strong> (∂<sub>μ</sub>, ∇<sub>μ</sub>): é
-    lida, com Leibniz e com ∂ comutando; mas ∇g = 0 e a comutação de ∇ não
-    se supõem, e ainda não há como declará-las. A derivada
+    lida, com Leibniz e com ∂ comutando; ∇g = 0 e a identidade de Ricci vêm
+    de <code>\nabla = levi-civita</code> e <code>R = riemann(eq)</code>. Ainda
+    não: εε = ±n!δ, que pede a assinatura da métrica. A derivada
     <em>direcional</em> ∇<sub>U</sub>, o colchete [U,X] e a curvatura R(U,X)W,
     com os vetores declarados, já são lidos, e <code>provar</code> encadeia
     hipóteses sobre eles, gerais (<code>\forall</code>) ou não. Mas só

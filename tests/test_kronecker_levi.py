@@ -20,9 +20,8 @@ def caderno(*fontes, dim=""):
 
 
 def simplificado(c, latex):
-    c.executar(latex)
-    ultimo = f"eq{len(c.nomes)}"
-    return c.executar(f"simplificar({ultimo})").to_dict()["exato"]
+    nome = c.executar(latex).to_dict()["nome"]
+    return c.executar(f"simplificar({nome})").to_dict()["exato"]
 
 
 # ------------------------------------------------------------------- δ
