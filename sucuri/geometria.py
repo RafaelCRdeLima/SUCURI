@@ -365,6 +365,17 @@ def geodesicas(metrica, parametro=None):
         termo = sum(Gam[a][b][c].subs(na_curva, simultaneous=True) * v[b] * v[c]
                     for b in range(n) for c in range(n))
         equacoes.append(sp.Eq(sp.diff(curva[a], lam, 2) + sp.simplify(termo), 0))
+    # A ação da partícula-teste, ∫ g(ẋ, ẋ) dλ: as equações de Euler–Lagrange
+    # têm de ser −2 g_ab vezes as de cima — conferido, não suposto.
+    from sympy.calculus.euler import euler_equations
+    lagrangiana = sum(G[a, b] * v[a] * v[b] for a in range(n) for b in range(n))
+    el = euler_equations(lagrangiana, curva, lam)
+    pela_acao = all(
+        sp.simplify(el[a].lhs - (-2) * sum(G[a, b] * equacoes[b].lhs for b in range(n))) == 0
+        for a in range(n))
+    if not pela_acao:
+        raise ValueError("as equações da ação e as dos Christoffel não coincidiram "
+                         "— defeito do motor")
     conservadas = [("normalização", sp.simplify(sum(G[a, b] * v[a] * v[b]
                                                     for a in range(n) for b in range(n))))]
     for k in range(n):

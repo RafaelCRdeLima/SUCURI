@@ -147,9 +147,9 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>18</td><td>11</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>14</td><td>8</td><td>3</td></tr>
+  <tr><td>componentes (25)</td><td>17</td><td>6</td><td>2</td></tr>
   <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>41</strong></td><td><strong>29</strong></td><td><strong>15</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>44</strong></td><td><strong>27</strong></td><td><strong>14</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -169,9 +169,9 @@ independentes (12, 13, 61), as coordenadas com índice (62) e a teoria
 linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri
 calcula Christoffel, Riemann, Ricci e escalar de qualquer métrica — dada pela
 diagonal, pelo elemento de linha, ou induzida por um mergulho ou mudança de
-coordenadas —, e as geodésicas: as equações, o que se conserva, e as órbitas
-por quadratura. O que falta pede transporte paralelo, base ortonormal, ou
-achar uma transformação.</p>
+coordenadas —, as geodésicas (as equações, o que se conserva, e as órbitas
+por quadratura) e a base ortonormal com as formas de Cartan. O que falta pede
+transporte paralelo, componentes de ∇A, ou achar uma transformação.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -1545,7 +1545,7 @@ o Riemann e o escalar de curvatura.</p>
     <code>\phi = \phi(x)</code> não era aceita, e a métrica saía plana.</p>
 </div>
 
-<h3>40 e 41. Schwarzschild e a família f(r) <span class="pill aviso">em parte</span></h3>
+<h3>40 e 41. Schwarzschild e a família f(r) <span class="pill ok">resolve</span> (40, 41)</h3>
 
 <div class="enunciado" id="enunciado-40">
   <p class="titulo-enunciado">Enunciado 40 · Símbolos de Christoffel e curvatura de uma métrica estática esfericamente simétrica</p>
@@ -1557,7 +1557,7 @@ o Riemann e o escalar de curvatura.</p>
     <p>Use a ação de uma partícula-teste para escrever as equações da geodésica nesta métrica e, a partir delas, extraia os símbolos de Christoffel nas coordenadas (t, r, θ, φ).</p>
     <p>Use uma base de vierbeins (tétradas) para determinar a 2-forma de curvatura e, a partir dela, as componentes do tensor de Riemann nas coordenadas (t, r, θ, φ).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel, e o Riemann em coordenadas; os vierbeins e a 2-forma de curvatura, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as equações das geodésicas — pelos Christoffel e conferidas com a ação da partícula-teste —, os Christoffel, a tétrada, as 2-formas de curvatura e o Riemann, na base e em coordenadas.</p>
 </div>
 
 <div class="enunciado" id="enunciado-41">
@@ -1575,13 +1575,17 @@ o Riemann e o escalar de curvatura.</p>
     <p>Θ<sub>01</sub> = −Θ<sup>0</sup><sub>1</sub> = (ff″ + f′<sup>2</sup>) e<sup>0</sup> ∧ e<sup>1</sup> &nbsp;(8.50), &nbsp; R<sub>0101</sub> = −R<sub>0110</sub> = ff″ + f′<sup>2</sup> = ½(f<sup>2</sup>)″ = −2M/r<sup>3</sup> &nbsp;(8.51).</p>
     <p><strong>Exercício</strong> (examples sheet 4). Determine as 2-formas de curvatura restantes Θ<sub>02</sub>, Θ<sub>03</sub>, Θ<sub>12</sub>, Θ<sub>13</sub>, Θ<sub>23</sub> (todas as demais se relacionam com estas por (8.46)). A partir daí, determine as componentes do tensor de Riemann. Verifique que o tensor de Ricci se anula.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a última parte — que o Ricci se anula —, em coordenadas; as 2-formas de curvatura Θ e as componentes do Riemann na base ortonormal, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as cinco 2-formas pedidas, as componentes do Riemann na base, e o Ricci nulo.</p>
 </div>
 
-<p>Tong, folha 2, Q11: os Christoffel de
-ds² = −f²dt² + f<sup>−2</sup>dr² + r²dΩ². Reall §8.4 pede as 2-formas de
-curvatura de Schwarzschild numa base ortonormal — a base ortonormal o Sucuri
-não tem; o Ricci nulo, que é a conclusão, sai em coordenadas.</p>
+<p>A base ortonormal: <code>cartan(g)</code> toma a tétrada
+e<sup>a</sup> = √|g<sub>aa</sub>| dx<sup>a</sup> de uma métrica diagonal, acha as
+formas de conexão de de<sup>a</sup> = −ω<sup>a</sup><sub>b</sub>∧e<sup>b</sup> com
+ω<sub>ab</sub> = −ω<sub>ba</sub> — as duas conferidas —, e dá
+Θ<sup>a</sup><sub>b</sub> = dω<sup>a</sup><sub>b</sub> + ω<sup>a</sup><sub>c</sub>∧ω<sup>c</sup><sub>b</sub>,
+na base e em coordenadas, o Riemann R<sub>abcd</sub> e o Ricci na base.
+<code>geodésicas(g)</code> confere as suas equações com as de Euler–Lagrange da
+ação ∫ g(ẋ, ẋ) dλ, que é a rota de Tong.</p>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(t, r, \theta, \varphi)</code>
@@ -1589,15 +1593,24 @@ não tem; o Ricci nulo, que é a conclusão, sai em coordenadas.</p>
   <code class="entrada">g = métrica(-f^2, \frac{1}{f^2}, r^2, r^2 \sin^2\theta)</code>
   <code class="entrada">christoffel(g)</code>
   <samp class="saida">\Gamma^{r}_{{t}{t}}=f(r)**3*Derivative(f(r), r)</samp>
-  <p class="explica">e Γ<sup>t</sup><sub>tr</sub> = f′/f, Γ<sup>r</sup><sub>rr</sub> =
-    −f′/f, Γ<sup>r</sup><sub>θθ</sub> = −rf², todos como na folha.</p>
+  <p class="explica">e Γ<sup>t</sup><sub>tr</sub> = f′/f, Γ<sup>r</sup><sub>rr</sub> = −f′/f, Γ<sup>r</sup><sub>θθ</sub> = −rf², todos como na folha; <code>geodésicas(g)</code> dá as equações de onde a folha os tira.</p>
 </div>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
-  <code class="entrada">g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)</code>
-  <code class="entrada">ricci(g)</code>
-  <samp class="saida">todas as componentes são nulas</samp>
+  <code class="entrada">f = f(r)</code>
+  <code class="entrada">g = métrica(-f^2, f^{-2}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">cartan(g)</code>
+  <samp class="saida">(1 - f(r)**2)/r**2*e^2∧e^3</samp>
+  <p class="explica">a tétrada de Tong, e<sup>0</sup> = f dt, e<sup>1</sup> = dr/f, …, e as seis 2-formas; Θ<sup>0</sup><sub>1</sub> = −(ff″ + f′²) e<sup>0</sup>∧e<sup>1</sup>, que é a (8.50) de Reall.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2m}{r}), \frac{1}{1 - \frac{2m}{r}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">cartan(g)</code>
+  <samp class="saida">Ricci na base = todas as componentes nulas</samp>
+  <p class="explica">41: com f = √(1 − 2m/r), Θ<sup>0</sup><sub>2</sub> = Θ<sup>0</sup><sub>3</sub> = −(m/r³)e<sup>0</sup>∧e<sup>2,3</sup>, Θ<sup>1</sup><sub>2</sub> = Θ<sup>1</sup><sub>3</sub> = −(m/r³)e<sup>1</sup>∧e<sup>2,3</sup>, Θ<sup>2</sup><sub>3</sub> = (2m/r³)e<sup>2</sup>∧e<sup>3</sup>; R<sub>0101</sub> = −2m/r³, R<sub>2323</sub> = 2m/r³; e o Ricci nulo.</p>
 </div>
 
 <h3>42. O plano hiperbólico <span class="pill ok">resolve</span></h3>
@@ -1953,7 +1966,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>onde φ<sub>0</sub> é uma constante. Mostre também que M<sup>2</sup> &gt; 1 para geodésicas tipo tempo, M<sup>2</sup> = 1 para geodésicas nulas e M<sup>2</sup> &lt; 1 para geodésicas tipo espaço. Tratando u e φ como coordenadas cartesianas, esboce o conjunto das geodésicas que partem de (0, 0).</p>
     <p>Mostre, a partir do seu diagrama, que duas dessas geodésicas tipo tempo nunca voltam a se encontrar, mas que geodésicas tipo espaço podem voltar a se cruzar. Demonstre também que há pares de pontos que não podem ser ligados por uma geodésica. Quais dessas afirmações, se alguma, seriam válidas no espaço-tempo de Minkowski?</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel, as equações das geodésicas, as duas integrais primeiras, e as geodésicas tanh u = M sen(φ − φ₀) com M² = 1 − κ/L² — M² &gt; 1, = 1, &lt; 1 para tipo tempo, nula, tipo espaço; e R = 2. O princípio variacional, o esboço e os argumentos tirados do diagrama, não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel, as equações das geodésicas e o princípio variacional (conferido), as duas integrais primeiras, e as geodésicas tanh u = M sen(φ − φ₀) com M² = 1 − κ/L² — M² &gt; 1, = 1, &lt; 1 para tipo tempo, nula, tipo espaço; e R = 2. O esboço, e os argumentos tirados dele — que geodésicas se reencontram, que pares de pontos não se ligam —, não.</p>
 </div>
 
 <div class="exemplo">
@@ -2192,6 +2205,29 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-2*m/r**3</samp>
   <p class="explica">(c): a superfície tem ds² = dr²/(1 − 2m/r) + r²dφ², a fatia equatorial de Schwarzschild; (d): K = R/2 = −m/r³, negativa.</p>
+</div>
+
+<h3>84. Formas de conexão na esfera <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-84">
+  <p class="titulo-enunciado">Enunciado 84 · Coordenadas esféricas, III</p>
+  <p class="fonte">T. Dray, <em>MTH 434/534 – HW #6</em> (Oregon State, inverno de 2024), problema 1, p. 1 — <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw6.pdf">sites.science.oregonstate.edu</a>.</p>
+  <!-- original: "1. SPHERICAL COORDINATES, III. Consider the sphere of radius r, in spherical coordinates (θ,φ), with line element ds² = r² dθ² + sin²θ dφ² [sic: r²(dθ² + sin²θ dφ²)]. (a) Find the connection 1-forms ω^i_j in this basis. (b) Compute Ω^i_j = dω^i_j + ω^i_k ∧ ω^k_j for i, j = 1, 2 (and where there is an implicit sum over k). (c) (Optional for MTH 434/Required for MTH 534) Compare your answers (and your computations) with those from the previous homework assignment." -->
+  <blockquote>
+    <p>Considere a esfera de raio r, em coordenadas esféricas (θ, φ), com elemento de linha ds² = r²(dθ² + sen²θ dφ²). [O original imprime r²dθ² + sin²θ dφ², sem os parênteses.]</p>
+    <p>(a) Encontre as 1-formas de conexão ω<sup>i</sup><sub>j</sub> nessa base.</p>
+    <p>(b) Calcule Ω<sup>i</sup><sub>j</sub> = dω<sup>i</sup><sub>j</sub> + ω<sup>i</sup><sub>k</sub> ∧ ω<sup>k</sup><sub>j</sub> para i, j = 1, 2 (com soma implícita em k).</p>
+    <p>(c) (Opcional para MTH 434, obrigatório para MTH 534.) Compare suas respostas (e seus cálculos) com os da lista anterior.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) e (b); a comparação de (c) fica com o leitor.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">cartan(g)</code>
+  <samp class="saida">sin(theta)*dtheta∧dphi</samp>
+  <p class="explica">na ordem de Dray, e<sup>1</sup> = r dθ e e<sup>2</sup> = r sen θ dφ — aqui e<sup>0</sup>, e<sup>1</sup> —: ω<sup>1</sup><sub>2</sub> = −cos θ dφ, e Ω<sup>1</sup><sub>2</sub> = (1/r²) e<sup>1</sup>∧e<sup>2</sup> = sen θ dθ∧dφ.</p>
 </div>
 
 <h2 id="tensorial">III. Notação tensorial</h2>
@@ -2788,12 +2824,9 @@ um a um: a nota sob cada enunciado diz o que fica de fora.</p>
   <li><strong>44 (Tong 3 Q4).</strong> Campos de Killing explícitos na esfera
     e a álgebra so(3): vetores dados por componentes numa carta não se
     escrevem.</li>
-  <li><strong>37, 41, 42 (em parte).</strong> Componentes de ∇A, base
-    ortonormal e 2-formas de curvatura, equações das geodésicas.</li>
+  <li><strong>37 (em parte).</strong> Componentes de ∇A e o laplaciano vetorial numa carta.</li>
   <li><strong>83 (NYU HW6).</strong> Ricci de −(1+2Φ)dt² + (1−2Φ)dx² em
     ordem linear: o Sucuri calcula exato, e não trunca em Φ.</li>
-  <li><strong>84 (Dray, MTH 434 HW6).</strong> Formas de conexão e de
-    curvatura numa base ortonormal.</li>
   <li><strong>78 (em parte).</strong> Resolver a equação de Ricci para f.</li>
 </ul>
 

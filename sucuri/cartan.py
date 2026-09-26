@@ -55,14 +55,25 @@ def cartan(metrica):
     # O sinal de cada direção, num ponto genérico: as coordenadas valendo 2,9 e
     # os parâmetros 0,31 — fora do horizonte, r > 2m, e com sen θ > 0.
     ponto = {c: sp.Rational(29, 10) for c in x}
+    from sympy.core.function import AppliedUndef
+
     def sinal(c):
+        # f(r), sem forma dada, vale 1,3 no ponto: o sinal de −f² não depende dela.
+        c = c.replace(lambda u: isinstance(u, AppliedUndef), lambda u: sp.Rational(13, 10))
         c = c.subs(ponto)
         c = c.subs({f: sp.Rational(31, 100) for f in c.free_symbols})
         return -1 if sp.N(c) < 0 else 1
     eta = [sinal(G[i, i]) for i in range(n)]
     def raiz(c):
-        c = sp.powdenest(sp.sqrt(sp.factor(sp.simplify(c))), force=True)
-        return sp.simplify(c.replace(lambda u: isinstance(u, sp.Abs), lambda u: u.args[0]))
+        # √(r/(r − 2m)) e não √r·√(−1/(2m − r)): numerador e denominador com o
+        # sinal que têm no ponto genérico, cada um na sua raiz.
+        num, den = sp.fraction(sp.cancel(sp.simplify(c)))
+        if sinal(den) < 0:
+            num, den = sp.expand(-num), sp.expand(-den)
+        def r1(u):
+            u = sp.powdenest(sp.sqrt(sp.factor(u)), force=True)
+            return u.replace(lambda w: isinstance(w, sp.Abs), lambda w: w.args[0])
+        return r1(num) / r1(den)
     fator = [raiz(eta[i] * G[i, i]) for i in range(n)]
     e = sp.diag(*fator)                     # e^a_μ
     E = sp.diag(*[1 / f for f in fator])    # E_a^μ
@@ -103,43 +114,65 @@ def cartan(metrica):
             "theta": theta, "R": R, "x": x}
 
 
-def _nome(i):
-    return f"e^{i}"
+def _texto(coeficientes):
+    """[(coef, rótulo)] → 'c₁ rótulo₁ + c₂ rótulo₂' em sstr e em LaTeX."""
+    termos = [(sp.simplify(c), r) for c, r in coeficientes if sp.simplify(c) != 0]
+    if not termos:
+        return "0", "0"
+    def um(c, r, lat):
+        v = sp.latex(c) if lat else sp.sstr(c)
+        if c == 1:
+            return r
+        if c == -1:
+            return "-" + r
+        if isinstance(c, sp.Add):
+            v = f"({v})"
+        return f"{v} {r}" if lat else f"{v}*{r}"
+    txt = " + ".join(um(c, r[0], False) for c, r in termos).replace("+ -", "- ")
+    lat = " + ".join(um(c, r[1], True) for c, r in termos).replace("+ -", "- ")
+    return txt, lat
 
 
-def em_formas(res):
-    """As formas como texto: ω^a_b em dx, Θ^a_b em e^c ∧ e^d."""
-    x, n = res["x"], len(res["x"])
-    linhas = []
+def em_formas(res, escrita=None):
+    """(rótulo, texto, latex) de e^a, ω^a_b, Θ^a_b (na base e em dx), R_{abcd}
+    e o Ricci na base."""
+    escrita = escrita or {}
+    x, n, eta = res["x"], len(res["x"]), res["eta"]
+    dx = [("d" + str(c), r"\mathrm{d}" + escrita.get(str(c), str(c))) for c in x]
+    ee = lambda c, d: (f"e^{c}∧e^{d}", f"e^{{{c}}}\\wedge e^{{{d}}}")
+    dxdx = lambda c, d: (f"{dx[c][0]}∧{dx[d][0]}", f"{dx[c][1]}\\wedge {dx[d][1]}")
+    linhas = [("η", str(tuple(eta)), sp.latex(sp.diag(*eta)))]
     for a in range(n):
-        linhas.append((f"e^{a}", res["e"][a] * sp.Symbol("d" + str(x[a]))))
+        t, l = _texto([(res["e"][a], dx[a])])
+        linhas.append((f"e^{a}", t, f"e^{{{a}}} = " + l))
     for a in range(n):
         for b in range(a + 1, n):
-            w = sum(res["omega"][a][b][m] * sp.Symbol("d" + str(x[m])) for m in range(n))
-            w = sp.simplify(w)
-            if w != 0:
-                linhas.append((f"ω^{a}_{b}", w))
+            t, l = _texto([(res["omega"][a][b][m], dx[m]) for m in range(n)])
+            if t != "0":
+                linhas.append((f"ω^{a}_{b}", t, f"\\omega^{{{a}}}{{}}_{{{b}}} = " + l))
     for a in range(n):
         for b in range(a + 1, n):
-            t = sum(res["R"][a, b, c, d] * sp.Symbol(f"e{c}e{d}")
-                    for c in range(n) for d in range(c + 1, n))
-            t = sp.simplify(t)
-            if t != 0:
-                linhas.append((f"Θ^{a}_{b}", t))
-    return linhas
-
-
-def riemann_ortonormal(res):
-    """R_{abcd} = η_aa R^a_{bcd}, não nulas e a menos das simetrias: a < b, c < d, (ab) ≤ (cd)."""
-    n = len(res["x"])
-    saida = []
+            pares = [(c, d) for c in range(n) for d in range(c + 1, n)]
+            t, l = _texto([(res["R"][a, b, c, d], ee(c, d)) for c, d in pares])
+            if t != "0":
+                tc, lc = _texto([(res["theta"][a, b][c][d], dxdx(c, d)) for c, d in pares])
+                linhas.append((f"Θ^{a}_{b}", f"{t}  =  {tc}", f"\\Theta^{{{a}}}{{}}_{{{b}}} = {l} = {lc}"))
     for a in range(n):
         for b in range(a + 1, n):
             for c in range(n):
                 for d in range(c + 1, n):
                     if (a, b) > (c, d):
                         continue
-                    v = sp.simplify(res["eta"][a] * res["R"][a, b, c, d])
+                    v = sp.simplify(eta[a] * res["R"][a, b, c, d])
                     if v != 0:
-                        saida.append((f"R_{{{a}{b}{c}{d}}}", v))
-    return saida
+                        linhas.append((f"R_{a}{b}{c}{d}", sp.sstr(v), f"R_{{{a}{b}{c}{d}}} = " + sp.latex(v)))
+    ricci = [[sp.simplify(sum(res["R"][c, a, c, b] for c in range(n))) for b in range(n)] for a in range(n)]
+    nulo = all(ricci[a][b] == 0 for a in range(n) for b in range(n))
+    if nulo:
+        linhas.append(("Ricci na base", "todas as componentes nulas", "R_{ab} = 0"))
+    else:
+        for a in range(n):
+            for b in range(a, n):
+                if ricci[a][b] != 0:
+                    linhas.append((f"R_{a}{b}", sp.sstr(ricci[a][b]), f"R_{{{a}{b}}} = " + sp.latex(ricci[a][b])))
+    return linhas

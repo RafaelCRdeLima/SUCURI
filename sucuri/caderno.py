@@ -129,6 +129,7 @@ VERBOS = {
     "volume": "volume", "serie": "serie", "série": "serie",
     "orbitas": "orbitas", "órbitas": "orbitas",
     "elemento": "elemento",
+    "cartan": "cartan", "tetrada": "cartan", "tétrada": "cartan",
     **VERBOS_GEOMETRIA,
 }
 
@@ -587,6 +588,8 @@ class Caderno:
             linhas.append([nome, sp.sstr(eq), sp.latex(eq)])
         for rotulo, q in conservadas:
             linhas.append([f"conserva-se ({rotulo})", sp.sstr(q), sp.latex(q)])
+        linhas.append(["pela ação", "as equações de Euler–Lagrange de ∫ g(ẋ,ẋ) dλ "
+                       "são −2g_ab vezes estas: conferido"])
         return {"alvo": alvo, "rotulo": f"geodésicas de {alvo}, com parâmetro afim λ",
                 "linhas": linhas, "nomeados": nomeados,
                 "exato": "; ".join(sp.sstr(e) for e in equacoes),
@@ -1094,6 +1097,19 @@ class Caderno:
             return self._geodesicas(alvo)
         if verbo == "orbitas":
             return self._orbitas(alvo)
+        if verbo == "cartan":
+            from .cartan import SemBase, cartan, em_formas
+            try:
+                metrica = self._metrica_de(alvo)
+                linhas = em_formas(cartan(metrica), metrica.escrita)
+            except (KeyError, SemBase) as e:
+                return {"erro": str(e.args[0]), "alvo": alvo}
+            return {"alvo": alvo, "rotulo": f"base ortonormal de {alvo}",
+                    "linhas": [list(l) for l in linhas],
+                    "exato": "; ".join(f"{l[0]} = {l[1]}" for l in linhas),
+                    "texto": ("tétrada e^a = √|g_aa| dx^a; ω^a_b de de^a = −ω^a_b∧e^b, "
+                              "com ω_ab = −ω_ba — as duas conferidas —; Θ^a_b = "
+                              "dω^a_b + ω^a_c∧ω^c_b = ½R^a_bcd e^c∧e^d")}
         if verbo == "elemento":
             from .geometria import elemento_de_linha
             try:
