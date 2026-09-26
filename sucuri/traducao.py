@@ -75,6 +75,9 @@ class Tradutor:
                 raise SemTraducao(f"'{expr.name}' não é vetor declarado")
             return self.espaco.cabeca(expr.name, 1)(a)
         if isinstance(expr, DerivadaCovariante):
+            if expr.acento:
+                raise SemTraducao("a ponte para índices conhece uma ∇ só: "
+                                  f"\\{expr.acento}{{\\nabla}} fica sem índice")
             b = self.mudo()
             return self.vetor(expr.direcao, b) * \
                 self._nabla(self.vetor(expr.operando, a), -b)

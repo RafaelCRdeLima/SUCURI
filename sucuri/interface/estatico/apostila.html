@@ -148,8 +148,8 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
   <tr><td>componentes (25)</td><td>21</td><td>4</td><td>0</td></tr>
-  <tr><td>tensorial (30)</td><td>20</td><td>8</td><td>2</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>64</strong></td><td><strong>18</strong></td><td><strong>3</strong></td></tr>
+  <tr><td>tensorial (30)</td><td>21</td><td>8</td><td>1</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>65</strong></td><td><strong>18</strong></td><td><strong>2</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -2708,6 +2708,55 @@ R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
     sai do mesmo jeito.</p>
 </div>
 
+<h3>22. A diferença de duas conexões <span class="pill ok">resolve</span></h3>
+
+<div class="enunciado" id="enunciado-22">
+  <p class="titulo-enunciado">Enunciado 22 · A diferença de duas conexões é um tensor</p>
+  <p class="fonte">H. S. Reall, <em>Part III General Relativity</em> (2022), §3.1 “Introduction”, exercício logo após a eq. (3.10), p. 33 (p. 34 do PDF) — <a href="https://www.damtp.cam.ac.uk/user/hsr1000/part3_gr_lectures.pdf">damtp.cam.ac.uk</a>.</p>
+  <!-- original: "Exercise. Let ∇ and ∇̃ be two different connections on M. Show that ∇ − ∇̃ is a (1, 2) tensor field. You can do this either from the definition of a connection, or from the transformation law for the connection components." -->
+  <blockquote>
+    <p>Sejam ∇ e ∇̃ duas conexões diferentes em M. Mostre que ∇ − ∇̃ é um campo tensorial do tipo (1, 2). Isso pode ser feito a partir da definição de conexão ou a partir da lei de transformação das componentes da conexão.</p>
+  </blockquote>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> pela definição de conexão: (∇ − ∇̃)<sub>X</sub>Y é linear sobre funções nos dois slots — o que faz dele um tensor (1, 2) —, e, se as duas não têm torção, simétrico.</p>
+</div>
+
+<p>Um acento no ∇ — <code>\tilde\nabla</code>, <code>\hat\nabla</code>,
+<code>\bar\nabla</code> — é outra conexão. Dela o motor só sabe o que vale para
+toda conexão: linear sobre funções na direção, Leibniz no operando, e
+∇̃<sub>X</sub>f = X(f) numa função.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla_{f X + Z} (h Y) - \tilde\nabla_{f X + Z} (h Y) = f h \cdot (\nabla_X Y - \tilde\nabla_X Y) + h \cdot (\nabla_Z Y - \tilde\nabla_Z Y)</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">os dois X(h)Y de Leibniz se cancelam: a diferença é linear sobre funções nos dois slots, e é um tensor — ao contrário de cada ∇.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\nabla_X (h Y) - \tilde\nabla_X (h Y) = h \nabla_X Y</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="erro-esperado">não achei combinação das hipóteses que dê isto</samp>
+  <p class="explica">e o motor não confunde as duas: sem ∇̃ = 0 declarada, isto não sai.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\tilde\nabla_X Y - \tilde\nabla_Y X = [X, Y]</code>
+  <code class="entrada">\nabla_X Y - \nabla_Y X = [X, Y]</code>
+  <code class="entrada">(\nabla_X Y - \tilde\nabla_X Y) - (\nabla_Y X - \tilde\nabla_Y X) = 0</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">provado a partir de eq1, eq2</samp>
+  <p class="explica">com as duas sem torção, a diferença é simétrica — como o δΓ<sup>μ</sup><sub>νρ</sub> que Reall usa ao variar a ação de Einstein–Hilbert.</p>
+</div>
+
 <h3>23. A fórmula de Koszul <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-23">
@@ -3771,8 +3820,6 @@ desenho além do cálculo.</p>
 <h3>Notação tensorial</h3>
 
 <ul class="limites">
-  <li><strong>22 (Reall §3.1).</strong> A diferença de duas conexões: o
-    Sucuri conhece uma ∇ só.</li>
   <li><strong>34 (Cambridge DG 2 Q11).</strong> Maurer–Cartan pede as
     constantes de estrutura numa base de campos invariantes — soma sobre
     índices de base, que a notação sem índice não escreve.</li>
