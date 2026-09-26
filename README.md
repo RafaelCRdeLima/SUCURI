@@ -282,6 +282,143 @@ No caminho, dois silêncios, agora com teste:
 - `\nabla_\mu T^\alpha{}_\beta` com β não declarado derivava `T**alpha` como
   escalar. Agora recusa.
 
+### ∇ aberto em Γ, e Γ em ∂g
+
+```
+\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda     eq1
+\Gamma = christoffel(eq1)
+
+\nabla_\rho T^\mu{}_\nu = …                 expandir(eq2)     →  ∂T + Γ T − Γ T
+\partial_\lambda g_{\mu\nu} = g Γ + g Γ     expandir(eq2, g)  →  True
+g_{\mu\kappa} \partial_\lambda g^{\kappa\nu} = -g^{\kappa\nu} \partial_\lambda g_{\mu\kappa}
+                                            simplificar       →  True
+```
+
+A ordem dos slots de Γ varia como a do Riemann: Carroll e MTW põem o índice da
+derivada primeiro, Reall por último. Com torção a diferença importa, e por isso
+`\Gamma = christoffel(eq1)` a lê da definição escrita, que tem de ser ∇ num
+vetor. `expandir(eq)` troca cada ∇ — também ∇ dentro de ∇ — por ∂ mais um Γ
+por índice: + no de cima, − no de baixo. `expandir(eq, g)` escreve ainda cada Γ
+(e cada ∂Γ) por ½g(∂g + ∂g − ∂g), o que só vale para Levi-Civita e só se faz
+com `\nabla = levi-civita` declarada; com ela, Γ é simétrico nos slots de
+baixo. Numa equação, a resposta é `True` quando os lados coincidem.
+
+∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ} não é hipótese: é o que "inversa" quer
+dizer, e o `simplificar` a aplica sempre que há métrica declarada; g^μ{}_ν é δ,
+e sua derivada é zero.
+
+Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
+`christoffel` das componentes numa carta continua o mesmo.
+
+### O Ricci e o escalar, e a dimensão como letra
+
+```
+\mu, \nu, \rho, \sigma = índices(d)
+R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}              eq2
+R = ricci(eq2)
+
+R^\rho{}_{\mu\nu\rho}              simplificar →  −Ric(−μ, −ν)
+g^{\mu\nu} R_{\mu\nu}               simplificar →  R
+R_{\mu\nu} - R_{\nu\mu}              simplificar →  0
+```
+
+A mesma letra para o Riemann, o Ricci e o escalar, como nos livros: o posto
+distingue. Qual par o Ricci contrai (e com que sinal) varia de livro para
+livro, e `R = ricci(eq)` lê da definição escrita; o escalar é g^{μν}R_{μν}.
+Por dentro, R com dois índices é outra cabeça, `Ric` — um tensor tem um posto
+só. Ao simplificar, os dois viram contrações do Riemann, a canonização as
+compara, e o que coincide com a definição volta a ser R_{μν} ou R.
+
+Com `\nabla = levi-civita` e a métrica declaradas, o Riemann ganha as
+simetrias que são teorema: antissimetria no primeiro par e troca de pares. Daí
+sai a simetria do Ricci. Sem a métrica, só a antissimetria que vem do
+comutador. E a saída é escrita na ordem da convenção — o índice de cima no
+slot de ρ —, e não na que a canonização prefere.
+
+`índices(d)` deixa a dimensão como letra: g^μ{}_μ = d, e as contas "em d
+dimensões" saem com os coeficientes simplificados. O que pede um número —
+ε, a assinatura — recusa.
+
+### provar com índice
+
+```
+\nabla_a T^{ab} = 0                          eq1
+\nabla_a X_b + \nabla_b X_a = 0              eq2
+\nabla_a (T^{ab} X_b) = 0                    eq3
+provar(eq3, eq1, eq2)
+    eq1 [b→L_1] × X(-L_1)
+    1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)
+```
+
+O mesmo verbo, e a mesma ideia de sem índice: a prova é uma combinação linear
+de relações tiradas das hipóteses, conferida de novo antes do ∎. De H = 0
+valem também H com os índices livres trocados ou contraídos (pela métrica), H
+vezes qualquer tensor, ∇H e ∇∇H. A busca casa cada termo do objetivo com um
+termo dessas formas, módulo as simetrias declaradas, e disso tira a troca de
+índices e o fator; os termos novos viram alvos, algumas rodadas, aprofundando
+em ∇ só quando precisa.
+
+Com `\nabla = levi-civita` e o Riemann declarados, R^ρ{}_{[σμν]} = 0 — a
+primeira identidade de Bianchi, teorema da torção nula — entra sem ser
+hipótese, e o certificado diz quando a usou. Saem assim a conservação de
+T^{ab}X_b com X de Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, a Bianchi contraída a
+partir da segunda identidade de Bianchi, e |∇φ|² + R constante quando
+∇∇φ = Ric (com a Bianchi contraída como lema). Cada uma tem um par falso que
+não sai.
+
+### Contar, conferir em componentes, linearizar
+
+```
+\mu, \nu, \rho, \sigma = índices(4)
+independentes(R)                     20      o Riemann, com Bianchi
+independentes(C, eq1, eq2)           10      o Weyl: e cíclico e sem traço
+em_componentes(eq3)                  True    em índices(2): R_{μν} = ½ R g_{μν}
+linearizar(eq2, h)                   True    g = η + εh, até ordem ε
+x = coordenadas                              ∂_j x^i = δ^i_j
+```
+
+`independentes(T, eq…)` conta: cada componente é uma incógnita, as simetrias
+declaradas as identificam ou zeram, e cada equação dada — linear em T, com g,
+δ, ε — vira uma equação por valor dos índices. Zero quer dizer que só o tensor
+nulo tem aquelas propriedades naquela dimensão: é assim que o Weyl some em
+d = 2, 3. A métrica da contagem é a euclidiana; a dimensão do espaço de
+soluções não depende da assinatura.
+
+`em_componentes(eq)` confere uma identidade com o tensor mais geral que as
+declarações permitem (o Riemann com as suas simetrias e Bianchi) e uma
+métrica simétrica qualquer, componente por componente. Se vale para o mais
+geral, vale para todos.
+
+`linearizar(eq, h)` abre ∇ em Γ e Γ em ∂g, troca g_{ab} por η_{ab} + εh_{ab},
+a inversa por η^{ab} − εh^{ab}, ∂g por ε∂h, e corta em ordem ε. O η fica com o
+nome da métrica, e é ele que sobe e desce os índices de h.
+
+`x = coordenadas`, sem argumentos, são as coordenadas com índice: ∂_j x^i =
+δ^i_j, e ∇x é recusado — x^i não é campo vetorial.
+
+### O determinante, e a carta cartesiana
+
+```
+g = métrica(-,+,+,+)
+g = det(g)                     g sem índice é det g_{μν}
+
+\nabla_\mu V^\mu = \frac{1}{\sqrt{-g}} \partial_\mu (\sqrt{-g} V^\mu)      expandir(eq, g) → True
+\Gamma^\beta{}_{\alpha\beta} = \partial_\alpha (\ln \sqrt{-g})              expandir(eq, g) → True
+```
+
+Os livros escrevem g, sem índice, para o determinante; o Sucuri só lê assim
+com `g = det(g)` declarado (o nome pode ser outro), e sem isso recusa: g sem
+índice, sendo g tensor, é ambíguo. Declarado, ∂_λ g = g g^{μν} ∂_λ g_{μν} — a
+fórmula de Jacobi — ao simplificar, e o sinal de g vem da assinatura: na
+lorentziana, g < 0 e |g| = −g.
+
+∂ não comuta com levantar índice: ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ), com ∂g. O
+Sucuri deriva cada tensor na valência **declarada** — `tensor(1,0)` é de cima,
+o índice de uma derivada é de baixo — e põe g explícito no resto. Numa carta
+cartesiana ∂g = 0 e a diferença some, mas a carta é declaração:
+`g = métrica(cartesiana)`, ou `g = métrica(-,+,+,+, constante)` para uma carta
+inercial. `métrica(euclidiana)` diz só a assinatura.
+
 A derivada **sem** índice, ∇_U X, é a seção seguinte.
 
 ### Simetria declarada

@@ -100,17 +100,22 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>u = u(t,x)</code></td><td>u é função de t e x</td></tr>
   <tr><td><code>e = euler</code></td><td>e é o número de Euler, não um símbolo</td></tr>
   <tr><td><code>a = símbolo</code></td><td>a não é função: <code>a(x+1)</code> é produto</td></tr>
-  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais — <code>índices(3)</code> dá a dimensão</td></tr>
+  <tr><td><code>\mu, \nu = índices</code></td><td>índices tensoriais — <code>índices(3)</code> dá a dimensão; <code>índices(d)</code>, uma letra</td></tr>
   <tr><td><code>T = tensor(0,2)</code></td><td>o tipo do Schutz: 0 formas, 2 vetores</td></tr>
   <tr><td><code>F = tensor(0,2, antissimétrico)</code></td><td>e a simetria dos slots: <code>simétrico</code>, <code>antissimétrico</code>, <code>riemann</code></td></tr>
   <tr><td><code>\omega = forma(2)</code></td><td>uma 2-forma — um (0,2) antissimétrico</td></tr>
   <tr><td><code>g = métrica</code></td><td>a métrica: baixa e levanta índice, e é simétrica</td></tr>
   <tr><td><code>g = métrica(-,+,+,+)</code></td><td>com a assinatura, escrita em sinais</td></tr>
+  <tr><td><code>g = métrica(cartesiana)</code></td><td>euclidiana e constante, ∂g = 0; ou <code>(-,+,+,+, constante)</code></td></tr>
+  <tr><td><code>x = coordenadas</code></td><td>x<sup>i</sup>, as coordenadas com índice: ∂<sub>j</sub>x<sup>i</sup> = δ<sup>i</sup><sub>j</sub></td></tr>
+  <tr><td><code>g = det(g)</code></td><td>g sem índice é det g<sub>μν</sub>: √−g, ln|g|</td></tr>
   <tr><td><code>g = métrica(…componentes…)</code></td><td>com as componentes da diagonal (seção 8)</td></tr>
   <tr><td><code>\delta = kronecker</code></td><td>a delta: δ<sup>μ</sup><sub>ν</sub></td></tr>
   <tr><td><code>\epsilon = levi-civita(tensor)</code></td><td>ou <code>(símbolo)</code> — os livros não fazem igual</td></tr>
   <tr><td><code>\nabla = levi-civita</code></td><td>a conexão: ∇g = 0, sem torção</td></tr>
   <tr><td><code>R = riemann(eq1)</code></td><td>o Riemann, na convenção que eq1 escreve</td></tr>
+  <tr><td><code>R = ricci(eq2)</code></td><td>R<sub>μν</sub> e R, contrações do Riemann, na convenção que eq2 escreve</td></tr>
+  <tr><td><code>\Gamma = christoffel(eq1)</code></td><td>os Christoffel, na ordem de slots que eq1 escreve</td></tr>
   <tr><td><code>R = curvatura</code></td><td>R(U,X)W é o operador de curvatura, sem índice</td></tr>
   <tr><td><code>\star = hodge</code></td><td>o dual de Hodge (pede a assinatura)</td></tr>
 </table>
@@ -237,9 +242,64 @@ rascunho da linha de cima não provaria nada.</p>
   <samp class="saida">nabla_Y(eq1)</samp>
   <p class="explica">cada linha da resposta diz de que hipótese veio e o que
     se fez com ela — aqui, ∇<sub>Y</sub> aplicado aos dois lados de eq1 —, e a
-    soma é conferida de novo antes do ∎. O verbo trabalha sem índice — com a
-    conexão e com formas (seções 9 e 10); quando não acha, diz que não achar
-    não é prova de que é falso.</p>
+    soma é conferida de novo antes do ∎. Sem índice, trabalha com a conexão e
+    com formas (seções 9 e 10); quando não acha, diz que não achar não é prova
+    de que é falso.</p>
+</div>
+
+<p>Com índice, o mesmo verbo. As relações que a busca tira de cada hipótese
+são as que valem para qualquer equação tensorial: trocar os índices livres
+(e contraí-los, com a métrica), multiplicar por um tensor, aplicar ∇ uma ou
+duas vezes. Com Levi-Civita e o Riemann declarados, a primeira identidade de
+Bianchi entra como teorema, e a prova a cita quando usa.</p>
+
+<div class="exemplo">
+  <code class="entrada">a, b = índices</code>
+  <code class="entrada">T = tensor(2, 0, simétrico)</code>
+  <code class="entrada">X = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_a T^{ab} = 0</code>
+  <code class="entrada">\nabla_a X_b + \nabla_b X_a = 0</code>
+  <code class="entrada">\nabla_a (T^{ab} X_b) = 0</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)</samp>
+  <p class="explica">a corrente de um campo de Killing é conservada: eq1
+    vezes X, mais ½ eq2 vezes T. As duas notações não se misturam numa prova:
+    hipótese sem índice num objetivo com índice é recusada.</p>
+</div>
+
+<h3>independentes, em_componentes, linearizar</h3>
+
+<p>Três verbos para o que a álgebra de índices não alcança sozinha, todos
+numa dimensão dada em número — <code>índices(4)</code>:</p>
+
+<table class="tabela">
+  <tr><td><code>independentes(T, eq…)</code></td><td>quantas componentes de T
+    sobram, com as simetrias declaradas e as equações dadas (lineares em T).
+    Zero: só o tensor nulo tem essas propriedades. O Riemann com Levi-Civita
+    leva a primeira identidade de Bianchi junto.</td></tr>
+  <tr><td><code>em_componentes(eq)</code></td><td>confere a identidade com o
+    tensor mais geral que as declarações permitem e uma métrica qualquer,
+    componente por componente.</td></tr>
+  <tr><td><code>linearizar(eq, h)</code></td><td>g = η + εh até a primeira
+    ordem em ε: abre ∇ em Γ e Γ em ∂g, troca g e ∂g, e corta.</td></tr>
+</table>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices(2)</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">R_{\mu\nu} = R^\rho{}_{\mu\rho\nu}</code>
+  <code class="entrada">R = ricci(eq2)</code>
+  <code class="entrada">R_{\mu\nu} = \frac{1}{2} R g_{\mu\nu}</code>
+  <code class="entrada">em_componentes(eq3)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">em duas dimensões, o tensor de Einstein é identicamente
+    nulo. Em <code>índices(3)</code>, <code>False</code>.</p>
 </div>
 
 <h3>contrair, indices</h3>
@@ -247,7 +307,10 @@ rascunho da linha de cima não provaria nada.</p>
 <p><code>contrair</code> baixa e levanta índice com a métrica (seção 7);
 <code>indices</code> escreve com índice o que foi escrito sem (seção 11). Os
 verbos de componentes — <code>christoffel</code>, <code>riemann</code>,
-<code>ricci</code>, <code>escalar</code> — estão na seção 8.</p>
+<code>ricci</code>, <code>escalar</code> — estão na seção 8.
+<code>expandir</code> abre ∇ em ∂ e Γ, com índice (seção 7) — e
+<code>\Gamma = christoffel(eq1)</code>, com um nome à esquerda, não é o verbo
+de componentes: é a declaração da convenção de Γ.</p>
 
 <h2 id="respostas">5. O que cada resposta quer dizer</h2>
 
@@ -427,6 +490,29 @@ definição que você escreveu:</p>
   <p class="explica">o sinal e a ordem dos slots do Riemann variam de livro
     para livro; <code>riemann(eq1)</code> os lê da identidade escrita. E
     <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
+</div>
+
+<p>E ∇ se abre em ∂ e Γ. A ordem dos slots de Γ também varia — Carroll põe o
+índice da derivada primeiro, Reall por último —, e por isso também é lida da
+definição. <code>expandir(eq)</code> troca cada ∇ por ∂ mais um Γ por índice
+(+ no de cima, − no de baixo); <code>expandir(eq, g)</code> escreve também
+cada Γ pela métrica, o que só vale — e só se faz — com
+<code>\nabla = levi-civita</code>. Numa equação, a resposta é
+<code>True</code> quando os dois lados coincidem.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\partial_\lambda g_{\mu\nu} = g_{\mu\sigma} \Gamma^\sigma{}_{\nu\lambda} + g_{\nu\sigma} \Gamma^\sigma{}_{\mu\lambda}</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">∂<sub>λ</sub>g<sup>μν</sup> = −g<sup>μα</sup>g<sup>νβ</sup>∂<sub>λ</sub>g<sub>αβ</sub>
+    — o que “inversa” quer dizer — o <code>simplificar</code> aplica sempre
+    que há métrica declarada.</p>
 </div>
 
 <h2 id="componentes">8. Componentes numa carta</h2>
@@ -706,7 +792,8 @@ com o motivo.</p>
   <li><strong><code>provar</code></strong> encadeia hipóteses por álgebra
     linear, com uma busca finita: prova que pede uma <em>ideia</em> — introduzir
     uma quantidade que não aparece no enunciado — não sai, e prova que pede
-    muitas instâncias encadeadas pode demorar. Só trabalha sem índice.</li>
+    muitas instâncias encadeadas pode demorar. Com índice, vai até ∇∇ das
+    hipóteses.</li>
   <li><strong>Formas</strong>: a fórmula de dω nos vetores entra como
     hipótese, porque muda de fator com a normalização; o codiferencial
     δ = ±⋆d⋆ não vem pronto, porque o sinal é de convenção.</li>

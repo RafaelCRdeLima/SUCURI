@@ -709,6 +709,49 @@ class Document:
         self._espaco._cabecas.pop(limpo, None)
         return self
 
+    def christoffel(self, nome, convencao):
+        """Γ, na convenção extraída da definição escrita de ∇."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._espaco.christoffel = (limpo, convencao)
+        self._espaco._cabecas.pop(limpo, None)
+        return self
+
+    def coordenada_indice(self, nome):
+        """x^i, as coordenadas com índice: ∂_j x^i = δ^i_j."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.coordenada = _limpo_indice(nome)
+        return self
+
+    def ricci(self, convencao):
+        """R_{μν} e R como contrações do Riemann, na convenção da definição."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.ricci = convencao
+        return self
+
+    def metrica_constante(self):
+        """∂g = 0: a carta é cartesiana (ou inercial). É declaração sobre a
+        carta, e não sobre o espaço — em polares, a mesma métrica não é."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.metrica_constante = True
+        return self
+
+    def determinante(self, nome):
+        """det g, sem índice — que pode ter o nome da própria métrica."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        self._espaco.determinante = _limpo_indice(nome)
+        return self
+
     def levi_civita(self, nome, qual):
         """ε, com a escolha que os livros não fazem igual: 'tensor' ou 'simbolo'."""
         from .tensores import DIMENSAO_PADRAO, Espaco

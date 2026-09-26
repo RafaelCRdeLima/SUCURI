@@ -50,12 +50,16 @@ _RE_COMANDO = re.compile(r"^\s*([A-Za-z_]\w*)\s*\(\s*(" + _ROTULO + r")\s*"
 # hipóteses é justamente o que não pode ficar implícito.
 _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
                         r"(?:\s*,\s*" + _ROTULO + r")*)\s*\)\s*$", re.I)
+# `independentes(C, eq3, eq4)`: um tensor e as equações que ele satisfaz.
+_RE_INDEPENDENTES = re.compile(r"^\s*(?:independentes|independent)\s*\(\s*(" +
+                               _ROTULO + r"(?:\s*,\s*" + _ROTULO +
+                               r")*)\s*\)\s*$", re.I)
 # `\omega = forma(2)`: uma 2-forma — um (0,2) antissimétrico.
 _RE_FORMA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\(\s*(\d+)\s*\)\s*$",
                        re.I)
 # `R = riemann(eq1)`: R é o Riemann de ∇, na convenção que eq1 escreve.
-_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*riemann\s*\(\s*(" +
-                         _ROTULO + r")\s*\)\s*$", re.I)
+_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(riemann|christoffel|ricci)\s*"
+                         r"\(\s*(" + _ROTULO + r")\s*\)\s*$", re.I)
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -89,9 +93,10 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
-                         r"|curvatura|kronecker|hodge"
+                         r"|curvatura|kronecker|hodge|coordenadas?"
+                         r"|det(?:erminante)?\s*\(\s*\\?[A-Za-z]\w*\s*\)"
                          r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
-                         r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
+                         r"|metric|[ií]ndices?(?:\s*\(\s*(?:\d+|[A-Za-z]\w*)\s*\))?)\s*$", re.I)
 
 VERBOS_GEOMETRIA = {
     "christoffel": "christoffel", "cristoffel": "christoffel",
@@ -109,6 +114,10 @@ VERBOS = {
     "conferir": "conferir", "check": "conferir", "verificar": "conferir",
     "contrair": "contrair", "contract": "contrair",
     "indices": "indices", "índices": "indices", "indexar": "indices",
+    "expandir": "expandir", "expand": "expandir",
+    "independentes": "independentes", "independent": "independentes",
+    "em_componentes": "em_componentes",
+    "linearizar": "linearizar", "linearize": "linearizar",
     **VERBOS_GEOMETRIA,
 }
 
@@ -216,6 +225,14 @@ def _chave(rotulo):
     return "".join(c for c in (rotulo or "") if c not in "{} \t")
 
 
+def _tem_indice(expr):
+    """Uma expressão (ou igualdade) com tensor de índice?"""
+    from sympy.tensor.tensor import TensExpr
+    if isinstance(expr, sp.Equality):
+        return any(isinstance(l, TensExpr) for l in (expr.lhs, expr.rhs))
+    return isinstance(expr, TensExpr)
+
+
 def _sem_barra(nome):
     """`\\eta` e `eta` nomeiam a mesma coisa; a barra é de escrita."""
     if nome and nome.startswith("\\"):
@@ -309,8 +326,12 @@ class Caderno:
             return celula
 
         riemann = _RE_RIEMANN.match(fonte or "")
+        if riemann and riemann.group(2).lower() == "christoffel":
+            return self._christoffel(riemann.group(1), _sem_barra(riemann.group(3)))
+        if riemann and riemann.group(2) == "ricci":
+            return self._ricci(riemann.group(1), _sem_barra(riemann.group(3)))
         if riemann:
-            return self._riemann(riemann.group(1), _sem_barra(riemann.group(2)))
+            return self._riemann(riemann.group(1), _sem_barra(riemann.group(3)))
 
         especie = _RE_ESPECIE.match(fonte or "")
         if especie:
@@ -328,6 +349,12 @@ class Caderno:
                 "erro": f"a declaração agora se escreve com parênteses: "
                         f"{nome} = {nome}({dentro}). O colchete ficou reservado "
                         f"a n-tupla."})
+
+        contagem = _RE_INDEPENDENTES.match(fonte or "")
+        if contagem:
+            rotulos = [_sem_barra(r.strip()) for r in contagem.group(1).split(",")]
+            return Celula(None, fonte, "comando",
+                          self._independentes(rotulos[0], rotulos[1:]))
 
         prova = _RE_PROVAR.match(fonte or "")
         if prova:
@@ -433,12 +460,21 @@ class Caderno:
         limpo = _sem_barra(nome)
         fonte = fonte_metrica(nome, texto)
         pedacos = [p.strip() for p in texto.split(",")]
-        palavra = texto.strip().lower()
+        constante = False
+        if len(pedacos) > 1 and pedacos[-1].lower() in ("constante", "constant"):
+            constante, pedacos = True, pedacos[:-1]
+        palavra = ",".join(pedacos).strip().lower()
+        if palavra in ("cartesiana", "cartesian"):
+            constante, palavra = True, "euclidiana"
         if palavra in ("lorentziana", "lorentzian", "minkowski"):
             return Celula(None, fonte, "declaracao", {"erro": (
                 "lorentziana, mas qual? (−,+,+,+) e (+,−,−,−) são as duas "
                 "em uso, e contas como εε e g(U,U) mudam de sinal entre elas. "
                 "Escreva os sinais: g = métrica(-,+,+,+)")})
+        if not isinstance(self.sessao.dimensao, int):
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"a assinatura tem um sinal por dimensão, e a dimensão é "
+                f"{self.sessao.dimensao}, uma letra")})
         if palavra in ("riemanniana", "euclidiana", "riemannian", "euclidean"):
             sinais = (1,) * self.sessao.dimensao
         elif pedacos and all(p in ("+", "-", "−") for p in pedacos):
@@ -451,6 +487,7 @@ class Caderno:
                 f"um espaço de dimensão {self.sessao.dimensao}")})
         self.sessao.dimensao = len(sinais)
         self.sessao.assinatura = sinais
+        self.sessao.metrica_constante = constante
         self.sessao.metrica_abstrata = limpo
         self.sessao.tensores.pop(limpo, None)
         escrita = ", ".join("−" if x < 0 else "+" for x in sinais)
@@ -460,7 +497,9 @@ class Caderno:
                            "assinatura": list(sinais)}],
             "texto": (f"{nome} é a métrica do espaço, de assinatura "
                       f"({escrita}) — {negativos} sinal(is) negativo(s), e é "
-                      f"isso que decide o sinal de εε")})
+                      f"isso que decide o sinal de εε" +
+                      ("; e constante — carta cartesiana, ou inercial: ∂g = 0"
+                       if constante else ""))})
 
     def _tensor(self, nome, formas, vetores, simetria=None):
         """`A = tensor(0, 2)` — o tipo do Schutz; `F = tensor(0, 2,
@@ -517,6 +556,58 @@ class Caderno:
         doc = self.sessao.documento()[0]
         return tem_forma(objeto, doc.tensores_com_graus())
 
+    def _christoffel(self, nome, rotulo):
+        """`\Gamma = christoffel(eq1)` — a convenção vem da definição de ∇."""
+        from .christoffel import ChristoffelMalDefinido, convencao_de
+        limpo = _sem_barra(nome)
+        fonte = f"{nome} = christoffel({rotulo})"
+        try:
+            conv = convencao_de(self._objeto(rotulo).to_sympy(), limpo)
+        except (KeyError, ValueError, ChristoffelMalDefinido) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.sessao.christoffel = (limpo, conv)
+        ordem = sorted(conv, key=conv.get)
+        grego = {"cima": "ν", "derivada": "μ", "outro": "λ"}
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "christoffel": conv}],
+            "texto": (f"{nome} são os símbolos de Christoffel de ∇, na convenção "
+                      f"de {rotulo}: ∇_μ V^ν = ∂_μ V^ν + {nome}"
+                      f"({', '.join(grego[k] for k in ordem)}) V^λ. expandir(eq) "
+                      f"abre ∇ em ∂ e {nome}; expandir(eq, g), com Levi-Civita, "
+                      f"escreve {nome} pela métrica")})
+
+    def _ricci(self, nome, rotulo):
+        """`R = ricci(eq2)` — de R_{μν} = R^ρ{}_{μρν}: que par se contrai, e
+        o sinal. O escalar, sem índice, é g^{μν}R_{μν}."""
+        from .ricci import RicciMalDefinido, convencao_de
+        fonte = f"{nome} = ricci({rotulo})"
+        limpo = _sem_barra(nome)
+        if not self.sessao.riemann or self.sessao.riemann[0] != limpo:
+            return Celula(None, fonte, "declaracao", {"erro": (
+                f"o Ricci é uma contração do Riemann, com a mesma letra: "
+                f"declare antes {nome} = riemann(eq)")})
+        try:
+            doc = self.sessao.documento()[0]
+            conv = convencao_de(self._objeto(rotulo).to_sympy(), doc.espaco)
+        except (KeyError, ValueError) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.sessao.ricci = conv
+        # R sem índice é o escalar: R(…) é produto, e não função.
+        self.sessao.anotar("juxtaposition", nome, {}, "product")
+        slots = ["·"] * 4
+        slots[conv["mu"]], slots[conv["nu"]] = "μ", "ν"
+        slots[conv["par"][0]], slots[conv["par"][1]] = "ρ", "ρ"
+        sinal = "" if conv["sinal"] > 0 else "−"
+        escalar = (f"; e {nome}, sem índice, é g^{{μν}}{nome}_{{μν}}"
+                   if self.sessao.metrica_abstrata else
+                   f"; {nome} sem índice, o escalar, pede a métrica declarada")
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "ricci": conv}],
+            "texto": (f"{nome}_{{μν}} = {sinal}{nome}({', '.join(slots)}), "
+                      f"contraído como em {rotulo}" + escalar +
+                      ". Ao simplificar, os dois viram contrações do Riemann, "
+                      "e voltam")})
+
     def _riemann(self, nome, rotulo):
         """`R = riemann(eq1)` — a convenção vem da definição escrita.
 
@@ -558,12 +649,17 @@ class Caderno:
 
         if especie.startswith("índice") or especie.startswith("indice"):
             import re as _re
-            achou = _re.search(r"\((\s*\d+\s*)\)", especie)
-            dimensao = int(achou.group(1)) if achou else None
+            achou = _re.search(r"\(\s*(\d+|[A-Za-z]\w*)\s*\)", especie)
+            dimensao = None
+            if achou:
+                # índices(d): a dimensão como letra, para as contas "em d
+                # dimensões". O que pede número — ε, a assinatura — recusa.
+                dimensao = (int(achou.group(1)) if achou.group(1).isdigit()
+                            else sp.Symbol(achou.group(1)))
             self.sessao.indices.extend(n for n in lista
                                        if n not in self.sessao.indices)
             if dimensao and self.sessao.coordenadas and \
-                    dimensao != len(self.sessao.coordenadas):
+                    str(dimensao) != str(len(self.sessao.coordenadas)):
                 return Celula(None, f"{nomes} = {especie}", "declaracao",
                               {"erro": f"as coordenadas declaram um espaço de "
                                        f"dimensão {len(self.sessao.coordenadas)}, "
@@ -624,12 +720,46 @@ class Caderno:
                             "desce com g. As duas leituras dão contas "
                             "diferentes em contrair, e escolher seria "
                             "adivinhar"})
+            if not isinstance(self.sessao.dimensao, int):
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": f"ε tem um índice por dimensão, e a dimensão é "
+                            f"{self.sessao.dimensao}, uma letra"})
             for n in lista:
                 self.sessao.levi[_sem_barra(n)] = qual
             dim = self.sessao.dimensao
             texto = (f"{', '.join(lista)}: Levi-Civita como "
                      f"{'tensor — sobe e desce com g' if qual == 'tensor' else 'símbolo — ±1 em toda carta, não sobe nem desce com g'}"
                      f"; {dim} índices, totalmente antissimétrico")
+        elif especie.startswith("det"):
+            import re as _re
+            de = _sem_barra(_re.search(r"\(\s*(\\?\w+)\s*\)", especie).group(1))
+            if len(lista) != 1 or de != self.sessao.metrica_abstrata:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "det(g) é o determinante da métrica declarada: "
+                            "declare antes g = métrica, e um nome só para "
+                            "o determinante"})
+            self.sessao.determinante = _sem_barra(lista[0])
+            self.sessao.anotar("juxtaposition", lista[0], {}, "product")
+            h = lista[0]
+            sinal = ""
+            if self.sessao.assinatura:
+                negativos = sum(1 for x in self.sessao.assinatura if x < 0)
+                sinal = (f"; pela assinatura, {h} "
+                         f"{'< 0' if negativos % 2 else '> 0'}, e |{h}| = "
+                         f"{'−' if negativos % 2 else ''}{h}")
+            texto = (f"{h}, sem índice, é det {de}_{{μν}}: ∂_λ {h} = {h} "
+                     f"{de}^{{μν}} ∂_λ {de}_{{μν}} ao simplificar" + sinal)
+        elif especie.startswith("coordenada"):
+            if len(lista) != 1:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "as coordenadas são um nome só, com índice: "
+                            "x = coordenadas, e x^i é a i-ésima"})
+            limpo = _sem_barra(lista[0])
+            self.sessao.coordenada_indice = limpo
+            self.sessao.tensores[limpo] = (1, 0)
+            texto = (f"{lista[0]}^i são as coordenadas: ∂_j {lista[0]}^i = "
+                     f"δ^i_j, e as derivadas segundas são zero. ∇ não se "
+                     f"aplica — {lista[0]}^i não é campo vetorial")
         elif especie == "curvatura":
             for n in lista:
                 limpo = _sem_barra(n)
@@ -728,6 +858,14 @@ class Caderno:
     def _comando(self, verbo, alvo, segundo=None):
         if verbo in VERBOS_GEOMETRIA.values():
             return self._geometria(verbo, alvo)
+        if verbo == "expandir":
+            return self._expandir(alvo, segundo)
+        if verbo == "independentes":
+            return self._independentes(alvo, [segundo] if segundo else [])
+        if verbo == "em_componentes":
+            return self._em_componentes(alvo)
+        if verbo == "linearizar":
+            return self._expandir(alvo, None, linear=segundo)
         try:
             expressao = self._objeto(alvo)
             if verbo in DE_DOIS:
@@ -783,9 +921,12 @@ class Caderno:
                 # simplificar a diferença crua misturava os termos dos dois
                 # lados antes de cada um ter a sua forma, e identidades que
                 # fechavam lado a lado não fechavam juntas.
-                lhs = _simplificar(objeto.lhs, espaco)
-                rhs = _simplificar(objeto.rhs, espaco)
-                diferenca = _simplificar(lhs - rhs, espaco)
+                try:
+                    lhs = _simplificar(objeto.lhs, espaco)
+                    rhs = _simplificar(objeto.rhs, espaco)
+                    diferenca = _simplificar(lhs - rhs, espaco)
+                except ValueError as e:
+                    return {"erro": str(e), "alvo": alvo}
                 objeto = sp.true if diferenca == 0 else sp.Eq(
                     lhs, rhs, evaluate=False)
             elif isinstance(objeto, TensExpr):
@@ -793,7 +934,10 @@ class Caderno:
                 # canonicalização de Butler-Portugal usa — F_{μν} + F_{νμ}
                 # só vira 0 por ela. E a delta declarada é contraída antes.
                 from .tensores import simplificar as _simplificar
-                objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
+                try:
+                    objeto = _simplificar(objeto, self.sessao.documento()[0].espaco)
+                except ValueError as e:
+                    return {"erro": str(e), "alvo": alvo}
             elif self._tem_forma(objeto):
                 from .formas import expressao, normal
                 doc = self.sessao.documento()[0]
@@ -818,6 +962,9 @@ class Caderno:
         except (KeyError, ValueError) as e:
             return {"erro": str(e), "alvo": alvo}
 
+        if _tem_indice(objetivo):
+            return self._provar_indices(alvo, objetivo, dadas)
+
         from .formas import com_graus
         try:
             doc = self.sessao.documento()[0]
@@ -838,6 +985,140 @@ class Caderno:
         tabela.append(["usou", texto])
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
+
+    def _em_componentes(self, alvo):
+        """`em_componentes(eq)`: a identidade vale para o tensor mais geral
+        de cada tipo declarado, e para qualquer métrica, na dimensão dada?"""
+        from .contagem import SemContagem, em_componentes
+        espaco = self.sessao.documento()[0].espaco
+        try:
+            e = self._objeto(alvo).to_sympy()
+            expr = e.lhs - e.rhs if isinstance(e, sp.Equality) else e
+            vale = em_componentes(expr, espaco)
+        except (KeyError, ValueError) as err:
+            return {"erro": str(err), "alvo": alvo}
+        n = espaco.dimensao
+        texto = (f"em dimensão {n}, com a métrica e cada tensor os mais gerais "
+                 f"que as declarações permitem" +
+                 (" (o Riemann com a primeira identidade de Bianchi)"
+                  if espaco.riemann and espaco.conexao == "levi-civita" else "") +
+                 (": vale, componente por componente" if vale else
+                  ": não vale — há um tensor e uma métrica em que falha"))
+        return {"alvo": alvo, "exato": str(vale), "latex_exato": str(vale),
+                "texto": texto}
+
+    def _independentes(self, nome, rotulos):
+        """`independentes(T, eq…)`: quantas componentes de T sobram, com as
+        simetrias declaradas e as equações dadas, na dimensão declarada."""
+        from .contagem import SemContagem, contar
+        espaco = self.sessao.documento()[0].espaco
+        try:
+            eqs = []
+            for r in rotulos:
+                e = self._objeto(r).to_sympy()
+                eqs.append(e.lhs - e.rhs if isinstance(e, sp.Equality) else e)
+            if espaco is None:
+                raise SemContagem("declare os índices, com a dimensão")
+            k, total, simetrias, notas = contar(nome, eqs, espaco)
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e), "alvo": nome}
+        n = espaco.dimensao
+        texto = (f"em dimensão {n}: {total} componentes; as simetrias de {nome} "
+                 f"deixam {simetrias}")
+        if rotulos or notas:
+            texto += ("; com " + ", ".join(list(rotulos) + notas) + f", {k}")
+        texto += (". Nenhuma: só o tensor nulo tem essas propriedades" if k == 0
+                  else "")
+        return {"alvo": nome, "exato": str(k), "latex_exato": str(k),
+                "texto": texto}
+
+    def _provar_indices(self, alvo, objetivo, dadas):
+        """provar com índice: o objetivo como combinação das hipóteses, de
+        seus ∇, e do que a forma canônica e a torção nula já sabem."""
+        from .prova_indices import SemProvaIndices, linhas, provar
+        from .tensores import latex_de, simplificar as _simplificar
+        espaco = self.sessao.documento()[0].espaco
+
+        def diferenca(e):
+            return e.lhs - e.rhs if isinstance(e, sp.Equality) else e
+
+        nao = [h for h, e in dadas.items() if not _tem_indice(e)]
+        if nao:
+            return {"erro": f"{', '.join(nao)} não tem índice, e o objetivo "
+                            f"tem: as duas notações não se misturam numa "
+                            f"prova — traduza com indices(eq)", "alvo": alvo}
+        try:
+            prova = provar(diferenca(objetivo),
+                           {h: diferenca(e) for h, e in dadas.items()},
+                           espaco, lambda e: _simplificar(e, espaco))
+        except SemProvaIndices as e:
+            return {"erro": str(e), "alvo": alvo}
+        tabela = linhas(prova, lambda e: latex_de(e, espaco))
+        usadas = [h for h in dadas if h in prova.hipoteses_usadas]
+        teoremas = [h for h in prova.hipoteses_usadas if h not in dadas]
+        sobrou = [h for h in dadas if h not in usadas]
+        texto = ("provado a partir de " + (", ".join(usadas) or "nenhuma hipótese")
+                 + (f", e de {', '.join(teoremas)} (teorema, da torção nula)"
+                    if teoremas else "")
+                 + " — com ∇ delas, trocas de índice e produtos; e do que a "
+                   "forma canônica sabe: simetrias declaradas, [∇,∇] como "
+                   "curvatura, ∇g = 0"
+                 + (f"; não precisou de {', '.join(sobrou)}" if sobrou else ""))
+        tabela.append(["somando", sp.sstr(objetivo),
+                       latex_de(objetivo, espaco) + r"\quad\blacksquare"])
+        tabela.append(["usou", texto])
+        return {"alvo": alvo, "latex_exato": latex_de(objetivo, espaco),
+                "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
+
+    def _expandir(self, alvo, metrica=None, linear=None):
+        """`expandir(eq)`: ∇ em ∂ e Γ; `expandir(eq, g)`: e Γ pela métrica.
+
+        Uma igualdade sai `True` quando, expandida e simplificada, os dois
+        lados coincidem — é assim que a fórmula de um livro se confere.
+        """
+        from .christoffel import ChristoffelMalDefinido, expandir, metrizar
+        from .tensores import latex_de, simplificar as _simplificar
+        try:
+            objeto = self._objeto(alvo).to_sympy()
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+        doc = self.sessao.documento()[0]
+        espaco = doc.espaco
+        try:
+            if espaco.christoffel or not linear:
+                objeto = expandir(objeto, espaco)
+            if linear:
+                # linearizar(eq, h): g = η + εh — e Γ, se houver, pela métrica.
+                from .christoffel import linearizar
+                if _sem_barra(linear) not in self.sessao.tensores:
+                    return {"erro": f"declare {linear} = tensor(0, 2, simétrico): "
+                                    f"é a perturbação da métrica", "alvo": alvo}
+                if espaco.christoffel:
+                    objeto = metrizar(objeto, espaco)
+                objeto = linearizar(objeto, espaco, _sem_barra(linear))
+                # Daqui em diante g é o fundo η: constante. O espaço é
+                # remontado a cada comando, e isto não vaza para o próximo.
+                espaco.metrica_constante = True
+            elif metrica:
+                if _sem_barra(metrica) != espaco.metrica:
+                    return {"erro": f"'{metrica}' não é a métrica declarada",
+                            "alvo": alvo}
+                objeto = metrizar(objeto, espaco)
+        except (ChristoffelMalDefinido, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+        if isinstance(objeto, sp.Equality):
+            lhs = _simplificar(objeto.lhs, espaco)
+            rhs = _simplificar(objeto.rhs, espaco)
+            resto = _simplificar(lhs - rhs, espaco) if isinstance(
+                lhs - rhs, TensExpr) else sp.simplify(lhs - rhs)
+            objeto = sp.true if resto == 0 else sp.Eq(lhs, rhs, evaluate=False)
+        else:
+            objeto = _simplificar(objeto, espaco)
+        nome = self._registrar(objeto)
+        latex = latex_de(objeto, espaco)
+        return {"alvo": alvo, "exato": sp.sstr(objeto), "latex_exato": latex,
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(objeto),
+                              "latex": latex}]}
 
     def _traduzir(self, alvo, expressao):
         """`indices(eq5)` — a mesma igualdade, escrita com índice."""

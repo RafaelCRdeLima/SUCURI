@@ -202,6 +202,32 @@ def _simetria_base(espaco, base):
     return espaco._simetrias.get(base)
 
 
+def _riemann_completo(espaco, base, posto_base):
+    """A base é o Riemann com todas as simetrias (Levi-Civita e métrica)?"""
+    if not espaco.riemann or base != espaco.riemann[0] or posto_base != 4:
+        return False
+    cabeca = espaco.cabeca(base, 4)
+    return cabeca.symmetry == TensorSymmetry.riemann()
+
+
+def _simetria(blocos, riemann=False):
+    """direct_product dos blocos — e, se `riemann`, as simetrias do Riemann
+    nos quatro últimos slots: ∇_λ R_{ρσμν} é antissimétrico em ρσ como R."""
+    if not riemann:
+        return TensorSymmetry.direct_product(*blocos)
+    from sympy.combinatorics import Permutation
+    from sympy.combinatorics.tensor_can import (bsgs_direct_product,
+                                                get_symmetric_group_sgs,
+                                                riemann_bsgs)
+    base, sgs = [], [Permutation(1)]
+    for b in blocos:
+        if b:
+            base, sgs = bsgs_direct_product(base, sgs,
+                                            *get_symmetric_group_sgs(abs(b), b < 0))
+    base, sgs = bsgs_direct_product(base, sgs, *riemann_bsgs)
+    return TensorSymmetry(base, sgs)
+
+
 def cabeca_derivada(espaco, operacoes, base, posto_base):
     """A cabeça de `operacoes` aplicadas à base — criada uma vez só."""
     nome = "".join(operacoes) + "_" + base
@@ -209,18 +235,23 @@ def cabeca_derivada(espaco, operacoes, base, posto_base):
         return espaco._cabecas[nome][0]
     k = len(operacoes)
     blocos = [k] if all(o == "d" for o in operacoes) else [1] * k
-    if (operacoes == ("D", "d") and posto_base == 0
+    if (tuple(operacoes[-2:]) == ("D", "d") and posto_base == 0
             and espaco.conexao == "levi-civita"):
-        blocos = [2]        # ∇_μ∇_ν φ = ∇_ν∇_μ φ: torção nula, num escalar
+        # ∇_μ∇_ν φ = ∇_ν∇_μ φ: torção nula, num escalar — e também sob as
+        # derivadas de fora, ∇_λ∇_μ∇_ν φ = ∇_λ∇_ν∇_μ φ.
+        blocos = [1] * (k - 2) + [2]
     simetria = _simetria_base(espaco, base)
-    if posto_base > 1 and simetria == "simetrico":
+    riemann = _riemann_completo(espaco, base, posto_base)
+    if riemann:
+        pass
+    elif posto_base > 1 and simetria == "simetrico":
         blocos.append(posto_base)
     elif posto_base > 1 and simetria == "antissimetrico":
         blocos.append(-posto_base)
     else:
         blocos += [1] * posto_base
     cabeca = TensorHead(nome, [espaco.tipo] * (k + posto_base),
-                        TensorSymmetry.direct_product(*blocos))
+                        _simetria(blocos, riemann))
     espaco._cabecas[nome] = (cabeca, k + posto_base)
     REGISTRO[nome] = (tuple(operacoes), base)
     return cabeca
@@ -242,7 +273,13 @@ def _produto(fatores):
 
 def _soma(termos):
     termos = [t for t in termos if t != 0]
-    return functools.reduce(operator.add, termos) if termos else sp.S.Zero
+    if not termos:
+        return sp.S.Zero
+    if len(termos) > 2 and all(isinstance(t, TensExpr) for t in termos):
+        # Uma soma só, e não n somas de dois: somar de dois em dois refaz a
+        # soma inteira a cada passo.
+        return TensAdd(*termos).doit()
+    return functools.reduce(operator.add, termos)
 
 
 def derivar(expr, operacao, indice, espaco):
@@ -252,6 +289,16 @@ def derivar(expr, operacao, indice, espaco):
     if isinstance(expr, TensMul):
         coef = escalar_de(expr)
         fatores = [a for a in expr.args if isinstance(a, TensExpr)]
+        # O SymPy chama os mudos de um produto L_0, L_1…, e o índice da
+        # derivada, vindo de fora, pode ter o mesmo nome: fator a fator, o
+        # mudo pareceria livre e repetido. Troca-se o nome do mudo, antes.
+        mudos = {i.name for i in expr.get_indices()} - {
+            i.name for i in expr.get_free_indices()}
+        if indice.name in mudos:
+            from sympy.tensor.tensor import TensorIndex
+            novo = _mudo(espaco)
+            fatores = [f.substitute_indices((TensorIndex(indice.name, espaco.tipo),
+                                             novo)) for f in fatores]
         termos = [_escalar(coef, operacao, indice, espaco) * _produto(fatores)]
         for k, f in enumerate(fatores):
             outros = fatores[:k] + [derivar(f, operacao, indice, espaco)] + \
@@ -261,7 +308,20 @@ def derivar(expr, operacao, indice, espaco):
     if isinstance(expr, Tensor):
         cabeca = expr.head
         indices = list(expr.indices)
+        nomes = [i.name for i in indices]
+        if nomes.count(indice.name) == 2:
+            # Um mudo interno com o nome do índice da derivada (o SymPy dá
+            # L_0 aos dois): o mudo ganha outro nome.
+            novo = _mudo(espaco)
+            indices = [(novo if i.is_up else -novo) if i.name == indice.name
+                       else i for i in indices]
         operacoes, base = REGISTRO.get(cabeca.name, ((), cabeca.name))
+        if (operacao == "d" and not operacoes and base == espaco.metrica
+                and any(i.is_up for i in indices)):
+            return _derivada_da_inversa(indices, indice, espaco)
+        baixado = _na_valencia_declarada(expr, operacoes, base, operacao, espaco)
+        if baixado is not None:
+            return derivar(baixado, operacao, indice, espaco)
         posto_base = len(indices) - len(operacoes)
         nova = cabeca_derivada(espaco, (operacao,) + operacoes, base, posto_base)
         try:
@@ -272,6 +332,77 @@ def derivar(expr, operacao, indice, espaco):
                 "posição — contrair é um em cima e um embaixo, como em "
                 "∂_μ A^μ") from None
     return _escalar(expr, operacao, indice, espaco)
+
+
+def _valencia_declarada(operacoes, base, espaco):
+    """Para cada slot, True se o declarado é em cima; None se não se sabe.
+
+    O índice de uma derivada é de baixo; os do tensor, os da declaração —
+    (M, N) é M em cima e N embaixo —, os de Γ e do Riemann, os da definição.
+    """
+    k = len(operacoes)
+    if base == espaco.metrica:
+        resto = [False, False]
+    elif espaco.christoffel and base == espaco.christoffel[0]:
+        conv = espaco.christoffel[1]
+        resto = [i == conv["cima"] for i in range(3)]
+    elif espaco.riemann and base == espaco.riemann[0]:
+        conv = espaco.riemann[1]
+        resto = [i == conv["rho"] for i in range(4)]
+    elif base in espaco._tipos and espaco.levi.get(base) != "simbolo":
+        formas, vetores = espaco._tipos[base]
+        resto = [True] * formas + [False] * vetores
+    elif k and base not in espaco._cabecas:
+        resto = []                          # derivada de escalar
+    else:
+        return None
+    return [False] * k + resto
+
+
+def _na_valencia_declarada(t, operacoes, base, operacao, espaco):
+    """T com os índices na posição declarada, e g explícito no resto.
+
+    ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ): a métrica que levanta está DENTRO da
+    derivada, e ∂g não é zero. Derivar ∂^μ φ empilhando ∂ na cabeça daria
+    g^{μν}∂_μ∂_ν φ — o termo de ∂g sumia calado. Com ∇ de Levi-Civita, ∇g = 0
+    e tanto faz; com ∂, ou com ∇ qualquer, não.
+    """
+    if not espaco.metrica or (operacao == "D" and espaco.conexao == "levi-civita"):
+        return None
+    if operacao == "d" and espaco.metrica_constante:
+        return None
+    declarada = _valencia_declarada(operacoes, base, espaco)
+    indices = list(t.indices)
+    if declarada is None or len(declarada) != len(indices):
+        return None
+    if all(i.is_up == cima for i, cima in zip(indices, declarada)):
+        return None
+    g = espaco.cabeca(espaco.metrica, 2)
+    novos, fatores = [], []
+    for i, cima in zip(indices, declarada):
+        if i.is_up == cima:
+            novos.append(i)
+            continue
+        s = _mudo(espaco)
+        novos.append(s if cima else -s)
+        fatores.append(g(i, -s) if cima else g(i, s))
+    return _produto(fatores) * t.head(*novos)
+
+
+def _derivada_da_inversa(indices, indice, espaco):
+    """∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ}, e ∂ g^μ{}_ν = ∂δ = 0.
+
+    Aplicada ao derivar, e não depois: ∂g, uma vez escrito, é o tensor
+    ∂_λ g_{αβ}, e os seus índices sobem e descem com g como os de qualquer
+    tensor. Se a regra fosse aplicada depois, ∂_λ g^α{}_α — que é g^{αβ}∂_λ
+    g_{αβ} com um índice levantado — seria lido como ∂δ, e zeraria calado.
+    """
+    a, b = indices
+    if a.is_up != b.is_up:
+        return sp.S.Zero
+    g = espaco.cabeca(espaco.metrica, 2)
+    p, q = _mudo(espaco), _mudo(espaco)
+    return -g(a, p) * g(b, q) * derivar(g(-p, -q), "d", indice, espaco)
 
 
 def _escalar(expr, operacao, indice, espaco):
@@ -285,9 +416,39 @@ def _escalar(expr, operacao, indice, espaco):
         parcial = sp.diff(expr, s)
         if parcial != 0:
             # ∇_μ φ = ∂_μ φ num escalar: a mesma cabeça.
-            cabeca = cabeca_derivada(espaco, ("d",), s.name, 0)
+            cabeca = cabeca_derivada(espaco, ("d",), base_escalar(s.name, espaco), 0)
             termos.append(parcial * cabeca(indice))
     return _soma(termos)
+
+
+def base_escalar(nome, espaco):
+    """O nome da base de ∂φ. g sem índice, com g a métrica, só é escalar se
+    declarado det g; R sem índice, com R o Riemann, se declarado o Ricci — e
+    aí a cabeça tem outro nome, para não ser ∂g_{μν} nem ∂R^ρ{}_{σμν}."""
+    tensor = espaco is not None and (
+        nome == espaco.metrica or nome in espaco._tipos
+        or (nome in espaco._cabecas and espaco._cabecas[nome][1] > 0)
+        or any(d and nome == d[0] for d in (espaco.riemann, espaco.christoffel)))
+    if not tensor:
+        return nome
+    if nome == espaco.determinante:
+        return BASE_DET + nome
+    if espaco.ricci and espaco.riemann and nome == espaco.riemann[0]:
+        return BASE_ESCALAR + nome
+    if espaco.riemann and nome == espaco.riemann[0]:
+        raise DerivadaMalEscrita(
+            f"'{nome}' sem índice, e {nome} é o Riemann: se é o escalar de "
+            f"curvatura, defina o Ricci — {nome}_{{μν}} = {nome}^ρ{{}}_{{μρν}} "
+            f"— e declare {nome} = ricci(eq)")
+    raise DerivadaMalEscrita(
+        f"'{nome}' sem índice, e {nome} é tensor: se é o determinante da "
+        f"métrica, declare {nome} = det({espaco.metrica or nome})")
+
+
+BASE_DET = "det_"
+BASE_ESCALAR = "escalar_"       # a base de ∂R, que não é ∂ do Riemann
+RICCI = "Ric"                   # R com dois índices, com R o Riemann
+NOMES_EXIBIDOS = {}             # nome interno -> como se escreve: Ric -> R
 
 
 # -------------------------------------------------------------- impressão
@@ -298,6 +459,10 @@ class Impressor(LatexPrinter):
 
     def _print_Tensor(self, expr):
         nome = expr.head.name
+        if nome not in REGISTRO and nome in NOMES_EXIBIDOS:
+            from sympy.tensor.tensor import TensorHead
+            cabeca = TensorHead(NOMES_EXIBIDOS[nome], expr.head.index_types)
+            return super()._print_Tensor(cabeca(*expr.indices))
         if nome not in REGISTRO:
             return super()._print_Tensor(expr)
         operacoes, base = REGISTRO[nome]
@@ -306,6 +471,9 @@ class Impressor(LatexPrinter):
         for op, i in zip(operacoes, indices):
             lado = "^" if i.is_up else "_"
             partes.append(f"{_MACRO[op]}{lado}{{{self._print(sp.Symbol(i.name))}}}")
+        base = NOMES_EXIBIDOS.get(base, base)
+        for prefixo in (BASE_DET, BASE_ESCALAR):
+            base = base.removeprefix(prefixo)
         corpo = self._print(sp.Symbol(base))
         for i in indices[len(operacoes):]:
             lado = "^" if i.is_up else "_"
@@ -351,11 +519,37 @@ def _nulo(t, espaco):
     # sem conexão. O tensor não — é √|g| vezes o símbolo.
     if espaco.levi.get(base) == "simbolo" and operacoes[-1] == "d":
         return True
+    # Métrica declarada constante — coordenadas cartesianas, ou inerciais:
+    # ∂g = 0, e o ε tensor, √|g| vezes o símbolo, também é constante.
+    if espaco.metrica_constante and operacoes[-1] == "d" and (
+            base == espaco.metrica or espaco.levi.get(base) == "tensor"):
+        return True
     levi = espaco.conexao == "levi-civita"
     if operacoes[-1] == "D" and levi:
         if base == espaco.metrica or espaco.levi.get(base) == "tensor":
             return True
     return False
+
+
+def _coordenada(t, espaco):
+    """∂_j x^i = δ^i_j, e ∂∂x = 0 — com x declarado as coordenadas."""
+    operacoes, base = REGISTRO.get(t.head.name, ((), None))
+    if not espaco.coordenada or base != espaco.coordenada or not operacoes:
+        return t
+    if any(o != "d" for o in operacoes):
+        raise DerivadaMalEscrita(
+            f"∇ de {base}^i: as coordenadas não são campo vetorial, e ∇ delas "
+            f"não tem sentido — escreva com ∂")
+    if len(operacoes) > 1:
+        return sp.S.Zero
+    j, i = t.indices
+    if espaco.kronecker and i.is_up != j.is_up:
+        d = espaco.cabeca(espaco.kronecker, 2)
+        return d(i, j) if i.is_up else d(j, i)
+    if espaco.metrica:
+        return espaco.cabeca(espaco.metrica, 2)(i, j)
+    raise DerivadaMalEscrita(
+        f"∂_j {base}^i = δ^i_j pede a delta ou a métrica declarada")
 
 
 def _comutavel(t, espaco):
@@ -430,14 +624,17 @@ def _simetrica(t, espaco):
         posto_base = len(t.indices) - len(operacoes)
         blocos = [2] + [1] * (len(operacoes) - 2)
         simetria = _simetria_base(espaco, base)
-        if posto_base > 1 and simetria == "simetrico":
+        riemann = _riemann_completo(espaco, base, posto_base)
+        if riemann:
+            pass
+        elif posto_base > 1 and simetria == "simetrico":
             blocos.append(posto_base)
         elif posto_base > 1 and simetria == "antissimetrico":
             blocos.append(-posto_base)
         else:
             blocos += [1] * posto_base
         cabeca = TensorHead(nome, [espaco.tipo] * len(t.indices),
-                            TensorSymmetry.direct_product(*blocos))
+                            _simetria(blocos, riemann))
         espaco._cabecas[nome] = (cabeca, len(t.indices))
     return espaco._cabecas[nome][0]
 
@@ -453,7 +650,8 @@ def normalizar(expr, espaco):
     """
     if not isinstance(expr, TensExpr) or espaco is None:
         return expr
-    expr = _mapear(expr, lambda t: sp.S.Zero if _nulo(t, espaco) else t)
+    expr = _mapear(expr, lambda t: sp.S.Zero if _nulo(t, espaco) else
+                   _coordenada(t, espaco))
     if not isinstance(expr, TensExpr):
         return expr
     if espaco.conexao != "levi-civita" or not espaco.riemann:
@@ -554,11 +752,20 @@ def convencao_de(equacao, nome):
     return {"sinal": int(coef), **posicoes}
 
 
-def simetria_do_riemann(conv):
+def simetria_do_riemann(conv, levi_civita_com_metrica=False):
     """Antissimétrico nos slots de μ e ν — em qualquer convenção, porque vem
     do comutador. Só se exprime se os dois slots forem vizinhos no começo ou
-    no fim; noutro lugar, fica sem, o que não é falso, só incompleto."""
+    no fim; noutro lugar, fica sem, o que não é falso, só incompleto.
+
+    Com Levi-Civita e métrica declaradas, as outras duas são teorema:
+    R_{ρσμν} = −R_{σρμν} (de ∇g = 0) e a troca de pares (disso e de Bianchi,
+    que vem da torção nula). Com a métrica, valem em qualquer valência — os
+    índices levam a posição consigo.
+    """
     par = sorted((conv["mu"], conv["nu"]))
+    outro = sorted((conv["rho"], conv["sigma"]))
+    if levi_civita_com_metrica and sorted([par, outro]) == [[0, 1], [2, 3]]:
+        return TensorSymmetry.riemann()
     if par == [2, 3]:
         return TensorSymmetry.direct_product(1, 1, -2)
     if par == [0, 1]:

@@ -78,6 +78,11 @@ class Espaco:
         self.conexao = None         # 'levi-civita', se declarada
         self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.riemann = None         # (nome, convenção), se definido
+        self.christoffel = None     # (nome, convenção), se definido
+        self.determinante = None    # o nome de det g, se declarado
+        self.metrica_constante = False  # ∂g = 0: carta cartesiana ou inercial
+        self.ricci = None           # a convenção de ricci(eq), se definida
+        self.coordenada = None      # x = coordenadas: ∂_j x^i = δ^i_j
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
@@ -145,6 +150,14 @@ class Espaco:
         disse que g tem dois índices. Com declaração, o posto vem de lá — e a
         diferença aparece na primeira linha, e não na segunda.
         """
+        if self.riemann and nome == self.riemann[0] and posto == 2:
+            # R_{μν}, com R o Riemann: o Ricci, como nos livros. Por dentro,
+            # outra cabeça — um tensor tem um posto só.
+            from .derivadas import NOMES_EXIBIDOS, RICCI
+            nome = RICCI
+            NOMES_EXIBIDOS[RICCI] = self.riemann[0]
+            if self.conexao == "levi-civita" and self.metrica:
+                self._simetrias[RICCI] = "simetrico"
         declarado = self._tipos.get(nome)
         if declarado and sum(declarado) != posto and nome in self._cabecas:
             formas, vetores = declarado
@@ -162,7 +175,12 @@ class Espaco:
             return cabeca
         if self.riemann and nome == self.riemann[0] and posto == 4:
             from .derivadas import simetria_do_riemann
-            simetria = simetria_do_riemann(self.riemann[1])
+            simetria = simetria_do_riemann(
+                self.riemann[1], self.conexao == "levi-civita" and bool(self.metrica))
+        elif self.christoffel and nome == self.christoffel[0] and posto == 3:
+            from .christoffel import simetria as _simetria_gamma
+            simetria = _simetria_gamma(self.christoffel[1],
+                                       self.conexao == "levi-civita")
         else:
             simetria = _simetria(self._simetrias.get(nome), posto)
         cabeca = TensorHead(nome, [self.tipo] * posto, simetria)
@@ -560,6 +578,21 @@ def simplificar(expr, espaco):
     expr = expr.expand()
     if not isinstance(expr, TensExpr):
         return expr
+    # O Ricci e o escalar em contrações do Riemann, que a canonização enxerga;
+    # no fim, dobrados de volta.
+    from .ricci import desdobrar, dobrar
+    expr = desdobrar(expr, espaco)
+    if espaco is not None and espaco.coordenada:
+        # ∂_j x^i = δ^i_j antes de contrair δ.
+        from .derivadas import _coordenada, _mapear
+        expr = _mapear(expr, lambda t: _coordenada(t, espaco))
+        if not isinstance(expr, TensExpr):
+            return expr
+    if not isinstance(expr, TensExpr):
+        return expr
+    expr = expr.expand()
+    if not isinstance(expr, TensExpr):
+        return expr
     expr = _epsilon_epsilon(expr, espaco)
     if not isinstance(expr, TensExpr):
         return expr
@@ -568,6 +601,15 @@ def simplificar(expr, espaco):
         if not isinstance(expr, TensExpr):
             return expr
     if espaco is not None and espaco.metrica:
+        # ∂ de det g por ∂g — a fórmula de Jacobi. (A de ∂g^{-1} já se aplicou
+        # ao derivar: ver derivadas._derivada_da_inversa.)
+        from .christoffel import jacobi
+        expr = jacobi(expr, espaco)
+        if not isinstance(expr, TensExpr):
+            return expr
+        expr = expr.expand()
+        if not isinstance(expr, TensExpr):
+            return expr
         # A métrica declarada contrai o que ela aparece contraindo — inclusive
         # a que a identidade εε pôs ali para alinhar os índices.
         expr = expr.contract_metric(espaco.cabeca(espaco.metrica, 2))
@@ -582,7 +624,22 @@ def simplificar(expr, espaco):
     expr = expr.expand()
     if not isinstance(expr, TensExpr):
         return expr
-    return expr.canon_bp()
+    expr = expr.canon_bp()
+    # Os coeficientes também: em d dimensões, 1 − d/(d−2) + 2/(d−2) é zero, e
+    # o termo tem de sumir.
+    from .christoffel import _nos_coeficientes
+    expr = _nos_coeficientes(
+        expr, lambda c: sp.cancel(c) if c.free_symbols else c)
+    if not isinstance(expr, TensExpr):
+        return expr
+    if espaco is not None and espaco.ricci:
+        expr = dobrar(expr, espaco)
+        if isinstance(expr, TensExpr):
+            expr = expr.expand()
+        if isinstance(expr, TensExpr):
+            expr = expr.canon_bp()
+    from .ricci import apresentar
+    return apresentar(expr, espaco)
 
 
 class IndicesIncompativeis(ValueError):
