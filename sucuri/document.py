@@ -862,6 +862,12 @@ class Expression:
         # E as cadeias de formas: d\omega, \omega \wedge \eta, \iota_X.
         from .formas import cabecas as _cadeias, localizar as _formas
         vetores = {n for n, t in document._tensores.items() if t == (1, 0)}
+        # E o que começa DENTRO de um fator tensorial: em `A^a (B_a + C_a)` o
+        # detector vê `a (` e pergunta se o índice é função.
+        if document._indices:
+            from .tensores import localizar as _fatores
+            cabecas |= {i for ini, fim, _, _ in _fatores(latex, document._indices)
+                        for i in range(ini, fim)}
         hodge = bool(document.hodge_info())
         cabecas |= _cadeias(latex, document.graus(), vetores, hodge)
         self.formas_escritas = _formas(latex, document.graus(), vetores, hodge)
@@ -1200,6 +1206,11 @@ class Expression:
                 abre = texto.find("(", ini)
                 texto = texto[:abre] + r" \cdot " + texto[abre:]
 
+        # Marcador nunca é nome de função: é um tensor, uma derivada, um
+        # operador aplicado. `T^{ab} (…)` vira `Z_{2} (…)`, e o parser leria
+        # Z_2 aplicada ao parêntese — os marcadores de dentro vazariam. O que
+        # vem depois de um marcador, entre parênteses, multiplica.
+        texto = re.sub(r"(Z_\{\d+\})\s*\(", r"\1 \\cdot (", texto)
         return _inofensivas(texto), reposicoes, derivadas, origens, tensores
 
     def _fatores_tensoriais(self):

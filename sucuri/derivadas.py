@@ -226,6 +226,16 @@ def cabeca_derivada(espaco, operacoes, base, posto_base):
     return cabeca
 
 
+def escalar_de(produto):
+    """O escalar de um TensMul, lido dos ARGUMENTOS.
+
+    `.coeff` não basta: em ½(X − Y) o SymPy guarda o ½ como argumento do
+    TensMul, ao lado da soma, e `.coeff` diz 1. Lendo `.coeff` e ficando só com
+    os fatores tensoriais, o ½ — e o sinal que vinha com ele — sumia calado.
+    """
+    return sp.Mul(*(a for a in produto.args if not isinstance(a, TensExpr)))
+
+
 def _produto(fatores):
     return functools.reduce(operator.mul, fatores, sp.S.One)
 
@@ -240,7 +250,7 @@ def derivar(expr, operacao, indice, espaco):
     if isinstance(expr, TensAdd):
         return _soma([derivar(a, operacao, indice, espaco) for a in expr.args])
     if isinstance(expr, TensMul):
-        coef = expr.coeff
+        coef = escalar_de(expr)
         fatores = [a for a in expr.args if isinstance(a, TensExpr)]
         termos = [_escalar(coef, operacao, indice, espaco) * _produto(fatores)]
         for k, f in enumerate(fatores):
@@ -319,7 +329,7 @@ def _mapear(expr, trocar):
         return _soma([_mapear(a, trocar) for a in expr.args])
     if isinstance(expr, TensMul):
         fatores = [a for a in expr.args if isinstance(a, TensExpr)]
-        return expr.coeff * _produto([_mapear(f, trocar) for f in fatores])
+        return escalar_de(expr) * _produto([_mapear(f, trocar) for f in fatores])
     if isinstance(expr, Tensor):
         return trocar(expr)
     return expr
@@ -495,7 +505,7 @@ def convencao_de(equacao, nome):
 
     termos = []
     for a in comutador.args:
-        coef = a.coeff if isinstance(a, TensMul) else sp.S.One
+        coef = escalar_de(a) if isinstance(a, TensMul) else sp.S.One
         tensores = ([x for x in a.args if isinstance(x, Tensor)]
                     if isinstance(a, TensMul) else [a])
         if len(tensores) != 1:
@@ -514,7 +524,7 @@ def convencao_de(equacao, nome):
         raise ValueError(esperado)
     vetor = REGISTRO[positivo.head.name][1]
 
-    coef = curvatura.coeff if isinstance(curvatura, TensMul) else sp.S.One
+    coef = escalar_de(curvatura) if isinstance(curvatura, TensMul) else sp.S.One
     fatores = ([x for x in curvatura.args if isinstance(x, Tensor)]
                if isinstance(curvatura, TensMul) else [curvatura])
     R = [f for f in fatores if f.head.name == nome]

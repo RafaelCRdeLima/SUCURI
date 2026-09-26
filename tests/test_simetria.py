@@ -249,3 +249,34 @@ def test_sem_indice_declarado_recusa():
 
 def test_parenteses_sem_grego_continuam_como_antes():
     assert Caderno().executar(r"x_{(1)}").to_dict()["sympy"] == "x_{1}"
+
+
+# ------------------------------------ achados resolvendo listas de exercícios
+
+def test_produto_de_simetrizados_conserva_o_meio_e_o_sinal():
+    r"""Reall §1.7: T^{(ab)} X_{[a|cd|b]} = 0. Saía 2·T·X + 2·T·X — o ½ que o
+    SymPy guarda como argumento do TensMul, e não em .coeff, sumia, e o sinal
+    com ele. Depois o canon_bp quebrava no produto de somas."""
+    c = Caderno()
+    for f in ("a, b, c, d = índices", "T = tensor(2,0)", "X = tensor(0,4)"):
+        c.executar(f)
+    nome = c.executar(r"T^{(ab)} X_{[a|cd|b]}").to_dict()["nome"]
+    assert c.executar(f"simplificar({nome})").to_dict()["exato"] == "0"
+    nome = c.executar(r"T^{ab} X_{[a|cd|b]}").to_dict()["nome"]
+    assert c.executar(f"simplificar({nome})").to_dict()["exato"] != "0"
+    nome = c.executar(r"\frac{1}{2}(T_{ab} - T_{ba}) - T_{[ab]}").to_dict()["nome"]
+    assert c.executar(f"simplificar({nome})").to_dict()["exato"] == "0"
+
+
+def test_tensor_seguido_de_parenteses_multiplica():
+    r"""`T^{ab} (…)`: o marcador do tensor seguido de parêntese era lido como
+    função, e os marcadores de dentro vazavam. E `A^a (…)` perguntava se o
+    índice a era função."""
+    c = Caderno()
+    for f in ("a, b = índices", "T = tensor(2,0, simétrico)", "X = tensor(0,1)",
+              "A = tensor(1,0)", "B = tensor(0,1)", "C = tensor(0,1)"):
+        c.executar(f)
+    d = c.executar(r"\frac{1}{2} T^{ab} (\nabla_a X_b - \nabla_b X_a)").to_dict()
+    assert c.executar(f"simplificar({d['nome']})").to_dict()["exato"] == "0"
+    d = c.executar(r"A^a (B_a + C_a)").to_dict()
+    assert d["ambiguidades"] == [] and d["sympy"] == "A(L_0)*(B(-L_0) + C(-L_0))"

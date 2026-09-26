@@ -488,7 +488,8 @@ def _epsilon_epsilon(expr, espaco):
     fator = (sigma * _paridade(ordem1) * _paridade(ordem2)
              * sp.factorial(len(comuns)))
     outros = [f for k, f in enumerate(fatores) if k not in (k1, k2)]
-    return expr.coeff * fator * soma * functools.reduce(
+    from .derivadas import escalar_de
+    return escalar_de(expr) * fator * soma * functools.reduce(
         operator.mul, outros, sp.S.One)
 
 
@@ -509,6 +510,11 @@ def simplificar(expr, espaco):
             return expr
     from .derivadas import normalizar
     expr = normalizar(expr, espaco)
+    if not isinstance(expr, TensExpr):
+        return expr
+    # Expandir antes: o canon_bp do SymPy quebra num produto de somas cujo
+    # resultado é zero — T^{(ab)} X_{[ab]} —, e expandido o zero já aparece.
+    expr = expr.expand()
     if not isinstance(expr, TensExpr):
         return expr
     return expr.canon_bp()
