@@ -46,3 +46,59 @@
 .sumario{font-size:12.5px;line-height:1.9;color:var(--tinta-2);margin:14px 0 6px}
 .sumario a{color:var(--tinta-2);text-decoration:none;border-bottom:1px dotted var(--tinta-2)}
 .sumario a:hover{color:var(--folha);border-bottom-color:var(--folha)}
+
+/* ---------------------------------------------------------------- capa */
+/* A capa da apostila: a marca âmbar, como pede o guia de identidade, sobre
+   Mata — e, pela mesma regra, nenhum verde no enquadramento. */
+.capa{--capa-mata:#14291C;--capa-ambar:#E3B23C;--capa-areia:#F1EDDF;
+  background:var(--capa-mata);color:var(--capa-areia);
+  max-width:640px;aspect-ratio:210/297;margin:24px auto;border-radius:14px;
+  box-sizing:border-box;padding:7% 8%;display:flex;flex-direction:column;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.capa-topo{display:flex;align-items:center;gap:14px}
+.capa-marca{width:52px;height:52px}
+.capa-wordmark{font-family:var(--sucuri-fonte-ui);font-weight:500;
+  letter-spacing:var(--sucuri-tracking-wordmark);font-size:20px;
+  color:var(--capa-areia)}
+.capa-figura{width:100%;margin:8% 0 4%}
+.capa-figura .malha path{fill:none;stroke:var(--capa-areia);stroke-opacity:.12;stroke-width:1}
+.capa-figura .geodesica{fill:none;stroke:var(--capa-areia);stroke-width:2.2;stroke-linecap:round}
+.capa-figura .separacao line{stroke:var(--capa-ambar);stroke-width:1.6}
+.capa-figura .separacao polygon{fill:var(--capa-ambar)}
+.capa-figura .tangente line{stroke:var(--capa-areia);stroke-width:1.6}
+.capa-figura .tangente polygon{fill:var(--capa-areia)}
+.capa-figura .rotulo{font-family:var(--sucuri-fonte-mono);font-size:15px;fill:var(--capa-areia);font-style:italic}
+.capa-figura .rotulo.ambar{fill:var(--capa-ambar)}
+.capa-titulo{margin-top:auto}
+.capa-sobre{font-family:var(--sucuri-fonte-mono);font-size:12px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--capa-ambar);margin:0 0 10px}
+.capa h1{font-family:var(--sucuri-fonte-ui);font-weight:600;font-size:34px;
+  line-height:1.15;margin:0 0 14px;color:var(--capa-areia)}
+.capa-sub{font-size:15px;line-height:1.5;margin:0 0 22px;opacity:.82}
+.capa-formula{font-family:var(--sucuri-fonte-mono);font-size:13px;color:var(--capa-ambar);
+  border-top:1px solid rgba(241,237,223,.18);padding-top:14px;margin:0}
+.capa-pe{display:flex;justify-content:space-between;gap:16px;margin-top:9%;
+  font-size:11px;opacity:.6}
+@media (max-width:520px){.capa{aspect-ratio:auto;border-radius:0;margin:0}
+  .capa h1{font-size:27px}.capa-pe{flex-direction:column}}
+@media print{
+  /* Margem lateral zero em toda página, e o recuo do texto no CSS: o Chrome
+     faz o layout pela largura das páginas com margem, e a capa, sangrando
+     até a borda, ficaria mais larga que ela — e o documento inteiro
+     encolheria para caber. */
+  @page{size:A4;margin:14mm 0}
+  @page:first{margin:0}
+  .app:has(.capa) main.manual{padding:0 18mm;max-width:none}
+  .capa{width:210mm;height:297mm;max-width:none;aspect-ratio:auto;margin:0;
+    border-radius:0;padding:22mm 20mm;break-after:page}
+  .capa h1{font-size:40px}
+  .capa-marca{width:64px;height:64px}
+  .app:has(.capa) > header{display:none}
+  /* Linha de código mais larga que a página faz o Chrome reduzir o
+     documento inteiro — e a capa deixa de sangrar até a borda. */
+  .exemplo .entrada,.exemplo samp{white-space:pre-wrap;overflow-wrap:anywhere}
+  /* Exemplo, tabela e item de lista inteiros numa página só. */
+  .exemplo,table.tabela,.nota-manual,.limites li{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  header a.modo{display:none}
+}
