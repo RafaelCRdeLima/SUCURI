@@ -148,8 +148,8 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
   <tr><td>indicial (30)</td><td>23</td><td>6</td><td>1</td></tr>
   <tr><td>componentes (25)</td><td>19</td><td>6</td><td>0</td></tr>
-  <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>51</strong></td><td><strong>22</strong></td><td><strong>12</strong></td></tr>
+  <tr><td>tensorial (30)</td><td>12</td><td>7</td><td>11</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>54</strong></td><td><strong>19</strong></td><td><strong>12</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -2485,7 +2485,7 @@ colchete. E é por ela que Jacobi sai, aplicada a uma função h:</p>
   <samp class="saida">provado a partir de nenhuma hipótese</samp>
 </div>
 
-<h3>20. A derivada de Lie do colchete <span class="pill aviso">em parte</span></h3>
+<h3>20. A derivada de Lie do colchete <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-20">
   <p class="titulo-enunciado">Enunciado 20 · Propriedades da derivada de Lie de campos vetoriais</p>
@@ -2500,7 +2500,7 @@ colchete. E é por ela que Jacobi sai, aplicada a uma função h:</p>
     (ii) L<sub>X</sub> ∘ L<sub>Y</sub> − L<sub>Y</sub> ∘ L<sub>X</sub> = L<sub>[X,Y]</sub>;<br>
     (iii) L<sub>X</sub>(fY) = (L<sub>X</sub>f)Y + f(L<sub>X</sub>Y).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (i); (ii) e (iii) não foram escritos.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (i) e (ii), com Jacobi como hipótese — ℒ<sub>X</sub> é o colchete, e as duas são Jacobi reescrita —, e (iii), a regra de Leibniz do colchete, sem hipótese.</p>
 </div>
 
 <p>Richard, ex. 2.3.12: com ℒ<sub>X</sub>Y = [X,Y], ℒ<sub>X</sub> é derivação
@@ -2516,6 +2516,26 @@ do colchete — que é Jacobi, reescrita. Com Jacobi como hipótese:</p>
   <samp class="saida">eq1[A→X, B→Y, C→Z]</samp>
   <p class="explica">sem a hipótese, a mesma chamada não prova, e diz que
     nenhuma hipótese fala daqueles colchetes aninhados.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
+  <code class="entrada">[X, [Y, Z]] - [Y, [X, Z]] = [[X, Y], Z]</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">eq1[A→X, B→Y, C→Z]</samp>
+  <p class="explica">(ii): (ℒ<sub>X</sub>ℒ<sub>Y</sub> − ℒ<sub>Y</sub>ℒ<sub>X</sub>)Z = ℒ<sub>[X,Y]</sub>Z.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">[X, f Y] = \nabla_X f \, Y + f [X, Y]</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">(iii): ℒ<sub>X</sub>(fY) = (ℒ<sub>X</sub>f)Y + fℒ<sub>X</sub>Y. Sem o termo X(f)Y, não sai.</p>
 </div>
 
 <h3>21. Torção e curvatura são tensores <span class="pill ok">resolve</span></h3>
@@ -2549,7 +2569,7 @@ R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
     sai do mesmo jeito.</p>
 </div>
 
-<h3>23. A fórmula de Koszul <span class="pill aviso">em parte</span></h3>
+<h3>23. A fórmula de Koszul <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-23">
   <p class="titulo-enunciado">Enunciado 23 · Fórmula de Koszul</p>
@@ -2565,7 +2585,7 @@ R(fX, gY)(hZ) = fgh R(X,Y)Z. Escritas pelas definições, sem supor nada:</p>
     <p>⟨∇<sub>X</sub>Y, Z⟩ := ½ { X⟨Y, Z⟩ + Y⟨Z, X⟩ − Z⟨X, Y⟩ − ⟨X, [Y, Z]⟩ + ⟨Y, [Z, X]⟩ + ⟨Z, [X, Y]⟩ }.</p>
     <p>Verifique que a conexão definida por essa relação é livre de torção e satisfaz (5.4.1). Essa igualdade é chamada fórmula de Koszul e mostra a existência de uma conexão riemanniana.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a direção contrária: o Sucuri deduz a fórmula de Koszul das duas condições de Levi-Civita (a unicidade). O exercício pede a outra — que a conexão definida pela fórmula é sem torção e compatível com a métrica (a existência) —, e essa não foi feita.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as duas direções: a pedida — definida ∇ pela fórmula, ela é sem torção e compatível com a métrica — e a recíproca, a unicidade. De g(W, Z) = 0 para todo Z vem W = 0: é a métrica ser não degenerada.</p>
 </div>
 
 <p>Richard, ex. 5.4.5 (e Reall §3.2): a fórmula de Koszul, das duas condições de
@@ -2585,6 +2605,33 @@ Sucuri prova esta, que é a unicidade.</p>
   <samp class="saida">g(eq2[A→X, B→Y], Z)</samp>
   <p class="explica">três instâncias da compatibilidade e três da torção nula,
     estas postas dentro de g(□, ·). Sem a torção nula, não sai.</p>
+</div>
+
+<p>A direção que Richard pede: com a fórmula de Koszul como definição de ∇ —
+hipótese para todos os campos —, as duas condições de Levi-Civita saem.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall A, B, C: 2 g(\nabla_A B, C) = \nabla_A g(B,C) + \nabla_B g(C,A) - \nabla_C g(A,B) - g(A,[B,C]) + g(B,[C,A]) + g(C,[A,B])</code>
+  <code class="entrada">g(\nabla_X Y, Z) - g(\nabla_Y X, Z) - g([X,Y], Z) = 0</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">provado a partir de eq1</samp>
+  <p class="explica">sem torção: g(∇<sub>X</sub>Y − ∇<sub>Y</sub>X − [X, Y], Z) = 0 para todo Z.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall A, B, C: 2 g(\nabla_A B, C) = \nabla_A g(B,C) + \nabla_B g(C,A) - \nabla_C g(A,B) - g(A,[B,C]) + g(B,[C,A]) + g(C,[A,B])</code>
+  <code class="entrada">\nabla_X g(Y,Z) = g(\nabla_X Y, Z) + g(Y, \nabla_X Z)</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">provado a partir de eq1</samp>
+  <p class="explica">compatível com a métrica, (5.4.1). Com o sinal trocado, não sai.</p>
 </div>
 
 <h3>24. A primeira identidade de Bianchi <span class="pill ok">resolve</span></h3>
@@ -2640,43 +2687,70 @@ Sucuri prova esta, que é a unicidade.</p>
     (v) Suponha que X e Y são ortonormais e seja K(σ) a curvatura seccional do 2-plano σ gerado por X e Y. Prove que</p>
     <p>K(σ) = ¼ |[X, Y]|<sub>g</sub><sup>2</sup>.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> o item (iii), com a ideia — ∇<sub>X</sub>X = 0 em X + Y — dada como hipótese; os outros itens, não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (ii)–(v), com o item (i) — g([X,Y], Z) + g(Y, [X,Z]) = 0 — como hipótese, e g(Y, Z) constante para campos invariantes à esquerda; (iv) e (v) na convenção de sinal de Kovalev, dita como definição. (i) mesmo, pelo fluxo de X, não.</p>
 </div>
 
-<p>Kovalev, Part III Riemannian Geometry, folha 1, Q5. O item (iii),
-∇<sub>X</sub>Y = ½[X,Y], sai de ∇<sub>X</sub>X = 0 para todo X invariante —
-mas a prova usa esse fato em X + Y, e X + Y não aparece no enunciado. O
-Sucuri só instancia o que aparece; a ideia, você dá:</p>
+<p>Campos invariantes à esquerda de uma métrica invariante à esquerda têm
+produtos constantes, ∇<sub>A</sub>g(B, C) = 0; a invariância à direita, derivada,
+é o item (i). Com essas duas hipóteses e a fórmula de Koszul, (ii) e (iii)
+saem direto — sem a ideia de aplicar ∇<sub>X</sub>X = 0 em X + Y.</p>
 
 <div class="exemplo">
   <code class="entrada">X = tensor(1, 0)</code>
   <code class="entrada">Y = tensor(1, 0)</code>
   <code class="entrada">Z = tensor(1, 0)</code>
-  <code class="entrada">\nabla_{X+Y} (X+Y) = 0</code>
-  <code class="entrada">\nabla_X X = 0</code>
-  <code class="entrada">\nabla_Y Y = 0</code>
-  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
-  <code class="entrada">\nabla_X Y = \frac{1}{2} [X, Y]</code>
-  <code class="entrada">provar(eq5, eq1, eq2, eq3, eq4)</code>
-  <samp class="saida">provado a partir de eq1, eq2, eq3, eq4</samp>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall A, B, C: 2 g(\nabla_A B, C) = \nabla_A g(B,C) + \nabla_B g(C,A) - \nabla_C g(A,B) - g(A,[B,C]) + g(B,[C,A]) + g(C,[A,B])</code>
+  <code class="entrada">\forall A, B, C: \nabla_A g(B,C) = 0</code>
+  <code class="entrada">\forall A, B, C: g([A,B], C) + g(B, [A,C]) = 0</code>
+  <code class="entrada">g(\nabla_X X, Z) = 0</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">(ii): g(∇<sub>X</sub>X, Z) = 0 para todo Z, logo ∇<sub>X</sub>X = 0.</p>
 </div>
 
-<p>Com (iii) como hipótese geral, o item (iv) sai — e com um sinal que merece
-nota. Na convenção R(X,Y) = ∇<sub>X</sub>∇<sub>Y</sub> − ∇<sub>Y</sub>∇<sub>X</sub>
-− ∇<sub>[X,Y]</sub>, o resultado é −¼[[X,Y],Z]; a folha dá +¼, na convenção de
-sinal oposto. A curvatura seccional, ¼|[X,Y]|², é a mesma nas duas.</p>
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\forall A, B, C: 2 g(\nabla_A B, C) = \nabla_A g(B,C) + \nabla_B g(C,A) - \nabla_C g(A,B) - g(A,[B,C]) + g(B,[C,A]) + g(C,[A,B])</code>
+  <code class="entrada">\forall A, B, C: \nabla_A g(B,C) = 0</code>
+  <code class="entrada">\forall A, B, C: g([A,B], C) + g(B, [A,C]) = 0</code>
+  <code class="entrada">g(\nabla_X Y, Z) = \frac{1}{2} g([X,Y], Z)</code>
+  <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+  <p class="explica">(iii): ∇<sub>X</sub>Y = ½[X, Y].</p>
+</div>
+
+<p>(iv) depende do sinal de R. Kovalev usa R(X, Y) = ∇<sub>[X,Y]</sub> −
+[∇<sub>X</sub>, ∇<sub>Y</sub>], o oposto de Carroll e Reall; declarada essa
+definição, sai ¼[[X, Y], Z] — com a de Carroll sairia −¼, e o Sucuri o diz.</p>
 
 <div class="exemplo">
   <code class="entrada">X = tensor(1, 0)</code>
   <code class="entrada">Y = tensor(1, 0)</code>
   <code class="entrada">Z = tensor(1, 0)</code>
   <code class="entrada">R = curvatura</code>
-  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_A \nabla_B W - \nabla_B \nabla_A W - \nabla_{[A,B]} W</code>
-  <code class="entrada">\forall A, B: \nabla_A B = \frac{1}{2} [A, B]</code>
-  <code class="entrada">\forall A, B, C: [A,[B,C]] + [B,[C,A]] + [C,[A,B]] = 0</code>
-  <code class="entrada">R(X,Y)Z = -\frac{1}{4} [[X,Y],Z]</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \nabla_B \nabla_A W - \nabla_A \nabla_B W + \nabla_{[A,B]} W</code>
+  <code class="entrada">\forall A, B: \nabla_A B = \frac{1}{2} [A,B]</code>
+  <code class="entrada">\forall A, B, W: [A,[B,W]] + [B,[W,A]] + [W,[A,B]] = 0</code>
+  <code class="entrada">R(X,Y)Z = \frac{1}{4} [[X,Y],Z]</code>
   <code class="entrada">provar(eq4, eq1, eq2, eq3)</code>
   <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">R = curvatura</code>
+  <code class="entrada">\forall A, B, W: R(A,B)W = \frac{1}{4} [[A,B],W]</code>
+  <code class="entrada">\forall A, B, C: g([A,B], C) + g(B, [A,C]) = 0</code>
+  <code class="entrada">g(R(X,Y)X, Y) = \frac{1}{4} g([X,Y], [X,Y])</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">provado a partir de eq1, eq2</samp>
+  <p class="explica">(v): para X, Y ortonormais, K(σ) = g(R(X, Y)X, Y) — na convenção de Kovalev — é ¼|[X, Y]|².</p>
 </div>
 
 <h3>53. O colchete pela conexão <span class="pill ok">resolve</span></h3>
@@ -2743,7 +2817,7 @@ vetores como hipótese (ela muda de fator com a normalização — ver 27):</p>
     vetores levada a uma entre escalares.</p>
 </div>
 
-<h3>29–33. A álgebra das formas <span class="pill ok">resolve</span> (29, 32) <span class="pill aviso">em parte</span> (30, 31, 33)</h3>
+<h3>29–33. A álgebra das formas <span class="pill ok">resolve</span> (29, 30, 32) <span class="pill aviso">em parte</span> (31, 33)</h3>
 
 <div class="enunciado" id="enunciado-29">
   <p class="titulo-enunciado">Enunciado 29 · Contração (produto interior) como antiderivação</p>
@@ -2773,7 +2847,7 @@ vetores como hipótese (ela muda de fator com a normalização — ver 27):</p>
     <p>Para uma p-forma η, defina ι<sub>X</sub>η como a (p − 1)-forma que resulta de contrair um campo vetorial X com o primeiro índice de η. Mostre que, para uma 1-forma ω,</p>
     <p>L<sub>X</sub>ω = ι<sub>X</sub>(dω) + d(ι<sub>X</sub>ω).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a fórmula de Cartan numa 1-forma, que no Sucuri é a definição de ℒ<sub>X</sub> (vira identidade); as fórmulas em coordenadas de ℒ<sub>X</sub>ω e ℒ<sub>X</sub>g saem com índice (enunciado 17).</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> as duas fórmulas em coordenadas, pela regra de Leibniz, e a fórmula de Cartan numa 1-forma, a partir da definição de ℒ<sub>X</sub> por Leibniz e da de dω.</p>
 </div>
 
 <div class="enunciado" id="enunciado-31">
@@ -2890,6 +2964,51 @@ graduado); Reall §8.1 (α∧β = (−1)<sup>pq</sup>β∧α, associatividade) e
     exercício) não sai.</p>
 </div>
 
+<p>30, por outra rota que a do motor de formas — onde ℒ<sub>X</sub> é definida
+pela fórmula de Cartan, e a fórmula vira identidade. Com ℒ<sub>X</sub> pela regra
+de Leibniz, (ℒ<sub>X</sub>ω)(Y) = X(ω(Y)) − ω([X, Y]), as componentes saem
+expandindo, e a fórmula de Cartan é consequência:</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho = índices</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">h = tensor(0, 2, simétrico)</code>
+  <code class="entrada">X^\nu \partial_\nu (\omega_\mu Y^\mu) - \omega_\mu (X^\nu \partial_\nu Y^\mu - Y^\nu \partial_\nu X^\mu) = (X^\nu \partial_\nu \omega_\mu + \omega_\nu \partial_\mu X^\nu) Y^\mu</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">(ℒ<sub>X</sub>ω)<sub>μ</sub> = X<sup>ν</sup>∂<sub>ν</sub>ω<sub>μ</sub> + ω<sub>ν</sub>∂<sub>μ</sub>X<sup>ν</sup>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho = índices</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">Z = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">h = tensor(0, 2, simétrico)</code>
+  <code class="entrada">X^\rho \partial_\rho (h_{\mu\nu} Y^\mu Z^\nu) - h_{\mu\nu} (X^\rho \partial_\rho Y^\mu - Y^\rho \partial_\rho X^\mu) Z^\nu - h_{\mu\nu} Y^\mu (X^\rho \partial_\rho Z^\nu - Z^\rho \partial_\rho X^\nu) = (X^\rho \partial_\rho h_{\mu\nu} + h_{\mu\rho} \partial_\nu X^\rho + h_{\rho\nu} \partial_\mu X^\rho) Y^\mu Z^\nu</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">(ℒ<sub>X</sub>g)<sub>μν</sub>, com g um (0, 2) simétrico.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\omega = tensor(0, 1)</code>
+  <code class="entrada">L = tensor(0, 1)</code>
+  <code class="entrada">D = tensor(0, 2)</code>
+  <code class="entrada">\forall B: L(B) = \nabla_X \omega(B) - \omega([X,B])</code>
+  <code class="entrada">\forall A, B: D(A,B) = \nabla_A \omega(B) - \nabla_B \omega(A) - \omega([A,B])</code>
+  <code class="entrada">L(Y) = D(X,Y) + \nabla_Y \omega(X)</code>
+  <code class="entrada">provar(eq3, eq1, eq2)</code>
+  <samp class="saida">provado a partir de eq1, eq2</samp>
+  <p class="explica">L = ℒ<sub>X</sub>ω e D = dω: (ℒ<sub>X</sub>ω)(Y) = (ι<sub>X</sub>dω)(Y) + (dι<sub>X</sub>ω)(Y), a fórmula de Cartan.</p>
+</div>
+
 <h3>47, 48 e 51. d, ι e ℒ <span class="pill ok">resolve</span> (48, 51) <span class="pill aviso">em parte</span> (47)</h3>
 
 <div class="enunciado" id="enunciado-47">
@@ -2907,7 +3026,7 @@ graduado); Reall §8.1 (α∧β = (−1)<sup>pq</sup>β∧α, associatividade) e
     <p>L<sub>X</sub>(α ∧ β) = L<sub>X</sub>α ∧ β + α ∧ L<sub>X</sub>β. &nbsp;&nbsp;(2)</p>
     <p>Observe que essa fórmula determina a ação de L<sub>X</sub> sobre formas diferenciais arbitrárias, desde que se saiba como ela age sobre 0-formas (isto é, funções suaves) e sobre 1-formas exatas (isto é, diferenciais de funções suaves).</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> d ℒ<sub>X</sub> = ℒ<sub>X</sub> d; a regra de Leibniz de ℒ<sub>X</sub> vem da definição usada no Sucuri.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> d ℒ<sub>X</sub> = ℒ<sub>X</sub> d e a regra de Leibniz de ℒ<sub>X</sub> (o exemplo do 48). Mas o exercício pede as duas a partir da definição de ℒ<sub>X</sub> pelo fluxo, para daí provar a fórmula de Cartan; no Sucuri, ℒ<sub>X</sub> nas formas é definida pela fórmula de Cartan, e essa rota não se percorre.</p>
 </div>
 
 <div class="enunciado" id="enunciado-48">
