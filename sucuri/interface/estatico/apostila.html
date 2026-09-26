@@ -138,10 +138,10 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>7</td><td>6</td><td>17</td></tr>
+  <tr><td>indicial (30)</td><td>11</td><td>6</td><td>13</td></tr>
   <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
   <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>40</strong></td><td><strong>14</strong></td><td><strong>31</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>44</strong></td><td><strong>14</strong></td><td><strong>27</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -153,9 +153,9 @@ exercício aparece na seção da sua notação.</p>
 <p>A notação tensorial vai mais longe, e não por acaso: é nela que o Sucuri
 tem um motor de prova. Dois exercícios enunciados em índices (9 e 11) só
 saem porque foram reescritos sem índice — que é, afinal, o que a notação
-abstrata existe para permitir. Na indicial, o que falta é sobretudo a
-passagem de ∇ para Γ, o determinante da métrica e hipóteses escritas com
-índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
+abstrata existe para permitir. Na indicial, a passagem de ∇ para Γ e de Γ
+para ∂g já se faz (2, 4, 17, 65); o que falta é sobretudo o determinante da
+métrica e hipóteses escritas com índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
 o que não sai pede base ortonormal, linearização, ou vetores dados por
 componentes.</p>
 
@@ -226,6 +226,128 @@ com o sinal − na assinatura lorentziana; em particular
   <samp class="saida">-2*delta(rho, -alpha)*delta(sigma, -beta) + 2*delta(sigma, -alpha)*delta(rho, -beta)</samp>
   <p class="explica">p = 2: −2! · 2!/2! · (δδ − δδ). O sinal vem da assinatura
     declarada; com <code>métrica(+,+,+,+)</code> a primeira conta dá +24.</p>
+</div>
+
+<h3>2. ∇ de um tensor (1,1) em símbolos de Christoffel <span class="pill ok">resolve</span></h3>
+
+<p>Reall §3.1: a partir da ação de ∇ num vetor, escreva ∇<sub>ρ</sub>T<sup>μ</sup><sub>ν</sub>
+com Γ. Reall põe o índice da derivada por último em Γ; Carroll, em primeiro.
+Com torção a diferença importa, e por isso a convenção não é suposta: ela é
+lida da definição escrita, e <code>\Gamma = christoffel(eq1)</code> a
+declara. <code>expandir</code> abre cada ∇ em ∂ e um Γ por índice.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">T = tensor(1, 1)</code>
+  <code class="entrada">\nabla_\rho V^\mu = \partial_\rho V^\mu + \Gamma^\mu{}_{\sigma\rho} V^\sigma</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\nabla_\rho T^\mu{}_\nu = \partial_\rho T^\mu{}_\nu + \Gamma^\mu{}_{\sigma\rho} T^\sigma{}_\nu - \Gamma^\sigma{}_{\nu\rho} T^\mu{}_\sigma</code>
+  <code class="entrada">expandir(eq2)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">sem o termo de −Γ do índice de baixo, a resposta não é
+    <code>True</code>.</p>
+</div>
+
+<h3>4. As derivadas da métrica <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962, lista 3, #7: com a conexão de Levi-Civita, (a)
+∂<sub>λ</sub>g<sub>μν</sub> = Γ<sub>μνλ</sub> + Γ<sub>νμλ</sub>; (b)
+g<sub>μκ</sub>∂<sub>λ</sub>g<sup>κν</sup> = −g<sup>κν</sup>∂<sub>λ</sub>g<sub>μκ</sub>;
+(c) ∂<sub>λ</sub>g<sup>μν</sup> = −Γ<sup>μ</sup><sub>λκ</sub>g<sup>κν</sup> − Γ<sup>ν</sup><sub>λκ</sub>g<sup>κμ</sup>.
+<code>expandir(eq, g)</code> escreve também cada Γ pela métrica,
+½g<sup>αδ</sup>(∂g + ∂g − ∂g) — o que só vale para Levi-Civita, e só se
+faz com ela declarada.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\partial_\lambda g_{\mu\nu} = g_{\mu\sigma} \Gamma^\sigma{}_{\nu\lambda} + g_{\nu\sigma} \Gamma^\sigma{}_{\mu\lambda}</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \kappa = índices</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">g_{\mu\kappa} \partial_\lambda g^{\kappa\nu} = -g^{\kappa\nu} \partial_\lambda g_{\mu\kappa}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">∂<sub>λ</sub>g<sup>μν</sup> = −g<sup>μα</sup>g<sup>νβ</sup>∂<sub>λ</sub>g<sub>αβ</sub>
+    não é hipótese: é o que “inversa” quer dizer, e o <code>simplificar</code>
+    a aplica sempre que há métrica declarada.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \kappa = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\partial_\lambda g^{\mu\nu} = -\Gamma^\mu{}_{\lambda\kappa} g^{\kappa\nu} - \Gamma^\nu{}_{\lambda\kappa} g^{\kappa\mu}</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<h3>17. A derivada de Lie em componentes <span class="pill ok">resolve</span></h3>
+
+<p>Reall §5.3: (ℒ<sub>X</sub>ω)<sub>μ</sub> = X<sup>ν</sup>∂<sub>ν</sub>ω<sub>μ</sub> + ω<sub>ν</sub>∂<sub>μ</sub>X<sup>ν</sup>
+pode ser escrita com ∇ no lugar de ∂ se a conexão não tem torção; e
+(ℒ<sub>X</sub>g)<sub>μν</sub> = ∇<sub>μ</sub>X<sub>ν</sub> + ∇<sub>ν</sub>X<sub>μ</sub>.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">W = tensor(0, 1)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">X^\nu \partial_\nu W_\mu + W_\nu \partial_\mu X^\nu = X^\nu \nabla_\nu W_\mu + W_\nu \nabla_\mu X^\nu</code>
+  <code class="entrada">expandir(eq2)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">sem <code>\nabla = levi-civita</code>, Γ não é simétrico, os
+    termos de Γ não se cancelam, e a resposta não é <code>True</code> — que é
+    a hipótese do exercício, dita.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">X^\rho \partial_\rho g_{\mu\nu} + g_{\mu\rho} \partial_\nu X^\rho + g_{\rho\nu} \partial_\mu X^\rho = g_{\nu\rho} \nabla_\mu X^\rho + g_{\mu\rho} \nabla_\nu X^\rho</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<h3>65. Christoffel de métricas conformes <span class="pill ok">resolve</span></h3>
+
+<p>Evans, <em>Part II GR</em>, folha 1, Q8: se ĝ = Ω²g, então
+Γ̂<sup>α</sup><sub>βγ</sub> = Γ<sup>α</sup><sub>βγ</sub> + Ω<sup>−1</sup>(δ<sup>α</sup><sub>β</sub>∂<sub>γ</sub>Ω + δ<sup>α</sup><sub>γ</sub>∂<sub>β</sub>Ω − g<sup>ασ</sup>g<sub>βγ</sub>∂<sub>σ</sub>Ω).
+O lado esquerdo é a fórmula de Levi-Civita escrita para ĝ; o direito,
+expandido pela métrica g.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma, \sigma, \lambda = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\beta V^\alpha = \partial_\beta V^\alpha + \Gamma^\alpha{}_{\beta\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\frac{1}{2} \Omega^{-2} g^{\alpha\sigma} (\partial_\beta (\Omega^2 g_{\sigma\gamma}) + \partial_\gamma (\Omega^2 g_{\sigma\beta}) - \partial_\sigma (\Omega^2 g_{\beta\gamma})) = \Gamma^\alpha{}_{\beta\gamma} + \Omega^{-1} (g^\alpha{}_\beta \partial_\gamma \Omega + g^\alpha{}_\gamma \partial_\beta \Omega - g^{\alpha\sigma} g_{\beta\gamma} \partial_\sigma \Omega)</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">g<sup>α</sup><sub>β</sub> é a delta: com métrica declarada, o
+    Sucuri a lê assim.</p>
 </div>
 
 <h3>6. Derivadas segundas de uma função <span class="pill aviso">em parte</span></h3>
@@ -997,12 +1119,6 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
 <h3>Notação indicial</h3>
 
 <ul class="limites">
-  <li><strong>2, 4 (Reall §3.1; MIT PS3 #7).</strong> Escrever ∇ em termos de
-    ∂ e Γ, e ∂g em termos de Γ. O Sucuri trata ∇<sub>μ</sub> como objeto, sem
-    abri-lo em símbolos de Christoffel com índice.</li>
-  <li><strong>4(b).</strong> g<sub>μκ</sub>∂<sub>λ</sub>g<sup>κν</sup> =
-    −g<sup>κν</sup>∂<sub>λ</sub>g<sub>μκ</sub> pede saber que
-    g<sub>μκ</sub>g<sup>κν</sup> = δ antes de derivar.</li>
   <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
     mudança de coordenadas não é operação do Sucuri.</li>
   <li><strong>5 (MIT PS3 #7).</strong> Divergências com √|g|: o determinante
@@ -1014,8 +1130,6 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     mesmo problema, sai em parte (seção I).</li>
   <li><strong>12 (Tong 2 Q8).</strong> O Riemann em 2 dimensões pelo escalar:
     pede contar componentes e usar a dimensão como hipótese.</li>
-  <li><strong>17 (Reall §5.3).</strong> A derivada de Lie com índice não
-    existe; sem índice, só em formas.</li>
   <li><strong>61 (MIT 2018, lista 4, P1).</strong> Contar componentes
     independentes de um antissimétrico é combinatória, não álgebra
     tensorial.</li>
@@ -1023,8 +1137,6 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     pedem as coordenadas como funções, x<sup>j</sup> com ∂<sub>k</sub>x<sup>j</sup> = δ.</li>
   <li><strong>64, 66 (Evans 3 Q10; 't Hooft).</strong> Γ<sup>β</sup><sub>αβ</sub> = ∂ ln√−g
     e a divergência com √−g: o determinante, de novo.</li>
-  <li><strong>65 (Evans 1 Q8).</strong> Christoffel de métricas conformes: Γ
-    como objeto com índice.</li>
   <li><strong>68, 69 (Evans 3 Q6, Q4).</strong> Killing de segunda ordem, e
     |∇φ|² + R constante: hipóteses em índices.</li>
   <li><strong>71 (Evans 4 Q10).</strong> Riemann linearizado: não há expansão

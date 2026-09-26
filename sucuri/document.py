@@ -709,6 +709,16 @@ class Document:
         self._espaco._cabecas.pop(limpo, None)
         return self
 
+    def christoffel(self, nome, convencao):
+        """Γ, na convenção extraída da definição escrita de ∇."""
+        from .tensores import DIMENSAO_PADRAO, Espaco
+        if self._espaco is None:
+            self._espaco = Espaco(DIMENSAO_PADRAO)
+        limpo = _limpo_indice(nome)
+        self._espaco.christoffel = (limpo, convencao)
+        self._espaco._cabecas.pop(limpo, None)
+        return self
+
     def levi_civita(self, nome, qual):
         """ε, com a escolha que os livros não fazem igual: 'tensor' ou 'simbolo'."""
         from .tensores import DIMENSAO_PADRAO, Espaco

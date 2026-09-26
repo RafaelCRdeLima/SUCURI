@@ -49,6 +49,7 @@ class Sessao:
         self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.hodge = False          # \star declarado
         self.riemann = None         # (nome, convenção) do Riemann definido
+        self.christoffel = None     # (nome, convenção) do Γ definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
         self.escrita_coord = {}     # 'theta' -> '\\theta', como foi escrito
@@ -146,6 +147,8 @@ class Sessao:
             doc.conexao_levi_civita()
         if self.riemann:
             doc.riemann(*self.riemann)
+        if self.christoffel:
+            doc.christoffel(*self.christoffel)
         if self.variaveis:
             doc.variable(*self.variaveis)
 

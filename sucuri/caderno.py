@@ -54,8 +54,8 @@ _RE_PROVAR = re.compile(r"^\s*(?:provar|prove)\s*\(\s*(" + _ROTULO +
 _RE_FORMA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*forma\s*\(\s*(\d+)\s*\)\s*$",
                        re.I)
 # `R = riemann(eq1)`: R é o Riemann de ∇, na convenção que eq1 escreve.
-_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*riemann\s*\(\s*(" +
-                         _ROTULO + r")\s*\)\s*$", re.I)
+_RE_RIEMANN = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(riemann|christoffel)\s*"
+                         r"\(\s*(" + _ROTULO + r")\s*\)\s*$", re.I)
 # Declaração na folha: `u = u(t,x)`, com o MESMO nome dos dois lados.
 #
 # A repetição é o que distingue declaração de matemática. `u(t,x)` sozinho é
@@ -109,6 +109,7 @@ VERBOS = {
     "conferir": "conferir", "check": "conferir", "verificar": "conferir",
     "contrair": "contrair", "contract": "contrair",
     "indices": "indices", "índices": "indices", "indexar": "indices",
+    "expandir": "expandir", "expand": "expandir",
     **VERBOS_GEOMETRIA,
 }
 
@@ -309,8 +310,10 @@ class Caderno:
             return celula
 
         riemann = _RE_RIEMANN.match(fonte or "")
+        if riemann and riemann.group(2).lower() == "christoffel":
+            return self._christoffel(riemann.group(1), _sem_barra(riemann.group(3)))
         if riemann:
-            return self._riemann(riemann.group(1), _sem_barra(riemann.group(2)))
+            return self._riemann(riemann.group(1), _sem_barra(riemann.group(3)))
 
         especie = _RE_ESPECIE.match(fonte or "")
         if especie:
@@ -516,6 +519,26 @@ class Caderno:
         from .formas import tem_forma
         doc = self.sessao.documento()[0]
         return tem_forma(objeto, doc.tensores_com_graus())
+
+    def _christoffel(self, nome, rotulo):
+        """`\Gamma = christoffel(eq1)` — a convenção vem da definição de ∇."""
+        from .christoffel import ChristoffelMalDefinido, convencao_de
+        limpo = _sem_barra(nome)
+        fonte = f"{nome} = christoffel({rotulo})"
+        try:
+            conv = convencao_de(self._objeto(rotulo).to_sympy(), limpo)
+        except (KeyError, ValueError, ChristoffelMalDefinido) as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.sessao.christoffel = (limpo, conv)
+        ordem = sorted(conv, key=conv.get)
+        grego = {"cima": "ν", "derivada": "μ", "outro": "λ"}
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "christoffel": conv}],
+            "texto": (f"{nome} são os símbolos de Christoffel de ∇, na convenção "
+                      f"de {rotulo}: ∇_μ V^ν = ∂_μ V^ν + {nome}"
+                      f"({', '.join(grego[k] for k in ordem)}) V^λ. expandir(eq) "
+                      f"abre ∇ em ∂ e {nome}; expandir(eq, g), com Levi-Civita, "
+                      f"escreve {nome} pela métrica")})
 
     def _riemann(self, nome, rotulo):
         """`R = riemann(eq1)` — a convenção vem da definição escrita.
@@ -728,6 +751,8 @@ class Caderno:
     def _comando(self, verbo, alvo, segundo=None):
         if verbo in VERBOS_GEOMETRIA.values():
             return self._geometria(verbo, alvo)
+        if verbo == "expandir":
+            return self._expandir(alvo, segundo)
         try:
             expressao = self._objeto(alvo)
             if verbo in DE_DOIS:
@@ -838,6 +863,43 @@ class Caderno:
         tabela.append(["usou", texto])
         return {"alvo": alvo, "latex_exato": sp.latex(objetivo),
                 "exato": sp.sstr(objetivo), "linhas": tabela, "texto": texto}
+
+    def _expandir(self, alvo, metrica=None):
+        """`expandir(eq)`: ∇ em ∂ e Γ; `expandir(eq, g)`: e Γ pela métrica.
+
+        Uma igualdade sai `True` quando, expandida e simplificada, os dois
+        lados coincidem — é assim que a fórmula de um livro se confere.
+        """
+        from .christoffel import ChristoffelMalDefinido, expandir, metrizar
+        from .tensores import latex_de, simplificar as _simplificar
+        try:
+            objeto = self._objeto(alvo).to_sympy()
+        except (KeyError, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+        doc = self.sessao.documento()[0]
+        espaco = doc.espaco
+        try:
+            objeto = expandir(objeto, espaco)
+            if metrica:
+                if _sem_barra(metrica) != espaco.metrica:
+                    return {"erro": f"'{metrica}' não é a métrica declarada",
+                            "alvo": alvo}
+                objeto = metrizar(objeto, espaco)
+        except (ChristoffelMalDefinido, ValueError) as e:
+            return {"erro": str(e), "alvo": alvo}
+        if isinstance(objeto, sp.Equality):
+            lhs = _simplificar(objeto.lhs, espaco)
+            rhs = _simplificar(objeto.rhs, espaco)
+            resto = _simplificar(lhs - rhs, espaco) if isinstance(
+                lhs - rhs, TensExpr) else sp.simplify(lhs - rhs)
+            objeto = sp.true if resto == 0 else sp.Eq(lhs, rhs, evaluate=False)
+        else:
+            objeto = _simplificar(objeto, espaco)
+        nome = self._registrar(objeto)
+        latex = latex_de(objeto, espaco)
+        return {"alvo": alvo, "exato": sp.sstr(objeto), "latex_exato": latex,
+                "nomeados": [{"nome": nome, "sympy": sp.sstr(objeto),
+                              "latex": latex}]}
 
     def _traduzir(self, alvo, expressao):
         """`indices(eq5)` — a mesma igualdade, escrita com índice."""

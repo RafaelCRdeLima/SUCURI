@@ -282,6 +282,34 @@ No caminho, dois silêncios, agora com teste:
 - `\nabla_\mu T^\alpha{}_\beta` com β não declarado derivava `T**alpha` como
   escalar. Agora recusa.
 
+### ∇ aberto em Γ, e Γ em ∂g
+
+```
+\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda     eq1
+\Gamma = christoffel(eq1)
+
+\nabla_\rho T^\mu{}_\nu = …                 expandir(eq2)     →  ∂T + Γ T − Γ T
+\partial_\lambda g_{\mu\nu} = g Γ + g Γ     expandir(eq2, g)  →  True
+g_{\mu\kappa} \partial_\lambda g^{\kappa\nu} = -g^{\kappa\nu} \partial_\lambda g_{\mu\kappa}
+                                            simplificar       →  True
+```
+
+A ordem dos slots de Γ varia como a do Riemann: Carroll e MTW põem o índice da
+derivada primeiro, Reall por último. Com torção a diferença importa, e por isso
+`\Gamma = christoffel(eq1)` a lê da definição escrita, que tem de ser ∇ num
+vetor. `expandir(eq)` troca cada ∇ — também ∇ dentro de ∇ — por ∂ mais um Γ
+por índice: + no de cima, − no de baixo. `expandir(eq, g)` escreve ainda cada Γ
+(e cada ∂Γ) por ½g(∂g + ∂g − ∂g), o que só vale para Levi-Civita e só se faz
+com `\nabla = levi-civita` declarada; com ela, Γ é simétrico nos slots de
+baixo. Numa equação, a resposta é `True` quando os lados coincidem.
+
+∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ} não é hipótese: é o que "inversa" quer
+dizer, e o `simplificar` a aplica sempre que há métrica declarada; g^μ{}_ν é δ,
+e sua derivada é zero.
+
+Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
+`christoffel` das componentes numa carta continua o mesmo.
+
 A derivada **sem** índice, ∇_U X, é a seção seguinte.
 
 ### Simetria declarada

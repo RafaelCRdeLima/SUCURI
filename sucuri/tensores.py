@@ -78,6 +78,7 @@ class Espaco:
         self.conexao = None         # 'levi-civita', se declarada
         self.assinatura = None      # (-1, 1, 1, 1), se declarada
         self.riemann = None         # (nome, convenção), se definido
+        self.christoffel = None     # (nome, convenção), se definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
 
     def indice(self, nome):
@@ -163,6 +164,10 @@ class Espaco:
         if self.riemann and nome == self.riemann[0] and posto == 4:
             from .derivadas import simetria_do_riemann
             simetria = simetria_do_riemann(self.riemann[1])
+        elif self.christoffel and nome == self.christoffel[0] and posto == 3:
+            from .christoffel import simetria as _simetria_gamma
+            simetria = _simetria_gamma(self.christoffel[1],
+                                       self.conexao == "levi-civita")
         else:
             simetria = _simetria(self._simetrias.get(nome), posto)
         cabeca = TensorHead(nome, [self.tipo] * posto, simetria)
@@ -568,6 +573,14 @@ def simplificar(expr, espaco):
         if not isinstance(expr, TensExpr):
             return expr
     if espaco is not None and espaco.metrica:
+        # ∂ da métrica inversa em ∂ da métrica: é o que "inversa" quer dizer.
+        from .christoffel import inversa
+        expr = inversa(expr, espaco)
+        if not isinstance(expr, TensExpr):
+            return expr
+        expr = expr.expand()
+        if not isinstance(expr, TensExpr):
+            return expr
         # A métrica declarada contrai o que ela aparece contraindo — inclusive
         # a que a identidade εε pôs ali para alinhar os índices.
         expr = expr.contract_metric(espaco.cabeca(espaco.metrica, 2))

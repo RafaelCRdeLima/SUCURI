@@ -111,6 +111,7 @@ que responde de uma vez para o caderno inteiro.</p>
   <tr><td><code>\epsilon = levi-civita(tensor)</code></td><td>ou <code>(símbolo)</code> — os livros não fazem igual</td></tr>
   <tr><td><code>\nabla = levi-civita</code></td><td>a conexão: ∇g = 0, sem torção</td></tr>
   <tr><td><code>R = riemann(eq1)</code></td><td>o Riemann, na convenção que eq1 escreve</td></tr>
+  <tr><td><code>\Gamma = christoffel(eq1)</code></td><td>os Christoffel, na ordem de slots que eq1 escreve</td></tr>
   <tr><td><code>R = curvatura</code></td><td>R(U,X)W é o operador de curvatura, sem índice</td></tr>
   <tr><td><code>\star = hodge</code></td><td>o dual de Hodge (pede a assinatura)</td></tr>
 </table>
@@ -247,7 +248,10 @@ rascunho da linha de cima não provaria nada.</p>
 <p><code>contrair</code> baixa e levanta índice com a métrica (seção 7);
 <code>indices</code> escreve com índice o que foi escrito sem (seção 11). Os
 verbos de componentes — <code>christoffel</code>, <code>riemann</code>,
-<code>ricci</code>, <code>escalar</code> — estão na seção 8.</p>
+<code>ricci</code>, <code>escalar</code> — estão na seção 8.
+<code>expandir</code> abre ∇ em ∂ e Γ, com índice (seção 7) — e
+<code>\Gamma = christoffel(eq1)</code>, com um nome à esquerda, não é o verbo
+de componentes: é a declaração da convenção de Γ.</p>
 
 <h2 id="respostas">5. O que cada resposta quer dizer</h2>
 
@@ -427,6 +431,29 @@ definição que você escreveu:</p>
   <p class="explica">o sinal e a ordem dos slots do Riemann variam de livro
     para livro; <code>riemann(eq1)</code> os lê da identidade escrita. E
     <code>\nabla = levi-civita</code> é o que faz ∇g = 0 — sem ela, não.</p>
+</div>
+
+<p>E ∇ se abre em ∂ e Γ. A ordem dos slots de Γ também varia — Carroll põe o
+índice da derivada primeiro, Reall por último —, e por isso também é lida da
+definição. <code>expandir(eq)</code> troca cada ∇ por ∂ mais um Γ por índice
+(+ no de cima, − no de baixo); <code>expandir(eq, g)</code> escreve também
+cada Γ pela métrica, o que só vale — e só se faz — com
+<code>\nabla = levi-civita</code>. Numa equação, a resposta é
+<code>True</code> quando os dois lados coincidem.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \lambda, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu V^\nu = \partial_\mu V^\nu + \Gamma^\nu{}_{\mu\lambda} V^\lambda</code>
+  <code class="entrada">\Gamma = christoffel(eq1)</code>
+  <code class="entrada">\partial_\lambda g_{\mu\nu} = g_{\mu\sigma} \Gamma^\sigma{}_{\nu\lambda} + g_{\nu\sigma} \Gamma^\sigma{}_{\mu\lambda}</code>
+  <code class="entrada">expandir(eq2, g)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">∂<sub>λ</sub>g<sup>μν</sup> = −g<sup>μα</sup>g<sup>νβ</sup>∂<sub>λ</sub>g<sub>αβ</sub>
+    — o que “inversa” quer dizer — o <code>simplificar</code> aplica sempre
+    que há métrica declarada.</p>
 </div>
 
 <h2 id="componentes">8. Componentes numa carta</h2>
