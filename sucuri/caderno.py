@@ -57,6 +57,11 @@ _RE_INDUZIDA = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*induzida\s*\((.*)\)\s*$",
 # não são só rótulos.
 _RE_VOLUME = re.compile(r"^\s*volume\s*\((.*)\)\s*$", re.I | re.S)
 _RE_SERIE = re.compile(r"^\s*(?:s[ée]rie|series)\s*\((.*)\)\s*$", re.I | re.S)
+# `A = campo(A^r, A^θ)`, `W = covetor(…)`: campos por componentes na carta.
+_RE_CAMPO = re.compile(r"^\s*(\\?[A-Za-z]\w*)\s*=\s*(campo|covetor)\s*\((.*)\)\s*$", re.I | re.S)
+# `killing(g, X)`, `killing(g, 1)`, `colchete(X, Y)`, `nabla(g, A)`,
+# `laplaciano(g, A)`, `restringir(K, h)`: verbos de campos por componentes.
+_RE_VERBO_CAMPO = re.compile(r"^\s*(killing|colchete|nabla|laplaciano|restringir)\s*\((.*)\)\s*$", re.I | re.S)
 # `independentes(C, eq3, eq4)`: um tensor e as equações que ele satisfaz.
 _RE_INDEPENDENTES = re.compile(r"^\s*(?:independentes|independent)\s*\(\s*(" +
                                _ROTULO + r"(?:\s*,\s*" + _ROTULO +
@@ -130,6 +135,8 @@ VERBOS = {
     "orbitas": "orbitas", "órbitas": "orbitas",
     "elemento": "elemento",
     "cartan": "cartan", "tetrada": "cartan", "tétrada": "cartan",
+    "killing": "killing", "colchete": "colchete", "nabla": "nabla",
+    "laplaciano": "laplaciano", "restringir": "restringir",
     **VERBOS_GEOMETRIA,
 }
 
@@ -222,7 +229,7 @@ def _e_instrucao(linha):
     if comando and comando.group(1).lower() in VERBOS:
         return True
     return any(regra.match(texto) for regra in
-               (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE, _RE_INDUZIDA,
+               (_RE_COORDENADAS, _RE_METRICA, _RE_TENSOR, _RE_ESPECIE, _RE_INDUZIDA, _RE_CAMPO,
                 _RE_DECLARA, _RE_COLCHETE, _RE_PROVAR, _RE_RIEMANN, _RE_FORMA))
 
 
@@ -264,6 +271,7 @@ class Caderno:
         self.nomes = {}             # nome -> latex escrito
         self.prontos = {}           # nome -> objeto produzido por um verbo
         self.metricas = {}          # nome -> Metrica, com componentes
+        self.campos = {}            # nome -> Campo, por componentes numa carta
         self.rotulos = {}           # 'A_t' -> valor, o que as tabelas imprimem
         self.contador = 0
 
@@ -318,6 +326,10 @@ class Caderno:
         if induz:
             return self._induzida(induz.group(1), induz.group(2))
 
+        campo = _RE_CAMPO.match(fonte or "")
+        if campo:
+            return self._campo(campo.group(1), campo.group(2).lower(), campo.group(3))
+
         tensorial = _RE_TENSOR.match(fonte or "")
         if tensorial:
             return self._tensor(tensorial.group(1), int(tensorial.group(2)),
@@ -365,6 +377,10 @@ class Caderno:
                 "erro": f"a declaração agora se escreve com parênteses: "
                         f"{nome} = {nome}({dentro}). O colchete ficou reservado "
                         f"a n-tupla."})
+
+        vc = _RE_VERBO_CAMPO.match(fonte or "")
+        if vc:
+            return Celula(None, fonte, "comando", self._verbo_campo(vc.group(1).lower(), vc.group(2)))
 
         vol = _RE_VOLUME.match(fonte or "")
         if vol:
@@ -565,6 +581,108 @@ class Caderno:
             nome, fonte, metrica,
             f"o pull-back de {partes[0]} por "
             f"({', '.join(partes[1:])})")
+
+    def _campo(self, nome, especie, texto):
+        r"""`X = campo(0, 1)`, `A = campo()`, `W = covetor(…)`: na carta atual."""
+        from .campos import Campo
+        limpo = _sem_barra(nome)
+        fonte = f"{nome} = {especie}({texto.strip()})"
+        if not self.sessao.coordenadas:
+            return Celula(None, fonte, "declaracao",
+                          {"erro": "declare as coordenadas antes: as componentes são numa carta"})
+        cima = especie == "campo"
+        partes = self._argumentos(texto)
+        try:
+            if not partes:
+                c = Campo.generico(limpo, list(self.sessao.coordenadas),
+                                   self.sessao.escrita_coord, cima)
+            else:
+                comps = []
+                for p_ in partes:
+                    e = self.sessao.expressao_de(p_)
+                    if e.pending:
+                        return Celula(None, fonte, "declaracao",
+                                      {"erro": f"'{p_}': " + "; ".join(e.questions())})
+                    comps.append(e.to_sympy())
+                c = Campo(limpo, list(self.sessao.coordenadas), comps,
+                          self.sessao.escrita_coord, cima)
+        except ValueError as e:
+            return Celula(None, fonte, "declaracao", {"erro": str(e)})
+        self.campos[limpo] = c
+        base = [("∂_" if cima else "d") + self.sessao.escrita_coord.get(str(x), str(x))
+                for x in self.sessao.coordenadas]
+        return Celula(None, fonte, "declaracao", {
+            "declarado": [{"nome": limpo, "campo": True}],
+            "texto": (f"{nome} = " + " + ".join(f"({sp.sstr(v)}) {b}" for v, b in zip(c.componentes, base))
+                      + f" — {'vetor' if cima else 'covetor'}, na base coordenada")})
+
+    def _verbo_campo(self, verbo, texto):
+        from . import campos as C
+        partes = [_sem_barra(p_) for p_ in self._argumentos(texto)]
+        def campo(n):
+            if n not in self.campos:
+                raise KeyError(f"não conheço o campo '{n}' (tenho: {', '.join(self.campos) or 'nenhum'})")
+            return self.campos[n]
+        try:
+            if verbo == "colchete":
+                X, Y = campo(partes[0]), campo(partes[1])
+                v = C.colchete(X, Y)
+                nome = f"[{X.nome},{Y.nome}]"
+                return self._saida_campo(nome, v, X)
+            if verbo == "restringir":
+                K = campo(partes[0])
+                metrica = self._metrica_de(partes[1])
+                c = C.restringir(K, metrica)
+                self.campos[c.nome] = c
+                return self._saida_campo(c.nome, c.componentes, c,
+                                         f"{c.nome} restrito, na carta de {partes[1]} — e registrado com o mesmo nome")
+            metrica = self._metrica_de(partes[0])
+            if verbo == "killing" and len(partes) > 1 and partes[1].isdigit():
+                base = C.killings(metrica, int(partes[1]))
+                linhas = [[f"K_{i + 1}", sp.sstr(b), sp.latex(sp.Matrix(b).T)] for i, b in enumerate(base)]
+                return {"alvo": partes[0], "exato": str(len(base)), "linhas": linhas,
+                        "texto": (f"{len(base)} campos de Killing independentes com componentes "
+                                  f"polinomiais de grau ≤ {partes[1]} na carta ({metrica.coordenadas})")}
+            if verbo == "killing":
+                L = C.lie_metrica(metrica, campo(partes[1]))
+                nulo = all(e == 0 for e in L)
+                return {"alvo": partes[1], "exato": "True" if nulo else sp.sstr(L),
+                        "latex_exato": sp.latex(L),
+                        "texto": (f"ℒ_{partes[1]} g = 0: {partes[1]} é de Killing" if nulo
+                                  else f"ℒ_{partes[1]} g ≠ 0: {partes[1]} não é de Killing")}
+            A = campo(partes[1])
+            esc = lambda x: metrica.escrita.get(str(x), str(x))
+            marca = "^" if A.cima else "_"
+            if verbo == "nabla":
+                D = C.nabla(metrica, A)
+                D2 = C.nabla2(metrica, A)
+                n = len(metrica.simbolos)
+                linhas = [[f"{A.nome}{marca}{{{esc(metrica.simbolos[j])}}}_{{;{esc(metrica.simbolos[i])}}}",
+                           sp.sstr(D[i][j]), sp.latex(D[i][j])] for i in range(n) for j in range(n)]
+                linhas += [[f"{A.nome}{marca}{{{esc(metrica.simbolos[j])}}}_{{;{esc(metrica.simbolos[i])}{esc(metrica.simbolos[k])}}}",
+                            sp.sstr(D2[i][k][j]), sp.latex(D2[i][k][j])]
+                           for i in range(n) for k in range(n) for j in range(n)]
+                return {"alvo": partes[1], "linhas": linhas,
+                        "exato": "; ".join(f"{l[0]} = {l[1]}" for l in linhas),
+                        "texto": "as primeiras e as segundas derivadas covariantes, na base coordenada"}
+            if verbo == "laplaciano":
+                L = C.laplaciano(metrica, A)
+                n = len(metrica.simbolos)
+                linhas = [[f"∇²{A.nome}{marca}{{{esc(metrica.simbolos[j])}}}", sp.sstr(L[j]), sp.latex(L[j])]
+                          for j in range(n)]
+                return {"alvo": partes[1], "linhas": linhas,
+                        "exato": "; ".join(f"{l[0]} = {l[1]}" for l in linhas),
+                        "texto": "g^{ik}∇_i∇_k, componente por componente"}
+        except (KeyError, IndexError, ValueError) as e:
+            return {"erro": str(e.args[0]) if e.args else "argumentos a menos"}
+        return {"erro": f"{verbo}: argumentos inesperados"}
+
+    def _saida_campo(self, nome, comps, ref, texto=None):
+        base = ["∂_" + ref.escrita.get(str(x), str(x)) for x in ref.simbolos]
+        exato = " + ".join(f"({sp.sstr(v)})*{b}" for v, b in zip(comps, base) if v != 0) or "0"
+        return {"alvo": nome, "exato": exato,
+                "linhas": [[f"{nome}^{b[2:]}", sp.sstr(v), sp.latex(v)] for v, b in zip(comps, base)],
+                "texto": texto or f"{nome}, na base coordenada"}
 
     def _metrica_de(self, alvo):
         if _sem_barra(alvo) not in self.metricas:

@@ -438,7 +438,9 @@ def induzida(ambiente, coordenadas, imagens, escrita=None, nome="h"):
     J = X.jacobian(sp.Matrix(coordenadas))
     G = ambiente.matriz().subs(dict(zip(ambiente.simbolos, imagens)), simultaneous=True)
     H = (J.T * G * J).applyfunc(lambda e: sp.trigsimp(sp.simplify(e)))
-    return Metrica(nome, coordenadas, H, escrita)
+    m = Metrica(nome, coordenadas, H, escrita)
+    m.ambiente, m.imagens, m.jacobiana = ambiente, list(imagens), J
+    return m
 
 
 def orbitas(metrica):

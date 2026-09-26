@@ -146,10 +146,10 @@ interpretação — não conta contra: fica dito na nota de cada enunciado.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (30)</td><td>18</td><td>11</td><td>1</td></tr>
-  <tr><td>componentes (25)</td><td>17</td><td>6</td><td>2</td></tr>
+  <tr><td>indicial (30)</td><td>20</td><td>9</td><td>1</td></tr>
+  <tr><td>componentes (25)</td><td>18</td><td>6</td><td>1</td></tr>
   <tr><td>tensorial (30)</td><td>9</td><td>10</td><td>11</td></tr>
-  <tr><td><strong>total (85)</strong></td><td><strong>44</strong></td><td><strong>27</strong></td><td><strong>14</strong></td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>47</strong></td><td><strong>25</strong></td><td><strong>13</strong></td></tr>
 </table>
 
 <p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
@@ -170,8 +170,9 @@ linearizada (71); falta só mudar de coordenadas (3). Em componentes, o Sucuri
 calcula Christoffel, Riemann, Ricci e escalar de qualquer métrica — dada pela
 diagonal, pelo elemento de linha, ou induzida por um mergulho ou mudança de
 coordenadas —, as geodésicas (as equações, o que se conserva, e as órbitas
-por quadratura) e a base ortonormal com as formas de Cartan. O que falta pede
-transporte paralelo, componentes de ∇A, ou achar uma transformação.</p>
+por quadratura), a base ortonormal com as formas de Cartan, e campos por
+componentes — ∇A, o laplaciano, ℒ<sub>X</sub>g e o colchete. O que falta pede
+transporte paralelo, ou achar uma transformação.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -620,7 +621,7 @@ faz à mão.</p>
     não sai.</p>
 </div>
 
-<h3>14 e 68. Killing de segunda ordem <span class="pill aviso">em parte</span></h3>
+<h3>14 e 68. Killing de segunda ordem <span class="pill ok">resolve</span> (14, 68)</h3>
 
 <div class="enunciado" id="enunciado-14">
   <p class="titulo-enunciado">Enunciado 14 · Segunda derivada de um vetor de Killing e vetores de Killing de Minkowski</p>
@@ -635,7 +636,7 @@ faz à mão.</p>
     <p>[<em>Dica:</em> use a identidade R<sup>ρ</sup><sub>[μνσ]</sub> = 0.]</p>
     <p>Deduza que, no espaço-tempo de Minkowski, as componentes dos covetores de Killing são funções lineares das coordenadas.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a identidade ∇<sub>μ</sub>∇<sub>ν</sub>K<sup>ρ</sup> = R<sup>ρ</sup><sub>νμσ</sub>K<sup>σ</sup>, com a primeira identidade de Bianchi como teorema; a dedução em Minkowski, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade, e, em Minkowski, ∂∂K = 0: K linear nas coordenadas.</p>
 </div>
 
 <div class="enunciado" id="enunciado-68">
@@ -649,7 +650,7 @@ faz à mão.</p>
     <p>ξ<sub>α;βγ</sub> = −R<sup>δ</sup><sub>γαβ</sub> ξ<sub>δ</sub> .</p>
     <p>No caso do espaço de Minkowski, integre essa equação duas vezes e deduza que existem 10 vetores de Killing independentes.</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> a identidade, na escrita de Evans; integrar em Minkowski e contar os 10 campos, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> a identidade, na escrita de Evans, e os 10 campos de Killing de Minkowski.</p>
 </div>
 
 <p>Tong, folha 3, Q6: um campo de Killing satisfaz
@@ -689,6 +690,35 @@ quando a usou.</p>
   <p class="explica">com o sinal trocado, não sai. O resto dos dois
     exercícios — integrar em Minkowski e contar os 10 campos de Killing —
     não: é integrar e contar.</p>
+</div>
+
+<p>Em Minkowski, R = 0, e a mesma busca prova ∇<sub>μ</sub>∇<sub>ν</sub>K<sup>ρ</sup> = 0
+a partir da equação de Killing. Numa carta inercial ∇ = ∂, e
+∂<sub>μ</sub>∂<sub>ν</sub>K<sup>ρ</sup> = 0 quer dizer K linear nas coordenadas — o
+que Tong pede. Integrar duas vezes, como pede Evans, é resolver a equação de
+Killing entre os campos lineares: <code>killing(g, 1)</code> acha todos.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">K = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">g = métrica</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">\nabla_\mu K_\nu + \nabla_\nu K_\mu = 0</code>
+  <code class="entrada">R^\rho{}_{\sigma\mu\nu} = 0</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu K^\rho = 0</code>
+  <code class="entrada">provar(eq4, eq2, eq3)</code>
+  <samp class="saida">provado a partir de eq2, eq3</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">g = métrica(-1, 1, 1, 1)</code>
+  <code class="entrada">killing(g, 1)</code>
+  <samp class="saida">10</samp>
+  <p class="explica">quatro translações, três rotações e três boosts: os 10 campos de Killing de Minkowski. Com <code>killing(g, 2)</code>, continuam 10 — os termos quadráticos, a equação de Killing os zera.</p>
 </div>
 
 <h3>69. |∇φ|² + R constante <span class="pill ok">resolve</span></h3>
@@ -1452,7 +1482,7 @@ PS5 #4, com o exemplo resolvido de Carroll, eq. (3.105) (raio a: R = 2/a²).</p>
   <samp class="saida">2/a**2</samp>
 </div>
 
-<h3>37. O plano em coordenadas polares <span class="pill aviso">em parte</span></h3>
+<h3>37. O plano em coordenadas polares <span class="pill ok">resolve</span></h3>
 
 <div class="enunciado" id="enunciado-37">
   <p class="titulo-enunciado">Enunciado 37 · Derivada covariante e laplaciano vetorial em coordenadas polares</p>
@@ -1471,19 +1501,31 @@ PS5 #4, com o exemplo resolvido de Carroll, eq. (3.105) (raio a: R = 2/a²).</p>
     ∇<sup>2</sup>A<sub>θ</sub> = A<sub>θ,rr</sub> + r<sup>−2</sup>A<sub>θ,θθ</sub> − r<sup>−1</sup>A<sub>θ,r</sub> + 2r<sup>−1</sup>A<sub>r,θ</sub>. &nbsp;&nbsp;(7.44)</p>
     <p>(Isso não concorda com o Wolfram MathWorld, porque este supõe uma base em que o vetor unitário θ é normalizado a 1, ao passo que aqui x̂<sup>θ</sup> · x̂<sup>θ</sup> = g<sup>θθ</sup> = 1/r<sup>2</sup>. Em outras palavras, no Wolfram A<sub>θ</sub> é dividido por r para ter a mesma dimensão de A<sub>r</sub>. Veja o quadro sobre bases coordenadas versus ortonormais mais adiante.)</p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> os Christoffel; ∇<sub>i</sub>A<sub>j</sub> e o laplaciano vetorial, não.</p>
+  <p class="no-sucuri tudo"><strong>No Sucuri: tudo:</strong> (a) e (b), as derivadas covariantes primeiras e segundas, e (c) o laplaciano vetorial, que coincide com a (7.44).</p>
 </div>
 
-<p>Cline, problema 7.6: os Christoffel saem; as componentes de
-∇<sub>i</sub>A<sub>j</sub> e o laplaciano vetorial, não — <code>avaliar</code>
-ainda não leva derivada com índice às componentes.</p>
+<p>Campos por componentes numa carta: <code>A = campo()</code> é o vetor
+genérico, A<sup>r</sup>(r, θ)∂<sub>r</sub> + A<sup>θ</sup>(r, θ)∂<sub>θ</sub>, e
+<code>covetor()</code> o covetor. <code>nabla(g, A)</code> dá
+A<sup>j</sup><sub>;i</sub> e A<sup>j</sup><sub>;ik</sub>; <code>laplaciano(g, A)</code>,
+g<sup>ik</sup>∇<sub>i</sub>∇<sub>k</sub>A.</p>
 
 <div class="exemplo">
   <code class="entrada">x = coordenadas(r, \theta)</code>
   <code class="entrada">g = métrica(1, r^2)</code>
-  <code class="entrada">christoffel(g)</code>
-  <samp class="saida">\Gamma^{r}_{{\theta}{\theta}}=-r</samp>
-  <p class="explica">e Γ<sup>θ</sup><sub>rθ</sub> = 1/r, o dado do enunciado.</p>
+  <code class="entrada">A = campo()</code>
+  <code class="entrada">nabla(g, A)</code>
+  <samp class="saida">-r*A^theta(r, theta) + Derivative(A^r(r, theta), theta)</samp>
+  <p class="explica">(a): A<sup>r</sup><sub>;θ</sub> = ∂<sub>θ</sub>A<sup>r</sup> − rA<sup>θ</sup>, pelo Γ<sup>r</sup><sub>θθ</sub> = −r; a tabela traz as quatro primeiras e as oito segundas, (b).</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \theta)</code>
+  <code class="entrada">g = métrica(1, r^2)</code>
+  <code class="entrada">A = covetor()</code>
+  <code class="entrada">laplaciano(g, A)</code>
+  <samp class="saida">Derivative(A_theta(r, theta), (r, 2)) + 2*Derivative(A_r(r, theta), theta)/r - Derivative(A_theta(r, theta), r)/r + Derivative(A_theta(r, theta), (theta, 2))/r**2</samp>
+  <p class="explica">(c): o laplaciano covariante das componentes covariantes, g<sup>ij</sup>∇<sub>i</sub>∇<sub>j</sub>A<sub>k</sub> — termo a termo a (7.44) de Cline, as duas componentes.</p>
 </div>
 
 <h3>38. Rindler <span class="pill ok">resolve</span></h3>
@@ -1713,6 +1755,53 @@ puxa a métrica E pela parametrização, com as coordenadas novas declaradas por
   <code class="entrada">série(eq1, \epsilon, 4)</code>
   <samp class="saida">1 - epsilon**2/5 + O(epsilon**4)</samp>
   <p class="explica">(d): o numerador é o volume de ψ &lt; ϵ, que <code>volume(h, \psi = 0 .. \epsilon, …)</code> dá; o denominador, V<sub>E</sub> = 4πϵ³/3. A (7.20), 1 − ϵ²R/(6(d + 2)) com R = 6 e d = 3, é 1 − ϵ²/5.</p>
+</div>
+
+<h3>44. Campos de Killing da esfera <span class="pill aviso">em parte</span></h3>
+
+<div class="enunciado" id="enunciado-44">
+  <p class="titulo-enunciado">Enunciado 44 · Isometrias e a álgebra so(3)</p>
+  <p class="fonte">D. Tong, <em>General Relativity: Example Sheet 3</em> (2019), questão 4, p. 1 — <a href="https://davidtong.org/pdfs/teaching/general-relativity/idk3.pdf">davidtong.org</a>.</p>
+  <!-- original: "4. i) Let X and Y be two vector fields. Show that L_X(L_Y Q) − L_Y(L_X Q) = L_[X,Y] Q, when Q is either a function or a vector field. Use the Leibniz property of the Lie derivative to show that this also holds when Q is a one-form. ii) Demonstrate that if a Riemannian or Lorentzian manifold has two “independent” isometries then it has a third, and define what is meant by independent here. iii) Consider the unit sphere with metric ds² = dθ² + sin²θ dφ². Show that X = ∂/∂φ and Y = sin φ ∂/∂θ + cot θ cos φ ∂/∂φ are Killing vectors. Find a third, and show that they obey the Lie algebra of so(3)." -->
+  <blockquote>
+    <p>(i) Sejam X e Y dois campos vetoriais. Mostre que ℒ<sub>X</sub>(ℒ<sub>Y</sub>Q) − ℒ<sub>Y</sub>(ℒ<sub>X</sub>Q) = ℒ<sub>[X,Y]</sub>Q quando Q é uma função ou um campo vetorial. Use a propriedade de Leibniz da derivada de Lie para mostrar que isso vale também quando Q é uma 1-forma.</p>
+    <p>(ii) Mostre que, se uma variedade riemanniana ou lorentziana tem duas isometrias “independentes”, então tem uma terceira, e defina o que se entende aqui por independente.</p>
+    <p>(iii) Considere a esfera unitária com métrica ds² = dθ² + sen²θ dφ². Mostre que X = ∂/∂φ e Y = sen φ ∂/∂θ + cot θ cos φ ∂/∂φ são vetores de Killing. Encontre um terceiro, e mostre que eles obedecem à álgebra de Lie de so(3).</p>
+  </blockquote>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (iii) inteiro — X e Y de Killing, o terceiro Z = [X, Y], também de Killing, e [Y, Z] = X, [Z, X] = Y; (i) e (ii), não.</p>
+</div>
+
+<p>Com os campos por componentes, <code>killing(g, X)</code> calcula ℒ<sub>X</sub>g e
+<code>colchete(X, Y)</code>, [X, Y]. O terceiro campo é o colchete dos dois — é o
+que (ii) pede para ver em geral.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">X = campo(0, 1)</code>
+  <code class="entrada">Y = campo(\sin\phi, \cot\theta \cos\phi)</code>
+  <code class="entrada">killing(g, Y)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">X = campo(0, 1)</code>
+  <code class="entrada">Y = campo(\sin\phi, \cot\theta \cos\phi)</code>
+  <code class="entrada">colchete(X, Y)</code>
+  <samp class="saida">(cos(phi))*∂_\theta + (-sin(phi)*cot(theta))*∂_\phi</samp>
+  <p class="explica">Z = [X, Y] = cos φ ∂<sub>θ</sub> − cot θ sen φ ∂<sub>φ</sub>.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\theta)</code>
+  <code class="entrada">Y = campo(\sin\phi, \cot\theta \cos\phi)</code>
+  <code class="entrada">Z = campo(\cos\phi, -\cot\theta \sin\phi)</code>
+  <code class="entrada">colchete(Y, Z)</code>
+  <samp class="saida">(1)*∂_\phi</samp>
+  <p class="explica">[Y, Z] = X; e <code>colchete(Z, X)</code> dá Y, e <code>killing(g, Z)</code>, True: so(3).</p>
 </div>
 
 <h3>45. Robertson–Walker <span class="pill ok">resolve</span></h3>
@@ -2112,7 +2201,7 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
     <p>(e) Expanda em série de Taylor o resultado de (d) e mostre que, se a, b e c são ≪ 1, recupera-se a lei dos cossenos usual.</p>
     <p><small>¹ No espaço hiperbólico, a menção à geodésica mais curta é redundante: há exatamente uma geodésica ligando dois pontos quaisquer. Isso vale, na verdade, para qualquer espaço simplesmente conexo de assinatura euclidiana (+ + +) e curvatura negativa semidefinida, isto é, em que R<sub>αβγδ</sub>ξ<sup>α</sup>η<sup>β</sup>ξ<sup>γ</sup>η<sup>δ</sup> ≤ 0 para quaisquer vetores ξ e η.</small></p>
   </blockquote>
-  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a): a métrica induzida no hiperboloide, e a curvatura −1; (b) os campos de Killing, (c) a distância geodésica, (d) a lei dos cossenos e (e), não.</p>
+  <p class="no-sucuri parte"><strong>No Sucuri, em parte:</strong> (a) a métrica induzida e a aplicação Φ, e (b) os seis campos de Killing — rotações e boosts de M⁴ restritos ao hiperboloide, e conferidos; (c) a distância, que pede a invariância pelas isometrias, e com ela (d) e (e), não.</p>
 </div>
 
 <div class="exemplo">
@@ -2131,6 +2220,18 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <code class="entrada">escalar(g)</code>
   <samp class="saida">-6</samp>
   <p class="explica">curvatura −1: R<sub>ij</sub> = −2g<sub>ij</sub>, R = −6.</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">X = coordenadas(t, x, y, z)</code>
+  <code class="entrada">M = métrica(-1, 1, 1, 1)</code>
+  <code class="entrada">B = campo(x, t, 0, 0)</code>
+  <code class="entrada">u = coordenadas(\chi, \theta, \phi)</code>
+  <code class="entrada">h = induzida(M, \cosh\chi, \sinh\chi \sin\theta \cos\phi, \sinh\chi \sin\theta \sin\phi, \sinh\chi \cos\theta)</code>
+  <code class="entrada">restringir(B, h)</code>
+  <code class="entrada">killing(h, B)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">(b): o boost x∂<sub>t</sub> + t∂<sub>x</sub> de M⁴, restrito a Σ, é sin θ cos φ ∂<sub>χ</sub> + cos φ cos θ coth χ ∂<sub>θ</sub> − sin φ/(sin θ tanh χ) ∂<sub>φ</sub>, e é de Killing em H³. Os outros dois boosts e as três rotações, igual; uma translação, <code>restringir</code> recusa: não é tangente.</p>
 </div>
 
 <h3>82. A 4-esfera <span class="pill ok">resolve</span></h3>
@@ -2813,18 +2914,11 @@ um a um: a nota sob cada enunciado diz o que fica de fora.</p>
 <ul class="limites">
   <li><strong>3 (MIT PS3 #4).</strong> Lei de transformação dos Christoffel:
     mudança de coordenadas não é operação do Sucuri.</li>
-  <li><strong>14, 68 (em parte).</strong> Integrar ∇∇K = 0 em Minkowski e
-    contar os 10 campos de Killing: integrar e contar não são álgebra
-    tensorial.</li>
 </ul>
 
 <h3>Componentes</h3>
 
 <ul class="limites">
-  <li><strong>44 (Tong 3 Q4).</strong> Campos de Killing explícitos na esfera
-    e a álgebra so(3): vetores dados por componentes numa carta não se
-    escrevem.</li>
-  <li><strong>37 (em parte).</strong> Componentes de ∇A e o laplaciano vetorial numa carta.</li>
   <li><strong>83 (NYU HW6).</strong> Ricci de −(1+2Φ)dt² + (1−2Φ)dx² em
     ordem linear: o Sucuri calcula exato, e não trunca em Φ.</li>
   <li><strong>78 (em parte).</strong> Resolver a equação de Ricci para f.</li>
