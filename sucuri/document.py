@@ -470,6 +470,7 @@ class Document:
         self._tensores = {}             # nome -> (formas, vetores)
         self._curvaturas = []           # nomes declarados operador de curvatura
         self._simetrias = {}            # nome -> 'simetrico' | 'antissimetrico'
+        self._hodge = False             # \star declarado
         self._espaco = None             # o tipo de índice, criado quando precisa
         self._variables = set()
         self._primes_are_derivatives = None      # None = sem convenção
@@ -614,7 +615,18 @@ class Document:
 
     def tensores_com_graus(self):
         from .formas import com_graus
-        return com_graus(self._tensores, self.graus())
+        return com_graus(self._tensores, self.graus(), self.hodge_info())
+
+    def hodge_info(self):
+        """(n, s) se ⋆ foi declarado — a dimensão e os sinais negativos."""
+        assinatura = self._espaco.assinatura if self._espaco else None
+        if not self._hodge or not assinatura:
+            return None
+        return (len(assinatura), sum(1 for x in assinatura if x < 0))
+
+    def hodge(self):
+        self._hodge = True
+        return self
 
     def formas(self):
         """{nome: (slots, é a métrica?)} — os (0,n) que se escrevem T(U, X).
@@ -850,8 +862,9 @@ class Expression:
         # E as cadeias de formas: d\omega, \omega \wedge \eta, \iota_X.
         from .formas import cabecas as _cadeias, localizar as _formas
         vetores = {n for n, t in document._tensores.items() if t == (1, 0)}
-        cabecas |= _cadeias(latex, document.graus(), vetores)
-        self.formas_escritas = _formas(latex, document.graus(), vetores)
+        hodge = bool(document.hodge_info())
+        cabecas |= _cadeias(latex, document.graus(), vetores, hodge)
+        self.formas_escritas = _formas(latex, document.graus(), vetores, hodge)
         self.ambiguities = [a for a in find(latex)
                             if a.span[0] not in cabecas]
 

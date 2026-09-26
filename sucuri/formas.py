@@ -46,14 +46,22 @@ from .conexao import (VETOR, Avaliado, AvaliadoAntissimetrico, Direcional,
 CHAVE = "__formas__"
 """Onde, no dicionário de tensores, vão os graus das formas declaradas."""
 
+CHAVE_HODGE = "__hodge__"
+"""E, com ⋆ declarado, (n, s): a dimensão e os sinais negativos."""
+
 
 def graus(tensores):
     return dict(tensores.get(CHAVE, ()))
 
 
-def com_graus(tensores, formas):
+def hodge_de(tensores):
+    return tensores.get(CHAVE_HODGE)
+
+
+def com_graus(tensores, formas, hodge=None):
     """O dicionário de tensores levando também os graus das formas."""
-    return {**tensores, CHAVE: tuple(sorted(formas.items()))}
+    extra = {CHAVE_HODGE: hodge} if hodge else {}
+    return {**tensores, CHAVE: tuple(sorted(formas.items())), **extra}
 
 
 # ------------------------------------------------------------- os objetos
@@ -107,6 +115,20 @@ class DerivadaDeLie(sp.Function):
 
 
 # Os átomos da forma normal — o que não se abre mais.
+
+class Hodge(sp.Function):
+    """⋆α. Escrito, ⋆ de qualquer coisa; na forma normal, ⋆ de um monômio —
+    linear sobre funções, e ⋆⋆ = (−1)^{p(n−p)+s}."""
+
+    nargs = 1
+
+    def _latex(self, printer):
+        return rf"\star {_parenteses(printer, self.args[0])}"
+
+    def _sympystr(self, printer):
+        # ⋆, e não *: `**omega` se leria potência.
+        return f"⋆{_str_par(printer, self.args[0])}"
+
 
 class Exterior(sp.Function):
     """dω com ω átomo: irredutível, e d(dω) = 0."""
@@ -166,7 +188,7 @@ def _str_par(printer, a):
 
 
 ESCRITOS = (Cunha, DerivadaExterior, Interior, DerivadaDeLie)
-ATOMOS = (Exterior, Diferencial, Contraido)
+ATOMOS = (Exterior, Diferencial, Contraido, Hodge)
 
 
 def tem_forma(expr, tensores):
@@ -194,6 +216,9 @@ def grau(a, tensores):
         return 1
     if isinstance(a, Contraido):
         return grau(a.args[0], tensores) - (len(a.args) - 1)
+    if isinstance(a, Hodge):
+        n, _ = hodge_de(tensores)
+        return n - sum(grau(x, tensores) for x in _atomos_de(a.args[0]))
     return 0
 
 
@@ -212,7 +237,35 @@ def _monomio(atomos, tensores):
     for a, b in zip(atomos, atomos[1:]):
         if a == b and grau(a, tensores) % 2:
             return 0, ()
+    hodge = hodge_de(tensores)
+    if hodge:
+        if sum(grau(a, tensores) for a in atomos) > hodge[0]:
+            return 0, ()                # grau maior que a dimensão
+        troca = _simetria_hodge(atomos, tensores)
+        if troca is not None:
+            outro_sinal, atomos = _monomio(troca, tensores)
+            return sinal * outro_sinal, atomos
     return sinal, tuple(atomos)
+
+
+def _simetria_hodge(atomos, tensores):
+    """α ∧ ⋆β = β ∧ ⋆α, com α e β do mesmo grau: fica o de α menor.
+
+    Só num monômio de dois átomos, que é onde a igualdade vale — de grau n,
+    sem mais nada. Trocar α por β e ⋆β por ⋆α mantém o grau de cada
+    posição, e o sinal de Koszul refaz a ordem."""
+    if len(atomos) != 2:
+        return None
+    for i, h in enumerate(atomos):
+        a = atomos[1 - i]
+        if isinstance(h, Hodge) and not isinstance(h.args[0], Cunha) \
+                and h.args[0] != sp.S.One \
+                and grau(a, tensores) == grau(h.args[0], tensores) \
+                and default_sort_key(h.args[0]) < default_sort_key(a):
+            novos = list(atomos)
+            novos[1 - i], novos[i] = h.args[0], Hodge(a)
+            return novos
+    return None
 
 
 def _chave(atomos):
@@ -271,6 +324,9 @@ def normal(expr, tensores):
     if not tem_forma(expr, tensores):
         c = escalar_normal(expr, tensores)
         return {} if sp.expand(c) == 0 else {sp.S.One: c}
+    if isinstance(expr, Hodge):
+        # Antes dos átomos: ⋆ escrito é aberto — linear, e ⋆⋆ com o sinal.
+        return estrela(normal(expr.args[0], tensores), tensores)
     if isinstance(expr, sp.Symbol) or isinstance(expr, ATOMOS):
         return {expr: sp.S.One}
     if isinstance(expr, Cunha):
@@ -384,6 +440,25 @@ def iota(X, forma, tensores):
     return {k: escalar_normal(v, tensores) for k, v in total.items()}
 
 
+def estrela(forma, tensores):
+    """⋆ de uma forma normal: linear sobre funções, e ⋆⋆ com o sinal."""
+    hodge = hodge_de(tensores)
+    if not hodge:
+        raise ValueError("⋆ sem declaração: \\star = hodge, depois da "
+                         "assinatura")
+    n, s = hodge
+    total = {}
+    for chave, c in forma.items():
+        if isinstance(chave, Hodge):
+            interna = chave.args[0]
+            p = sum(grau(a, tensores) for a in _atomos_de(interna))
+            total = _soma(total, {interna: c * (-1) ** (p * (n - p) + s)})
+        else:
+            sinal, atomos = _monomio((Hodge(chave),), tensores)
+            total = _soma(total, {_chave(atomos): sinal * c})
+    return total
+
+
 def expressao(forma):
     """A forma normal de volta como expressão."""
     return sp.Add(*(c * t for t, c in forma.items()))
@@ -405,13 +480,17 @@ class Ocorrencia:
         self.problema = problema
 
 
+_RE_ESTRELA = re.compile(r"\\(?:star|ast)(?![a-zA-Z])")
+
+
 class _Leitor:
     """Uma cadeia `op… base (∧ op… base)*` que tenha operador ou ∧."""
 
-    def __init__(self, texto, formas, vetores):
+    def __init__(self, texto, formas, vetores, hodge=False):
         self.t = texto
         self.formas = formas
         self.vetores = vetores
+        self.hodge = hodge
 
     def _espacos(self, i):
         while i < len(self.t) and self.t[i].isspace():
@@ -448,6 +527,11 @@ class _Leitor:
                 prefixos.append(("L", self._nome(m.group(1))))
                 j = self._espacos(m.end())
                 continue
+            m = _RE_ESTRELA.match(self.t, j)
+            if m and self.hodge:
+                prefixos.append(("h", None))
+                j = self._espacos(m.end())
+                continue
             break
         if j < len(self.t) and self.t[j] == "(":
             fim = _fecha(self.t, j)
@@ -456,7 +540,9 @@ class _Leitor:
             base = self.t[j + 1:fim - 1]
             e_forma = self._tem_forma_texto(base)
         else:
-            m = _RE_NOME.match(self.t, j)
+            m = _RE_NOME.match(self.t, j) or (
+                re.compile(r"\d+").match(self.t, j)
+                if any(op == "h" for op, _ in prefixos) else None)
             if not m:
                 return None
             base, fim = m.group(0), m.end()
@@ -517,10 +603,10 @@ def _limpo(nome):
     return nome[1:] if nome.startswith("\\") else nome
 
 
-def localizar(texto, formas, vetores):
-    if not formas:
+def localizar(texto, formas, vetores, hodge=False):
+    if not formas and not hodge:
         return []
-    leitor = _Leitor(texto, formas, vetores)
+    leitor = _Leitor(texto, formas, vetores, hodge)
     achados, i = [], 0
     while i < len(texto):
         oc = leitor.em(i)
@@ -532,10 +618,10 @@ def localizar(texto, formas, vetores):
     return achados
 
 
-def cabecas(texto, formas, vetores):
+def cabecas(texto, formas, vetores, hodge=False):
     """Tudo o que uma cadeia de formas engole — para não virar pergunta."""
     posicoes = set()
-    for oc in localizar(texto, formas, vetores):
+    for oc in localizar(texto, formas, vetores, hodge):
         posicoes |= set(range(oc.ini, oc.fim))
     return posicoes
 
@@ -548,6 +634,8 @@ def construir(oc, ler, tensores):
         for op, v in reversed(prefixos):
             if op == "d":
                 objeto = DerivadaExterior(objeto)
+            elif op == "h":
+                objeto = Hodge(objeto)
             else:
                 X = ler(v)
                 exigir_vetor(X, rf"\iota_{v}" if op == "i" else rf"\mathcal{{L}}_{v}",

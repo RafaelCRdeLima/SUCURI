@@ -643,8 +643,25 @@ provar(eq3, eq1, eq2)      − eq1[A→X, B→Y] · iota_Y(iota_X(eq2))   ∎
 
 As relações entre formas entram no mesmo motor das outras. Os termos são
 monômios exteriores, o escalar é o monômio vazio, e os contextos são d □,
-ι_X □, α ∧ □ e f·□. Ainda não: o Hodge, que pede métrica, assinatura e
-orientação.
+ι_X □, α ∧ □ e f·□.
+
+O dual de Hodge se declara depois da assinatura, que é de onde saem a
+dimensão n e os sinais negativos s:
+
+```
+g = métrica(-,+,+,+)
+\star = hodge
+\star \star F = -F                                    provar → ∎      2-forma, Lorentz
+\star \star \omega = \omega                              provar → ∎      1-forma, Lorentz
+\omega \wedge \star \alpha = \alpha \wedge \star \omega          provar → ∎
+\omega \wedge \star \omega \wedge \alpha = 0                  provar → ∎      grau 5 > 4
+```
+
+⋆ é linear sobre funções, ⋆⋆ = (−1)^{p(n−p)+s} numa p-forma, α∧⋆β = β∧⋆α,
+e todo produto de grau maior que n é zero. A orientação não precisa ser dita:
+trocá-la troca o sinal de ⋆, mas não o de ⋆⋆ nem a simetria de α∧⋆β. O
+codiferencial δ = ±⋆d⋆ tem sinal de convenção, e por isso não entra pronto;
+escreve-se ⋆d⋆. Sem `\star = hodge`, `\star` não é operador.
 
 ### Sem declarar, a recusa continua
 

@@ -629,6 +629,12 @@ def provar(objetivo, hipoteses, tensores):
 
     Levanta `SemProva` quando não acha — dizendo que não achar não é refutar.
     """
+    if objetivo is sp.true:
+        # `A = A`: o SymPy já decidiu na leitura, e não há o que provar.
+        return Prova(objetivo, [], [])
+    if objetivo is sp.false:
+        raise SemProva("a igualdade já é falsa na leitura — os dois lados "
+                       "são diferentes e nada neles varia")
     corpo = objetivo
     if isinstance(objetivo, ParaTodo):
         # Provar para todo W é provar para um W qualquer, sobre o qual nada se

@@ -127,3 +127,57 @@ def test_simplificar_da_a_forma_normal():
     c = caderno()
     nome = c.executar(r"\omega \wedge \alpha + \alpha \wedge \omega").to_dict()["nome"]
     assert c.executar(f"simplificar({nome})").to_dict()["exato"] == "0"
+
+
+# ------------------------------------------------------------------ Hodge
+
+def caderno_hodge(assinatura="-,+,+,+"):
+    c = Caderno()
+    for f in (f"g = métrica({assinatura})", r"\star = hodge",
+              r"\omega = forma(1)", r"\alpha = forma(1)", "F = forma(2)"):
+        d = c.executar(f).to_dict()
+        assert not d.get("erro"), (f, d.get("erro"))
+    return c
+
+
+def provado_hodge(objetivo, assinatura="-,+,+,+"):
+    c = caderno_hodge(assinatura)
+    nome = c.executar(objetivo).to_dict()["nome"]
+    return c.executar(f"provar({nome})").to_dict()
+
+
+@pytest.mark.parametrize("latex, assinatura, vale", [
+    (r"\star \star \omega = \omega", "-,+,+,+", True),      # (−1)^(1·3+1)
+    (r"\star \star F = -F", "-,+,+,+", True),               # (−1)^(2·2+1)
+    (r"\star \star 1 = -1", "-,+,+,+", True),
+    (r"\star \star \omega = -\omega", "-,+,+,+", False),
+    (r"\star \star \omega = -\omega", "+,+,+,+", True),     # euclidiana
+    (r"\star \star F = F", "+,+,+,+", True),
+    (r"\star \star \omega = \omega", "+,+,+", True),        # 3D
+])
+def test_estrela_estrela(latex, assinatura, vale):
+    d = provado_hodge(latex, assinatura)
+    assert (not d.get("erro")) == vale, d.get("erro")
+
+
+@pytest.mark.parametrize("latex", [
+    r"\star (f \omega) = f \star \omega",
+    r"\omega \wedge \star \alpha = \alpha \wedge \star \omega",
+    r"\omega \wedge \star \omega \wedge \alpha = 0",           # grau 5 > 4
+    r"\mathrm{d}\mathrm{d} \star F = 0",
+    r"F \wedge \star F = F \wedge \star F",                    # já True na leitura
+])
+def test_hodge_sem_hipotese(latex):
+    d = provado_hodge(latex)
+    assert not d.get("erro"), d.get("erro")
+
+
+def test_hodge_pede_a_assinatura():
+    d = Caderno().executar(r"\star = hodge").to_dict()
+    assert "assinatura" in d["erro"]
+
+
+def test_sem_hodge_declarado_star_nao_e_operador():
+    c = Caderno()
+    c.executar(r"\omega = forma(1)")
+    assert "⋆" not in (c.executar(r"\star \omega").to_dict().get("sympy") or "")

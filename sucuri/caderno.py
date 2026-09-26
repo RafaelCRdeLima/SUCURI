@@ -89,7 +89,7 @@ _RE_COLCHETE = re.compile(r"^\s*([A-Za-z]\w*)\s*(?:=\s*\1\s*)?\[[^\]]*\]\s*$")
 # Ficam na mesma forma porque são a mesma pergunta: o que é este nome?
 _RE_ESPECIE = re.compile(r"^\s*((?:\\?[A-Za-z]\w*)(?:\s*,\s*\\?[A-Za-z]\w*)*)"
                          r"\s*=\s*(euler|s[ií]mbolo|constante|m[ée]trica"
-                         r"|curvatura|kronecker"
+                         r"|curvatura|kronecker|hodge"
                          r"|levi-?civita(?:\s*\(\s*[^)]*\))?"
                          r"|metric|[ií]ndices?(?:\s*\(\s*\d+\s*\))?)\s*$", re.I)
 
@@ -583,6 +583,18 @@ class Caderno:
             self.sessao.tensores.pop(_sem_barra(lista[0]), None)
             texto = (f"{lista[0]} é a métrica do espaço — do tipo (0,2), e "
                      f"é ela que baixa e levanta índice")
+        elif especie == "hodge":
+            if not self.sessao.assinatura:
+                return Celula(None, f"{nomes} = {especie}", "declaracao", {
+                    "erro": "⋆⋆ = (−1)^{p(n−p)+s}: o sinal pede a assinatura. "
+                            "Declare antes g = métrica(-,+,+,+), ou a que for"})
+            self.sessao.hodge = True
+            n = len(self.sessao.assinatura)
+            s = sum(1 for x in self.sessao.assinatura if x < 0)
+            texto = (f"{', '.join(lista)} é o dual de Hodge, em dimensão {n} "
+                     f"com {s} sinal(is) negativo(s): ⋆⋆ = (−1)^(p({n}−p)+{s}) "
+                     f"numa p-forma, α∧⋆β = β∧⋆α, e a orientação não precisa "
+                     f"ser dita — ela troca o sinal de ⋆, e não o de ⋆⋆")
         elif especie == "kronecker":
             if len(lista) != 1:
                 return Celula(None, f"{nomes} = {especie}", "declaracao",
@@ -791,8 +803,8 @@ class Caderno:
         from .formas import com_graus
         try:
             doc = self.sessao.documento()[0]
-            prova = provar(objetivo, dadas, com_graus(self.sessao.tensores,
-                                                      doc.graus()))
+            prova = provar(objetivo, dadas, com_graus(
+                self.sessao.tensores, doc.graus(), doc.hodge_info()))
         except (SemProva, NaoEVetorial) as e:
             return {"erro": str(e), "alvo": alvo}
 

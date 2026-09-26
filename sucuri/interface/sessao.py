@@ -47,6 +47,7 @@ class Sessao:
         self.kronecker = None       # o nome declarado delta de Kronecker
         self.conexao = None         # 'levi-civita', se declarada
         self.assinatura = None      # (-1, 1, 1, 1), se declarada
+        self.hodge = False          # \star declarado
         self.riemann = None         # (nome, convenção) do Riemann definido
         self.levi = {}              # nome -> 'tensor' | 'simbolo'
         self.coordenadas = []       # os símbolos das coordenadas
@@ -139,6 +140,8 @@ class Sessao:
             doc.levi_civita(nome, qual)
         if self.assinatura:
             doc.assinatura(self.assinatura)
+        if self.hodge:
+            doc.hodge()
         if self.conexao == "levi-civita":
             doc.conexao_levi_civita()
         if self.riemann:
