@@ -38,6 +38,15 @@
 .prov.sem{color:var(--sucuri-erro-fg)}
 .prov.nap{color:var(--tinta-2)}
 
+.enunciado{margin:0 0 18px;break-inside:avoid-page}
+.enunciado h3{margin-top:22px}
+.enunciado .fonte{font-size:12.5px;color:var(--tinta-2);margin:0 0 6px}
+.enunciado blockquote{margin:0;padding:8px 14px;background:var(--areia);
+  border-left:3px solid var(--areia-2);border-radius:0 6px 6px 0;font-size:13.5px}
+.enunciado blockquote p{margin:6px 0}
+.enunciado .no-sucuri{font-size:12.5px;margin:6px 0 0;padding:6px 12px;border-radius:6px}
+.enunciado .no-sucuri.tudo{background:var(--sucuri-sucesso-bg);color:var(--sucuri-sucesso-fg)}
+.enunciado .no-sucuri.parte{background:var(--sucuri-aviso-bg);color:var(--sucuri-aviso-fg)}
 .limites{margin:0 0 14px;padding-left:20px}
 .limites li{margin-bottom:8px}
 .fecho{margin-top:30px;font-size:13px;color:var(--tinta-2)}
