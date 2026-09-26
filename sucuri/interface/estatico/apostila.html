@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SUCURI — apostila</title>
-<meta name="description" content="Geometria diferencial em exercícios: 45 exercícios de listas reais, em notação indicial e tensorial, resolvidos — ou não — pelo Sucuri.">
+<meta name="description" content="Geometria diferencial em exercícios: 85 exercícios de listas reais, em notação indicial e tensorial, resolvidos — ou não — pelo Sucuri.">
 <link rel="icon" href="favicon.svg">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="sucuri.css">
@@ -65,7 +65,7 @@
   </div>
 
   <div class="capa-pe">
-    <span>45 exercícios de Cambridge, MIT, Nagoya e Carroll</span>
+    <span>85 exercícios de dez universidades</span>
     <span>cada resposta conferida pela suíte de testes</span>
   </div>
 </section>
@@ -85,8 +85,9 @@
 <main class="manual">
 
 <p class="abertura"><strong>Geometria diferencial em exercícios.</strong> Esta
-apostila percorre 45 exercícios de listas usadas em cursos de relatividade
-geral e geometria riemanniana — Cambridge, MIT, Nagoya —, separados pela
+apostila percorre 85 exercícios de listas usadas em cursos de relatividade
+geral e geometria riemanniana — Cambridge, MIT, Caltech, Berlim, Oregon,
+Nagoya, Utrecht, Leiden —, separados pela
 notação em que são naturalmente enunciados: <strong>indicial</strong>, com
 componentes, índices e soma de Einstein; e <strong>tensorial</strong>, sem
 índice, com campos vetoriais, conexões e formas. Para cada um, o que o Sucuri
@@ -137,16 +138,26 @@ resto, inclusive toda convenção de sinal, entra como hipótese escrita.</p>
 
 <table class="tabela">
   <tr><td></td><td><strong>resolve</strong></td><td><strong>em parte</strong></td><td><strong>não resolve</strong></td></tr>
-  <tr><td>indicial (17)</td><td>5</td><td>3</td><td>9</td></tr>
-  <tr><td>componentes (11)</td><td>7</td><td>3</td><td>1</td></tr>
-  <tr><td>tensorial (17)</td><td>10</td><td>4</td><td>3</td></tr>
+  <tr><td>indicial (30)</td><td>7</td><td>6</td><td>17</td></tr>
+  <tr><td>componentes (25)</td><td>18</td><td>4</td><td>3</td></tr>
+  <tr><td>tensorial (30)</td><td>15</td><td>4</td><td>11</td></tr>
+  <tr><td><strong>total (85)</strong></td><td><strong>40</strong></td><td><strong>14</strong></td><td><strong>31</strong></td></tr>
 </table>
+
+<p>Os exercícios de 1 a 45 vieram de uma primeira busca (Reall, Tong, MIT
+2006, Richard, Part III, Cline, Carroll); os de 46 a 85, de uma segunda, com
+outras fontes (Wendl, Ali-Haïmoud, Dray, Evans, Hunt, MIT 2018, Hirata, van
+Baal, 't Hooft, Hartman). A numeração segue a ordem das buscas, e cada
+exercício aparece na seção da sua notação.</p>
 
 <p>A notação tensorial vai mais longe, e não por acaso: é nela que o Sucuri
 tem um motor de prova. Dois exercícios enunciados em índices (9 e 11) só
 saem porque foram reescritos sem índice — que é, afinal, o que a notação
 abstrata existe para permitir. Na indicial, o que falta é sobretudo a
-passagem de ∇ para Γ e o determinante da métrica.</p>
+passagem de ∇ para Γ, o determinante da métrica e hipóteses escritas com
+índice. Em componentes, o Sucuri resolve quase tudo o que é métrica diagonal;
+o que não sai pede base ortonormal, linearização, ou vetores dados por
+componentes.</p>
 
 <h2 id="indicial">I. Notação indicial</h2>
 
@@ -308,6 +319,126 @@ Também reescrito sem índice:</p>
     <code>f(…)</code>, e o Sucuri perguntaria.</p>
 </div>
 
+<h3>59. Identidades vetoriais em índices <span class="pill ok">resolve</span></h3>
+
+<p>Hunt, <em>Part IA Vector Calculus</em>, folha 1, Q3: com ε e δ, mostre que
+∇×(u×v) = (∇·v)u − (∇·u)v + (v·∇)u − (u·∇)v, e que
+(u·∇)u = ∇(½|u|²) − u×(∇×u). Em índices, com a métrica euclidiana e o
+Levi-Civita tensor — que em coordenadas cartesianas é o símbolo —, e com ∇,
+que nelas é ∂:</p>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k, l, m = índices(3)</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(euclidiana)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">u = tensor(1, 0)</code>
+  <code class="entrada">v = tensor(1, 0)</code>
+  <code class="entrada">\epsilon^{ijk} \nabla_j (\epsilon_{klm} u^l v^m) = u^i \nabla_m v^m - v^i \nabla_l u^l + v^j \nabla_j u^i - u^j \nabla_j v^i</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+  <p class="explica">a derivada abre por Leibniz, ∇ε = 0 pela conexão declarada, e εε vira δδ − δδ. Tirando dois termos do lado direito, a mesma conta não fecha. Este exercício achou três defeitos (seção VI).</p>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k, l, m = índices(3)</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">g = métrica(euclidiana)</code>
+  <code class="entrada">\epsilon = levi-civita(tensor)</code>
+  <code class="entrada">u = tensor(1, 0)</code>
+  <code class="entrada">u^j \partial_j u^i = \frac{1}{2} \partial^i (u_j u^j) - \epsilon^{ijk} u_j \epsilon_{klm} \partial^l u^m</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">True</samp>
+</div>
+
+<h3>60. Decomposição de um tensor de posto 2 <span class="pill ok">resolve</span></h3>
+
+<p>Hunt, <em>Part IA Vector Calculus</em>, folha 4, Q6: todo T<sub>ij</sub>
+em 3D é αδ<sub>ij</sub> + ε<sub>ijk</sub>ω<sub>k</sub> + D<sub>ij</sub>, com
+ω<sub>k</sub> = ½ε<sub>abk</sub>T<sub>ab</sub> e D simétrico de traço nulo. A
+parte que pede ε é a antissimétrica:
+T<sub>[ij]</sub> = ½ε<sub>ijk</sub>ε<sup>abk</sup>T<sub>ab</sub>.</p>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k, a, b = índices(3)</code>
+  <code class="entrada">\delta = kronecker</code>
+  <code class="entrada">\epsilon = levi-civita(símbolo)</code>
+  <code class="entrada">T = tensor(0, 2)</code>
+  <code class="entrada">T_{ij} - \frac{1}{2} \epsilon_{ijk} \epsilon^{abk} T_{ab} - T_{(ij)}</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+</div>
+
+<h3>51. Rotacional do gradiente, divergência do rotacional <span class="pill ok">resolve</span></h3>
+
+<p>Wendl, <em>Differential Geometry I</em> (HU Berlim), lista 6, 6(c): as duas
+identidades saem de d² = 0 (seção IV). Em índices, saem de ∂ comutar contra o
+ε antissimétrico:</p>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k = índices(3)</code>
+  <code class="entrada">\epsilon = levi-civita(símbolo)</code>
+  <code class="entrada">\epsilon^{ijk} \partial_j \partial_k f</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k = índices(3)</code>
+  <code class="entrada">\epsilon = levi-civita(símbolo)</code>
+  <code class="entrada">X = tensor(0, 1)</code>
+  <code class="entrada">\epsilon^{ijk} \partial_i \partial_j X_k</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">com o símbolo, ∂ε = 0: ele vale ±1 em toda carta.</p>
+</div>
+
+<h3>63. O comutador num tensor de posto 2 <span class="pill aviso">em parte</span></h3>
+
+<p>Evans, <em>Part II GR</em>, folha 3, Q1(ii): da identidade de Ricci num
+vetor, deduza [∇<sub>α</sub>,∇<sub>β</sub>]T<sup>μν</sup>, e mostre que
+∇<sub>α</sub>∇<sub>β</sub>T<sup>αβ</sup> = ∇<sub>β</sub>∇<sub>α</sub>T<sup>αβ</sup>.
+A primeira parte sai; a segunda pede que o Ricci seja simétrico, que é
+teorema — e o Sucuri não o tem.</p>
+
+<div class="exemplo">
+  <code class="entrada">\mu, \nu, \rho, \sigma, \alpha, \beta = índices</code>
+  <code class="entrada">V = tensor(1, 0)</code>
+  <code class="entrada">\nabla = levi-civita</code>
+  <code class="entrada">\nabla_\mu \nabla_\nu V^\rho - \nabla_\nu \nabla_\mu V^\rho = R^\rho{}_{\sigma\mu\nu} V^\sigma</code>
+  <code class="entrada">R = riemann(eq1)</code>
+  <code class="entrada">T = tensor(2, 0)</code>
+  <code class="entrada">\nabla_\alpha \nabla_\beta T^{\mu\nu} - \nabla_\beta \nabla_\alpha T^{\mu\nu}</code>
+  <code class="entrada">simplificar(eq2)</code>
+  <samp class="saida">R(mu, L_0, -alpha, -beta)*T(-L_0, nu) + R(nu, L_0, -alpha, -beta)*T(mu, -L_0)</samp>
+</div>
+
+<h3>67 e 70. A derivada exterior em componentes <span class="pill aviso">em parte</span></h3>
+
+<p>Evans, folha 3, Q5: com F = dA, a identidade de Bianchi
+∂<sub>[γ</sub>F<sub>αβ]</sub> = 0 (a conservação do tensor de Maxwell, a
+segunda parte, pede hipóteses em índices). Wendl, lista 6, 4(b): para uma
+2-forma, (dω)<sub>ijk</sub> é a soma cíclica — a antissimetrização
+explícita das seis permutações, com ω antissimétrico, dá os três termos.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha, \beta, \gamma = índices</code>
+  <code class="entrada">A = tensor(0, 1)</code>
+  <code class="entrada">\partial_\gamma (\partial_\alpha A_\beta - \partial_\beta A_\alpha) + \partial_\alpha (\partial_\beta A_\gamma - \partial_\gamma A_\beta) + \partial_\beta (\partial_\gamma A_\alpha - \partial_\alpha A_\gamma)</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">i, j, k = índices</code>
+  <code class="entrada">\omega = tensor(0, 2, antissimétrico)</code>
+  <code class="entrada">\frac{1}{2} (\partial_i \omega_{jk} - \partial_i \omega_{kj} + \partial_j \omega_{ki} - \partial_j \omega_{ik} + \partial_k \omega_{ij} - \partial_k \omega_{ji}) - (\partial_i \omega_{jk} + \partial_j \omega_{ki} + \partial_k \omega_{ij})</code>
+  <code class="entrada">simplificar(eq1)</code>
+  <samp class="saida">0</samp>
+  <p class="explica">a antissimetrização que atravessa o índice da derivada, ∂<sub>[i</sub>ω<sub>jk]</sub>, ainda não se escreve: os colchetes valem dentro de um fator só.</p>
+</div>
+
 <h2 id="componentes">II. Componentes numa carta</h2>
 
 <p>Aqui o Sucuri está em casa: com as coordenadas e a métrica diagonal
@@ -451,6 +582,144 @@ de curvatura de Robertson–Walker, com a curvatura espacial k.</p>
   <p class="explica">R = 6(ä/a + ȧ²/a² + k/a²), a eq. (8.14).</p>
 </div>
 
+<h3>72. O semiespaço hiperbólico em 3D <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962 (2018), lista 6, P4: ds² = (a/z²)(dx² + dy² + dz²), com Ricci R<sub>ij</sub> = −(2/a)g<sub>ij</sub> e R = −6/a.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(x, y, z)</code>
+  <code class="entrada">g = métrica(\frac{a}{z^2}, \frac{a}{z^2}, \frac{a}{z^2})</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">-6/a</samp>
+</div>
+
+<h3>73. Superfície de revolução <span class="pill ok">resolve</span></h3>
+
+<p>Hirata, Caltech Ph236, HW4 #1: ds² = F(ϖ)dϖ² + ϖ²dφ², com R = F′/(ϖF²).</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\varpi, \phi)</code>
+  <code class="entrada">F = F(\varpi)</code>
+  <code class="entrada">g = métrica(F, \varpi^2)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">Derivative(F(varpi), varpi)/(varpi*F(varpi)**2)</samp>
+  <p class="explica">este achou um erro silencioso: a variável <code>\varpi</code> ficava com a barra, F saía constante e a superfície, plana (seção VI).</p>
+</div>
+
+<h3>74. O cone <span class="pill ok">resolve</span></h3>
+
+<p>van Baal (Leiden), ex. 5: o cone z = r mergulhado em ℝ³ tem ds² = 2dr² + r²dφ², com Γ<sup>r</sup><sub>φφ</sub> = −r/2 e curvatura nula.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \phi)</code>
+  <code class="entrada">g = métrica(2, r^2)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">0</samp>
+</div>
+
+<h3>75. Um campo gravitacional uniforme <span class="pill ok">resolve</span></h3>
+
+<p>MIT 8.962 (2018), lista 3, P2(a): g<sub>00</sub> = −(1 + az). Os Christoffel pedidos e, além deles, o escalar de curvatura.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, x, y, z)</code>
+  <code class="entrada">g = métrica(-(1 + a z), 1, 1, 1)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">a**2/(2*(a*z + 1)**2)</samp>
+  <p class="explica">e Γ<sup>t</sup><sub>tz</sub> = a/(2(1 + az)), Γ<sup>z</sup><sub>tt</sub> = a/2.</p>
+</div>
+
+<h3>76. de Sitter em fatias planas <span class="pill ok">resolve</span></h3>
+
+<p>Hirata, Ph236, HW5 #1: ds² = (−dη² + dx²)/(H²η²). R<sub>μν</sub> = 3H²g<sub>μν</sub> — logo G<sub>μν</sub> = −3H²g<sub>μν</sub> e Λ = 3H².</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\eta, x, y, z)</code>
+  <code class="entrada">g = métrica(-\frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2}, \frac{1}{H^2 \eta^2})</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">12*H**2</samp>
+  <p class="explica">e <code>ricci(g)</code> dá R<sub>ηη</sub> = −3/η², R<sub>ii</sub> = 3/η².</p>
+</div>
+
+<h3>77. de Sitter em 2D <span class="pill ok">resolve</span></h3>
+
+<p>Evans, folha 1, Q9: ds² = −du² + cosh²u dφ², Γ<sup>u</sup><sub>φφ</sub> = senh u cosh u, Γ<sup>φ</sup><sub>uφ</sub> = tgh u, e R = 2.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(u, \phi)</code>
+  <code class="entrada">g = métrica(-1, \cosh^2 u)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">2</samp>
+  <p class="explica">e <code>riemann(g)</code> dá R<sup>u</sup><sub>φuφ</sub> = cosh²u, isto é, R<sub>uφuφ</sub> = −cosh²u = ½R(g<sub>uu</sub>g<sub>φφ</sub> − 0), a fórmula de 2D.</p>
+</div>
+
+<h3>78. A família −f dt² + dr²/f <span class="pill aviso">em parte</span></h3>
+
+<p>Evans, folha 4, Q6: os Ricci de ds² = −f dt² + f<sup>−1</sup>dr² + r²dΩ², e depois f para Reissner–Nordström e para R<sub>μν</sub> = Λg<sub>μν</sub>. Os Ricci saem; resolver para f, não.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">f = f(r)</code>
+  <code class="entrada">g = métrica(-f, \frac{1}{f}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">R_{{\theta}{\theta}}=-r*Derivative(f(r), r) - f(r) + 1</samp>
+</div>
+
+<h3>79. Reissner–Nordström <span class="pill ok">resolve</span></h3>
+
+<p>Dray, MTH 437, HW6 #1: com f = 1 − 2m/r + q²/r², R<sub>θθ</sub> = q²/r², e R = 0.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, r, \theta, \phi)</code>
+  <code class="entrada">g = métrica(-(1 - \frac{2m}{r} + \frac{q^2}{r^2}), \frac{1}{1 - \frac{2m}{r} + \frac{q^2}{r^2}}, r^2, r^2 \sin^2\theta)</code>
+  <code class="entrada">ricci(g)</code>
+  <samp class="saida">R_{{\theta}{\theta}}=q**2/r**2</samp>
+</div>
+
+<h3>80. AdS₃ global <span class="pill ok">resolve</span></h3>
+
+<p>Hartman (Cornell), §9.1: ds² = ℓ²(−cosh²ρ dt² + dρ² + senh²ρ dφ²), com R<sub>μν</sub> = −(2/ℓ²)g<sub>μν</sub>, R = −6/ℓ² e Λ = −1/ℓ².</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(t, \rho, \phi)</code>
+  <code class="entrada">g = métrica(-\ell^2 \cosh^2\rho, \ell^2, \ell^2 \sinh^2\rho)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">-6/ell**2</samp>
+</div>
+
+<h3>81. O espaço hiperbólico H³ <span class="pill ok">resolve</span></h3>
+
+<p>Hirata, Ph236, HW16: ds² = dχ² + senh²χ dΩ², curvatura −1: R<sub>ij</sub> = −2g<sub>ij</sub>, R = −6.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\chi, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sinh^2\chi, \sinh^2\chi \sin^2\theta)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">-6</samp>
+</div>
+
+<h3>82. A 4-esfera <span class="pill ok">resolve</span></h3>
+
+<p>'t Hooft, notas de Utrecht, após a eq. (14.9): a N-esfera unitária tem R<sub>ij</sub> = (N−1)g<sub>ij</sub>; com N = 4, R = 12.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(\alpha, \psi, \theta, \phi)</code>
+  <code class="entrada">g = métrica(1, \sin^2\alpha, \sin^2\alpha \sin^2\psi, \sin^2\alpha \sin^2\psi \sin^2\theta)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">12</samp>
+</div>
+
+<h3>85. O paraboloide de Flamm <span class="pill ok">resolve</span></h3>
+
+<p>Dray, MTH 437, HW5: a fatia equatorial de Schwarzschild, ds² = dr²/(1 − 2m/r) + r²dφ², tem curvatura de Gauss K = −m/r³, isto é, R = 2K.</p>
+
+<div class="exemplo">
+  <code class="entrada">x = coordenadas(r, \phi)</code>
+  <code class="entrada">g = métrica(\frac{1}{1 - \frac{2m}{r}}, r^2)</code>
+  <code class="entrada">escalar(g)</code>
+  <samp class="saida">-2*m/r**3</samp>
+</div>
+
 <h2 id="tensorial">III. Notação tensorial</h2>
 
 <h3>18 e 19. O colchete de Lie <span class="pill ok">resolve</span></h3>
@@ -591,6 +860,20 @@ sinal oposto. A curvatura seccional, ¼|[X,Y]|², é a mesma nas duas.</p>
   <samp class="saida">provado a partir de eq1, eq2, eq3</samp>
 </div>
 
+<h3>53. O colchete pela conexão <span class="pill ok">resolve</span></h3>
+
+<p>Ali-Haïmoud (NYU), HW6, 1(iii): com Levi-Civita,
+[X,Y] = ∇<sub>X</sub>Y − ∇<sub>Y</sub>X — a torção nula, lida ao contrário.</p>
+
+<div class="exemplo">
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">Y = tensor(1, 0)</code>
+  <code class="entrada">\forall A, B: \nabla_A B - \nabla_B A = [A,B]</code>
+  <code class="entrada">[X, Y] = \nabla_X Y - \nabla_Y X</code>
+  <code class="entrada">provar(eq2, eq1)</code>
+  <samp class="saida">eq1[A→X, B→Y]</samp>
+</div>
+
 <h2 id="formas">IV. Formas diferenciais</h2>
 
 <h3>28. dα pela conexão <span class="pill ok">resolve</span></h3>
@@ -664,6 +947,48 @@ graduado); Reall §8.1 (α∧β = (−1)<sup>pq</sup>β∧α, associatividade) e
     exercício) não sai.</p>
 </div>
 
+<h3>47, 48 e 51. d, ι e ℒ <span class="pill ok">resolve</span></h3>
+
+<p>Wendl, lista 7, 1(a) e 1(d): [d, ℒ<sub>X</sub>] = 0; e
+P = dι<sub>X</sub> + ι<sub>X</sub>d é derivação de grau 0 — o passo que prova
+a fórmula de Cartan em qualquer grau. Wendl, lista 6, 6(c): d² = 0, que em ℝ³
+é rot grad = 0 e div rot = 0.</p>
+
+<div class="exemplo">
+  <code class="entrada">\omega = forma(1)</code>
+  <code class="entrada">\eta = forma(2)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\mathrm{d} \mathcal{L}_X \eta = \mathcal{L}_X \mathrm{d} \eta</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+</div>
+
+<div class="exemplo">
+  <code class="entrada">\omega = forma(1)</code>
+  <code class="entrada">\eta = forma(2)</code>
+  <code class="entrada">X = tensor(1, 0)</code>
+  <code class="entrada">\mathrm{d} \iota_X (\omega \wedge \eta) + \iota_X \mathrm{d} (\omega \wedge \eta) = (\mathrm{d} \iota_X \omega + \iota_X \mathrm{d} \omega) \wedge \eta + \omega \wedge (\mathrm{d} \iota_X \eta + \iota_X \mathrm{d} \eta)</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+  <p class="explica">os sinais de d e de ι se cancelam dois a dois: sobra uma derivação sem sinal, como a de ℒ<sub>X</sub>.</p>
+</div>
+
+<h3>57. Uma 2-forma que não se decompõe <span class="pill ok">resolve</span></h3>
+
+<p>Dray, MTH 434, HW2 #1: toda 2-forma de ℝ³ é α∧β, mas em ℝ⁴
+γ = dx∧dy + dz∧dw não é — γ∧γ = 2 dx∧dy∧dz∧dw ≠ 0, enquanto
+(α∧β)∧(α∧β) = 0.</p>
+
+<div class="exemplo">
+  <code class="entrada">\alpha = forma(1)</code>
+  <code class="entrada">\beta = forma(1)</code>
+  <code class="entrada">\gamma = forma(1)</code>
+  <code class="entrada">\kappa = forma(1)</code>
+  <code class="entrada">(\alpha \wedge \beta + \gamma \wedge \kappa) \wedge (\alpha \wedge \beta + \gamma \wedge \kappa) = 2 \alpha \wedge \beta \wedge \gamma \wedge \kappa</code>
+  <code class="entrada">provar(eq1)</code>
+  <samp class="saida">provado a partir de nenhuma hipótese</samp>
+</div>
+
 <h2 id="nao-sai">V. O que não sai</h2>
 
 <p>Dizer isto é parte do trabalho. Cada item abaixo é um exercício da lista,
@@ -691,6 +1016,19 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     pede contar componentes e usar a dimensão como hipótese.</li>
   <li><strong>17 (Reall §5.3).</strong> A derivada de Lie com índice não
     existe; sem índice, só em formas.</li>
+  <li><strong>61 (MIT 2018, lista 4, P1).</strong> Contar componentes
+    independentes de um antissimétrico é combinatória, não álgebra
+    tensorial.</li>
+  <li><strong>62 (NYU HW6).</strong> Os campos de Killing ε<sub>ijk</sub>x<sup>j</sup>∂<sub>k</sub>
+    pedem as coordenadas como funções, x<sup>j</sup> com ∂<sub>k</sub>x<sup>j</sup> = δ.</li>
+  <li><strong>64, 66 (Evans 3 Q10; 't Hooft).</strong> Γ<sup>β</sup><sub>αβ</sub> = ∂ ln√−g
+    e a divergência com √−g: o determinante, de novo.</li>
+  <li><strong>65 (Evans 1 Q8).</strong> Christoffel de métricas conformes: Γ
+    como objeto com índice.</li>
+  <li><strong>68, 69 (Evans 3 Q6, Q4).</strong> Killing de segunda ordem, e
+    |∇φ|² + R constante: hipóteses em índices.</li>
+  <li><strong>71 (Evans 4 Q10).</strong> Riemann linearizado: não há expansão
+    em ordem de ε.</li>
 </ul>
 
 <h3>Componentes</h3>
@@ -701,6 +1039,11 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     escrevem.</li>
   <li><strong>37, 41, 42 (em parte).</strong> Componentes de ∇A, base
     ortonormal e 2-formas de curvatura, equações das geodésicas.</li>
+  <li><strong>83 (NYU HW6).</strong> Ricci de −(1+2Φ)dt² + (1−2Φ)dx² em
+    ordem linear: o Sucuri calcula exato, e não trunca em Φ.</li>
+  <li><strong>84 (Dray, MTH 434 HW6).</strong> Formas de conexão e de
+    curvatura numa base ortonormal.</li>
+  <li><strong>78 (em parte).</strong> Resolver a equação de Ricci para f.</li>
 </ul>
 
 <h3>Notação tensorial</h3>
@@ -717,12 +1060,23 @@ e o motivo é o que falta ao programa — não ao exercício.</p>
     constantes de estrutura numa base de campos invariantes — soma sobre
     índices de base, que a notação sem índice não escreve.</li>
   <li><strong>31, 33 (em parte).</strong> Pull-back, e ⋆d⋆ em termos de ∇.</li>
+  <li><strong>46 (Wendl 7, 4(a)).</strong> ℒ<sub>[X,Y]</sub> = [ℒ<sub>X</sub>, ℒ<sub>Y</sub>]
+    nas formas não sai, nem com a fórmula de dω como hipótese: falta
+    [ℒ<sub>X</sub>, ι<sub>Y</sub>] = ι<sub>[X,Y]</sub>.</li>
+  <li><strong>49 (Wendl 6, 4(c)).</strong> dω(X,Y,Z) de uma 2-forma a partir
+    da fórmula das 1-formas: pede escrever ω como soma de produtos.</li>
+  <li><strong>50, 52, 54, 55, 56 (Wendl; Dray).</strong> div por
+    ℒ<sub>X</sub>μ, formas de contato, as tabelas de ⋆ e os operadores
+    vetoriais em coordenadas: formas escritas em dx, dy, dz — formas numa
+    carta — o Sucuri não tem.</li>
+  <li><strong>58 (Evans 3 Q9).</strong> A derivada de Lie de um (0,2), e
+    ℒ<sub>ξ</sub>g = 2∇<sub>(a</sub>ξ<sub>b)</sub>.</li>
 </ul>
 
 <h2 id="achados">VI. O que os exercícios ensinaram</h2>
 
 <p>Um leitor de notação só se testa com notação escrita por outra gente,
-para outro fim. Resolver estas listas achou seis defeitos — quatro deles
+para outro fim. Resolver estas listas achou dez defeitos — cinco deles
 silenciosos, o tipo de erro que este programa existe para não cometer. Todos
 corrigidos, e cada um com teste.</p>
 
@@ -749,6 +1103,19 @@ corrigidos, e cada um com teste.</p>
     objeto da primeira carta no meio do resultado: o cache do SymPy devolvia,
     na conta de uma métrica, pedaços da conta de outra. Só apareceu porque a
     suíte roda os exercícios em sequência.</li>
+  <li><strong>O argumento grego (exercício 73).</strong> <code>F = F(\varpi)</code>
+    guardava a variável como <code>\varpi</code>, com a barra — outro símbolo
+    que a coordenada. F ficava constante, e a superfície de revolução, plana.</li>
+  <li><strong>O par εε escondido (exercício 59).</strong> Em ε × (soma), a
+    identidade não achava o par dentro de cada termo; e o SymPy troca de lado
+    os índices mudos ao montar um produto, e ε<sup>ijk</sup>ε<sub>klm</sub>
+    chegava com os índices misturados. Com a métrica declarada, agora os
+    alinha.</li>
+  <li><strong>A igualdade simplificada crua (exercício 59).</strong> A
+    diferença dos dois lados era simplificada antes de cada lado: identidades
+    que fechavam lado a lado não fechavam juntas.</li>
+  <li><strong>∂ do símbolo (exercício 51).</strong> O símbolo de Levi-Civita
+    vale ±1 em toda carta, e ∂ dele é zero — o que o Sucuri não sabia.</li>
 </ul>
 
 <h2 id="fontes">Fontes</h2>
@@ -773,6 +1140,41 @@ corrigidos, e cada um com teste.</p>
   <li>J. M. Cline, <em>A Short Course in General Relativity</em>
     (arXiv:2604.17441) —
     <a href="https://arxiv.org/abs/2604.17441">arxiv.org</a>.</li>
+  <li>C. Wendl, <em>Differential Geometry I</em> (HU Berlim, 2016–17), listas
+    <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset6.pdf">6</a>,
+    <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset7.pdf">7</a>,
+    <a href="https://www.mathematik.hu-berlin.de/~wendl/Winter2016/DiffGeo1/pset12.pdf">12</a>.</li>
+  <li>Y. Ali-Haïmoud, <em>General Relativity</em> (NYU, 2019),
+    <a href="https://cosmo.nyu.edu/yacine/teaching/GR_2019/homeworks/homework6.pdf">HW6</a>.</li>
+  <li>T. Dray, MTH 434 e 437 (Oregon State, 2024) —
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw2.pdf">434 HW2</a>,
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw3.pdf">HW3</a>,
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw4.pdf">HW4</a>,
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH434/hw/hw6.pdf">HW6</a>,
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH437/hw/hw5.pdf">437 HW5</a>,
+    <a href="https://sites.science.oregonstate.edu/~tevian/onid/MTH437/hw/hw6.pdf">HW6</a>.</li>
+  <li>J. M. Evans, <em>Part II General Relativity</em> (Cambridge, 2026),
+    folhas <a href="https://www.damtp.cam.ac.uk/user/examples/D22a.pdf">1</a>,
+    <a href="https://www.damtp.cam.ac.uk/user/examples/D22c.pdf">3</a>,
+    <a href="https://www.damtp.cam.ac.uk/user/examples/D22d.pdf">4</a>.</li>
+  <li>R. E. Hunt, <em>Part IA Vector Calculus</em> (Cambridge, 2026), folhas
+    <a href="https://www.damtp.cam.ac.uk/user/examples/A5a.pdf">1</a> e
+    <a href="https://www.damtp.cam.ac.uk/user/examples/A5d.pdf">4</a>.</li>
+  <li>A. Guth, MIT 8.962 (2018), listas
+    <a href="https://web.mit.edu/8.962/www/probsets/ps03-grs18.pdf">3</a>,
+    <a href="https://web.mit.edu/8.962/www/probsets/ps04-grs18.pdf">4</a>,
+    <a href="https://web.mit.edu/8.962/www/probsets/ps06-grs18.pdf">6</a>.</li>
+  <li>C. Hirata, Caltech Ph236 (2011–12), HW
+    <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw4.pdf">4</a>,
+    <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw5.pdf">5</a>,
+    <a href="http://www.tapir.caltech.edu/~chirata/ph236/2011-12/hw16.pdf">16</a>.</li>
+  <li>P. van Baal, <em>Theory of General Relativity</em>, problem set (Leiden) —
+    <a href="https://www.lorentz.leidenuniv.nl/research/vanbaal/DECEASED/ART/art-eng.pdf">lorentz.leidenuniv.nl</a>.</li>
+  <li>G. 't Hooft, <em>Introduction to General Relativity</em> (Utrecht, 2013) —
+    <a href="https://webspace.science.uu.nl/~hooft101/lectures/genrel_2013.pdf">uu.nl</a>.</li>
+  <li>T. Hartman, <em>Lectures on Quantum Gravity and Black Holes</em>
+    (Cornell, 2015) —
+    <a href="http://www.hartmanhep.net/topics2015/gravity-lectures.pdf">hartmanhep.net</a>.</li>
   <li>S. M. Carroll, <em>Lecture Notes on General Relativity</em>
     (gr-qc/9712019) —
     <a href="https://arxiv.org/abs/gr-qc/9712019">arxiv.org</a>.</li>
