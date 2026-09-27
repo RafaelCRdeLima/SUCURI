@@ -8,6 +8,14 @@ abstract: >-
   curvature, forms, proofs from stated hypotheses and component computations —
   with a notebook interface in English and Portuguese.
 type: software
+doi: "10.5281/zenodo.22984865"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22984865"
+    description: "Concept DOI: all versions, resolves to the latest"
+  - type: doi
+    value: "10.5281/zenodo.22984866"
+    description: "Version 0.1.0"
 authors:
   - given-names: "Rafael Camargo Rodrigues"
     name-particle: "de"

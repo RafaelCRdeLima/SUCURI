@@ -2,6 +2,8 @@
 
 *SymPy Unified Compiler for Unambiguous Rendered Input.*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22984865.svg)](https://doi.org/10.5281/zenodo.22984865)
+
 Um ambiente simbólico em que a equação escrita pelo usuário **é** um objeto
 manipulável — e em que nenhuma ambiguidade é adivinhada.
 
@@ -1393,4 +1395,8 @@ MIT — ver `LICENSE`.
 
 ## Como citar
 
-Ver `CITATION.cff`. Um DOI será acrescentado.
+Se usar o Sucuri, cite assim:
+
+> de Lima, R. C. R. (2026). *SUCURI: SymPy Unified Compiler for Unambiguous Rendered Input* (Version v0.1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.22984865
+
+O DOI acima ([10.5281/zenodo.22984865](https://doi.org/10.5281/zenodo.22984865)) aponta sempre para a versão mais recente; a versão 0.1.0 em si é [10.5281/zenodo.22984866](https://doi.org/10.5281/zenodo.22984866). Os mesmos dados estão no [CITATION.cff](CITATION.cff) — o botão *Cite this repository* do GitHub exporta em BibTeX ou APA.
