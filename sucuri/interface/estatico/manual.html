@@ -132,6 +132,154 @@ continua sendo uma expressão.</p>
 ponte que este programa é deixaria de ser obrigatória — e sobraria um Jupyter
 com passos a mais.</p>
 
+<p>A lista abaixo é a lista inteira: o que não está nela não é verbo. Os nomes
+em português e em inglês valem nas duas línguas da interface. As declarações —
+<code>métrica</code>, <code>índices</code>, <code>tensor</code>, … — estão na
+seção 3.</p>
+
+<table class="tabela verbos" id="lista-de-verbos">
+  <tr><th>Verbo</th><th>Em inglês</th><th>O que faz</th></tr>
+  <tr class="grupo"><th colspan="3">Equações</th></tr>
+  <tr><td><code>resolver(eq)</code></td><td><code>solve(eq)</code></td>
+      <td>Equação diferencial vai ao solver de EDO, e a solução volta conferida
+      por substituição; equação algébrica dá as raízes. Recusa o que não é
+      igualdade.</td></tr>
+  <tr><td><code>avaliar(eq)</code></td><td><code>evaluate(eq)</code></td>
+      <td>Faz a conta parada: o valor exato, com a aproximação ao lado;
+      integral indefinida dá a família. Com índice e métrica com componentes,
+      dá as componentes; um rótulo de tabela, <code>avaliar(\Gamma^{r}_{tt})</code>,
+      dá o seu valor (seção 8).</td></tr>
+  <tr><td><code>simplificar(eq)</code></td><td><code>simplify(eq)</code></td>
+      <td>Simplifica, e o resultado ganha nome. Com índice, usa as simetrias
+      declaradas, e uma igualdade entre tensores sai <code>True</code> quando
+      os lados coincidem (seção 7).</td></tr>
+  <tr><td><code>separar(eq)</code></td><td><code>separate(eq)</code></td>
+      <td>Separa as variáveis de uma EDP supondo um produto,
+      u = T(t)·X(x): as EDOs saem com nome e com a sua solução. Não prova que
+      a superposição dos modos é completa.</td></tr>
+  <tr><td><code>conferir(eq, cand)</code></td><td><code>check(eq, cand)</code></td>
+      <td>Substitui a candidata na equação: <em>candidata verificada</em>, com
+      resto 0, ou o resto que sobrou. Com um argumento só, recusa.</td></tr>
+  <tr><td><code>exportar(eq)</code></td><td><code>export(eq)</code></td>
+      <td>O código SymPy que declara, monta e resolve eq — roda sem o
+      Sucuri.</td></tr>
+  <tr><td><code>latex(eq)</code></td><td><code>latex(eq)</code></td>
+      <td>A escrita em LaTeX, para copiar.</td></tr>
+  <tr><td><code>série(eq, x, n)</code></td><td><code>series(eq, x, n)</code></td>
+      <td>A série em torno de x = 0 até a ordem n, com o O(x<sup>n</sup>);
+      numa igualdade, a do lado esquerdo menos o direito. O polinômio ganha
+      nome. Sem os três argumentos, recusa.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Notação de índice</th></tr>
+  <tr><td><code>contrair(eq)</code></td><td><code>contract(eq)</code></td>
+      <td>Baixa e levanta índice com a métrica declarada:
+      g<sub>μν</sub>A<sup>ν</sup> vira A<sub>μ</sub>. Recusa quando a métrica
+      não está contraída com nada (seção 7).</td></tr>
+  <tr><td><code>indices(eq)</code></td><td><code>indices(eq)</code></td>
+      <td>Escreve com índice o que foi escrito sem — ∇<sub>U</sub>X vira
+      U<sup>α</sup>∇<sub>α</sub>X<sup>μ</sup> —, com os índices declarados;
+      sem eles, recusa (seção 11). <code>\mu, \nu = índices(4)</code> é outra
+      coisa: a declaração (seção 3).</td></tr>
+  <tr><td><code>expandir(eq)</code><br><code>expandir(eq, g)</code></td>
+      <td><code>expand(eq)</code><br><code>expand(eq, g)</code></td>
+      <td>Abre ∇ em ∂ e Γ; com g, abre também Γ pela métrica. Pede a
+      convenção de Γ declarada, <code>\Gamma = christoffel(eq1)</code>. Uma
+      igualdade que fecha sai <code>True</code> (seção 7).</td></tr>
+  <tr><td><code>independentes(T, eq…)</code></td><td><code>independent(T, eq…)</code></td>
+      <td>Quantas componentes de T sobram, com as simetrias declaradas e as
+      equações dadas, na dimensão de <code>índices(n)</code>.</td></tr>
+  <tr><td><code>em_componentes(eq)</code></td><td><code>in_components(eq)</code></td>
+      <td>Confere a identidade com o tensor mais geral que as declarações
+      permitem e uma métrica qualquer: <code>True</code> ou
+      <code>False</code>.</td></tr>
+  <tr><td><code>linearizar(eq, h)</code></td><td><code>linearize(eq, h)</code></td>
+      <td>g = η + εh, até a primeira ordem em ε. Pede
+      <code>h = tensor(0, 2, simétrico)</code> declarado.</td></tr>
+  <tr><td><code>provar(eq, h1, h2, …)</code></td><td><code>prove(eq, h1, h2, …)</code></td>
+      <td>O objetivo a partir só das hipóteses nomeadas, linha por linha, com
+      ou sem índice (seções 9 e 10). Quando não acha, diz que não achar não
+      é prova de que é falso.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Componentes numa carta</th></tr>
+  <tr><td><code>christoffel(g)</code></td><td><code>christoffel(g)</code></td>
+      <td>Os Γ não nulos da métrica com componentes, na carta declarada
+      (seção 8). Com nome à esquerda, <code>\Gamma = christoffel(eq1)</code>
+      não é este verbo: declara a convenção de Γ que eq1 escreve (seção 3).</td></tr>
+  <tr><td><code>riemann(g)</code></td><td><code>riemann(g)</code></td>
+      <td>As componentes não nulas do Riemann. <code>R = riemann(eq1)</code>
+      declara a convenção do Riemann que eq1 escreve (seção 3).</td></tr>
+  <tr><td><code>ricci(g)</code></td><td><code>ricci(g)</code></td>
+      <td>As componentes não nulas de R<sub>μν</sub>. <code>R = ricci(eq2)</code>
+      declara R<sub>μν</sub> e R como contrações do Riemann (seção 3).</td></tr>
+  <tr><td><code>escalar(g)</code></td><td><code>scalar(g)</code></td>
+      <td>O escalar de Ricci. Os quatro aceitam um segundo nome,
+      <code>escalar(g, \Phi)</code>: a conta em primeira ordem em Φ.</td></tr>
+  <tr><td><code>geodesicas(g)</code></td><td><code>geodesics(g)</code></td>
+      <td>As equações das geodésicas, com parâmetro afim, cada uma com nome; e
+      o que se conserva: g(ẋ, ẋ) e g(∂<sub>k</sub>, ẋ) para cada coordenada de
+      que a métrica não depende.</td></tr>
+  <tr><td><code>órbitas(g)</code></td><td><code>orbits(g)</code></td>
+      <td>As geodésicas de uma métrica 2D diagonal com uma coordenada cíclica,
+      por quadratura: dφ/dr e, quando a integral é elementar, a órbita, com
+      nome. Outra dimensão, recusa.</td></tr>
+  <tr><td><code>volume(g, x = a .. b, …)</code></td><td><code>volume(g, x = a .. b, …)</code></td>
+      <td>∫√|det g|, com um limite por coordenada: o elemento de volume e o
+      valor, com nome. Faltando limite, recusa.</td></tr>
+  <tr><td><code>elemento(g)</code></td><td><code>element(g)</code></td>
+      <td>O elemento de linha ds².</td></tr>
+  <tr><td><code>cartan(g)</code></td><td><code>tetrad(g)</code></td>
+      <td>De uma métrica diagonal: a tétrada e<sup>a</sup> = √|g<sub>aa</sub>|
+      dx<sup>a</sup>, as formas de conexão, as de curvatura e o Riemann na
+      base ortonormal.</td></tr>
+  <tr><td><code>em_carta(eq)</code></td><td><code>in_chart(eq)</code></td>
+      <td>Uma expressão com índice, componente por componente na carta da
+      métrica declarada; o Riemann e o Ricci entram pelas convenções
+      declaradas. Numa igualdade, <code>True</code> ou as componentes da
+      diferença.</td></tr>
+  <tr><td><code>killing(g, X)</code><br><code>killing(g, n)</code></td>
+      <td><code>killing(g, X)</code><br><code>killing(g, n)</code></td>
+      <td>Com um campo: ℒ<sub>X</sub>g, e se X é de Killing. Com um número:
+      os campos de Killing de componentes polinomiais de grau ≤ n. Campo se
+      declara com <code>X = campo(…)</code> ou <code>covetor(…)</code>, nas
+      componentes da carta.</td></tr>
+  <tr><td><code>colchete(X, Y)</code></td><td><code>bracket(X, Y)</code></td>
+      <td>[X, Y], na base coordenada.</td></tr>
+  <tr><td><code>nabla(g, A)</code></td><td><code>nabla(g, A)</code></td>
+      <td>As primeiras e as segundas derivadas covariantes de um campo ou
+      covetor.</td></tr>
+  <tr><td><code>laplaciano(g, A)</code></td><td><code>laplacian(g, A)</code></td>
+      <td>g<sup>ik</sup>∇<sub>i</sub>∇<sub>k</sub>A, componente por
+      componente.</td></tr>
+  <tr><td><code>h = induzida(g, X^1, …)</code></td><td><code>h = induced(g, X^1, …)</code></td>
+      <td>A métrica induzida — o pull-back de g pela parametrização —, nas
+      coordenadas declaradas por último; h é métrica como outra qualquer. Sem
+      coordenadas novas, recusa.</td></tr>
+  <tr><td><code>restringir(K, h)</code></td><td><code>restrict(K, h)</code></td>
+      <td>Um campo do espaço de fora, restrito à subvariedade de h e
+      registrado com o mesmo nome. Campo com componente normal, recusa.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Formas numa carta</th></tr>
+  <tr><td><code>cunha(\alpha, \beta)</code></td><td><code>wedge(\alpha, \beta)</code></td>
+      <td>α∧β, numa carta: <code>\alpha = forma(x\,dy)</code>. Com nome à
+      esquerda, <code>P = cunha(\alpha, \beta)</code>, o resultado vira forma
+      com nome — vale também para estrela, exterior, interior e lie.</td></tr>
+  <tr><td><code>estrela(\alpha, g)</code></td><td><code>star(\alpha, g)</code></td>
+      <td>O dual de Hodge pela métrica; <code>estrela(1, g)</code> é o
+      elemento de volume.</td></tr>
+  <tr><td><code>exterior(\alpha)</code></td><td><code>exterior(\alpha)</code></td>
+      <td>dα.</td></tr>
+  <tr><td><code>interior(X, \alpha)</code></td><td><code>interior(X, \alpha)</code></td>
+      <td>ι<sub>X</sub>α, com X um campo.</td></tr>
+  <tr><td><code>lie(X, \alpha)</code></td><td><code>lie(X, \alpha)</code></td>
+      <td>ℒ<sub>X</sub>α.</td></tr>
+  <tr><td><code>iguais(\alpha, \beta)</code></td><td><code>equal(\alpha, \beta)</code></td>
+      <td><code>True</code>, ou a diferença. Aceita 0:
+      <code>iguais(E, 0)</code>.</td></tr>
+  <tr><td><code>ortonormal(\alpha, g)</code></td><td><code>ortonormal(\alpha, g)</code></td>
+      <td>α no cobase ortonormal σ<sup>i</sup> = √|g<sub>ii</sub>|
+      dx<sup>i</sup>.</td></tr>
+</table>
+
 <h3>resolver</h3>
 
 <p>Um verbo só; o objeto decide a conta. Equação diferencial vai ao solver de

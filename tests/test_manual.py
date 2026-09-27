@@ -143,3 +143,86 @@ def test_o_manual_esta_publicado(pagina):
 
 def test_as_duas_versoes_do_manual_tem_os_mesmos_exemplos():
     assert len(exemplos()) == len(exemplos(MANUAL_EN))
+
+
+# ------------------------------------------------------- a lista de verbos
+
+class _CodigosDaLista(HTMLParser):
+    """Os `<code>` da primeira coluna da tabela `#lista-de-verbos` — a do
+    idioma da página; a segunda é a do outro."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.codigos, self._dentro, self._code, self._coluna = [], False, None, 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "table" and dict(attrs).get("id") == "lista-de-verbos":
+            self._dentro = True
+        elif tag == "tr":
+            self._coluna = 0
+        elif tag == "td":
+            self._coluna += 1
+        elif tag == "code" and self._dentro and self._coluna == 1:
+            self._code = []
+
+    def handle_data(self, dados):
+        if self._code is not None:
+            self._code.append(dados)
+
+    def handle_endtag(self, tag):
+        if tag == "table":
+            self._dentro = False
+        elif tag == "code" and self._code is not None:
+            self.codigos.append("".join(self._code).strip())
+            self._code = None
+
+
+def _verbos_listados(pagina):
+    """O verbo de cada `<code>` da lista: `h = induzida(g, …)` dá `induzida`;
+    sem acento, que `série` e `serie` são o mesmo verbo."""
+    import unicodedata
+    leitor = _CodigosDaLista()
+    leitor.feed(pagina.read_text(encoding="utf-8"))
+    assert leitor.codigos, f"{pagina.name}: sem a tabela #lista-de-verbos"
+    verbos = set()
+    for c in leitor.codigos:
+        m = re.match(r"(?:\\?\w+\s*=\s*)?(\w+)\(", c)
+        if m:
+            verbos.add(unicodedata.normalize("NFKD", m.group(1))
+                       .encode("ascii", "ignore").decode())
+    return verbos
+
+
+def _canonicos():
+    from sucuri.caderno import VERBOS
+    return set(VERBOS.values()) | {"provar", "induzida"}
+
+
+# O nome em inglês de cada verbo; o que não tem nome próprio é o mesmo.
+EM_INGLES = {
+    "resolver": "solve", "avaliar": "evaluate", "simplificar": "simplify",
+    "separar": "separate", "conferir": "check", "exportar": "export",
+    "serie": "series", "contrair": "contract", "expandir": "expand",
+    "independentes": "independent", "em_componentes": "in_components",
+    "linearizar": "linearize", "provar": "prove", "escalar": "scalar",
+    "geodesicas": "geodesics", "orbitas": "orbits", "elemento": "element",
+    "cartan": "tetrad", "em_carta": "in_chart", "colchete": "bracket",
+    "laplaciano": "laplacian", "restringir": "restrict", "induzida": "induced",
+    "cunha": "wedge", "estrela": "star", "iguais": "equal",
+}
+
+
+def test_a_lista_de_verbos_tem_todos():
+    faltam = _canonicos() - _verbos_listados(MANUAL)
+    assert not faltam, f"verbos fora da lista do manual: {sorted(faltam)}"
+
+
+def test_a_lista_de_verbos_em_ingles_tem_todos():
+    from sucuri.caderno import VERBOS
+    # os três que não passam por VERBOS: forma própria na leitura
+    proprios = {"series": "serie", "prove": "provar", "induced": "induzida"}
+    for pt, en in EM_INGLES.items():
+        assert VERBOS.get(en, proprios.get(en)) == pt, (en, pt)
+    esperados = {EM_INGLES.get(v, v) for v in _canonicos()}
+    faltam = esperados - _verbos_listados(MANUAL_EN)
+    assert not faltam, f"verbos fora da lista do manual em inglês: {sorted(faltam)}"

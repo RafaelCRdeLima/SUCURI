@@ -33,6 +33,15 @@
   vertical-align:top}
 .tabela tr:last-child td{border-bottom:none}
 .tabela td:first-child{width:14em}
+.tabela th{text-align:left;font-weight:500;padding:8px 10px;
+  border-bottom:1px solid var(--areia-2);vertical-align:bottom}
+.tabela tr.grupo th{padding-top:22px;color:var(--folha);font-family:var(--mono);
+  font-size:13px}
+.tabela.verbos td:first-child,.tabela.verbos td:nth-child(2){width:11em}
+.tabela.verbos code{overflow-wrap:anywhere}
+@media (max-width:640px){
+  .tabela.verbos td:first-child,.tabela.verbos td:nth-child(2){width:auto}
+  .tabela.verbos td,.tabela.verbos th{padding:8px 6px}}
 .prov{font-family:var(--mono);font-size:12.5px}
 .prov.est{color:var(--sucuri-sucesso-fg)}
 .prov.sem{color:var(--sucuri-erro-fg)}

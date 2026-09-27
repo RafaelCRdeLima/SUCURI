@@ -132,6 +132,158 @@ is still an expression.</p>
 bridge this program is would stop being mandatory — and what would be left is a Jupyter
 with extra steps.</p>
 
+<p>The list below is the whole list: what is not in it is not a verb. The
+English and the Portuguese names work in either interface language. The
+declarations — <code>metric</code>, <code>indices</code>, <code>tensor</code>,
+… — are in section 3.</p>
+
+<table class="tabela verbos" id="lista-de-verbos">
+  <tr><th>Verb</th><th>Portuguese</th><th>What it does</th></tr>
+  <tr class="grupo"><th colspan="3">Equations</th></tr>
+  <tr><td><code>solve(eq)</code></td><td><code>resolver(eq)</code></td>
+      <td>A differential equation goes to the ODE solver, and the solution comes
+      back checked by substitution; an algebraic equation gives the roots.
+      Refuses what is not an equality.</td></tr>
+  <tr><td><code>evaluate(eq)</code></td><td><code>avaliar(eq)</code></td>
+      <td>Does the held computation: the exact value, with the approximation
+      beside it; an indefinite integral gives the family. With indices and a
+      metric with components, gives the components; a table label,
+      <code>evaluate(\Gamma^{r}_{tt})</code>, gives its value (section 8).</td></tr>
+  <tr><td><code>simplify(eq)</code></td><td><code>simplificar(eq)</code></td>
+      <td>Simplifies, and the result gets a name. With indices, uses the
+      declared symmetries, and an equality between tensors comes out
+      <code>True</code> when the sides coincide (section 7).</td></tr>
+  <tr><td><code>separate(eq)</code></td><td><code>separar(eq)</code></td>
+      <td>Separates the variables of a PDE assuming a product,
+      u = T(t)·X(x): the ODEs come out named, each with its solution. Does not
+      prove that the superposition of the modes is complete.</td></tr>
+  <tr><td><code>check(eq, cand)</code></td><td><code>conferir(eq, cand)</code></td>
+      <td>Substitutes the candidate into the equation: <em>candidate
+      verified</em>, with remainder 0, or the remainder left over. With a
+      single argument, refuses.</td></tr>
+  <tr><td><code>export(eq)</code></td><td><code>exportar(eq)</code></td>
+      <td>The SymPy code that declares, builds and solves eq — it runs
+      without Sucuri.</td></tr>
+  <tr><td><code>latex(eq)</code></td><td><code>latex(eq)</code></td>
+      <td>The LaTeX writing, to copy.</td></tr>
+  <tr><td><code>series(eq, x, n)</code></td><td><code>série(eq, x, n)</code></td>
+      <td>The series around x = 0 up to order n, with the O(x<sup>n</sup>);
+      for an equality, that of the left side minus the right. The polynomial
+      gets a name. Without the three arguments, refuses.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Index notation</th></tr>
+  <tr><td><code>contract(eq)</code></td><td><code>contrair(eq)</code></td>
+      <td>Lowers and raises indices with the declared metric:
+      g<sub>μν</sub>A<sup>ν</sup> becomes A<sub>μ</sub>. Refuses when the
+      metric is contracted with nothing (section 7).</td></tr>
+  <tr><td><code>indices(eq)</code></td><td><code>indices(eq)</code></td>
+      <td>Writes with indices what was written without — ∇<sub>U</sub>X
+      becomes U<sup>α</sup>∇<sub>α</sub>X<sup>μ</sup> —, with the declared
+      indices; without them, refuses (section 11).
+      <code>\mu, \nu = indices(4)</code> is something else: the declaration
+      (section 3).</td></tr>
+  <tr><td><code>expand(eq)</code><br><code>expand(eq, g)</code></td>
+      <td><code>expandir(eq)</code><br><code>expandir(eq, g)</code></td>
+      <td>Opens ∇ into ∂ and Γ; with g, also opens Γ through the metric. Needs
+      the Γ convention declared, <code>\Gamma = christoffel(eq1)</code>. An
+      equality that closes comes out <code>True</code> (section 7).</td></tr>
+  <tr><td><code>independent(T, eq…)</code></td><td><code>independentes(T, eq…)</code></td>
+      <td>How many components of T remain, given the declared symmetries and
+      the given equations, in the dimension of <code>indices(n)</code>.</td></tr>
+  <tr><td><code>in_components(eq)</code></td><td><code>em_componentes(eq)</code></td>
+      <td>Checks the identity with the most general tensor the declarations
+      allow and an arbitrary metric: <code>True</code> or
+      <code>False</code>.</td></tr>
+  <tr><td><code>linearize(eq, h)</code></td><td><code>linearizar(eq, h)</code></td>
+      <td>g = η + εh, to first order in ε. Needs
+      <code>h = tensor(0, 2, symmetric)</code> declared.</td></tr>
+  <tr><td><code>prove(eq, h1, h2, …)</code></td><td><code>provar(eq, h1, h2, …)</code></td>
+      <td>The goal from the named hypotheses only, line by line, with or
+      without indices (sections 9 and 10). When it finds nothing, it says
+      that not finding is no proof of falsehood.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Components in a chart</th></tr>
+  <tr><td><code>christoffel(g)</code></td><td><code>christoffel(g)</code></td>
+      <td>The nonzero Γ of the metric with components, in the declared chart
+      (section 8). With a name on the left, <code>\Gamma = christoffel(eq1)</code>
+      is not this verb: it declares the Γ convention eq1 writes (section 3).</td></tr>
+  <tr><td><code>riemann(g)</code></td><td><code>riemann(g)</code></td>
+      <td>The nonzero components of the Riemann tensor. <code>R = riemann(eq1)</code>
+      declares the Riemann convention eq1 writes (section 3).</td></tr>
+  <tr><td><code>ricci(g)</code></td><td><code>ricci(g)</code></td>
+      <td>The nonzero components of R<sub>μν</sub>. <code>R = ricci(eq2)</code>
+      declares R<sub>μν</sub> and R as contractions of the Riemann tensor
+      (section 3).</td></tr>
+  <tr><td><code>scalar(g)</code></td><td><code>escalar(g)</code></td>
+      <td>The Ricci scalar. All four take a second name,
+      <code>scalar(g, \Phi)</code>: the computation to first order in Φ.</td></tr>
+  <tr><td><code>geodesics(g)</code></td><td><code>geodesicas(g)</code></td>
+      <td>The geodesic equations, with affine parameter, each one named; and
+      what is conserved: g(ẋ, ẋ) and g(∂<sub>k</sub>, ẋ) for each coordinate
+      the metric does not depend on.</td></tr>
+  <tr><td><code>orbits(g)</code></td><td><code>órbitas(g)</code></td>
+      <td>The geodesics of a diagonal 2D metric with a cyclic coordinate, by
+      quadrature: dφ/dr and, when the integral is elementary, the orbit,
+      named. Any other dimension, refuses.</td></tr>
+  <tr><td><code>volume(g, x = a .. b, …)</code></td><td><code>volume(g, x = a .. b, …)</code></td>
+      <td>∫√|det g|, with one limit per coordinate: the volume element and the
+      value, named. With a limit missing, refuses.</td></tr>
+  <tr><td><code>element(g)</code></td><td><code>elemento(g)</code></td>
+      <td>The line element ds².</td></tr>
+  <tr><td><code>tetrad(g)</code></td><td><code>cartan(g)</code></td>
+      <td>For a diagonal metric: the tetrad e<sup>a</sup> = √|g<sub>aa</sub>|
+      dx<sup>a</sup>, the connection forms, the curvature forms and the
+      Riemann tensor in the orthonormal basis.</td></tr>
+  <tr><td><code>in_chart(eq)</code></td><td><code>em_carta(eq)</code></td>
+      <td>An expression with indices, component by component in the chart of
+      the declared metric; Riemann and Ricci enter through the declared
+      conventions. For an equality, <code>True</code> or the components of
+      the difference.</td></tr>
+  <tr><td><code>killing(g, X)</code><br><code>killing(g, n)</code></td>
+      <td><code>killing(g, X)</code><br><code>killing(g, n)</code></td>
+      <td>With a field: ℒ<sub>X</sub>g, and whether X is Killing. With a
+      number: the Killing fields with polynomial components of degree ≤ n.
+      A field is declared with <code>X = field(…)</code> or
+      <code>covector(…)</code>, in the components of the chart.</td></tr>
+  <tr><td><code>bracket(X, Y)</code></td><td><code>colchete(X, Y)</code></td>
+      <td>[X, Y], in the coordinate basis.</td></tr>
+  <tr><td><code>nabla(g, A)</code></td><td><code>nabla(g, A)</code></td>
+      <td>The first and second covariant derivatives of a field or
+      covector.</td></tr>
+  <tr><td><code>laplacian(g, A)</code></td><td><code>laplaciano(g, A)</code></td>
+      <td>g<sup>ik</sup>∇<sub>i</sub>∇<sub>k</sub>A, component by
+      component.</td></tr>
+  <tr><td><code>h = induced(g, X^1, …)</code></td><td><code>h = induzida(g, X^1, …)</code></td>
+      <td>The induced metric — the pull-back of g by the parametrization —,
+      in the coordinates declared last; h is a metric like any other. Without
+      new coordinates, refuses.</td></tr>
+  <tr><td><code>restrict(K, h)</code></td><td><code>restringir(K, h)</code></td>
+      <td>A field of the outer space, restricted to the submanifold of h and
+      registered under the same name. A field with a normal component,
+      refuses.</td></tr>
+
+  <tr class="grupo"><th colspan="3">Forms in a chart</th></tr>
+  <tr><td><code>wedge(\alpha, \beta)</code></td><td><code>cunha(\alpha, \beta)</code></td>
+      <td>α∧β, in a chart: <code>\alpha = form(x\,dy)</code>. With a name on
+      the left, <code>P = wedge(\alpha, \beta)</code>, the result becomes a
+      named form — this also holds for star, exterior, interior and lie.</td></tr>
+  <tr><td><code>star(\alpha, g)</code></td><td><code>estrela(\alpha, g)</code></td>
+      <td>The Hodge dual by the metric; <code>star(1, g)</code> is the volume
+      element.</td></tr>
+  <tr><td><code>exterior(\alpha)</code></td><td><code>exterior(\alpha)</code></td>
+      <td>dα.</td></tr>
+  <tr><td><code>interior(X, \alpha)</code></td><td><code>interior(X, \alpha)</code></td>
+      <td>ι<sub>X</sub>α, with X a field.</td></tr>
+  <tr><td><code>lie(X, \alpha)</code></td><td><code>lie(X, \alpha)</code></td>
+      <td>ℒ<sub>X</sub>α.</td></tr>
+  <tr><td><code>equal(\alpha, \beta)</code></td><td><code>iguais(\alpha, \beta)</code></td>
+      <td><code>True</code>, or the difference. Takes 0:
+      <code>equal(E, 0)</code>.</td></tr>
+  <tr><td><code>ortonormal(\alpha, g)</code></td><td><code>ortonormal(\alpha, g)</code></td>
+      <td>α in the orthonormal cobasis σ<sup>i</sup> = √|g<sub>ii</sub>|
+      dx<sup>i</sup>.</td></tr>
+</table>
+
 <h3>solve</h3>
 
 <p>A single verb; the object decides the computation. A differential equation goes to the
