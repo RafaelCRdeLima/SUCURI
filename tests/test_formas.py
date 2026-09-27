@@ -181,3 +181,19 @@ def test_sem_hodge_declarado_star_nao_e_operador():
     c = Caderno()
     c.executar(r"\omega = forma(1)")
     assert "⋆" not in (c.executar(r"\star \omega").to_dict().get("sympy") or "")
+
+
+def test_iota_com_vetor_nao_declarado_recusa():
+    """ι_Z ω com ω forma e Z não declarado: recusa, como ℒ_Z — e não o produto
+    calado de um símbolo ι_Z por ω. Antes de forma nenhuma, ι_k continua símbolo."""
+    c = Caderno()
+    c.executar(r"\omega = forma(1)")
+    assert "não foi declarado" in c.executar(r"\iota_Z \omega = 0").to_dict()["erro"]
+    assert not c.executar(r"\iota_k x = 0").to_dict().get("erro")
+
+
+def test_potencia_de_forma_no_simplificar_e_erro_da_celula():
+    c = Caderno()
+    for f in ("i, j = índices(3)", r"\epsilon = levi-civita(símbolo)", r"\epsilon^{ijk}\epsilon_{ijk}"):
+        c.executar(f)
+    assert "potência de forma" in c.executar("simplificar(eq1)").to_dict()["erro"]

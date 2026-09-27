@@ -132,6 +132,17 @@ PALAVRAS = {
     "integral": "integral", "número": "number", "símbolo": "symbol",
     "substituição": "substitution", "normalização": "normalization",
     "somando": "summing", "usou": "used", "contraídos": "contracted", "resultado": "result",
+    # rótulos das tabelas dos módulos
+    "ordem": "order", "espécie": "kind", "tipo": "type", "conferência": "check",
+    "ordinária": "ordinary", "parcial": "partial", "estabelecida": "established",
+    "padrão": "pattern", "candidata": "candidate",
+    "constante": "constant", "motivo": "reason", "caso": "case", "ponto": "point",
+    "falha": "fails", "satisfeita": "satisfied", "situação": "status",
+    "expoentes": "exponents", "separação de variáveis": "separation of variables",
+    "candidata verificada": "candidate verified", "sem solução encontrada": "no solution found",
+    "solução não confirmada": "solution not confirmed", "não deu para conferir": "could not check",
+    "condições necessárias de Kovacic": "Kovacic necessary conditions",
+    "nenhuma": "none", "nenhum": "none",
     "coordenadas": "coordinates", "é de Killing": "is Killing",
     "vezes": "times",
 }
@@ -189,11 +200,12 @@ def traduzir_resposta(obj, idioma="en", chave=None):
         return obj
     if isinstance(obj, dict):
         return {k: traduzir_resposta(v, idioma, k) for k, v in obj.items()}
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple)):
         if chave == "linhas":
             # [rótulo, sympy, latex]: só o rótulo é prosa; ["usou", texto] é prosa
+            # (as linhas chegam como lista ou como tupla: as dos módulos são tuplas)
             return [[traduzir(c, idioma) if isinstance(c, str) and (i == 0 or len(linha) == 2)
-                     else c for i, c in enumerate(linha)] if isinstance(linha, list)
+                     else c for i, c in enumerate(linha)] if isinstance(linha, (list, tuple))
                     else traduzir_resposta(linha, idioma) for linha in obj]
         return [traduzir_resposta(v, idioma, chave) for v in obj]
     if isinstance(obj, str) and chave in PROSA:

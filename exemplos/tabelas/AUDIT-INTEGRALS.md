@@ -51,7 +51,7 @@ a failure of the verifier, not of the reading.
 ### 1. `\left|x\right|` — the same bar, written the way everybody writes it
 
 ```python
->>> parse_latex(r"\ln|x|")              log(Abs(x))
+>>> parse_latex(r"\ln|x|")              log(Abs(x), E)
 >>> parse_latex(r"\ln\left|x\right|")   LaTeXParsingError
 ```
 
@@ -155,8 +155,11 @@ the Gaussians of the entire table.
 
 ```python
 >>> parse_latex(r"\cos ax\, e^{bx}")
-cos(a*x*exp(b*x))
+cos(a*(e**(b*x)*x))
 ```
+
+(That is SymPy's raw output, with `e` still a symbol; `exp(b*x)` appears only after
+Sucuri applies the Euler convention.)
 
 The table means `cos(ax)·e^{bx}`; the parser gave the whole product to the cosine as its
 argument. And here it is not just a parser defect — **it is a genuine ambiguity**, of the
@@ -183,7 +186,10 @@ from this round. The entry closes.
 
 - **`\operatorname{arsinh}` and family.** Still refused, for the same reason as in the
   previous round: translating needs the marker mechanism, not a text
-  rewrite. Here it weighs more, because the table uses `\sgn` all the time.
+  rewrite.
+- **`\sgn`.** The six entries that use it are refused with a question (6 of the 17
+  refusals): `\sgn(` could be application or product, because the parser does not
+  know `\sgn` as a function.
 - **`\frac{d}{dx}` as an operator** is still not a Sucuri site.
 - **`\begin{cases}`.** Several entries in the table are definitions by cases. The
   parser does not read them, and the refusal is honest, but a serious table of integrals

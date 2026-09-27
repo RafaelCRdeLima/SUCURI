@@ -48,6 +48,9 @@ the decision, and the ambiguity does not come back.
 
 It is the same principle as KORVIN's provenance layer, applied to the input
 instead of the criterion: nothing concludes from what has not been established.
+(KORVIN is a separate program, for criteria on differential equations; it is not
+on PyPI and not a dependency — the adapter `sucuri/modules/korvin.py` activates
+only if it is installed.)
 
 ## The three layers
 
@@ -56,7 +59,7 @@ instead of the criterion: nothing concludes from what has not been established.
             ↕
     semantic tree  ←— the truth; the annotations live here
             ↕
-    SymPy (engine)  +  domain modules (KORVIN, ODEROM, ...)
+    SymPy (engine)  +  domain modules (resolver, KORVIN, ...)
 ```
 
 The view is disposable; the tree is not. Editing the view is editing the tree.
@@ -86,6 +89,9 @@ test of a notation reader.
 python exemplos/tabelas/derivadas.py
 python exemplos/tabelas/integrais.py
 ```
+
+The scripts print their summaries in Portuguese (`provada`, `LIDA ERRADO`,
+`não lida`, …).
 
 A table of derivatives is proved by differentiating; a table of integrals is proved
 **in reverse**, differentiating the right-hand side and comparing it with the
@@ -137,10 +143,15 @@ For the **partial derivative**, yes, and without declaring anything: each site
 carries its own variable, written out.
 
 ```python
-doc.read(r"\partial_t u = k \partial_x u")
-doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}")
+from sucuri.document import Document
+doc = Document()
+doc.read(r"\partial_t u = k \partial_x u").to_sympy()
+# Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), x))
+doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}").to_sympy()
 # Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), (x, 2)))
 ```
+
+`read` returns an `Expression`; `.to_sympy()` is the SymPy object.
 
 The `u` is **a single one**, a function of both. Before, each site promoted the symbol
 to its own function, and the same `u` came out as `u(t)` on one side and `u(x)` on
@@ -156,7 +167,7 @@ incomplete, or the ∂ was a d.
 ```
 u = u(x)
 \frac{\partial u}{\partial x} = A u
-   →  d/dx u(x) = A(t) u(x)      the reading is correct
+   →  d/dx u(x) = A u(x)         the reading is correct
    →  note: u was declared a function of x only, and for a function of one
       variable ∂u/∂x is du/dx — the same object.
 ```
@@ -280,8 +291,8 @@ connection: ∇g = 0 and zero torsion. With it, ∇ε = 0 when ε is the tensor.
 Without the declaration, none of this is assumed. ∂δ = ∇δ = 0 always holds.
 
 The Riemann comes **from the definition you write**. Sign and slot order vary
-from book to book: Carroll and MTW write R^ρ{}_{σμν}, Wald writes
-R_{μνσ}{}^ρ, and some flip the sign. `R = riemann(eq1)` reads the identity and
+from book to book: Carroll and MTW write `R^ρ{}_{σμν}`, Wald writes
+`R_{μνσ}{}^ρ`, and some flip the sign. `R = riemann(eq1)` reads the identity and
 extracts from it the sign and where each slot goes. From then on, `simplify`
 replaces every ∇∇ commutator with curvature, one term per index: the upper index
 with one sign, the lower with the other. A lone ∇∇T comes out as it went in. With
@@ -357,13 +368,21 @@ d dimensions" come out with simplified coefficients. What needs a number —
 ### prove with indices
 
 ```
+a, b = indices
+T = tensor(2, 0, symmetric)
+X = tensor(0, 1)
+
 \nabla_a T^{ab} = 0                          eq1
 \nabla_a X_b + \nabla_b X_a = 0              eq2
 \nabla_a (T^{ab} X_b) = 0                    eq3
 prove(eq3, eq1, eq2)
     eq1 [b→L_1] × X(-L_1)
-    1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)
+    1/2 · eq2 [a→L_0, b→L_1] × T(L_0, L_1)
+    summing   ∎
 ```
+
+The symmetry of T is what closes it: with `T = tensor(2, 0)` the same call finds
+no combination.
 
 The same verb, and the same idea as without indices: the proof is a linear
 combination of relations drawn from the hypotheses, checked again before the ∎.
@@ -373,10 +392,10 @@ with a term of these forms, modulo the declared symmetries, and from that gets t
 index relabeling and the factor; the new terms become targets, for a few rounds,
 going deeper in ∇ only when needed.
 
-With `\nabla = levi-civita` and the Riemann declared, R^ρ{}_{[σμν]} = 0 — the
+With `\nabla = levi-civita` and the Riemann declared, `R^ρ{}_{[σμν]} = 0` — the
 first Bianchi identity, a theorem of zero torsion — enters without being a
 hypothesis, and the certificate says when it was used. This way one gets the
-conservation of T^{ab}X_b with X Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, the
+conservation of `T^{ab}X_b` with X Killing, `∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ`, the
 contracted Bianchi from the second Bianchi identity, and |∇φ|² + R constant when
 ∇∇φ = Ric (with the contracted Bianchi as a lemma). Each has a false twin that
 does not go through.
@@ -385,7 +404,7 @@ does not go through.
 
 ```
 \mu, \nu, \rho, \sigma = indices(4)
-independent(R)                       20      the Riemann, with Bianchi
+independent(R)                       20      the Riemann, with Bianchi (see below)
 independent(C, eq1, eq2)             10      the Weyl: also cyclic and traceless
 in_components(eq3)                   True    in indices(2): R_{μν} = ½ R g_{μν}
 linearize(eq2, h)                    True    g = η + εh, to order ε
@@ -399,6 +418,11 @@ those properties in that dimension: that is how the Weyl vanishes in d = 2, 3.
 The metric of the count is Euclidean; the dimension of the solution space does
 not depend on the signature.
 
+The 20 needs the first Bianchi identity, and that needs `\nabla = levi-civita`,
+`g = metric` and the Riemann declared from its definition, `R = riemann(eq1)`.
+With `R = tensor(0,4,riemann)` only the slot symmetries enter, and the count is
+21.
+
 `in_components(eq)` checks an identity with the most general tensor the
 declarations allow (the Riemann with its symmetries and Bianchi) and an arbitrary
 symmetric metric, component by component. If it holds for the most general, it
@@ -410,7 +434,9 @@ at order ε. η keeps the metric's name, and it is η that raises and lowers the
 indices of h.
 
 `x = coordinates`, with no arguments, are the coordinates with an index:
-∂_j x^i = δ^i_j, and ∇x is refused — x^i is not a vector field.
+`\partial_j x^i` simplifies to `δ^i_j` once `\delta = kronecker` (or the metric)
+is declared — without either, `simplify` says so. `\nabla_\nu x^\mu` is read,
+but `simplify` refuses it: x^i is not a vector field, write it with ∂.
 
 ### The determinant, and the Cartesian chart
 
@@ -543,10 +569,12 @@ In both cases, ε has as many indices as the dimension and is totally
 antisymmetric.
 
 Contracting two ε needs the signature, and the signature is declared with the
-signs:
+signs; the result is written with δ, so δ must be declared too:
 
 ```
 g = metric(-,+,+,+)
+\delta = kronecker
+\epsilon = levi-civita(tensor)
 \epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}     simplify →  −24
 \epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}     simplify →  −6 δ^σ_α
 \epsilon^{ijk} \epsilon_{imn}                  simplify →  δ^j_m δ^k_n − δ^j_n δ^k_m   (Euclidean, 3D)
@@ -559,9 +587,11 @@ because it is ±1 in both positions and the metric does not enter. The tensor wi
 no declared signature stays as it is, because the sign is unknown.
 
 `lorentzian` alone is refused: (−,+,+,+) and (+,−,−,−) are both in use, and εε
-and g(U,U) change sign between them. `riemannian` and `euclidean` mean all +. The
-signature must match the dimension of the indices, and, declared before them,
-fixes it.
+and g(U,U) change sign between them. `riemannian` and `euclidean` mean all +. A
+signature declared after indices with a dimension must match it:
+`i, j = indices(3)` then `g = metric(-,+,+,+)` is refused. Declared before, it
+gives its dimension to indices declared without one — `\mu, \nu = indices` are
+then of dimension 4 —, while `indices(3)` states its own and is accepted.
 
 ### The connection without indices: ∇_U X, [U,X] and R(U,X)W
 
@@ -754,7 +784,7 @@ relation between vectors carried into a relation between scalars.
 
 On its own, the engine knows that g is linear over functions in each slot and
 symmetric. Symmetry is not a book convention, it is what is meant by a metric. It
-also knows that the bracket acts on a function as [A,B](f) = A(B(f)) − B(A(f)),
+also knows that the bracket acts on a function as `[A,B](f) = A(B(f)) − B(A(f))`,
 because that is the definition of the bracket. Compatibility does not enter on
 its own: it is what sets Levi-Civita apart from an arbitrary connection, and it
 comes as a hypothesis, with ∀ or without.
@@ -762,7 +792,7 @@ comes as a hypothesis, with ∀ or without.
 Limits: only linear equalities, with scalar coefficients. Proofs that need an
 idea, and not just chaining hypotheses, do not come out. One example is
 g(R(U,X)Y, W) = −g(Y, R(U,X)W): that proof needs to introduce h = g(Y,W) and
-compare [U,X](h) with U(X(h)) − X(U(h)). None of that appears in the statement,
+compare `[U,X](h)` with `U(X(h)) − X(U(h))`. None of that appears in the statement,
 and the search only instantiates what appears.
 
 ### From one notation to the other
@@ -900,7 +930,7 @@ x = coordinates(t, r, \theta, \phi)
 g = metric(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)
 
 christoffel(g)  →  13 nonzero components, Γ^t_{tr} = M/((-2M + r)r), …
-ricci(g)        →  0 nonzero components
+ricci(g)        →  result: all components are zero
 scalar(g)       →  0
 ```
 
@@ -908,9 +938,18 @@ All of Schwarzschild, and the vanishing Ricci that is the sanity check of all
 relativity. The computation is `sympy.diffgeom`'s; what was missing was **stating the
 metric in LaTeX**.
 
-It goes in as a **diagonal** because the parser does not read matrices (`\begin{pmatrix}`
-raises `LaTeXParsingError`) and because that is how textbooks give almost every
-metric that matters. Kerr, with its cross term *dt dφ*, does not fit yet.
+It goes in as a **diagonal**, because that is how textbooks give almost every
+metric that matters, or as a **line element**, which takes cross terms:
+
+```
+x = coordinates(t, r, \theta, \phi)
+g = metric(ds^2 = -dt^2 + 2 a\, dt\, d\phi + dr^2 + r^2 d\theta^2 + r^2 \sin^2(\theta) d\phi^2)
+
+christoffel(g)  →  13 nonzero components, Γ^t_{rφ} = ar sin²θ/(a² + r² sin²θ), …
+```
+
+A matrix is not: `metric(\begin{pmatrix}…)` is refused ("A LaTeX matrix is not
+read").
 
 With declared components, `evaluate` carries the notation all the way to numbers:
 
@@ -923,8 +962,11 @@ evaluate(eq1)  →  A_{t} = A__t·(2M − r)/r        A_{\theta} = A__theta·r²
 ```
 
 Nobody declared the components of A, so they come in as names, in SymPy's
-convention (`A__t` is A^t), which goes back into the program without turning into a power.
-What comes off the screen must be able to go back in without changing meaning.
+convention (`A__t` is A^t). What round-trips is precise: the SymPy name goes back into
+SymPy — the exported script, the SymPy output — as that symbol, not a power; and the
+labels of the last table (`A_{t}`, `\Gamma^{r}_{tt}`) go back into the notebook as
+verb targets. The typeset `A^{t}`, typed back into a cell, is read as A to the power t:
+that is what the notation says without a declaration.
 
 `contract` gives the **structure**; `evaluate` gives the **value**. They are two different
 requests, and the program keeps them apart.
@@ -932,7 +974,7 @@ requests, and the program keeps them apart.
 The printed label is a valid verb target (`evaluate(A_{t})`, `latex(\Gamma^{r}_{tt})`)
 without requiring the double braces the screen uses, because braces are TeX typography,
 not the object's identity. A **zero** component is left out of the table, and still
-answers when asked: hiding the 55 zeros is showing the nine that
+answers when asked: hiding the 51 zeros is showing the 13 that
 matter, but saying "I don't know it" to someone who asks for one of them would be lying.
 
 What comes back are **components**, not the tensor: changing chart changes all of
@@ -948,7 +990,8 @@ distance, diameter, whatever.
 
 The site is still **located**, because SymPy's parser degrades
 `\frac{\partial^2 u}{\partial x^2}` into `(partial**2*u)/(partial*x**2)` and
-someone has to rewrite it. What changes is that nobody needs to be asked.
+someone has to rewrite it. What changes is that nobody needs to be asked. That is
+why `\partial_p H` appears in the table below: it is located, and never asked.
 
 A question that is not a question spends the credibility of the ones that are; the same reason
 `\arctan(` does not open a juxtaposition site.
@@ -977,24 +1020,34 @@ doc.read(r"\dot{q} = \partial_p H")     # d/dt on one side, d/dp on the other
 
 `Expression.tree()` returns what the program understood, node by node, and every node
 born from an ambiguous site carries **how** that site was resolved. That is
-what lets the interface paint in amber whatever came from a convention:
+what lets the interface paint in amber whatever came from a convention.
+`exemplos/arvore.py` reads Kovacic's Riccati equation,
+`\varphi'' + 3\varphi\varphi' + \varphi^3 = 4r\varphi + 2r'`, with primes as
+derivatives by convention and `r'` annotated by hand. The Python API prints the
+tree in Portuguese (the interface shows it in the chosen language):
 
 ```
-equality
-  sum
-    power
-      function varphi applied to (x)
-    product
-      number 3
-      derivative of order 1 of varphi with respect to x  [inferred]  <- check
-      function varphi applied to (x)
-    derivative of order 2 of varphi with respect to x    [inferred]  <- check
-  sum
-    product
-      number 2
-      derivative of order 1 of r with respect to x       [explicit]
+igualdade
+  soma
+    potência
+      função varphi aplicada a (x)
+        símbolo x
+      número 3
+    produto
+      número 3
+      derivada de ordem 1 de varphi em x  [inferida]  <- conferir
+      função varphi aplicada a (x)
+        símbolo x
+    derivada de ordem 2 de varphi em x  [inferida]  <- conferir
+  soma
+    produto
+      número 2
+      derivada de ordem 1 de r em x  [explícita]
     ...
 ```
+
+Two derivatives came from the convention and are marked for checking (*conferir*,
+"check"); the third was annotated site by site (*explícita*, "explicit").
 
 Derivatives are leaves in the user's reading: the reader wants to see "second derivative
 of φ", not its internal tree. `to_dict()` serializes for the web interface.
@@ -1007,6 +1060,7 @@ import sucuri
 # one-off case: no convention, it REFUSES, which is the default
 e = sucuri.parse(r"\varphi'' + \varphi' = r")
 e.questions()                      # the questions, instead of a guess
+e.to_sympy()                       # raises Unresolved, listing the pending sites
 
 # with the convention declared
 e = sucuri.parse(r"\varphi'' + \varphi' = r",
@@ -1033,6 +1087,11 @@ p = provar(eq(r"\nabla_U \nabla_U X = R(U,X)U"),
 linhas(p)                          # the steps: label, text, LaTeX
 ```
 
+The Python API speaks Portuguese: `e.questions()`, the `Unresolved` message and
+the tree come out as `derivative = derivada de ordem 2 de varphi`,
+`2 sítio(s) ambíguo(s) sem anotação`, and so on. The English translation is the
+interface's.
+
 The full example, with the refusals and the sign flip, is in
 `exemplos/desvio_geodesico.py`, and the suite runs it.
 
@@ -1047,6 +1106,16 @@ examples nobody runs rots, and rots silently, which is the failure mode this
 project hunts. When an example breaks, either the program changed and the manual
 lies, or the manual is right and the program regressed; both deserve to stop the
 suite.
+
+## Installation
+
+Python ≥ 3.10. From the repository:
+
+```bash
+pip install .                 # or, to run the tests:  pip install -e ".[dev]"
+python -m sucuri.interface    # or just:  sucuri
+pytest                        # the suite, manual examples included
+```
 
 ## The interface
 
@@ -1080,7 +1149,8 @@ What the page shows, left to right:
   reaches the page marked as not presentable.
 
 The interface decides nothing mathematical. Between it and the engine passes JSON
-(`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), and the only two
+(`/api/ler`, `/api/anotar`, `/api/avaliar`, `/api/modulos`, `/api/operar`,
+`/api/caderno/executar`, `/api/caderno/refazer`, `/api/caderno/reiniciar`), and the only two
 decisions it carries are the user's: convention and annotation.
 
 ## The notebook
@@ -1093,6 +1163,7 @@ One equation per page is enough to inspect notation; work is writing one
 thing, looking at it, writing another that uses the first.
 
 ```
+        f = f(x)                               →  from here on, f is a function of x
         f^{\prime} = x^2          Shift+Enter   →  eq1,  df/dx = x²
         solve(eq1)                             →  f(x) = C₁ + x³/3
                                                   check: remainder 0
@@ -1141,9 +1212,14 @@ u = u(t,x)
 c = symbol
 \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
 
-solve(eq1)         →  no solution found: pdsolve does not solve it
-separate(eq1)      →  T''/T = k  and  c²X''/X = k, both solved
-check(eq1, eq2)    →  u = F(x−ct) + G(x+ct): remainder 0
+solve(eq1)         →  no solution found
+                      NotImplementedError: psolve: Cannot solve …
+separate(eq1)      →  eq2   T'' = k T,   eq3   c² X'' = k X,   both solved
+
+F = F(x)
+G = G(x)
+u = F(x - c t) + G(x + c t)                                          eq4
+check(eq1, eq4)    →  candidate verified: substituted into the equation: remainder 0
 ```
 
 `pdsolve` does not solve the wave equation, and it is only one of SymPy's paths.
@@ -1155,7 +1231,7 @@ What a computation **produces** gets a name, and that is what makes the notebook
 ```
 separate(eq1)    →  eq2   T″(t) = k T(t)
                     eq3   c² X″(x) = k X(x)
-solve(eq2)       →  eq4   T(t) = C₁e^(−√k t) + C₂e^(√k t)
+solve(eq2)       →  eq5   T(t) = C₁e^(−√k t) + C₂e^(√k t)     (after the block above)
 ```
 
 An operation that returns unnamed equations returns dead ends: whoever reads two ODEs in a
@@ -1165,8 +1241,9 @@ table has no way to ask for the next computation on them except by retyping.
 product, and the assumption is a restriction. What comes out are the modes; the general solution
 is their superposition, and separation does not prove it is complete.
 
-The verbs are few and closed **on purpose**: `resolver`/`solve`,
-`avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
+The verbs are a fixed, closed list **on purpose** — a few dozen today, from
+`solve`, `evaluate`, `simplify`, `export` and `latex` to `prove`, `contract`,
+`separate`, `check` and `christoffel`; the manual lists them all.
 If Python could be written here, the bridge this program is would stop being
 mandatory: whoever writes `sympy.solve(...)` talks straight to SymPy, with no
 sites, no declared convention, no provenance, and what is left is a Jupyter with
@@ -1180,15 +1257,15 @@ extra steps.
 | `u(t,x)` | `pdsolve`, checked with `checkpdesol` |
 | no derivative | `solve` |
 
-`∂u/∂t = A(t)u` comes out as `F(x)·exp(∫A dt)`: in a PDE, the "constant" of
+`∂u/∂t = A u`, with `u = u(t,x)` and `A = A(t)` declared, comes out as
+`F(x)·exp(∫A(t) dt)`: in a PDE, the "constant" of
 integration is an arbitrary function of the other variable. `pdsolve` solves far
 less than `dsolve` (it does not solve the wave equation), but solving
 little is not solving nothing, and whoever wrote the equation decides whether the little
 is enough.
 
-Before: a differential equation goes
-to the module that checks the solution by substitution, an algebraic one goes to
-`solve`. Forcing the user to choose between `solve` and `dsolve` is asking them to
+A differential equation goes to the module that checks the solution by
+substitution; an algebraic one goes to `solve`. Forcing the user to choose between `solve` and `dsolve` is asking them to
 classify their own equation for the program; backwards.
 
 Conventions apply to the whole notebook, and changing one **redoes everything**: what
@@ -1244,12 +1321,24 @@ certificates. It is the difference between hosting calculators and hosting areas
 mathematics.
 
 ```python
+import sucuri
+import sucuri.modules
+
+doc = sucuri.Document(independent_variable='x').primes_are_derivatives()
 e = doc.read(r"y'' = x y")            # Airy
-korvin = sucuri.modules.load("korvin")
+resolver = sucuri.modules.load("resolver")
+resolver.operations["resolver"].run(e)
+# solução  [estabelecida]
+#   y{\left(x \right)} = C_{1} Ai\left(x\right) + C_{2} Bi\left(x\right) …
+korvin = sucuri.modules.load("korvin")          # only with KORVIN installed
 korvin.operations["não-integrabilidade"].run(e)
 ```
 
-Two modules ship with Sucuri, and they answer different questions:
+As the rest of the Python API, the modules answer in Portuguese.
+
+`resolver` ships with Sucuri; `korvin` is an adapter, and needs the external
+KORVIN package (without it, `load("korvin")` raises `ModuleNotFoundError`). The
+two answer different questions:
 
 | | question |
 |---|---|
@@ -1303,3 +1392,11 @@ code comes out through the tail block.
 
 Engine and interface under construction. See `sucuri/`, `sucuri/interface/` and the suite
 in `tests/`.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+## Citing
+
+If you use Sucuri, cite it as described in [CITATION.cff](CITATION.cff). A DOI will be added.

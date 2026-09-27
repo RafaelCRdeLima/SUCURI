@@ -33,7 +33,7 @@ tangent — without it a visible step appears at the end.
 |---|---|
 | `marca/sucuri-marca-principal.svg` | default; Sucuri green on Mata |
 | `marca/sucuri-marca-invertida.svg` | printed documents, light backgrounds |
-| `marca/sucuri-marca-ambar.svg` | promotional material, tutorial cover |
+| `marca/sucuri-marca-ambar.svg` | promotional material, exercise book (tutorial / apostila) cover |
 | `marca/sucuri-marca-monocromatica.svg` | single color; inherits `currentColor` |
 | `marca/sucuri-simbolo.svg` | no tile, transparent background, `currentColor` |
 | `marca/sucuri-lockup-horizontal.svg` | site header, slide footer |
@@ -122,10 +122,11 @@ LaTeX input, recognized tree, parse states, SymPy output.
 ## Structure
 
 ```
-sucuri-identidade/
+identidade/
 ├── IDENTIDADE.md
+├── IDENTITY.md
 ├── marca/          symbol, variants, lockups, contact sheet
-├── launcher/       favicon, PNGs from 48 to 1024, maskable
+├── launcher/       favicon, PNGs from 48 to 1024, maskable (PNG + sucuri-maskable.svg)
 ├── tokens/         sucuri-tokens.css
 └── mockup/         mockup.html
 ```

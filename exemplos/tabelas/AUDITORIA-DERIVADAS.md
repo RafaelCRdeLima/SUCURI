@@ -4,8 +4,8 @@
 
 **Fonte.** `en.wikipedia.org/wiki/Differentiation_rules`, via a API de
 wikitexto — o LaTeX como o autor escreveu, não o HTML renderizado, que já é
-interpretação. 66 alegações, extraídas por `baixar.py` e gravadas em
-`tabela.json`. Auditadas por `auditoria.py`.
+interpretação. 66 alegações, extraídas por `derivadas.py --baixar` e gravadas em
+`derivadas.json`. Auditadas por `derivadas.py`.
 
 A tabela é externa de propósito. Tabela escrita por quem escreve o leitor
 testa o leitor contra si mesmo; foi escrita por outra gente, para outro fim, e
@@ -105,8 +105,9 @@ também é erro, e diz de quem é a culpa.
 
 ### A forma de operador, `\frac{d}{dx}`, não é sítio do Sucuri
 
-Este é o achado mais desconfortável: **as 23 entradas provadas passaram por uma
-leitura que o Sucuri nunca declarou.** `\frac{d}{dx}\sin x` funciona porque a
+Este é o achado mais desconfortável: **das 27 entradas provadas, as 20 escritas
+com `\frac{d}{dx}` passaram por uma leitura que o Sucuri nunca declarou** (as outras
+7 usam linhas). `\frac{d}{dx}\sin x` funciona porque a
 gramática do SymPy tem uma regra para essa forma — não porque alguém aqui a
 tenha reconhecido. O detector de Leibniz exige função no numerador
 (`\frac{df}{dx}`) e não vê `\frac{d}{dx}`.
@@ -154,16 +155,17 @@ aparece na saída. Seria preciso conferir a aridade contra o que foi escrito.
 `\frac{d}{dx}W(x)` pede a relação que define a função W. Nenhuma das duas é
 legível fora da página, e nenhuma é defeito do leitor.
 
-## As seis recusas, que estão certas
+## As quatro recusas, que estão certas
 
-O Sucuri perguntou em vez de adivinhar em seis entradas, e as seis perguntas
+O Sucuri perguntou em vez de adivinhar em quatro entradas, e as quatro perguntas
 são boas:
 
-- `\frac{d(fg)}{dx}` — `d(` é `d` aplicado a `fg`, ou `d` multiplicando?
-- `\frac{d}{dx}(x^x)` — `x(` é aplicação ou produto?
-- `\frac{\partial \arctan(y,x)}{\partial y}` — `\arctan(` aplicado, ou produto?
+- `\frac{d(af+bg)}{dx}` e `\frac{d(fg)}{dx}` — `d(` é `d` aplicado ao parêntese,
+  ou `d` multiplicando-o?
+- `\frac{d\left(\frac{1}{f}\right)}{dx}` — a mesma pergunta para `d\left(`;
+- `\frac{d}{dx}\left(x^x\right) = x^x(1+\ln x)` — `x(` é aplicação ou produto?
 
-Nos três casos a tipografia não decide. É exatamente o caso de uso.
+Nos quatro casos a tipografia não decide. É exatamente o caso de uso.
 
 ## Reproduzir
 

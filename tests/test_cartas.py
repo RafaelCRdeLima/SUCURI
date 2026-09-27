@@ -85,3 +85,10 @@ def test_superficie_de_revolucao_com_funcao():
                r"u = coordenadas(\varpi, \phi)", r"h = induzida(E, f(\varpi), \varpi, \phi)", "escalar(h)")
     assert d["exato"] == ("2*Derivative(f(varpi), varpi)*Derivative(f(varpi), (varpi, 2))"
                           "/(varpi*(Derivative(f(varpi), varpi)**2 + 1)**2)")
+
+
+def test_matriz_em_latex_e_recusada_com_motivo():
+    c = Caderno()
+    c.executar("x = coordenadas(t, r)")
+    d = c.executar(r"g = métrica(\begin{pmatrix} -1 & 0 \\ 0 & 1 \end{pmatrix})").to_dict()
+    assert "Matriz em LaTeX não é lida" in d["erro"]

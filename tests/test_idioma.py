@@ -97,3 +97,13 @@ def test_levi_civita_em_ingles():
     c = Caderno()
     d = c.executar(r"\epsilon = levi-civita(symbol)").to_dict()
     assert not d.get("erro") and "símbolo" in d["texto"]
+
+
+def test_as_tabelas_dos_modulos_em_ingles():
+    """As linhas do resolver chegam como tuplas: também são traduzidas."""
+    c = Caderno()
+    for f in ("f = f(x)", r"f^{\prime} = x^2"):
+        c.executar(f)
+    d = traduzir_resposta(c.executar("solve(eq1)").to_dict(), "en")
+    rotulos = [l[0] for l in d["linhas"]]
+    assert "order" in rotulos and "check" in rotulos and d["proveniencia"] == "established"

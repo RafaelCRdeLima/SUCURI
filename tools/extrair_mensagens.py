@@ -8,7 +8,7 @@ a lista que `sucuri/mensagens_en.py` traduz, e `tests/test_idioma.py` usa
 """
 import ast, json, pathlib, re, sys
 RAIZ = pathlib.Path(__file__).parents[1] / "sucuri"
-PT = re.compile(r"[áàâãéêíóôõúçÁÉÍÓÚÇ]|\b(não|nao|de|do|da|dos|das|com|sem|que|para|pede|declare|declarado|declarada|um|uma|os|as|é|está|tem|há|ou|foi|são|vale|provado|achei|conheço|índice|vetor|campo|forma|métrica|equação|ao|aos|na|nas|nos|em|por|se|mas|já|só|cada|isto|aqui|recebe|derivada|aplicada|multiplicando|sobre|entre|quando|como|mesmo|também|depois|antes|ainda|carta|nome|leitura|qualquer|conexão|linearidade|simetria|solução|componentes|ordem|relação|variável|chamado|chamada)\b", re.I)
+PT = re.compile(r"[áàâãéêíóôõúçÁÉÍÓÚÇ]|\b(não|nao|de|do|da|dos|das|com|sem|que|para|pede|declare|declarado|declarada|um|uma|os|as|é|está|tem|há|ou|foi|são|vale|provado|achei|conheço|índice|vetor|campo|forma|métrica|equação|ao|aos|na|nas|nos|em|por|se|mas|já|só|cada|isto|aqui|recebe|derivada|aplicada|multiplicando|sobre|entre|quando|como|mesmo|também|depois|antes|ainda|carta|nome|leitura|qualquer|conexão|linearidade|simetria|solução|componentes|ordem|relação|variável|chamado|chamada|pela|pelo|pelas|pelos|assinatura|sinal|nem|mais|menos|sempre|nunca|ainda|onde|qual|quais|dela|dele|dessa|desse|esta|este|essa|esse|isso|aquilo|tabela|rótulos|conta|lado|termo|termos|livre|livres|falhou|nenhuma|nenhum|nada|sobrou|faltou|deu)\b|\se\s|^e\s", re.I)
 def molde(no):
     if isinstance(no, ast.Constant) and isinstance(no.value, str):
         return no.value

@@ -33,7 +33,7 @@ traço — sem isso aparece um degrau visível no terminal.
 |---|---|
 | `marca/sucuri-marca-principal.svg` | padrão; verde Sucuri sobre Mata |
 | `marca/sucuri-marca-invertida.svg` | documentos impressos, fundos claros |
-| `marca/sucuri-marca-ambar.svg` | material de divulgação, capa de apostila |
+| `marca/sucuri-marca-ambar.svg` | material de divulgação, capa do caderno de exercícios (tutorial / apostila) |
 | `marca/sucuri-marca-monocromatica.svg` | uma cor só; herda `currentColor` |
 | `marca/sucuri-simbolo.svg` | sem ladrilho, fundo transparente, `currentColor` |
 | `marca/sucuri-lockup-horizontal.svg` | cabeçalho de site, rodapé de slide |
@@ -122,10 +122,11 @@ entrada em LaTeX, árvore reconhecida, estados de parse, saída em SymPy.
 ## Estrutura
 
 ```
-sucuri-identidade/
+identidade/
 ├── IDENTIDADE.md
+├── IDENTITY.md
 ├── marca/          símbolo, variantes, lockups, folha de contato
-├── launcher/       favicon, PNGs de 48 a 1024, maskable
+├── launcher/       favicon, PNGs de 48 a 1024, maskable (PNG + sucuri-maskable.svg)
 ├── tokens/         sucuri-tokens.css
 └── mockup/         mockup.html
 ```

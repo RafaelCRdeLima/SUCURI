@@ -1,0 +1,5 @@
+# O que fica em web/ mas não vai para o ar (wrangler deploy)
+__pycache__
+*.md
+construir.py
+_carregando.html

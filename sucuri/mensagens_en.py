@@ -1092,4 +1092,16 @@ EN = {
         'curvature {0} applied',
     '{0} é uma {1}-forma — um (0,{2})':
         '{0} is a {1}-form — a (0,{2})',
+    '{0}; e {1}':
+        '{0}; and {1}',
+    'argumentos a menos':
+        'too few arguments',
+    '; pela assinatura, {0} {1}, e |{2}| = {3}{4}':
+        '; by the signature, {0} {1}, and |{2}| = {3}{4}',
+    'e = ':
+        'e = ',
+    "'{0}' não é componente que eu saiba ler: a métrica entra pela diagonal, métrica(-1, 1, r^2), ou pelo elemento de linha, métrica(ds^2 = …). Matriz em LaTeX não é lida":
+        "'{0}' is not a component I can read: the metric goes in by its diagonal, metric(-1, 1, r^2), or by the line element, metric(ds^2 = …). A LaTeX matrix is not read",
+    'o solver falhou: {0}':
+        'the solver failed: {0}',
 }

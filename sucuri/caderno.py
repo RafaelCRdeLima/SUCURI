@@ -500,7 +500,16 @@ class Caderno:
             return self._elemento_de_linha(nome, texto)
         componentes = []
         for escrito in self._argumentos(texto):
-            expressao = self.sessao.expressao_de(escrito)
+            try:
+                expressao = self.sessao.expressao_de(escrito)
+                if not expressao.pending:
+                    expressao.to_sympy()            # o parser só roda aqui
+            except Exception:                       # noqa: BLE001 — o parser do SymPy
+                return Celula(None, fonte_metrica(nome, texto), "declaracao", {
+                    "erro": f"'{escrito}' não é componente que eu saiba ler: a métrica "
+                            "entra pela diagonal, métrica(-1, 1, r^2), ou pelo "
+                            "elemento de linha, métrica(ds^2 = …). Matriz em LaTeX "
+                            "não é lida"})
             if expressao.pending:
                 return Celula(None, fonte_metrica(nome, texto), "declaracao",
                               {"erro": f"'{escrito}': "
@@ -1434,7 +1443,10 @@ class Caderno:
             elif self._tem_forma(objeto):
                 from .formas import expressao, normal
                 doc = self.sessao.documento()[0]
-                objeto = expressao(normal(objeto, doc.tensores_com_graus()))
+                try:
+                    objeto = expressao(normal(objeto, doc.tensores_com_graus()))
+                except ValueError as e:         # potência de forma, e o que mais a álgebra recusar
+                    return {"erro": str(e), "alvo": alvo}
             else:
                 objeto = sp.simplify(objeto)
             return {"alvo": alvo, "exato": sp.sstr(objeto),
@@ -1657,7 +1669,8 @@ class Caderno:
             return {"erro": f"'{alvo}' não é expressão tensorial: contrair "
                             f"baixa índice com a métrica, e aqui não há índice",
                     "alvo": alvo}
-        espaco = expressao.document.espaco
+        # o espaço é o da sessão: um resultado de verbo (Pronta) não tem documento
+        espaco = self.sessao.documento()[0].espaco
         try:
             saida = contrair(objeto, espaco)
         except ValueError as e:                 # SemMetrica, e o símbolo ε
