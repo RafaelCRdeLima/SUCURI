@@ -51,7 +51,7 @@ falha do verificador, não da leitura.
 ### 1. `\left|x\right|` — a mesma barra, escrita do jeito que todo mundo escreve
 
 ```python
->>> parse_latex(r"\ln|x|")              log(Abs(x))
+>>> parse_latex(r"\ln|x|")              log(Abs(x), E)
 >>> parse_latex(r"\ln\left|x\right|")   LaTeXParsingError
 ```
 
@@ -155,8 +155,11 @@ gaussianas da tabela inteira.
 
 ```python
 >>> parse_latex(r"\cos ax\, e^{bx}")
-cos(a*x*exp(b*x))
+cos(a*(e**(b*x)*x))
 ```
+
+(Essa é a saída crua do SymPy, com `e` ainda símbolo; `exp(b*x)` só aparece depois
+que o Sucuri aplica a convenção de Euler.)
 
 A tabela quer `cos(ax)·e^{bx}`; o parser deu o produto todo de argumento ao
 cosseno. E aqui não é só defeito do parser — **é ambiguidade de verdade**, do
@@ -183,7 +186,10 @@ desta rodada. A entrada fecha.
 
 - **`\operatorname{arsinh}` e família.** Segue recusada, com a mesma razão da
   rodada anterior: traduzir exige o mecanismo de marcador, não uma reescrita de
-  texto. Aqui pesa mais, porque a tabela usa `\sgn` o tempo todo.
+  texto.
+- **`\sgn`.** As seis entradas que o usam são recusadas com pergunta (6 das 17
+  recusas): `\sgn(` pode ser aplicação ou produto, porque o parser não conhece
+  `\sgn` como função.
 - **`\frac{d}{dx}` como operador** continua não sendo sítio do Sucuri.
 - **`\begin{cases}`.** Várias entradas da tabela são definições por casos. O
   parser não as lê, e a recusa é honesta, mas uma tabela de integrais séria as

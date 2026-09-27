@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use SUCURI, please cite it as below."
+title: "SUCURI: SymPy Unified Compiler for Unambiguous Rendered Input"
+abstract: >-
+  SUCURI reads LaTeX into SymPy without guessing: every ambiguity in the
+  notation is either asked or settled by an explicit declaration. It covers
+  index and index-free notation for differential geometry — connections,
+  curvature, forms, proofs from stated hypotheses and component computations —
+  with a notebook interface in English and Portuguese.
+type: software
+authors:
+  - given-names: "Rafael Camargo Rodrigues"
+    name-particle: "de"
+    family-names: "Lima"
+    orcid: "https://orcid.org/0000-0003-1718-3838"
+    website: "https://rafael-lima.pages.dev/"
+    affiliation: "Departamento de Física, Universidade do Estado de Santa Catarina (UDESC), Joinville, SC, Brazil"
+repository-code: "https://github.com/RafaelCRdeLima/SUCURI"
+license: MIT
+version: "0.1.0"
+date-released: "2026-09-26"
+keywords:
+  - sympy
+  - latex
+  - differential geometry
+  - general relativity
+  - tensor calculus
+  - symbolic computation

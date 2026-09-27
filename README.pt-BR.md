@@ -10,8 +10,9 @@ manipulável — e em que nenhuma ambiguidade é adivinhada.
 > **Dois idiomas.** A interface tem um botão PT/EN no cabeçalho (ou abra
 > `caderno.html?lang=en`), e as mensagens do motor seguem a escolha. Os
 > comandos têm nomes em inglês que valem nos dois idiomas — `g = metric(…)`,
-> `\mu, \nu = indices`, `prove(eq3, eq1)`. O manual em inglês é
-> `manual-en.html`, e a apostila em inglês é `tutorial.html`.
+> `\mu, \nu = indices`, `prove(eq3, eq1)`, `solve(eq1)`, `in_chart(eq2)`.
+> O manual é `manual.html` em português e `manual-en.html` em inglês; a
+> apostila é `apostila.html` em português e `tutorial.html` em inglês.
 
 ## O problema que ele existe para resolver
 
@@ -45,7 +46,10 @@ produzir uma expressão** enquanto algum estiver sem anotação. Resolvido uma v
 decisão, e a ambiguidade não volta.
 
 É o mesmo princípio da camada de proveniência do KORVIN, aplicado à entrada em
-vez do critério: nada conclui a partir do que não foi estabelecido.
+vez do critério: nada conclui a partir do que não foi estabelecido. (O KORVIN é
+um programa à parte, de critérios para equações diferenciais; não está no PyPI
+e não é dependência do Sucuri — o adaptador `sucuri/modules/korvin.py` só se
+ativa se ele estiver instalado.)
 
 ## As três camadas
 
@@ -54,7 +58,7 @@ vez do critério: nada conclui a partir do que não foi estabelecido.
             ↕
     árvore semântica  ←— a verdade; aqui moram as anotações
             ↕
-    SymPy (motor)  +  módulos de domínio (KORVIN, ODEROM, ...)
+    SymPy (motor)  +  módulos de domínio (resolver, KORVIN, ...)
 ```
 
 A vista é descartável; a árvore, não. Editar a vista é editar a árvore.
@@ -84,6 +88,8 @@ um leitor de notação.
 python exemplos/tabelas/derivadas.py
 python exemplos/tabelas/integrais.py
 ```
+
+Os dois scripts imprimem o resumo em português.
 
 Uma tabela de derivadas prova-se derivando; uma de integrais prova-se **ao
 contrário**, derivando o lado direito e comparando com o integrando — a
@@ -135,10 +141,15 @@ Para a **derivada parcial**, sim, e sem declarar nada: cada sítio traz a sua
 variável escrita.
 
 ```python
-doc.read(r"\partial_t u = k \partial_x u")
-doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}")
+from sucuri.document import Document
+doc = Document()
+doc.read(r"\partial_t u = k \partial_x u").to_sympy()
+# Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), x))
+doc.read(r"\frac{\partial u}{\partial t} = k \frac{\partial^2 u}{\partial x^2}").to_sympy()
 # Eq(Derivative(u(t, x), t), k*Derivative(u(t, x), (x, 2)))
 ```
+
+`read` devolve uma `Expression`; `.to_sympy()` dá o objeto do SymPy.
 
 O `u` é **um só**, função das duas. Antes cada sítio promovia o símbolo à sua
 própria função e o mesmo `u` saía como `u(t)` de um lado e `u(x)` do outro —
@@ -154,7 +165,7 @@ desacordo, e nenhuma está errada sozinha: ou a declaração está incompleta, o
 ```
 u = u(x)
 \frac{\partial u}{\partial x} = A u
-   →  d/dx u(x) = A(t) u(x)      a leitura está certa
+   →  d/dx u(x) = A u(x)         a leitura está certa
    →  nota: u foi declarada função de x só, e para função de uma variável
       ∂u/∂x é du/dx — o mesmo objeto.
 ```
@@ -231,22 +242,22 @@ g^{\mu\nu} \partial_\nu \phi      contrair    →  ∂^μ φ
 O parser do SymPy lê `\partial_\mu A` como o símbolo `partial_{mu}` vezes A. A
 derivada com índice não é um fator multiplicando outro, é um objeto próprio, e
 por isso a ponte a recusava. Agora ela existe como uma cabeça com o índice da
-derivada no primeiro slot: ∂_μ A^ν é `d_A(-mu, nu)`, ∇_μ é `D_A`, ∂_μ∂_ν é
+derivada no primeiro slot: `∂_μ A^ν` é `d_A(-mu, nu)`, `∇_μ` é `D_A`, `∂_μ∂_ν` é
 `dd_…`. Com isso, entra na contração, na soma e na canonicalização como
 qualquer tensor, e o LaTeX sai com a derivada na frente: `\partial_{\mu} A^{\nu}`.
 
 O que vale sem hipótese:
 
 - ∂ e ∇ são lineares e seguem Leibniz, também em escalar;
-- derivadas **parciais** comutam, então ∂_μ∂_ν é simétrica nesses slots;
-- num escalar, ∇_μ φ = ∂_μ φ, por definição, em qualquer conexão;
-- a simetria do tensor derivado se mantém: ∂_λ g_{μν} é simétrica em μν.
+- derivadas **parciais** comutam, então `∂_μ∂_ν` é simétrica nesses slots;
+- num escalar, `∇_μ φ = ∂_μ φ`, por definição, em qualquer conexão;
+- a simetria do tensor derivado se mantém: `∂_λ g_{μν}` é simétrica em μν.
 
 O que **não** se supõe: que ∇ comute (é curvatura e torção), e que ∇g = 0 (é
 Levi-Civita, não uma conexão qualquer).
 
 A derivada age no fator imediatamente à direita: `\partial_\mu A^\nu B_\nu` é
-(∂_μ A^ν)B_ν, como em qualquer livro. Um produto pede parênteses. Há três
+`(∂_μ A^ν) B_ν`, como em qualquer livro. Um produto pede parênteses. Há três
 recusas:
 
 - `\partial_{\mu\nu}` sem dizer a ordem;
@@ -275,8 +286,8 @@ qualquer: ∇g = 0 e torção nula. Com ela, ∇ε = 0 quando ε é o tensor. Se
 declaração, nada disso se supõe. ∂δ = ∇δ = 0 vale sempre.
 
 O Riemann vem **da definição que você escreve**. Sinal e ordem dos slots variam
-de livro para livro: Carroll e MTW escrevem R^ρ{}_{σμν}, o Wald escreve
-R_{μνσ}{}^ρ, e há quem troque o sinal. `R = riemann(eq1)` lê a identidade e
+de livro para livro: Carroll e MTW escrevem `R^ρ{}_{σμν}`, o Wald escreve
+`R_{μνσ}{}^ρ`, e há quem troque o sinal. `R = riemann(eq1)` lê a identidade e
 extrai dela o sinal e onde fica cada slot. Daí em diante, `simplificar` troca
 todo comutador ∇∇ por curvatura, com um termo por índice: o índice de cima com
 um sinal, o de baixo com o outro. Um ∇∇T sozinho sai como entrou. Com a
@@ -311,8 +322,8 @@ por índice: + no de cima, − no de baixo. `expandir(eq, g)` escreve ainda cada
 com `\nabla = levi-civita` declarada; com ela, Γ é simétrico nos slots de
 baixo. Numa equação, a resposta é `True` quando os lados coincidem.
 
-∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ} não é hipótese: é o que "inversa" quer
-dizer, e o `simplificar` a aplica sempre que há métrica declarada; g^μ{}_ν é δ,
+`∂_λ g^{μν} = −g^{μα}g^{νβ}∂_λ g_{αβ}` não é hipótese: é o que "inversa" quer
+dizer, e o `simplificar` a aplica sempre que há métrica declarada; `g^μ{}_ν` é δ,
 e sua derivada é zero.
 
 Com o nome à esquerda, `christoffel(eq1)` é declaração; o verbo
@@ -332,10 +343,10 @@ R_{\mu\nu} - R_{\nu\mu}              simplificar →  0
 
 A mesma letra para o Riemann, o Ricci e o escalar, como nos livros: o posto
 distingue. Qual par o Ricci contrai (e com que sinal) varia de livro para
-livro, e `R = ricci(eq)` lê da definição escrita; o escalar é g^{μν}R_{μν}.
+livro, e `R = ricci(eq)` lê da definição escrita; o escalar é `g^{μν}R_{μν}`.
 Por dentro, R com dois índices é outra cabeça, `Ric` — um tensor tem um posto
 só. Ao simplificar, os dois viram contrações do Riemann, a canonização as
-compara, e o que coincide com a definição volta a ser R_{μν} ou R.
+compara, e o que coincide com a definição volta a ser `R_{μν}` ou R.
 
 Com `\nabla = levi-civita` e a métrica declaradas, o Riemann ganha as
 simetrias que são teorema: antissimetria no primeiro par e troca de pares. Daí
@@ -343,20 +354,27 @@ sai a simetria do Ricci. Sem a métrica, só a antissimetria que vem do
 comutador. E a saída é escrita na ordem da convenção — o índice de cima no
 slot de ρ —, e não na que a canonização prefere.
 
-`índices(d)` deixa a dimensão como letra: g^μ{}_μ = d, e as contas "em d
+`índices(d)` deixa a dimensão como letra: `g^μ{}_μ = d`, e as contas "em d
 dimensões" saem com os coeficientes simplificados. O que pede um número —
 ε, a assinatura — recusa.
 
 ### provar com índice
 
 ```
+a, b = índices
+T = tensor(2, 0, simétrico)
+X = tensor(0, 1)
 \nabla_a T^{ab} = 0                          eq1
 \nabla_a X_b + \nabla_b X_a = 0              eq2
 \nabla_a (T^{ab} X_b) = 0                    eq3
 provar(eq3, eq1, eq2)
     eq1 [b→L_1] × X(-L_1)
-    1/2 · eq2 [a→L_0, b→L_1] × T(-L_0, -L_1)
+    1/2 · eq2 [a→L_0, b→L_1] × T(L_0, L_1)
+    somando
 ```
+
+A prova só fecha porque T é simétrico: com `T = tensor(2, 0)` a busca não acha
+a combinação, e diz isso.
 
 O mesmo verbo, e a mesma ideia de sem índice: a prova é uma combinação linear
 de relações tiradas das hipóteses, conferida de novo antes do ∎. De H = 0
@@ -366,10 +384,10 @@ termo dessas formas, módulo as simetrias declaradas, e disso tira a troca de
 índices e o fator; os termos novos viram alvos, algumas rodadas, aprofundando
 em ∇ só quando precisa.
 
-Com `\nabla = levi-civita` e o Riemann declarados, R^ρ{}_{[σμν]} = 0 — a
+Com `\nabla = levi-civita` e o Riemann declarados, `R^ρ{}_{[σμν]} = 0` — a
 primeira identidade de Bianchi, teorema da torção nula — entra sem ser
 hipótese, e o certificado diz quando a usou. Saem assim a conservação de
-T^{ab}X_b com X de Killing, ∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ, a Bianchi contraída a
+`T^{ab}X_b` com X de Killing, `∇_μ∇_νK^ρ = R^ρ{}_{νμσ}K^σ`, a Bianchi contraída a
 partir da segunda identidade de Bianchi, e |∇φ|² + R constante quando
 ∇∇φ = Ric (com a Bianchi contraída como lema). Cada uma tem um par falso que
 não sai.
@@ -385,6 +403,11 @@ linearizar(eq2, h)                   True    g = η + εh, até ordem ε
 x = coordenadas                              ∂_j x^i = δ^i_j
 ```
 
+O 20 do Riemann pede a conexão e a curvatura declaradas como acima —
+`\nabla = levi-civita`, `g = métrica` e `R = riemann(eq1)` —, porque a
+primeira identidade de Bianchi é teorema da torção nula. Com
+`R = tensor(0,4,riemann)`, que diz só as simetrias dos slots, a resposta é 21.
+
 `independentes(T, eq…)` conta: cada componente é uma incógnita, as simetrias
 declaradas as identificam ou zeram, e cada equação dada — linear em T, com g,
 δ, ε — vira uma equação por valor dos índices. Zero quer dizer que só o tensor
@@ -397,12 +420,14 @@ declarações permitem (o Riemann com as suas simetrias e Bianchi) e uma
 métrica simétrica qualquer, componente por componente. Se vale para o mais
 geral, vale para todos.
 
-`linearizar(eq, h)` abre ∇ em Γ e Γ em ∂g, troca g_{ab} por η_{ab} + εh_{ab},
-a inversa por η^{ab} − εh^{ab}, ∂g por ε∂h, e corta em ordem ε. O η fica com o
+`linearizar(eq, h)` abre ∇ em Γ e Γ em ∂g, troca `g_{ab}` por `η_{ab} + εh_{ab}`,
+a inversa por `η^{ab} − εh^{ab}`, ∂g por ε∂h, e corta em ordem ε. O η fica com o
 nome da métrica, e é ele que sobe e desce os índices de h.
 
-`x = coordenadas`, sem argumentos, são as coordenadas com índice: ∂_j x^i =
-δ^i_j, e ∇x é recusado — x^i não é campo vetorial.
+`x = coordenadas`, sem argumentos, são as coordenadas com índice: ao
+simplificar, `∂_j x^i` vira `δ^i_j` — o que pede `\delta = kronecker` (ou a
+métrica) declarada, e sem isso recusa dizendo isso. `\nabla_j x^i` se lê, mas
+`simplificar` o recusa: x^i não é campo vetorial, e ∇ dele não tem sentido.
 
 ### O determinante, e a carta cartesiana
 
@@ -416,18 +441,18 @@ g = det(g)                     g sem índice é det g_{μν}
 
 Os livros escrevem g, sem índice, para o determinante; o Sucuri só lê assim
 com `g = det(g)` declarado (o nome pode ser outro), e sem isso recusa: g sem
-índice, sendo g tensor, é ambíguo. Declarado, ∂_λ g = g g^{μν} ∂_λ g_{μν} — a
+índice, sendo g tensor, é ambíguo. Declarado, `∂_λ g = g g^{μν} ∂_λ g_{μν}` — a
 fórmula de Jacobi — ao simplificar, e o sinal de g vem da assinatura: na
 lorentziana, g < 0 e |g| = −g.
 
-∂ não comuta com levantar índice: ∂_μ(∂^μ φ) é ∂_μ(g^{μν}∂_ν φ), com ∂g. O
+∂ não comuta com levantar índice: `∂_μ(∂^μ φ)` é `∂_μ(g^{μν}∂_ν φ)`, com ∂g. O
 Sucuri deriva cada tensor na valência **declarada** — `tensor(1,0)` é de cima,
 o índice de uma derivada é de baixo — e põe g explícito no resto. Numa carta
 cartesiana ∂g = 0 e a diferença some, mas a carta é declaração:
 `g = métrica(cartesiana)`, ou `g = métrica(-,+,+,+, constante)` para uma carta
 inercial. `métrica(euclidiana)` diz só a assinatura.
 
-A derivada **sem** índice, ∇_U X, é a seção seguinte.
+A derivada **sem** índice, `∇_U X`, é a seção seguinte.
 
 ### Simetria declarada
 
@@ -472,8 +497,8 @@ R(X,X,Y,Z) = 0           provar      →  ∎
 
 Essas simetrias do (0,4) são as mesmas em todos os livros. O que muda entre
 convenções é o sinal geral e a ordem dos índices no (1,3), e nada disso toca
-as trocas de slots. O (1,3), R^a_{bcd}, mistura índices de cima e de baixo e é
-recusado pela regra acima. A identidade cíclica, R_{a[bcd]} = 0, **não** entra:
+as trocas de slots. O (1,3), `R^a_{bcd}`, mistura índices de cima e de baixo e é
+recusado pela regra acima. A identidade cíclica, `R_{a[bcd]} = 0`, **não** entra:
 não é troca de slots, é teorema, e pede torção nula. Ela vem como hipótese.
 
 Nome de várias letras é recusado na declaração: `Rm_{abcd}` em LaTeX é R vezes
@@ -518,8 +543,8 @@ g_{\alpha\mu}\epsilon^{\mu\nu\rho\sigma}      contrair →  ε_α^{νρσ}      
 ```
 
 δ é declaração porque `\delta` também é variação, número pequeno e índice.
-Ela exige um índice em cima e um embaixo. δ_{μν} fora do espaço euclidiano não
-é tensor; com a métrica, é g_{μν}.
+Ela exige um índice em cima e um embaixo. `δ_{μν}` fora do espaço euclidiano não
+é tensor; com a métrica, é `g_{μν}`.
 
 Levi-Civita não se declara sem escolher, porque os livros não fazem igual:
 
@@ -535,21 +560,27 @@ sinais:
 
 ```
 g = métrica(-,+,+,+)
+\delta = kronecker
+\epsilon = levi-civita(tensor)
 \epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\sigma}     simplificar →  −24
 \epsilon^{\mu\nu\rho\sigma} \epsilon_{\mu\nu\rho\alpha}     simplificar →  −6 δ^σ_α
 \epsilon^{ijk} \epsilon_{imn}                  simplificar →  δ^j_m δ^k_n − δ^j_n δ^k_m   (euclidiana, 3D)
 ```
 
-Em geral, ε^{a₁…a_k b…}ε_{a₁…a_k c…} = σ k! δ^{[b…}_{c…]}, com o sinal da
+Em geral, `ε^{a₁…a_k b…}ε_{a₁…a_k c…} = σ k! δ^{[b…}_{c…]}`, com o sinal da
 permutação que alinha os índices contraídos. Para o **tensor**, σ = (−1)^s,
 onde s é o número de sinais negativos. Para o **símbolo**, σ = 1, porque ele
 vale ±1 nas duas posições e a métrica não entra. O tensor sem assinatura
-declarada fica como está, porque o sinal é desconhecido.
+declarada fica como está, porque o sinal é desconhecido — e sem
+`\delta = kronecker` também, porque o resultado se escreve com δ.
 
 `lorentziana` sozinha é recusada: (−,+,+,+) e (+,−,−,−) estão as duas em uso,
 e εε e g(U,U) mudam de sinal entre elas. `riemanniana` e `euclidiana` dizem
-todos +. A assinatura tem de bater com a dimensão dos índices, e declarada
-antes deles, a fixa.
+todos +. Declarada depois dos índices, a assinatura tem de bater com a
+dimensão deles — `i, j = índices(3)` e depois `g = métrica(-,+,+,+)` é
+recusado. Declarada antes, ela dá a dimensão aos índices que vêm sem número
+(`\mu, \nu = índices` sai de dimensão 4 com (−,+,+,+) e 3 com (+,+,+)); quem
+diz o número, como `índices(3)`, é aceito com o número que disse.
 
 ### A conexão sem índice: ∇_U X, [U,X] e R(U,X)W
 
@@ -564,7 +595,7 @@ R = curvatura
 ```
 
 Sem isso o parser lia `\nabla_U X` como `X*nabla_{U}`: um símbolo de nome
-esquisito multiplicando X. O produto comuta, então ∇_U∇_X e ∇_X∇_U saíam
+esquisito multiplicando X. O produto comuta, então `∇_U∇_X` e `∇_X∇_U` saíam
 iguais, e a curvatura, que é justamente a diferença entre os dois, sumia sem
 aviso. `[U,X]` ele recusava, e `R(U,X)U` virava a pergunta "R aplicada, ou R
 vezes o parêntese?".
@@ -574,7 +605,7 @@ escrevem igual, e no Wald a letra latina do subscrito **é** índice. `[a,b]`
 pode ser colchete de Lie, comutador, intervalo ou par. Quem decide é a
 declaração:
 
-- **∇_U**: um vetor escrito sem índice só pode ser o objeto abstrato. Aí ∇_U
+- **`∇_U`**: um vetor escrito sem índice só pode ser o objeto abstrato. Aí `∇_U`
   vira aplicação, com a ordem guardada na estrutura. A direção pode ser
   composta, como em `\nabla_{[U,X]}` ou `\nabla_{U+X}`.
 - **[U,X]**: entre dois vetores declarados, só pode ser o colchete de Lie.
@@ -611,7 +642,7 @@ provar(eq5, eq1, eq2, eq3, eq4)
 ```
 
 Essa é a equação do desvio geodésico, deduzida sem índices. `nabla_U(eq3)` é
-eq3 com ∇_U aplicado aos dois lados, e `nabla_{eq1}(U)` é eq1 posta na direção
+eq3 com `∇_U` aplicado aos dois lados, e `nabla_{eq1}(U)` é eq1 posta na direção
 de ∇ agindo sobre U.
 
 Só entram as hipóteses **nomeadas** na chamada. Escrever uma equação no caderno
@@ -620,8 +651,8 @@ provaria nada.
 
 O motor sabe sozinho só o que vale para **qualquer** conexão, em qualquer livro:
 
-- ∇_U X é linear em U sobre funções, e no operando segue Leibniz:
-  ∇_U(fX) = U(f)X + f∇_U X;
+- `∇_U X` é linear em U sobre funções, e no operando segue Leibniz:
+  `∇_U(fX) = U(f)X + f∇_U X`;
 - o colchete é antissimétrico e segue Leibniz:
   [fA, gB] = fg[A,B] + f A(g) B − g B(f) A;
 - U(f) segue a regra da cadeia;
@@ -635,7 +666,7 @@ verdade e não são: `\nabla_U(fX) = f\nabla_U X` (falta U(f)X),
 `[fU, X] = f[U,X]` e `R(U,X) = -R(X,U)` sem a definição.
 
 Por baixo, tudo vira combinação linear. Das hipóteses saem outras relações,
-aplicando os contextos que aparecem no problema (∇_U □, ∇_□ U, [□, X], …). A
+aplicando os contextos que aparecem no problema (`∇_U □`, `∇_□ U`, `[□, X]`, …). A
 prova é uma combinação dessas relações que dá o objetivo, e a soma é conferida
 de novo, do zero, antes do ∎.
 
@@ -735,7 +766,7 @@ relação entre vetores levada a uma relação entre escalares.
 
 O motor sabe sozinho que g é linear sobre funções em cada slot e simétrica.
 Simetria não é convenção de livro, é o que se chama de métrica. Também sabe que
-o colchete age numa função como [A,B](f) = A(B(f)) − B(A(f)), porque essa é a
+o colchete age numa função como `[A,B](f) = A(B(f)) − B(A(f))`, porque essa é a
 definição do colchete. A compatibilidade não entra sozinha: ela é o que
 distingue Levi-Civita de uma conexão qualquer, e vem como hipótese, com ∀ ou
 sem.
@@ -743,7 +774,7 @@ sem.
 Limites: só igualdades lineares, com coeficientes escalares. Provas que pedem
 uma ideia, e não só encadear hipóteses, não saem. Um exemplo é
 g(R(U,X)Y, W) = −g(Y, R(U,X)W): essa prova precisa introduzir h = g(Y,W) e
-comparar [U,X](h) com U(X(h)) − X(U(h)). Nada disso aparece no enunciado, e a
+comparar `[U,X](h)` com `U(X(h)) − X(U(h))`. Nada disso aparece no enunciado, e a
 busca só instancia o que aparece.
 
 ### De uma notação à outra
@@ -754,23 +785,23 @@ busca só instancia o que aparece.
 R = riemann(eq1)
 R = curvatura
 \nabla_U \nabla_U X = R(U,X)U                                                    eq2
-indices(eq2)
+índices(eq2)
     U^α(U^β ∇_α∇_β X^μ + ∇_α U^β ∇_β X^μ) = R^μ{}_{αβσ} U^α U^β X^σ
 ```
 
 A prova sem índice é mais curta e não depende de carta, e o livro de física
-escreve com índice. `indices(eq)` traduz com as regras que as declarações já
+escreve com índice. `índices(eq)` traduz com as regras que as declarações já
 fixaram:
 
 - X vira X^μ;
-- g(X,Y) vira g_{αβ}X^αY^β, e ω(X) vira ω_αX^α;
-- ∇_X Y vira X^α∇_αY^μ, com Leibniz nos produtos;
-- X(f) vira X^α∇_α f;
-- [X,Y] vira X^α∇_αY^μ − Y^α∇_αX^μ com Levi-Civita, e com ∂ sem ela;
+- g(X,Y) vira `g_{αβ}X^αY^β`, e ω(X) vira `ω_αX^α`;
+- `∇_X Y` vira `X^α∇_αY^μ`, com Leibniz nos produtos;
+- X(f) vira `X^α∇_α f`;
+- [X,Y] vira `X^α∇_αY^μ − Y^α∇_αX^μ` com Levi-Civita, e com ∂ sem ela;
 - R(U,X)W segue a convenção de `riemann(eq)`.
 
 Para traduzir R(U,X)W, a mesma letra tem de estar declarada `curvatura` e
-`riemann(eq)`. A tradução supõe então R(U,X) = ∇_U∇_X − ∇_X∇_U − ∇_{[U,X]}, que
+`riemann(eq)`. A tradução supõe então `R(U,X) = ∇_U∇_X − ∇_X∇_U − ∇_{[U,X]}`, que
 é como a definição com índice a lê, e diz isso numa nota.
 
 As duas notações falam da mesma coisa, e isso se confere. A compatibilidade
@@ -778,7 +809,7 @@ com a métrica, escrita sem índice e traduzida, dá `True` em `simplificar` com
 Levi-Civita, porque ∇g = 0. Uma versão errada mostra a diferença que sobra.
 
 A saída não é canonicalizada. Com a métrica, a forma canônica sobe e desce os
-mudos, e R^μ{}_{σαβ}U^σ sairia R^{μαβσ}U_σ, que é igual e ilegível. Ainda não:
+mudos, e `R^μ{}_{σαβ}U^σ` sairia `R^{μαβσ}U_σ`, que é igual e ilegível. Ainda não:
 a volta, de índice para sem índice; e ∀ e formas não se traduzem.
 
 ### Formas diferenciais
@@ -794,7 +825,7 @@ a volta, de índice para sem índice; e ∀ e formas não se traduzem.
 \mathrm{d}(f \omega) = \mathrm{d} f \wedge \omega              só com \mathrm{d}\omega = 0
 ```
 
-d, ∧, ι_X e ℒ_X sem índice. Na leitura decide a declaração, como no resto:
+d, ∧, `ι_X` e `ℒ_X` sem índice. Na leitura decide a declaração, como no resto:
 
 - `\mathrm{d}` é sempre o operador;
 - `d` sozinho só é operador quando age numa forma declarada, e `df` com f
@@ -806,11 +837,11 @@ Uma p-forma é um (0,p) antissimétrico, e por isso ω(X,Y) se lê com o que já
 existia.
 
 O motor sabe sem hipótese o que vale em qualquer livro: d² = 0, o Leibniz
-graduado, α∧β = (−1)^{pq}β∧α, ι_X como antiderivação (com ι_X df = X(f) e
-ι_Xι_X = 0), e a fórmula de Cartan, ℒ_X = ι_X d + d ι_X, que é teorema e não
+graduado, `α∧β = (−1)^{pq}β∧α`, `ι_X` como antiderivação (com `ι_X df = X(f)` e
+`ι_Xι_X = 0`), e a fórmula de Cartan, `ℒ_X = ι_X d + d ι_X`, que é teorema e não
 convenção.
 
-A convenção que entra é ι_Y ι_X ω = ω(X,Y), a do determinante (Lee, Spivak).
+A convenção que entra é `ι_Y ι_X ω = ω(X,Y)`, a do determinante (Lee, Spivak).
 A fórmula dω(X,Y) = X(ω(Y)) − Y(ω(X)) − ω([X,Y]) muda de fator com a
 normalização, e por isso vem como hipótese, com ∀:
 
@@ -822,8 +853,8 @@ provar(eq3, eq1, eq2)      − eq1[A→X, B→Y] · iota_Y(iota_X(eq2))   ∎
 ```
 
 As relações entre formas entram no mesmo motor das outras. Os termos são
-monômios exteriores, o escalar é o monômio vazio, e os contextos são d □,
-ι_X □, α ∧ □ e f·□.
+monômios exteriores, o escalar é o monômio vazio, e os contextos são `d □`,
+`ι_X □`, `α ∧ □` e `f·□`.
 
 O dual de Hodge se declara depois da assinatura, que é de onde saem a
 dimensão n e os sinais negativos s:
@@ -876,7 +907,7 @@ x = coordenadas(t, r, \theta, \phi)
 g = métrica(-(1 - \frac{2M}{r}), \frac{1}{1 - \frac{2M}{r}}, r^2, r^2 \sin^2\theta)
 
 christoffel(g)  →  13 componentes não nulas, Γ^t_{tr} = M/((-2M + r)r), …
-ricci(g)        →  0 componentes não nulas
+ricci(g)        →  resultado: todas as componentes são nulas
 escalar(g)      →  0
 ```
 
@@ -884,9 +915,19 @@ Schwarzschild inteiro, e o Ricci nulo que é o teste de sanidade de toda
 relatividade. O cálculo é do `sympy.diffgeom`; o que faltava era **dizer a
 métrica em LaTeX**.
 
-Ela vai pela **diagonal** porque o parser não lê matriz — `\begin{pmatrix}`
-levanta `LaTeXParsingError` — e porque é assim que os livros dão quase todas as
-métricas que importam. Kerr, com o seu termo cruzado *dt dφ*, ainda não entra.
+Ela vai pela **diagonal**, como acima, ou pelo **elemento de linha**, que é
+como os livros dão as métricas com termo cruzado:
+
+```
+x = coordenadas(t, r, \theta, \phi)
+g = métrica(ds^2 = -dt^2 + 2 a\, dt\, d\phi + dr^2 + r^2 d\theta^2 + r^2 \sin^2(\theta) d\phi^2)
+    →  g é a métrica em (t, r, \theta, \phi), dada pelo elemento de linha
+christoffel(g)  →  13 componentes não nulas, Γ^t_{rφ} = a r sin²θ/(a² + r² sin²θ), …
+```
+
+O termo `2a\, dt\, d\phi` vira `g_{tφ} = g_{φt} = a`. Matriz em LaTeX não
+entra: `métrica(\begin{pmatrix}…)` é recusada, com uma mensagem que diz as duas
+formas que valem.
 
 Com componentes declaradas, `avaliar` leva a notação até os números:
 
@@ -899,16 +940,21 @@ avaliar(eq1)   →  A_{t} = A__t·(2M − r)/r        A_{\theta} = A__theta·r²
 ```
 
 As componentes de A ninguém declarou, então entram como nomes — na convenção
-do SymPy (`A__t` é A^t), que reentra no programa sem virar potência. O que sai
-da tela tem de poder voltar para dentro sem mudar de sentido.
+do SymPy, `A__t`, que a tela tipografa como A^{t}. O que volta para dentro sem
+mudar de sentido é preciso dizer: o nome `A__t` volta no Python (no SymPy e no
+script exportado ele é o mesmo símbolo), e os **rótulos da tabela** voltam no
+caderno. O A^{t} tipografado, relido como LaTeX, é uma potência — é o que a
+notação diz sem índice declarado.
 
 `contrair` dá a **estrutura**; `avaliar` dá o **valor**. São dois pedidos
 diferentes, e o programa os mantém separados.
 
-O rótulo impresso é um alvo de verbo — `avaliar(A_{t})`, `latex(\Gamma^{r}_{tt})` —
+O rótulo impresso é um alvo de verbo — `avaliar(A_{t})` (ou `avaliar(A_t)`)
+depois do `avaliar(eq1)`, `latex(\Gamma^{r}_{tt})` depois do `christoffel(g)` —
 sem exigir as chaves duplas que a tela usa, porque chave é tipografia do TeX e
-não identidade do objeto. A componente **nula** não entra na tabela, e mesmo
-assim responde quando perguntada: esconder os 55 zeros é mostrar as nove que
+não identidade do objeto. Valem os rótulos da **última** tabela. A componente
+**nula** não entra na tabela, e mesmo assim responde quando perguntada
+(`avaliar(\Gamma^{t}_{tt})` → 0): esconder os 51 zeros é mostrar as 13 que
 importam, mas dizer "não conheço" a quem pede um deles seria mentir.
 
 O que volta são **componentes**, e não o tensor: trocar de carta troca todas
@@ -939,6 +985,11 @@ pelo qual `\arctan(` não abre um sítio de justaposição.
 | **Newton** | `\ddot{q}` | derivada temporal / decoração |
 | **parcial** | `\partial_p H` | derivada parcial / produto |
 
+A linha **parcial** é das que o Sucuri **localiza**, e nunca pergunta: pelo
+motivo da seção anterior, `\partial_p H` sai como a derivada parcial de H em
+relação a p sem abrir pergunta — o sítio existe porque o parser do SymPy o
+degradaria em produto, e alguém tem de reescrevê-lo.
+
 Tempo e variável independente são declarados **em separado**: em mecânica a
 variável da linha raramente é a do ponto, e tratá-las como uma só produziria
 equação errada em silêncio.
@@ -953,27 +1004,37 @@ doc.read(r"\dot{q} = \partial_p H")     # d/dt de um lado, d/dp do outro
 
 `Expression.tree()` devolve o que o programa entendeu, nó a nó — e cada nó
 nascido de um sítio ambíguo carrega **como** aquele sítio foi resolvido. É isso
-que permite à interface pintar de âmbar o que veio de convenção:
+que permite à interface pintar de âmbar o que veio de convenção. Para a
+Riccati do início, `\varphi'' + 3\varphi\varphi' + \varphi^3 = 4r\varphi + 2r'`,
+lida com "linha é derivada" como convenção e o `r'` anotado à mão
+(`exemplos/arvore.py`):
 
 ```
 igualdade
   soma
     potência
       função varphi aplicada a (x)
+        símbolo x
+      número 3
     produto
       número 3
       derivada de ordem 1 de varphi em x  [inferida]  <- conferir
       função varphi aplicada a (x)
-    derivada de ordem 2 de varphi em x    [inferida]  <- conferir
+        símbolo x
+    derivada de ordem 2 de varphi em x  [inferida]  <- conferir
   soma
     produto
       número 2
-      derivada de ordem 1 de r em x       [explícita]
-    ...
+      derivada de ordem 1 de r em x  [explícita]
+    produto
+      número 4
+      …
 ```
 
 Derivadas são folhas na leitura do usuário: quem lê quer ver "derivada segunda
 de φ", não a árvore interna dela. `to_dict()` serializa para a interface web.
+Pela API em Python, os rótulos da árvore saem em português, qualquer que seja
+o idioma da interface.
 
 ## Uso
 
@@ -983,6 +1044,7 @@ import sucuri
 # caso avulso — sem convenção, RECUSA, que é o padrão
 e = sucuri.parse(r"\varphi'' + \varphi' = r")
 e.questions()                      # as perguntas, em vez de um palpite
+                                   # (em português, na API em Python)
 
 # com a convenção declarada
 e = sucuri.parse(r"\varphi'' + \varphi' = r",
@@ -1009,6 +1071,11 @@ p = provar(eq(r"\nabla_U \nabla_U X = R(U,X)U"),
 linhas(p)                          # os passos: rótulo, texto, LaTeX
 ```
 
+Na API em Python as mensagens são em português: as perguntas de
+`e.questions()`, a exceção `Unresolved` que `e.to_sympy()` levanta enquanto
+houver sítio pendente ("2 sítio(s) ambíguo(s) sem anotação: …") e os rótulos
+de `tree()`. A troca PT/EN é da interface.
+
 O exemplo inteiro, com as recusas e a troca de sinal, está em
 `exemplos/desvio_geodesico.py` — e a suíte o executa.
 
@@ -1023,6 +1090,16 @@ exemplos ninguém roda apodrece, e apodrece em silêncio — que é a forma que 
 projeto persegue. Quando um exemplo quebra, ou o programa mudou e o manual
 mente, ou o manual está certo e o programa regrediu; os dois merecem parar a
 suíte.
+
+## Instalação
+
+Python ≥ 3.10. Na pasta do repositório:
+
+```bash
+pip install .                     # ou, para rodar a suíte: pip install -e ".[dev]"
+python -m sucuri.interface        # ou o comando `sucuri`, que o pip instala
+pytest                            # a suíte, em tests/
+```
 
 ## A interface
 
@@ -1056,7 +1133,9 @@ O que a página mostra, da esquerda para a direita:
   chega à página marcada como não apresentável.
 
 A interface não decide nada de matemática. Entre ela e o motor passa JSON
-(`/api/ler`, `/api/anotar`, `/api/modulos`, `/api/operar`), e as duas únicas
+(`/api/ler`, `/api/anotar`, `/api/avaliar`, `/api/modulos`, `/api/operar`, e
+as do caderno: `/api/caderno/executar`, `/api/caderno/refazer`,
+`/api/caderno/reiniciar`), e as duas únicas
 decisões que ela transporta são as do usuário: convenção e anotação.
 
 ## O caderno
@@ -1069,11 +1148,15 @@ Uma equação por página serve para inspecionar notação; trabalho é escrever
 coisa, olhar, escrever outra que usa a primeira.
 
 ```
+        f = f(x)                               →  daqui para baixo, f é função de x
         f^{\prime} = x^2          Shift+Enter   →  eq1,  df/dx = x²
-        resolver(eq1)                          →  f(x) = C₁ + x³/3
-                                                  conferência: resto 0
+        resolver(eq1)                          →  eq2,  f(x) = C₁ + x³/3
+                                                  conferência: substituída na equação: resto 0
         exportar(eq1)                          →  o script que roda sem o Sucuri
 ```
+
+Sem o `f = f(x)`, a linha de `f^{\prime}` fica pendente: derivada ou símbolo
+chamado f′ — e é pergunta.
 
 Cinco ações, e cada uma mexe numa camada diferente do estado — a distinção
 entre elas é a razão de existirem cinco e não duas:
@@ -1117,16 +1200,23 @@ u = u(t,x)
 c = símbolo
 \frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}
 
-resolver(eq1)      →  sem solução encontrada: o pdsolve não resolve
-separar(eq1)       →  T''/T = k  e  c²X''/X = k, com as duas resolvidas
-conferir(eq1, eq2) →  u = F(x−ct) + G(x+ct): resto 0
+resolver(eq1)      →  sem solução encontrada
+                      motivo: o solver falhou: NotImplementedError: psolve: Cannot solve
+                      -c**2*Derivative(u(t, x), (x, 2)) + Derivative(u(t, x), (t, 2))
+separar(eq1)       →  eq2   T″(t) = k T(t)
+                      eq3   c² X″(x) = k X(x)       com as duas resolvidas na tabela
+F = F(x)
+G = G(x)
+u = F(x - c t) + G(x + c t)                          eq4
+conferir(eq1, eq4) →  candidata verificada: substituída na equação: resto 0
 ```
 
 O `pdsolve` não resolve a onda — e ele é só um dos caminhos do SymPy. O
 `pde_separate_mul` separa, o `dsolve` resolve cada pedaço, e o `checkpdesol`
 confere d'Alembert.
 
-O que uma conta **produz** ganha nome, e é isso que faz o caderno compor:
+O que uma conta **produz** ganha nome, e é isso que faz o caderno compor
+(aqui, logo depois da eq1):
 
 ```
 separar(eq1)     →  eq2   T″(t) = k T(t)
@@ -1141,8 +1231,10 @@ tabela não tem como pedir a próxima conta sobre elas senão redigitando.
 produto, e a suposição é uma restrição. O que sai são os modos; a solução geral
 é a superposição deles, e a separação não prova que ela seja completa.
 
-Os verbos são poucos e fechados **de propósito**: `resolver`/`solve`,
-`avaliar`/`evaluate`, `simplificar`/`simplify`, `exportar`/`export`, `latex`.
+Os verbos formam uma lista fechada **de propósito**: são uns 35 —
+`resolver`/`solve`, `avaliar`/`evaluate`, `simplificar`/`simplify`,
+`separar`/`separate`, `conferir`/`check`, `contrair`/`contract`,
+`provar`/`prove`, `exportar`/`export`, `latex`, … —, e o manual traz todos.
 Se aqui se pudesse escrever Python, a ponte que este programa é deixaria de ser
 obrigatória — quem escreve `sympy.solve(...)` fala direto com o SymPy, sem
 sítios, sem convenção declarada, sem proveniência, e sobra um Jupyter com
@@ -1156,15 +1248,15 @@ passos a mais.
 | `u(t,x)` | `pdsolve`, conferido com `checkpdesol` |
 | sem derivada | `solve` |
 
-`∂u/∂t = A(t)u` sai como `F(x)·exp(∫A dt)`: numa EDP, a "constante" de
+Com `u = u(t,x)` e `A = A(t)` declaradas, `∂u/∂t = A u` sai como
+`F(x)·exp(∫A dt)`: numa EDP, a "constante" de
 integração é uma função arbitrária da outra variável. O `pdsolve` resolve bem
 menos do que o `dsolve` — a equação da onda ele não resolve —, mas resolver
 pouco não é resolver nada, e quem decide se o pouco serve é quem escreveu a
 equação.
 
-Antes: equação diferencial vai
-para o módulo que confere a solução por substituição, algébrica vai para o
-`solve`. Obrigar o usuário a escolher entre `solve` e `dsolve` é pedir que ele
+Equação diferencial vai para o módulo que confere a solução por substituição,
+algébrica vai para o `solve`. Obrigar o usuário a escolher entre `solve` e `dsolve` é pedir que ele
 classifique a própria equação para o programa — ao contrário.
 
 As convenções valem para o caderno inteiro, e mudar uma **refaz tudo**: o que
@@ -1220,12 +1312,27 @@ certificados. É a diferença entre hospedar calculadoras e hospedar áreas da
 matemática.
 
 ```python
+import sucuri
+import sucuri.modules
+
+doc = sucuri.Document(independent_variable='x').primes_are_derivatives()
 e = doc.read(r"y'' = x y")            # Airy
-korvin = sucuri.modules.load("korvin")
+
+resolver = sucuri.modules.load("resolver")
+resolver.operations["resolver"].run(e)
+# solução  [estabelecida]
+#   y{\left(x \right)} = C_{1} Ai\left(x\right) + C_{2} Bi\left(x\right)
+#   …
+#   conferência | substituída na equação: resto 0
+
+korvin = sucuri.modules.load("korvin")    # só com o KORVIN instalado
 korvin.operations["não-integrabilidade"].run(e)
 ```
 
-Dois módulos acompanham o Sucuri, e respondem a perguntas diferentes:
+O `resolver` acompanha o Sucuri. O `korvin` é um adaptador: só se ativa com o
+pacote KORVIN, que é externo e não vai junto (sem ele, `load("korvin")` falha
+com `ModuleNotFoundError`, e a interface anuncia o módulo como indisponível).
+Ver `exemplos/modulo_korvin.py`. Os dois respondem a perguntas diferentes:
 
 | | pergunta |
 |---|---|
@@ -1279,3 +1386,11 @@ código pelo bloco da cauda.
 
 Motor e interface em construção. Ver `sucuri/`, `sucuri/interface/` e a suíte
 em `tests/`.
+
+## Licença
+
+MIT — ver `LICENSE`.
+
+## Como citar
+
+Ver `CITATION.cff`. Um DOI será acrescentado.

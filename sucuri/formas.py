@@ -139,7 +139,8 @@ class Exterior(sp.Function):
         return rf"\mathrm{{d}}{printer._print(self.args[0])}"
 
     def _sympystr(self, printer):
-        return f"d{printer._print(self.args[0])}"
+        # d(omega), como DerivadaExterior: "domega" parecia um nome só
+        return f"d({printer._print(self.args[0])})"
 
 
 class Diferencial(sp.Function):
@@ -518,8 +519,12 @@ class _Leitor:
                 j = self._espacos(m.end())
                 continue
             m = _RE_IOTA.match(self.t, j)
-            if m and _limpo(self._nome(m.group(1))) in self.vetores:
-                prefixos.append(("i", self._nome(m.group(1))))
+            if m:
+                # ι_Z com Z não declarado: só é operador se o que vem é forma —
+                # e aí a leitura recusa, pedindo Z declarado, como em ℒ_Z.
+                # Antes de forma nenhuma, ι_Z continua podendo ser um símbolo.
+                vetor = _limpo(self._nome(m.group(1))) in self.vetores
+                prefixos.append(("i" if vetor else "i?", self._nome(m.group(1))))
                 j = self._espacos(m.end())
                 continue
             m = _RE_LIE.match(self.t, j)
@@ -550,6 +555,10 @@ class _Leitor:
             if resto[:1] in ("(", "_", "^"):
                 return None                     # ω(X): avaliação, não operando
             e_forma = _limpo(base) in self.formas
+        if any(op == "i?" for op, _ in prefixos):
+            if not e_forma:
+                return None
+            prefixos = [("i", v) if op == "i?" else (op, v) for op, v in prefixos]
         # `d` sem \mathrm só é operador sobre forma: df continua d vezes f.
         prefixos = [("d", None) if (op == "d?" and (e_forma or explicito
                                                     or any(p[0] != "d?" for p in prefixos)))

@@ -270,6 +270,11 @@ def desacordo_de_tipo(espaco, base, posicoes):
     # são o mesmo ±1 — não há valência trocada a apontar.
     if espaco.levi.get(base) == "simbolo":
         return None
+    # Com a métrica declarada, A_ν de um A do tipo (1,0) é A com o índice
+    # baixado por ela — o que a canonização e `contrair` de fato fazem. A nota
+    # dizia o contrário, e some aqui, como o README promete.
+    if espaco.metrica:
+        return None
     tipo = espaco.tipo_de(base)
     if not tipo:
         return None
@@ -566,6 +571,36 @@ def _epsilon_epsilon(expr, espaco):
         operator.mul, outros, sp.S.One)
 
 
+_SEM = object()
+
+
+def _canon(expr, espaco):
+    """Butler-Portugal — sem métrica declarada, sem subir nem descer mudo.
+
+    O SymPy canoniza trocando A^ν B_ν por A_ν B^ν, o que só vale com métrica;
+    o tipo de índice dele sempre tem uma. Sem `g = métrica` declarada, a
+    canonização roda com a métrica do tipo desligada (msym None): os mudos
+    ficam na posição em que foram escritos."""
+    tipo = getattr(espaco, "tipo", None)
+    if espaco is None or espaco.metrica or tipo is None:
+        return expr.canon_bp()
+    # O SymPy tem várias instâncias iguais do mesmo tipo de índice, uma por
+    # tensor: desliga em todas as que a expressão usa, e religa no fim.
+    instancias = {id(i.tensor_index_type): i.tensor_index_type
+                  for i in expr.get_indices() if i.tensor_index_type == tipo}
+    guardadas = {k: t.__dict__.get("_metric", _SEM) for k, t in instancias.items()}
+    for t in instancias.values():
+        t._metric = None
+    try:
+        return expr.canon_bp()
+    finally:
+        for k, t in instancias.items():
+            if guardadas[k] is _SEM:
+                del t._metric
+            else:
+                t._metric = guardadas[k]
+
+
 def simplificar(expr, espaco):
     """δ contraída, e depois a forma canônica — que usa as simetrias.
 
@@ -624,7 +659,7 @@ def simplificar(expr, espaco):
     expr = expr.expand()
     if not isinstance(expr, TensExpr):
         return expr
-    expr = expr.canon_bp()
+    expr = _canon(expr, espaco)
     # Os coeficientes também: em d dimensões, 1 − d/(d−2) + 2/(d−2) é zero, e
     # o termo tem de sumir.
     from .christoffel import _nos_coeficientes
@@ -637,7 +672,7 @@ def simplificar(expr, espaco):
         if isinstance(expr, TensExpr):
             expr = expr.expand()
         if isinstance(expr, TensExpr):
-            expr = expr.canon_bp()
+            expr = _canon(expr, espaco)
     from .ricci import apresentar
     return apresentar(expr, espaco)
 

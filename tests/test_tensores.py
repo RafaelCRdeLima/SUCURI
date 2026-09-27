@@ -139,6 +139,26 @@ def test_valencia_diferente_da_declarada_e_nota_e_nao_erro():
     assert "levantar ou baixar índice exige a métrica" in aviso
 
 
+def test_com_a_metrica_declarada_a_nota_some():
+    """Declarada a métrica, A_ν é A com o índice baixado por ela: não há o que
+    avisar."""
+    c = Caderno()
+    for f in (r"\mu, \nu = índices", "g = métrica", "A = tensor(1, 0)"):
+        c.executar(f)
+    assert not c.executar(r"A_\nu").to_dict().get("notas")
+
+
+def test_sem_metrica_simplificar_nao_sobe_nem_desce_indice():
+    """A^ν B_ν = A_ν B^ν só vale com métrica; sem ela, a canonização não pode
+    trocar as posições dos mudos."""
+    for decl, zera in (([], False), (["g = métrica"], True)):
+        c = Caderno()
+        for f in (r"\mu, \nu = índices", *decl, "A = tensor(1,0)", "B = tensor(0,1)",
+                  r"A^\nu B_\nu - A_\nu B^\nu"):
+            c.executar(f)
+        assert (c.executar("simplificar(eq1)").to_dict().get("exato") == "0") is zera
+
+
 def test_o_tipo_no_caderno():
     c = Caderno()
     c.executar(r"\mu, \nu = índices")
@@ -195,3 +215,11 @@ def test_a_valencia_sai_como_se_escreve():
     s.indices = [r"\mu", r"\nu", r"\lambda"]
     assert s.ler(r"T^{\mu\nu}_{\lambda}")["indices_livres"] == [
         r"^\mu", r"^\nu", r"_\lambda"]
+
+
+def test_contrair_o_resultado_de_contrair():
+    c = Caderno()
+    for f in (r"\mu, \nu = índices", "g = métrica", "A = tensor(1,0)", r"g_{\mu\nu} A^\nu", "contrair(eq1)"):
+        c.executar(f)
+    d = c.executar("contrair(eq2)").to_dict()
+    assert "não há índice para baixar" in d["erro"]

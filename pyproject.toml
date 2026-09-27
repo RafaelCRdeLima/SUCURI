@@ -6,8 +6,26 @@ build-backend = "setuptools.build_meta"
 name = "sucuri"
 version = "0.1.0"
 description = "SymPy Unified Compiler for Unambiguous Rendered Input: LaTeX read into SymPy, with no ambiguity guessed"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Rafael Camargo Rodrigues de Lima"}]
+keywords = ["sympy", "latex", "differential geometry", "general relativity",
+            "tensor calculus", "symbolic computation"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Natural Language :: English",
+    "Natural Language :: Portuguese (Brazilian)",
+]
 requires-python = ">=3.10"
 dependencies = ["sympy==1.12", "antlr4-python3-runtime==4.11"]
+
+[project.urls]
+Homepage = "https://github.com/RafaelCRdeLima/SUCURI"
+Source = "https://github.com/RafaelCRdeLima/SUCURI"
+Issues = "https://github.com/RafaelCRdeLima/SUCURI/issues"
 
 [project.optional-dependencies]
 dev = ["pytest"]
