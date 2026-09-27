@@ -173,3 +173,38 @@ def test_pendente_nao_conta_como_inferido():
 def test_sem_ambiguidade_nao_gera_estado():
     e = Document().read(r"\frac{x^2+1}{x-1}")
     assert e.resolutions == [] and e.inferred == [] and e.resolved
+
+
+# ------------------------------------------------------------- a barra
+
+@pytest.mark.parametrize("latex, sitio", [
+    (r"y = 1/2 (x+z)", "2"), (r"y = 1/2 x", "2"), (r"y = a/b (x+z)", "b"),
+    (r"y = 1/(a+b) x", "(a+b)"), (r"y = x/\tau t", r"\tau"),
+])
+def test_a_barra_com_algo_colado_e_sitio(latex, sitio):
+    """1/2 (x+z) o SymPy lê 1/(2(x+z)), calado: é pergunta."""
+    assert [(a.kind, a.base) for a in find(latex)] == [("slash", sitio)]
+
+
+@pytest.mark.parametrize("latex", [
+    r"y = 1/2 \cdot (x+z)", r"y = \frac{1}{2} (x+z)", r"y = 3/4", r"y = 1/23",
+    r"y = x^{1/2} z", r"y = e^{-t/\tau} x",
+])
+def test_a_barra_sem_duvida_nao_e_sitio(latex):
+    assert not [a for a in find(latex) if a.kind == "slash"]
+
+
+@pytest.mark.parametrize("leitura, esperado", [
+    ("times", sp.Rational(1, 2) * (sp.Symbol("x") + sp.Symbol("z"))),
+    ("denominator", 1 / (2 * (sp.Symbol("x") + sp.Symbol("z")))),
+])
+def test_as_duas_leituras_da_barra(leitura, esperado):
+    doc = Document()
+    doc.annotate("slash", "2", leitura)
+    e = doc.read(r"y = 1/2 (x+z)")
+    assert sp.simplify(e.to_sympy().rhs - esperado) == 0
+
+
+def test_a_barra_sem_resposta_nao_vira_equacao():
+    with pytest.raises(Unresolved):
+        Document().read(r"y = 1/2 (x+z)").to_sympy()

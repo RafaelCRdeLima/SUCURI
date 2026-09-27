@@ -1104,4 +1104,20 @@ EN = {
         "'{0}' is not a component I can read: the metric goes in by its diagonal, metric(-1, 1, r^2), or by the line element, metric(ds^2 = …). A LaTeX matrix is not read",
     'o solver falhou: {0}':
         'the solver failed: {0}',
+    '{0} recebe {1} argumento(s): {2}':
+        '{0} takes {1} argument(s): {2}',
+    '{0}(…) não produz forma na carta, e não recebe nome: escreva {1} sozinho':
+        '{0}(…) does not produce a form in the chart, and takes no name: write {1} on its own',
+    'ℒ_{0} {1} = 0: {2} é de Killing':
+        'ℒ_{0} {1} = 0: {2} is Killing',
+    'ℒ_{0} {1} ≠ 0: {2} não é de Killing':
+        'ℒ_{0} {1} ≠ 0: {2} is not Killing',
+    '; a métrica tem funções não polinomiais das coordenadas, tratadas como independentes: os campos achados são de Killing, mas pode faltar algum':
+        '; the metric has non-polynomial functions of the coordinates, treated as independent: the fields found are Killing, but some may be missing',
+    "'{0}' tem índices e não tem componentes nesta carta: declare-o com campo(…), covetor(…) ou forma(…), ou defina-o pela conexão, com {1} = riemann(eq) ou {2} = ricci(eq)":
+        "'{0}' has indices and no components in this chart: declare it with field(…), covector(…) or form(…), or define it through the connection, with {1} = riemann(eq) or {2} = ricci(eq)",
+    'a fração multiplica o que vem depois: (…/{0})·(…)':
+        'the fraction multiplies what follows: (…/{0})·(…)',
+    'o que vem depois vai para o denominador: …/({0}·…)':
+        'what follows goes into the denominator: …/({0}·…)',
 }

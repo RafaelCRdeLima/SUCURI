@@ -58,3 +58,9 @@ def test_holonomia_rotacao_de_d_omega():
 def test_sem_componentes_recusa():
     d = ultimo(*ESF, "B = tensor(1, 0)", r"B^a R^b{}_{acd}", "em_carta(eq2)")
     assert d.get("erro")
+
+
+def test_tensor_sem_componentes_e_recusado_com_motivo():
+    d = ultimo(r"a, b = índices(2)", r"x = coordenadas(\theta, \phi)", r"g = métrica(1, \sin^2\theta)",
+               "R = tensor(0, 2)", "R_{ab}", "em_carta(eq1)")
+    assert "R = riemann(eq)" in d["erro"]

@@ -62,3 +62,14 @@ def test_forma_com_graus_misturados_e_recusada():
     c = Caderno()
     c.executar("x = coordenadas(x, y)")
     assert c.executar(r"\alpha = forma(dx + dx \wedge dy)").to_dict().get("erro")
+
+
+def test_operacao_com_argumentos_a_menos_diz_a_forma_de_uso():
+    d = ultimo(*ESF, r"\alpha = forma(dr)", r"estrela(\alpha)")
+    assert d["erro"] == "estrela recebe 2 argumento(s): estrela(α, g)"
+
+
+@pytest.mark.parametrize("fonte", [r"O = ortonormal(\alpha, g)", r"P = iguais(\alpha, \alpha)"])
+def test_o_que_nao_e_forma_nao_recebe_nome(fonte):
+    d = ultimo(*ESF, r"\alpha = forma(dr)", fonte)
+    assert "não recebe nome" in d["erro"]

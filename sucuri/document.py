@@ -1250,6 +1250,12 @@ class Expression:
                 origens[alvo] = resolucao
                 texto = texto[:ini] + nome + texto[fim:]
 
+            elif a.kind == "slash" and leitura == "times":
+                # ·  explícito depois do denominador: o parser deixa de engolir
+                # o que vem depois; na leitura "denominator", o texto já diz isso
+                corte = ini + a.corte
+                texto = texto[:corte] + r" \cdot " + texto[corte:]
+
             elif a.kind == "juxtaposition" and leitura == "product":
                 # insere a multiplicação explícita antes do parêntese
                 abre = texto.find("(", ini)

@@ -85,6 +85,16 @@ escrevem igual, e o Sucuri não escolhe por você:</p>
 <p>Você responde clicando na leitura certa — ou, melhor, <strong>declarando</strong>,
 que responde de uma vez para o caderno inteiro.</p>
 
+<p>A barra de divisão é outro caso. O parser põe no denominador tudo o que vem
+colado depois dele — <code>1/2 x</code> viraria 1/(2x) —, e na escrita corrente
+quase sempre se quis o contrário. O Sucuri pergunta; para não perguntar,
+escreva <code>\frac{1}{2}</code>, ou um <code>\cdot</code> depois do denominador:</p>
+
+<div class="exemplo">
+  <code class="entrada">y = 1/2 (x+z)</code>
+  <samp class="pergunta">/2  →  a fração multiplica o que vem depois: (…/2)·(…)  |  o que vem depois vai para o denominador: …/(2·…)</samp>
+</div>
+
 <h2 id="declarar">3. Declarar</h2>
 
 <p>Declarar não escolhe entre as leituras: <strong>dissolve a dúvida</strong>. Se
@@ -426,8 +436,10 @@ numa dimensão dada em número — <code>índices(4)</code>:</p>
 <table class="tabela">
   <tr><td><code>independentes(T, eq…)</code></td><td>quantas componentes de T
     sobram, com as simetrias declaradas e as equações dadas (lineares em T).
-    Zero: só o tensor nulo tem essas propriedades. O Riemann com Levi-Civita
-    leva a primeira identidade de Bianchi junto.</td></tr>
+    Zero: só o tensor nulo tem essas propriedades. O Riemann definido pela
+    conexão — <code>R = riemann(eq)</code>, com Levi-Civita — leva a primeira
+    identidade de Bianchi junto (20 em 4D); um <code>tensor(0,4,riemann)</code>
+    declarado só tem as simetrias de par, e dá 21.</td></tr>
   <tr><td><code>em_componentes(eq)</code></td><td>confere a identidade com o
     tensor mais geral que as declarações permitem e uma métrica qualquer,
     componente por componente.</td></tr>

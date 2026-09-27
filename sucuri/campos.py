@@ -106,7 +106,7 @@ def laplaciano(metrica, A):
             for j in range(n)]
 
 
-def killings(metrica, grau=1):
+def killings(metrica, grau=1, com_completude=False):
     """Os campos de Killing com componentes polinomiais de grau ≤ `grau` nas
     coordenadas: a equação de Killing num ansatz, e o espaço de soluções."""
     x, n = metrica.simbolos, len(metrica.simbolos)
@@ -120,19 +120,29 @@ def killings(metrica, grau=1):
         comps.append(sum(c * m for c, m in zip(cs, monomios)))
     K = Campo("K", x, comps)
     L = lie_metrica(metrica, K)
+    numeradores = [sp.expand(sp.numer(sp.together(
+        sp.expand_trig(L[i, j].rewrite(sp.sin) if L[i, j].has(sp.tan, sp.cot) else L[i, j]))))
+        for i in range(n) for j in range(i, n)]
+    # Componentes não polinomiais (sin θ, e^r…): cada função das coordenadas
+    # vira um gerador a mais, independente. As equações ficam suficientes, não
+    # necessárias — sin² + cos² = 1 não entra —, então o que sai é de Killing
+    # (conferido abaixo), mas pode faltar algum.
+    funcoes = sorted({f for e in numeradores for f in e.atoms(sp.Function, sp.Pow)
+                      if f.free_symbols & set(x) and not f.is_polynomial(*x)}, key=str)
+    completo = not funcoes
     equacoes = []
-    for i in range(n):
-        for j in range(i, n):
-            e = sp.numer(sp.together(L[i, j]))
-            equacoes += sp.Poly(sp.expand(e), *x).coeffs()
+    for e in numeradores:
+        equacoes += sp.Poly(e, *x, *funcoes).coeffs()
     sol = sp.solve(equacoes, coefs, dict=True)
     sol = sol[0] if sol else {}
     geral = [sp.expand(c.subs(sol)) for c in comps]
     livres = sorted(set().union(*(g.free_symbols for g in geral)) & set(coefs), key=str)
     base = []
     for p in livres:
-        base.append([sp.expand(g.subs({q: (1 if q == p else 0) for q in livres})) for g in geral])
-    return base
+        b = [sp.expand(g.subs({q: (1 if q == p else 0) for q in livres})) for g in geral]
+        if completo or all(sp.simplify(e) == 0 for e in lie_metrica(metrica, Campo("K", x, b))):
+            base.append(b)
+    return (base, completo) if com_completude else base
 
 
 def restringir(K, metrica):

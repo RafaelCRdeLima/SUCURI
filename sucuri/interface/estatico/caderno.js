@@ -143,10 +143,21 @@ var VERBOS = [
   'cunha', 'exterior', 'estrela', 'interior', 'lie', 'iguais', 'ortonormal',
   'christoffel', 'cristoffel', 'ricci', 'riemann', 'escalar', 'curvatura',
   'in_chart', 'in_components', 'orbits', 'element', 'tetrad', 'bracket',
-  'laplacian', 'restrict', 'wedge', 'star', 'equal', 'scalar'
+  'laplacian', 'restrict', 'wedge', 'star', 'equal', 'scalar',
+  /* os de forma própria (COMANDOS_PROPRIOS no Python) */
+  'provar', 'prove', 'induzida', 'induced', 'series'
+];
+
+/* Os que aceitam nome à esquerda — `S = estrela(α, g)`, `R = riemann(eq1)`
+ * (VERBOS_COM_NOME no Python). Só estes: `u = resolver(eq1)` não é comando. */
+var VERBOS_COM_NOME = [
+  'cunha', 'wedge', 'exterior', 'estrela', 'star', 'interior', 'lie',
+  'riemann', 'christoffel', 'ricci', 'induzida', 'induced'
 ];
 
 var RE_VERBO = new RegExp('^(\\s*)(' + VERBOS.join('|') + ')(\\s*\\()', 'i');
+var RE_VERBO_COM_NOME = new RegExp('^(\\s*\\\\?[A-Za-z]\\w*\\s*=\\s*)('
+  + VERBOS_COM_NOME.join('|') + ')(\\s*\\()', 'i');
 
 function escapar(t) {
   return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -157,7 +168,7 @@ function realcar(texto) {
    * a segunda linha é comando tanto quanto a primeira, e deixá-la sem cor
    * diria que só a de cima age. */
   return texto.split('\n').map(function (linha) {
-    var m = RE_VERBO.exec(linha);
+    var m = RE_VERBO.exec(linha) || RE_VERBO_COM_NOME.exec(linha);
     if (!m) return escapar(linha);
     return escapar(m[1]) + '<b class="verbo">' + escapar(m[2]) + '</b>'
          + escapar(linha.slice(m[1].length + m[2].length));

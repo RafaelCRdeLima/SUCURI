@@ -1005,6 +1005,7 @@ A question that is not a question spends the credibility of the ones that are; t
 | prime | `y''` | derivative / symbol |
 | Leibniz | `\frac{d^2y}{dx^2}` | derivative / fraction of symbols |
 | juxtaposition | `f(x+1)` | application / product |
+| slash | `1/2 (x+y)`, `1/2 x` | the fraction multiplies / goes into the denominator |
 | **Newton** | `\ddot{q}` | time derivative / decoration |
 | **partial** | `\partial_p H` | partial derivative / product |
 

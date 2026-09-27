@@ -85,6 +85,16 @@ written the same way, and Sucuri does not choose for you:</p>
 <p>You answer by clicking the right reading — or, better, by <strong>declaring</strong>,
 which answers once for the whole notebook.</p>
 
+<p>The division slash is another case. The parser puts into the denominator
+everything written right after it — <code>1/2 x</code> would become 1/(2x) —, and
+in ordinary writing the opposite is almost always meant. Sucuri asks; to avoid the
+question, write <code>\frac{1}{2}</code>, or a <code>\cdot</code> after the denominator:</p>
+
+<div class="exemplo">
+  <code class="entrada">y = 1/2 (x+z)</code>
+  <samp class="pergunta">/2  →  the fraction multiplies what follows: (…/2)·(…)  |  what follows goes into the denominator: …/(2·…)</samp>
+</div>
+
 <h2 id="declarar">3. Declaring</h2>
 
 <p>Declaring does not pick between the readings: <strong>it dissolves the ambiguity</strong>. If
@@ -430,8 +440,10 @@ in a dimension given as a number — <code>indices(4)</code>:</p>
 <table class="tabela">
   <tr><td><code>independent(T, eq…)</code></td><td>how many components of T
     remain, given the declared symmetries and the given equations (linear in T).
-    Zero: only the null tensor has these properties. The Riemann tensor with Levi-Civita
-    brings the first Bianchi identity along.</td></tr>
+    Zero: only the null tensor has these properties. The Riemann tensor defined
+    by the connection — <code>R = riemann(eq)</code>, with Levi-Civita — brings the
+    first Bianchi identity along (20 in 4D); a declared <code>tensor(0,4,riemann)</code>
+    only has the pair symmetries, and gives 21.</td></tr>
   <tr><td><code>in_components(eq)</code></td><td>checks the identity with the
     most general tensor the declarations allow and an arbitrary metric,
     component by component.</td></tr>

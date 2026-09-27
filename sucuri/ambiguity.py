@@ -12,6 +12,9 @@ sozinho. As três que aparecem sempre em física:
   \\dot{x}        derivada temporal de Newton, ou decoração sobre x?
   \\partial_x f   NÃO é sítio: ∂ está reservado à derivada parcial
   e^{ax}         número de Euler, ou um símbolo chamado e?
+  1/2 (x+y)      ½ vezes o parêntese, ou 1 sobre 2(x+y)? O parser do SymPy
+                 põe no denominador tudo o que vem colado depois dele — 1/2 x
+                 vira 1/(2x) —, e a tipografia não diz qual se quis
 
 O ponto de Newton é o caso mais grave medido: o SymPy lê \\dot{x} como o produto
 do símbolo "dot" pelo símbolo x. Toda a mecânica hamiltoniana se escreve assim.
@@ -42,7 +45,8 @@ class Ambiguity:
     Atributos
     ---------
     kind : str
-        'prime', 'juxtaposition' ou 'leibniz'.
+        'prime', 'juxtaposition', 'leibniz', 'newton', 'partial', 'euler' ou
+        'slash' (a barra de divisão seguida de algo colado ao denominador).
     fragment : str
         O trecho de LaTeX, como escrito.
     span : (int, int)
@@ -104,6 +108,15 @@ _RE_LINHA_GRUPO = re.compile(rf"\)((?:{_LINHAS})+)")
 _RE_LEIBNIZ = re.compile(
     r"\\frac\s*\{\s*(d|\\partial)(?:\^\{?(\d+)\}?)?\s*(" + _SIMBOLO + r")\s*\}"
     r"\s*\{\s*(?:d|\\partial)\s*(" + _SIMBOLO + r")(?:\^\{?(\d+)\}?)?\s*\}")
+# Barra seguida de um denominador curto e de algo colado a ele: 1/2 (x+y),
+# 1/2 x, a/b \sin x. O que vem colado entra no denominador para o parser; na
+# escrita corrente, quase sempre se quis o contrário. Operador explícito
+# (\cdot, \times) depois do denominador tira a dúvida, e não é sítio.
+_RE_BARRA = re.compile(
+    r"/\s*(\d+(?:\.\d+)?(?![\d.])|[A-Za-z]|\\[A-Za-z]+(?![A-Za-z])|\([^()]*\))"
+    r"\s*(?=\\left\(|\(|[A-Za-z0-9]|\\(?!(?:cdot|times|div|pm|mp|right|quad|qquad|to|le|ge|"
+    r"leq|geq|ne|neq|approx|equiv|sim|end|over)(?![A-Za-z]))[A-Za-z]+)")
+
 _RE_JUSTAPOSICAO = re.compile(rf"({_SIMBOLO})\s*(?:\\left)?\(")
 _RE_NEWTON = re.compile(r"\\(d+)ot\s*(?:\{\s*(" + _SIMBOLO + r")\s*\}|(" + _SIMBOLO + r"))")
 # Só a base de potência: é onde o 'e' quase sempre é Euler e onde ler errado
@@ -298,9 +311,22 @@ def find(latex):
                      f"símbolo chamado {_limpo(base)}{chr(39) * ordem}{aplicada}")],
             **detalhe))
 
+    denominadores = set()
+    for m in _RE_BARRA.finditer(latex):
+        if m.start() in cobertos:
+            continue
+        den = m.group(1)
+        denominadores.add(m.start(1))
+        sitio = Ambiguity(
+            "slash", latex[m.start():m.end()], (m.start(), m.end()), den,
+            [Reading("times", f"a fração multiplica o que vem depois: (…/{den})·(…)"),
+             Reading("denominator", f"o que vem depois vai para o denominador: …/({den}·…)")])
+        sitio.corte = m.end(1) - m.start()     # onde entra o · na leitura "times"
+        achados.append(sitio)
+
     for m in _RE_JUSTAPOSICAO.finditer(latex):
         base = _limpo(m.group(1))
-        if base in _COMANDOS or m.start() in cobertos:
+        if base in _COMANDOS or m.start() in cobertos or m.start() in denominadores:
             continue
         achados.append(Ambiguity(
             "juxtaposition", m.group(0), m.span(), base,

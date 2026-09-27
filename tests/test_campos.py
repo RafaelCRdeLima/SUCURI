@@ -58,3 +58,16 @@ def test_boost_restrito_ao_hiperboloide_e_de_killing():
 def test_campo_nao_tangente_e_recusado():
     d = ultimo(*H3, "T = campo(1, 0, 0, 0)", *EMB, "restringir(T, h)")
     assert "tangente" in d.get("erro", "")
+
+
+def test_killing_polinomial_numa_metrica_com_seno():
+    """Na esfera, sin²θ não é polinômio: a busca trata sin θ como gerador à
+    parte, confere cada campo, e diz que pode faltar algum. Antes, quebrava."""
+    from sucuri.caderno import Caderno
+    c = Caderno()
+    for f in (r"x = coordenadas(\theta, \phi)", r"g = métrica(1, \sin^2\theta)"):
+        c.executar(f)
+    d = c.executar("killing(g, 1)").to_dict()
+    assert not d.get("erro")
+    assert d["exato"] == "1" and d["linhas"][0][1] == "[0, 1]"          # ∂φ
+    assert "pode faltar algum" in d["texto"]

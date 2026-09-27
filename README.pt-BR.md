@@ -984,6 +984,7 @@ pelo qual `\arctan(` não abre um sítio de justaposição.
 | linha | `y''` | derivada / símbolo |
 | Leibniz | `\frac{d^2y}{dx^2}` | derivada / fração de símbolos |
 | justaposição | `f(x+1)` | aplicação / produto |
+| barra | `1/2 (x+y)`, `1/2 x` | a fração multiplica / vai para o denominador |
 | **Newton** | `\ddot{q}` | derivada temporal / decoração |
 | **parcial** | `\partial_p H` | derivada parcial / produto |
 

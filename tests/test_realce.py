@@ -9,10 +9,17 @@ enganos são do mesmo tipo: a cor dizendo do programa uma coisa que não é.
 import pathlib
 import re
 
-from sucuri.caderno import VERBOS
+from sucuri.caderno import COMANDOS_PROPRIOS, VERBOS, VERBOS_COM_NOME
 
 TELA = (pathlib.Path(__file__).parents[1] / "sucuri" / "interface"
         / "estatico" / "caderno.js")
+
+
+def lista_da_tela(nome):
+    texto = TELA.read_text(encoding="utf-8")
+    bloco = re.search(rf"var {nome} = \[(.*?)\];", texto, re.S)
+    assert bloco, f"a lista {nome} sumiu do caderno.js"
+    return {n for n in re.findall(r"'([^']+)'", bloco.group(1))}
 
 
 def da_tela():
@@ -23,7 +30,23 @@ def da_tela():
 
 
 def test_a_tela_conhece_os_mesmos_verbos():
-    assert da_tela() == set(VERBOS)
+    """Todo comando que o caderno aceita é pintado — inclusive os de forma
+    própria, como provar, que não passam pela tabela VERBOS."""
+    assert da_tela() == set(VERBOS) | COMANDOS_PROPRIOS
+
+
+def test_a_tela_conhece_os_verbos_com_nome():
+    assert lista_da_tela("VERBOS_COM_NOME") == VERBOS_COM_NOME
+
+
+def test_os_comandos_de_forma_propria_funcionam():
+    """A lista de comandos próprios não pode ter nome que o caderno recusa."""
+    from sucuri.caderno import Caderno
+    c = Caderno()
+    for f in ("X = tensor(1, 0)", r"\nabla_X X = 0"):
+        c.executar(f)
+    for fonte in ("provar(eq1)", "prove(eq1)"):
+        assert "hipóteses" in c.executar(fonte).to_dict()["erro"]
 
 
 def test_o_realce_so_pinta_na_posicao_de_comando():

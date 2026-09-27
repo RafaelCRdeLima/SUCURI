@@ -133,6 +133,12 @@ def avaliar(expr, espaco, metrica, campos, formas):
                 (espaco.riemann and base == espaco.riemann[0]):
             A, posto = base_array(base)
         else:
+            if len(t.indices) > len(operacoes):
+                # um tensor com índices próprios e sem componentes nesta carta
+                raise SemComponentes(
+                    f"'{base}' tem índices e não tem componentes nesta carta: declare-o "
+                    f"com campo(…), covetor(…) ou forma(…), ou defina-o pela conexão, "
+                    f"com {base} = riemann(eq) ou {base} = ricci(eq)")
             # escalar: uma função das coordenadas, derivada
             A, posto = _arr(n, 0, lambda _: sp.Function(base)(*x) if base not in map(str, x) else sp.Symbol(base)), 0
         for op in reversed(operacoes):

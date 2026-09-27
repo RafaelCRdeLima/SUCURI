@@ -153,6 +153,15 @@ VERBOS = {
     **VERBOS_GEOMETRIA,
 }
 
+# Os que têm forma própria (regex só deles) e por isso não passam por VERBOS:
+# a tela precisa conhecê-los também, senão `provar(…)` fica sem realce.
+COMANDOS_PROPRIOS = {"provar", "prove", "induzida", "induced", "series"}
+
+# Os que aceitam um nome à esquerda: `S = estrela(α, g)`, `R = riemann(eq1)`,
+# `h = induzida(g, …)`. Só estes — `u = resolver(eq1)` não é comando.
+VERBOS_COM_NOME = {"cunha", "wedge", "exterior", "estrela", "star", "interior", "lie",
+                   "riemann", "christoffel", "ricci", "induzida", "induced"}
+
 # Os que operam sobre DUAS equações: a conta e a candidata.
 DE_DOIS = {"conferir"}
 
@@ -689,6 +698,16 @@ class Caderno:
             if re.fullmatch(r"-?\d+", n):          # ⋆1: a 0-forma constante
                 return F.FormaC(list(self.sessao.coordenadas), {(): sp.Integer(n)}, 0)
             raise KeyError(f"não conheço a forma '{n}' (tenho: {', '.join(self.formas_c) or 'nenhuma'})")
+        uso = {"cunha": "cunha(α, β)", "exterior": "exterior(α)", "estrela": "estrela(α, g)",
+               "interior": "interior(X, α)", "lie": "lie(X, α)", "iguais": "iguais(α, β)",
+               "ortonormal": "ortonormal(α, g)"}[verbo]
+        if len(partes) != uso.count(",") + 1:
+            return {"erro": f"{verbo} recebe {uso.count(',') + 1} argumento(s): {uso}"}
+        if nome and verbo in ("iguais", "ortonormal"):
+            # iguais responde sim ou não; ortonormal mostra componentes noutro
+            # cobase — guardar como forma na carta misturaria as bases
+            return {"erro": f"{verbo}(…) não produz forma na carta, e não recebe nome: "
+                            f"escreva {uso} sozinho"}
         try:
             if verbo == "iguais":
                 a, b = forma(partes[0]), forma(partes[1])
@@ -744,18 +763,22 @@ class Caderno:
                                          f"{c.nome} restrito, na carta de {partes[1]} — e registrado com o mesmo nome")
             metrica = self._metrica_de(partes[0])
             if verbo == "killing" and len(partes) > 1 and partes[1].isdigit():
-                base = C.killings(metrica, int(partes[1]))
+                base, completo = C.killings(metrica, int(partes[1]), com_completude=True)
                 linhas = [[f"K_{i + 1}", sp.sstr(b), sp.latex(sp.Matrix(b).T)] for i, b in enumerate(base)]
                 return {"alvo": partes[0], "exato": str(len(base)), "linhas": linhas,
                         "texto": (f"{len(base)} campos de Killing independentes com componentes "
-                                  f"polinomiais de grau ≤ {partes[1]} na carta ({metrica.coordenadas})")}
+                                  f"polinomiais de grau ≤ {partes[1]} na carta ({metrica.coordenadas})"
+                                  + ("" if completo else
+                                     "; a métrica tem funções não polinomiais das coordenadas, "
+                                     "tratadas como independentes: os campos achados são de "
+                                     "Killing, mas pode faltar algum"))}
             if verbo == "killing":
                 L = C.lie_metrica(metrica, campo(partes[1]))
                 nulo = all(e == 0 for e in L)
                 return {"alvo": partes[1], "exato": "True" if nulo else sp.sstr(L),
                         "latex_exato": sp.latex(L),
-                        "texto": (f"ℒ_{partes[1]} g = 0: {partes[1]} é de Killing" if nulo
-                                  else f"ℒ_{partes[1]} g ≠ 0: {partes[1]} não é de Killing")}
+                        "texto": (f"ℒ_{partes[1]} {partes[0]} = 0: {partes[1]} é de Killing" if nulo
+                                  else f"ℒ_{partes[1]} {partes[0]} ≠ 0: {partes[1]} não é de Killing")}
             A = campo(partes[1])
             esc = lambda x: metrica.escrita.get(str(x), str(x))
             marca = "^" if A.cima else "_"
