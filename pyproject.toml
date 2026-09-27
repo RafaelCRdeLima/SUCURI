@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "SymPy Unified Compiler for Unambiguous Rendered Input: LaTeX read into SymPy, with no ambiguity guessed"
 readme = "README.md"
 license = {text = "MIT"}
-authors = [{name = "Rafael C. R. de Lima"}]
+authors = [{name = "Rafael Camargo Rodrigues de Lima"}]
 keywords = ["sympy", "latex", "differential geometry", "general relativity",
             "tensor calculus", "symbolic computation"]
 classifiers = [

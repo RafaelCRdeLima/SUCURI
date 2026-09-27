@@ -9,9 +9,11 @@ abstract: >-
   with a notebook interface in English and Portuguese.
 type: software
 authors:
-  - given-names: "Rafael C. R."
+  - given-names: "Rafael Camargo Rodrigues"
     name-particle: "de"
     family-names: "Lima"
+    orcid: "https://orcid.org/0000-0003-1718-3838"
+    affiliation: "Departamento de Física, Universidade do Estado de Santa Catarina (UDESC), Joinville, SC, Brazil"
 repository-code: "https://github.com/RafaelCRdeLima/SUCURI"
 license: MIT
 version: "0.1.0"
